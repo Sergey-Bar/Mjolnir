@@ -6,7 +6,7 @@
  * Bug-audit hardening (H2): the previous template shipped the same
  * `github.rest.checks` no-op this repo's own audit removed from qa-doctor.yml,
  * failed the job before the annotate/summary steps could run whenever the
- * scan step exited non-zero, recommended floating `mjolnir-qa@latest`, and
+ * scan step exited non-zero, recommended floating `qa-doctor-cli@latest`, and
  * `ciInstall` silently overwrote hand-customized workflows. The template now
  * mirrors the dogfooded `.github/workflows/qa-doctor.yml` (pinned action SHAs,
  * `if: always()` on reporting steps, a real gate step that reads
@@ -139,22 +139,22 @@ jobs:
       # Scan with the PINNED version that generated this workflow — never
       # a floating tag: a new release must not change your gate semantics
       # with no commit of yours. To review PRs with the exact tool your
-      # repo develops against, add mjolnir-qa to devDependencies and drop
+      # repo develops against, add qa-doctor-cli to devDependencies and drop
       # the @version suffix so npx resolves the local install.
       - name: Scan changed code (exit 1/2 is data — the gate step decides)
         continue-on-error: true
-        run: npx --yes mjolnir-qa@${CLI_VERSION} . --scope changed --json > qa-doctor.json
+        run: npx --yes qa-doctor-cli@${CLI_VERSION} . --scope changed --json > qa-doctor.json
       # Reporting, not gating: a crashed scan leaves qa-doctor.json empty/missing
       # and the summary step exits 2/10 — continue-on-error keeps the advisory
       # job green, exactly like the v1 inline script did (the gate step decides).
       - name: Annotations + Job Summary
         if: always()
         continue-on-error: true
-        run: npx --yes mjolnir-qa@${CLI_VERSION} summary qa-doctor.json
+        run: npx --yes qa-doctor-cli@${CLI_VERSION} summary qa-doctor.json
       - name: Render PR comment
         if: always()
         continue-on-error: true
-        run: npx --yes mjolnir-qa@${CLI_VERSION} pr-comment . > qa-doctor-comment.md
+        run: npx --yes qa-doctor-cli@${CLI_VERSION} pr-comment . > qa-doctor-comment.md
       # Best-effort: on a pull_request event from a fork the GITHUB_TOKEN is
       # read-only and this step will 403 for every external contributor. The
       # Job Summary above is the fallback that always renders.
@@ -261,7 +261,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0   # needed for --scope changed merge-base
-      # The action scans with the published mjolnir-qa package, pinned to
+      # The action scans with the published qa-doctor-cli package, pinned to
       # the EXACT version that generated this workflow — never a floating
       # tag: a new release must not change your gate semantics with no
       # commit of yours (same rule as the npx template). The fail-on
@@ -283,11 +283,11 @@ jobs:
       - name: Annotations + Job Summary
         if: always()
         continue-on-error: true
-        run: npx --yes mjolnir-qa@${CLI_VERSION} summary qa-doctor.json
+        run: npx --yes qa-doctor-cli@${CLI_VERSION} summary qa-doctor.json
       - name: Render PR comment
         if: always()
         continue-on-error: true
-        run: npx --yes mjolnir-qa@${CLI_VERSION} pr-comment . > qa-doctor-comment.md
+        run: npx --yes qa-doctor-cli@${CLI_VERSION} pr-comment . > qa-doctor-comment.md
       # Best-effort: on a pull_request event from a fork the GITHUB_TOKEN is
       # read-only and this step will 403 for every external contributor. The
       # Job Summary above is the fallback that always renders.

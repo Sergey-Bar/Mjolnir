@@ -191,7 +191,7 @@ describe("v1 template recognition (upgrade path)", () => {
       "    steps:",
       "      - name: Scan changed code",
       "        continue-on-error: true",
-      "        run: npx --yes mjolnir-qa@0.4.0 . --scope changed --json > qa-doctor.json",
+      "        run: npx --yes qa-doctor-cli@0.4.0 . --scope changed --json > qa-doctor.json",
       "      - name: Append findings to the Job Summary",
       "        if: always()",
       "        run: |",

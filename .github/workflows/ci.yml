@@ -106,7 +106,7 @@ jobs:
           # are non-hidden entries the fixture-harness/docs-generator read
           # as fixture files, which would silence the QA-PY rules in every
           # later step (the ubuntu-only coverage run caught exactly that).
-          PYTHONPYCACHEPREFIX: /tmp/mjolnir-pycache
+          PYTHONPYCACHEPREFIX: /tmp/qa-doctor-pycache
         run: |
           if find tests/fixtures tests/corpus/positive-fixtures -name "*.py" | grep -q .; then
             python3 -m compileall -q tests/fixtures tests/corpus/positive-fixtures

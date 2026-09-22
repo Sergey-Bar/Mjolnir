@@ -691,18 +691,18 @@ describe("renderUnifiedReport", () => {
   it("renders 'what to run next' section", () => {
     const out = renderUnifiedReport(result());
     expect(out).toContain("What to run next");
-    expect(out).toContain("npx mjolnir-qa");
+    expect(out).toContain("npx qa-doctor-cli");
     expect(out).toContain("--verbose");
   });
 
   it("includes version in commands when provided", () => {
     const out = renderUnifiedReport(result(), { version: "1.2.3" });
-    expect(out).toContain("npx mjolnir-qa@1.2.3");
+    expect(out).toContain("npx qa-doctor-cli@1.2.3");
   });
 
   it("omits @version when not provided", () => {
     const out = renderUnifiedReport(result());
-    expect(out).toMatch(/npx mjolnir-qa\b(?!@)/);
+    expect(out).toMatch(/npx qa-doctor-cli\b(?!@)/);
   });
 
   it("renders default repo URL", () => {

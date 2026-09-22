@@ -87,7 +87,7 @@ describe("planInstall + executeInstall", () => {
     if (created.action !== "create") throw new Error("expected create");
     expect(created.surface).toBe("Claude Code command surface");
     expect(created.content).toContain(
-      `npx mjolnir-qa@${CLI_VERSION} . --scope changed`,
+      `npx qa-doctor-cli@${CLI_VERSION} . --scope changed`,
     );
     // Version-pinned, never @latest.
     expect(created.content).not.toContain("@latest");

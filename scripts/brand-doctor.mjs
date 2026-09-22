@@ -683,7 +683,7 @@ function main() {
   const checks = all.filter((c) => !c.gap);
   const gaps = all.filter((c) => c.gap);
 
-  console.log("\nmjolnir brand doctor\n");
+  console.log("\nqa-doctor brand doctor\n");
 
   let hardFailed = 0;
   let hardFindings = 0;

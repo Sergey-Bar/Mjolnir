@@ -429,7 +429,7 @@ describe("stdio loop — newline-delimited JSON-RPC framing (§21)", () => {
     const init = JSON.parse(out[0] ?? "{}") as {
       result?: { serverInfo?: { name?: string } };
     };
-    expect(init.result?.serverInfo?.name).toBe("mjolnir-qa");
+    expect(init.result?.serverInfo?.name).toBe("qa-doctor-cli");
     const call = JSON.parse(out[2] ?? "{}") as {
       result?: { structuredContent?: { ok?: boolean } };
     };
@@ -553,7 +553,7 @@ describe("handleMcpMessage — the full JSON-RPC surface (§21)", () => {
       serverInfo: { name: string; version: string };
     };
     expect(result.protocolVersion).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-    expect(result.serverInfo.name).toBe("mjolnir-qa");
+    expect(result.serverInfo.name).toBe("qa-doctor-cli");
     expect(result.serverInfo.version).toMatch(/^\d+\.\d+\.\d+/);
   });
 

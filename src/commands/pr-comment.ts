@@ -81,7 +81,7 @@ export interface PrCommentOptions {
   repoUrl?: string;
   /**
    * The running CLI version, injected by the command runner (plan M5
-   * footer: `npx mjolnir-qa@<ver> <path>`). Omitted → the versionless
+   * footer: `npx qa-doctor-cli@<ver> <path>`). Omitted → the versionless
    * form; the PR comment must never suggest a floating @latest.
    */
   version?: string;
@@ -208,8 +208,10 @@ export function renderPrComment(
   lines.push("**What to run next:**");
   lines.push("");
   lines.push("```bash");
-  lines.push(`npx mjolnir-qa${version} .            # full scan + score`);
-  lines.push(`npx mjolnir-qa${version} . --verbose # every finding, uncapped`);
+  lines.push(`npx qa-doctor-cli${version} .            # full scan + score`);
+  lines.push(
+    `npx qa-doctor-cli${version} . --verbose # every finding, uncapped`,
+  );
   lines.push("```");
   lines.push("");
   lines.push(

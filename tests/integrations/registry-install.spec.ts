@@ -5,7 +5,7 @@
  * package-smoke.spec.ts packs the tarball and symlinks this repo's own
  * node_modules into place to avoid a network dependency in the default
  * suite. That's fast and fine for every-PR coverage, but it is NOT the
- * same thing as `npm install mjolnir-qa` — it can't catch a genuinely
+ * same thing as `npm install qa-doctor-cli` — it can't catch a genuinely
  * broken transitive dependency resolution, a dependency that's
  * unpublishable, or a registry-specific packaging issue, because the
  * symlinked node_modules is this dev environment's already-working
@@ -78,7 +78,7 @@ beforeAll(() => {
   // into a directory that never had this repo's node_modules in it.
   execSync(`npm install "${tarball}"`, { cwd: installDir, stdio: "pipe" });
 
-  const installedPkgDir = join(installDir, "node_modules", "mjolnir-qa");
+  const installedPkgDir = join(installDir, "node_modules", "qa-doctor-cli");
   const installedPkgJson = JSON.parse(
     readFileSync(join(installedPkgDir, "package.json"), "utf8"),
   ) as { bin?: string | Record<string, string | undefined> };

@@ -120,7 +120,7 @@ import { mkdirSync } from "node:fs";
 
 let dir: string;
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "mjolnir-qa-reg-"));
+  dir = mkdtempSync(join(tmpdir(), "qa-doctor-cli-reg-"));
 });
 afterEach(() => {
   rmSync(dir, { recursive: true, force: true });

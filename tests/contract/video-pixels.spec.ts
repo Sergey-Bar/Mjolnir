@@ -24,7 +24,7 @@
  * H.264 at CRF 32 in yuv420p, so the ground is the canonical colour
  * after chroma subsampling and quantisation, not the canonical colour.
  * The bound below is wide enough for that round trip and far too narrow
- * for a different colour: the pre-unification ground it replaced sits
+ * for a different colour: the pre-unification blue ground it replaced sits
  * more than four times further away than the limit.
  */
 
@@ -41,8 +41,8 @@ import { WINDOW_INSET } from "../../scripts/video/terminal-page.js";
 const ROOT = join(import.meta.dirname, "..", "..");
 const POSTER = join(ROOT, "assets", "video", "qa-doctor-demo-poster.png");
 
-/** The pre-unification terminal ground, for the contrast below. */
-const RETIRED_GROUND = "#08090A";
+/** The pre-unification blue terminal ground, for the contrast below. */
+const RETIRED_GROUND = "#18243A";
 
 interface Rgb {
   r: number;

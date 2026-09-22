@@ -9,8 +9,8 @@ QA Doctor এমন টেস্ট খুঁজে বের করে যে�
 
 <br />
 
-[![npm](https://img.shields.io/npm/v/mjolnir-qa.svg?style=flat-square&color=1F6F7C&labelColor=0A1119)](https://www.npmjs.com/package/mjolnir-qa)
-[![downloads](https://img.shields.io/npm/dm/mjolnir-qa.svg?style=flat-square&color=1F6F7C&labelColor=0A1119)](https://www.npmjs.com/package/mjolnir-qa)
+[![npm](https://img.shields.io/npm/v/qa-doctor-cli.svg?style=flat-square&color=1F6F7C&labelColor=0A1119)](https://www.npmjs.com/package/qa-doctor-cli)
+[![downloads](https://img.shields.io/npm/dm/qa-doctor-cli.svg?style=flat-square&color=1F6F7C&labelColor=0A1119)](https://www.npmjs.com/package/qa-doctor-cli)
 [![ci](https://img.shields.io/github/actions/workflow/status/Sergey-Bar/qa-doctor/ci.yml?branch=main&style=flat-square&label=ci&labelColor=0A1119)](https://github.com/Sergey-Bar/qa-doctor/actions/workflows/ci.yml)
 [![coverage](https://img.shields.io/codecov/c/github/Sergey-Bar/qa-doctor?style=flat-square&color=1F6F7C&labelColor=0A1119&label=coverage)](https://codecov.io/gh/Sergey-Bar/qa-doctor)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/Sergey-Bar/qa-doctor/badge)](https://scorecard.dev/viewer/?uri=github.com/Sergey-Bar/qa-doctor)
@@ -18,7 +18,7 @@ QA Doctor এমন টেস্ট খুঁজে বের করে যে�
 [![node](https://img.shields.io/badge/node-%E2%89%A5%2022.18-1F6F7C.svg?style=flat-square&labelColor=0A1119)](https://nodejs.org)
 
 ```bash
-npx mjolnir-qa@latest
+npx qa-doctor-cli@latest
 ```
 
 [এটি কাজ করতে দেখুন](#এটি-কাজ-করতে-দেখুন) · [দ্রুত শুরু](#দ্রুত-শুরু) · [এটি কী খুঁজে পায়](#qa-doctor-কী-খুঁজে-পায়) · [স্কোর](#বিশ্বাসযোগ্যতা-স্কোর) · [প্রমাণ](#প্রমাণ-মডেল) · [রানটাইম ফরেনসিক্স](#রানটাইম-ফরেনসিক্স) · [CI](#ci-সততা) · [এজেন্ট](#ai-এজেন্ট) · [নিরাপত্তা](#বিশ্বাস-এবং-নিরাপত্তা) · [সীমাবদ্ধতা](#qa-doctor-আপনাকে-যা-বলতে-পারে-না) · [নথি](#নথি)
@@ -58,7 +58,7 @@ npx mjolnir-qa@latest
 
 <sub>এই workflow-এর জন্য ডেমো স্ক্যান যত সন্ধান রিপোর্ট করেছে, সেগুলো যে লাইনে রিপোর্ট করা হয়েছে সেখানেই। `npm run docs:readme-brand` দ্বারা [`demo-report.json`](assets/readme/demo-report.json) থেকে তৈরি এবং CI-তে বিচ্যুতির বিরুদ্ধে লক করা।</sub>
 
-**কঠোর মোড।** সবচেয়ে আক্রমণাত্মক সনাক্তকরণ — `.only`, `continue-on-error`, ফাঁকা পরীক্ষা, পুনরায় চেষ্টার অপব্যবহার — কোয়ারেন্টাইন স্তরে থাকে। এগুলো শুধু `--strict`-এ চলে এবং `info` তীব্রতায় সীমিত: এগুলো চিহ্নিত করে, কিন্তু কখনো গেট করে না। ডিফল্ট স্ক্যান (`npx mjolnir-qa@latest` ছাড়া `--strict`) শুধু কোর এবং বর্ধিত নিয়ম কভার করে। পরামর্শমূলক স্তরও চাইলে `--strict` যোগ করুন।
+**কঠোর মোড।** সবচেয়ে আক্রমণাত্মক সনাক্তকরণ — `.only`, `continue-on-error`, ফাঁকা পরীক্ষা, পুনরায় চেষ্টার অপব্যবহার — কোয়ারেন্টাইন স্তরে থাকে। এগুলো শুধু `--strict`-এ চলে এবং `info` তীব্রতায় সীমিত: এগুলো চিহ্নিত করে, কিন্তু কখনো গেট করে না। ডিফল্ট স্ক্যান (`npx qa-doctor-cli@latest` ছাড়া `--strict`) শুধু কোর এবং বর্ধিত নিয়ম কভার করে। পরামর্শমূলক স্তরও চাইলে `--strict` যোগ করুন।
 
 QA Doctor স্যুট, CI workflow, এবং আপনার কাছে থাকলে একটি প্রকৃত রানের রিপোর্ট পড়ে। এটি আপনার টেস্ট চালায় না, আপনার dependency ইনস্টল করে না, বা এটি যে কোড স্ক্যান করে তা চালায় না। আর যখন এর কাছে প্রমাণ নেই, তখন এটি আস্থা বানিয়ে না নিয়ে সেটাই বলে দেয়:
 
@@ -93,7 +93,7 @@ QA Doctor স্যুট, CI workflow, এবং আপনার কাছে �
 
 <p align="center">
   <a href="assets/video/qa-doctor-demo.mp4">
-    <img src="assets/video/qa-doctor-demo-poster.png" alt="ডেমো রেকর্ডিংয়ের একটি ফ্রেম: একটি টার্মিনাল উইন্ডোতে ডেমো রিপোজিটরি স্ক্যান করছে npx mjolnir-qa@latest" width="900" />
+    <img src="assets/video/qa-doctor-demo-poster.png" alt="ডেমো রেকর্ডিংয়ের একটি ফ্রেম: একটি টার্মিনাল উইন্ডোতে ডেমো রিপোজিটরি স্ক্যান করছে npx qa-doctor-cli@latest" width="900" />
   </a>
 </p>
 
@@ -162,7 +162,7 @@ Docs: qa-doctor rules --md   (full catalog, this rule included)
 ## দ্রুত শুরু
 
 ```bash
-npx mjolnir-qa@latest
+npx qa-doctor-cli@latest
 ```
 
 এটি বর্তমান ডিরেক্টরি স্ক্যান করে এবং Trust Report প্রিন্ট করে: এটি কী পেয়েছে, আপনি কতটা বিশ্বাস করতে পারেন, কেন, এবং পরবর্তীতে কী করতে হবে। গেট বা তার উপরে কিছু না পাওয়া গেলে এটি `0` দিয়ে exit করে।
@@ -170,7 +170,7 @@ npx mjolnir-qa@latest
 CI-তে, শুধু ব্রাঞ্চ যা এনেছে তা স্ক্যান করুন, যাতে একটি পুরনো স্যুট আপনার প্রথম pull request-কে ডুবিয়ে না দেয়:
 
 ```bash
-npx mjolnir-qa@latest --scope changed
+npx qa-doctor-cli@latest --scope changed
 ```
 
 `qa-doctor ci install` এটিকে একটি GitHub Actions workflow হিসেবে লেখে, `v1` মেজর ট্যাগে পিন করা [action](https://github.com/Sergey-Bar/qa-doctor#readme) ব্যবহার করে (অথবা `--no-action` সহ সাধারণ `npx`)। এটি ততক্ষণ পরামর্শমূলক থাকে যতক্ষণ না আপনি সিদ্ধান্ত নেন এটি ব্লক করা উচিত।
@@ -223,7 +223,7 @@ npx mjolnir-qa@latest --scope changed
 
 </details>
 
-Windows, macOS, বা Linux-এ **Node.js ≥ 22.18** প্রয়োজন। গ্লোবাল ইনস্টল পছন্দ করেন? `npm i -g mjolnir-qa`। এই সর্বনিম্ন সীমা বিল্ড টুলচেইন থেকে আসে (tsdown এটিকে লক্ষ্য করে এবং রিলিজ পাইপলাইন এটির বিরুদ্ধে smoke-test করে); রানটাইম dependency-গুলোর এর চেয়ে বেশি কিছু প্রয়োজন হয় না।
+Windows, macOS, বা Linux-এ **Node.js ≥ 22.18** প্রয়োজন। গ্লোবাল ইনস্টল পছন্দ করেন? `npm i -g qa-doctor-cli`। এই সর্বনিম্ন সীমা বিল্ড টুলচেইন থেকে আসে (tsdown এটিকে লক্ষ্য করে এবং রিলিজ পাইপলাইন এটির বিরুদ্ধে smoke-test করে); রানটাইম dependency-গুলোর এর চেয়ে বেশি কিছু প্রয়োজন হয় না।
 
 <br />
 
@@ -463,7 +463,7 @@ qa-doctor ci install
 GitHub Code Scanning-এ সন্ধান রাখতে, SARIF আপলোড করুন (workflow বা job scope-এ `security-events: write` প্রয়োজন):
 
 ```yaml
-- run: npx mjolnir-qa@latest --format sarif > qa-doctor.sarif
+- run: npx qa-doctor-cli@latest --format sarif > qa-doctor.sarif
   continue-on-error: true
 - uses: github/codeql-action/upload-sarif@v3
   if: ${{ !cancelled() }}
@@ -476,7 +476,7 @@ GitLab-এ, `--format codequality` সেই Code Quality রিপোর্ট 
 ### Changed-scope attribution
 
 ```bash
-npx mjolnir-qa@latest --scope changed
+npx qa-doctor-cli@latest --scope changed
 ```
 
 সন্ধানগুলো আপনার ব্রাঞ্চ যোগ করা লাইনগুলোতে attribute করা হয়, **merge-base**-এর বিরুদ্ধে পরিমাপ করা। Scope-টি একই ফাইল সেট যা একটি full scan আবিষ্কার করে (TS/JS spec এবং adapter config, `test_*.py`, `*Test.java`, `*Tests.cs`, `.github/workflows/*.yml`), সাথে uncommitted এবং untracked পরিবর্তন, তাই এটি আপনি কমিট করার আগেই কাজ করে। Base resolve হয় `main → master → origin/main → origin/master → origin/HEAD`; `--base <ref>` দিয়ে override করুন।
@@ -504,7 +504,7 @@ SCAN → EVIDENCE → HANDOFF → AGENT → RE-SCAN → PROOF
 নিজস্ব CLI সহ একটি ক্লায়েন্টে যোগ করুন:
 
 ```bash
-claude mcp add qa-doctor -- npx -y mjolnir-qa@latest mcp
+claude mcp add qa-doctor -- npx -y qa-doctor-cli@latest mcp
 ```
 
 অথবা একটি `mcpServers` ব্লক নেয় এমন যেকোনো ক্লায়েন্টে:
@@ -514,7 +514,7 @@ claude mcp add qa-doctor -- npx -y mjolnir-qa@latest mcp
   "mcpServers": {
     "qa-doctor": {
       "command": "npx",
-      "args": ["-y", "mjolnir-qa@latest", "mcp"]
+      "args": ["-y", "qa-doctor-cli@latest", "mcp"]
     }
   }
 }
@@ -606,10 +606,10 @@ Dev সেটআপ, standing-gate কমান্ড, এবং anti-creep এ�
 <img src="assets/readme/closing.svg" alt="আপনার রিপোতে এটি চালান।" width="100%" />
 
 ```bash
-npx mjolnir-qa@latest
+npx qa-doctor-cli@latest
 ```
 
-[গাইড পড়ুন](https://sergey-bar.github.io/qa-doctor/guide/getting-started) · [ডকস সাইট](https://sergey-bar.github.io/qa-doctor/) · [npm](https://www.npmjs.com/package/mjolnir-qa)
+[গাইড পড়ুন](https://sergey-bar.github.io/qa-doctor/guide/getting-started) · [ডকস সাইট](https://sergey-bar.github.io/qa-doctor/) · [npm](https://www.npmjs.com/package/qa-doctor-cli)
 
 <br />
 

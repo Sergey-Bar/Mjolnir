@@ -7,6 +7,7 @@
     "node": ">=22.18"
   },
   "bin": {
+    "qa-doctor": "dist/cli.mjs",
     "mjolnir-qa": "dist/cli.mjs"
   },
   "workspaces": [

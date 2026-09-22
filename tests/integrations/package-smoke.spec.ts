@@ -3,7 +3,7 @@
  *
  * Every other test in this suite runs against source via tsx/vitest — none
  * of them exercise the actual thing a stranger receives when they run
- * `npx mjolnir-qa@latest`: the built `dist/` output, packed exactly as npm
+ * `npx qa-doctor-cli@latest`: the built `dist/` output, packed exactly as npm
  * would pack it, executed as a real child process with no source tree or
  * test harness underneath it. Bugs in `files`, `bin`, or the built
  * entry-point's own self-invocation guard are invisible to unit tests and
@@ -96,7 +96,7 @@ describe.skipIf(process.env.npm_lifecycle_event === "prepublishOnly")(
       binPath = join(pkgDir, binEntry);
 
       // Give the packed CLI its runtime dependencies without a network install
-      // (a real `npm install mjolnir-qa` would fetch these from `dependencies`).
+      // (a real `npm install qa-doctor-cli` would fetch these from `dependencies`).
       // We COPY rather than symlink: symlink behavior differs across platforms
       // and CI filesystems (junctions are Windows-only; macOS temp dirs may
       // reject dir symlinks), and a silently-broken link makes the CLI crash
@@ -160,7 +160,7 @@ describe.skipIf(process.env.npm_lifecycle_event === "prepublishOnly")(
         // A real, shipped bug this locks. 0.4.0 was published with no
         // shebang on dist/cli.mjs. On POSIX, npm's bin shim executes the
         // target file directly and the kernel falls back to /bin/sh,
-        // which parses JavaScript as shell — `npx mjolnir-qa@latest` died
+        // which parses JavaScript as shell — `npx qa-doctor-cli@latest` died
         // with "import: not found" on every Linux and macOS machine.
         //
         // It survived local testing because npm generates a .cmd wrapper
@@ -186,7 +186,7 @@ describe.skipIf(process.env.npm_lifecycle_event === "prepublishOnly")(
           const out = execFileSync(binPath, ["--version"], {
             encoding: "utf8",
           });
-          expect(out).toContain("mjolnir-qa");
+          expect(out).toContain("qa-doctor-cli");
         },
       );
 
@@ -206,7 +206,7 @@ describe.skipIf(process.env.npm_lifecycle_event === "prepublishOnly")(
         // (pinned EXACTLY — 0.26.x cannot load these grammar files, see
         // src/engine/tree-sitter-ast.ts's header). Both must ship as
         // `dependencies`, not devDependencies, or a consumer's
-        // `npm install mjolnir-qa` produces a CLI whose parse stage
+        // `npm install qa-doctor-cli` produces a CLI whose parse stage
         // cannot load a grammar at all.
         const deps = pkgJson.dependencies ?? {};
         expect(
@@ -316,7 +316,7 @@ describe.skipIf(process.env.npm_lifecycle_event === "prepublishOnly")(
         expect(
           out.length,
           "the packed CLI produced no output at all when invoked as a binary " +
-            "— this is what a first-time `npx mjolnir-qa@latest` user would see: " +
+            "— this is what a first-time `npx qa-doctor-cli@latest` user would see: " +
             "nothing.",
         ).toBeGreaterThan(0);
         expect(out).toContain("qa-doctor");

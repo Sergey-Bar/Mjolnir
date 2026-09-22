@@ -141,7 +141,7 @@ function throwOnce(boundary: unknown, payload: unknown): void {
 let dir: string;
 let origCwd: string;
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "mjolnir-qa-err-"));
+  dir = mkdtempSync(join(tmpdir(), "qa-doctor-cli-err-"));
   origCwd = process.cwd();
   mkdirSync(join(dir, "tests", "fixtures"), { recursive: true });
   writeFileSync(

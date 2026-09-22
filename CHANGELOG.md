@@ -1388,7 +1388,7 @@ rules… → Scoring…`) fed by the new additive `ScanHooks.onProgress`.
   headline, dimensions mini-table, findings grouped in collapsible
   `<details>` (errors open, warnings/infos collapsed) with explicit
   `Fix:` lines and evidence tags, a "what to run next" footer with the
-  pinned `npx mjolnir-qa@<ver>` commands, and the
+  pinned `npx qa-doctor-cli@<ver>` commands, and the
   `✨ N pre-existing findings fixed in this PR` callout. Same
   idempotency marker; same markdown escaping.
 - **Site**: new `site/reference/cli.md` (help, usage errors, summary,
@@ -2170,7 +2170,7 @@ detectorRevision, FP ≤ 10%, n ≥ 10`), on any detectorRevision mismatch
 - **`tree-sitter-wasms` and `web-tree-sitter` moved to `dependencies`**
   (web-tree-sitter keeps its exact `0.25.6` pin — 0.26.x cannot load the
   prebuilt grammar files). The published CLI's dependency tree now
-  carries the tree-sitter Java/C# grammars, so `npm install mjolnir-qa`
+  carries the tree-sitter Java/C# grammars, so `npm install qa-doctor-cli`
   can load them offline once the Phase 0.5 parse-stage wiring consumes
   them. Removed the misleading `!dist/**/*.wasm` files exclusion (the
   grammars ship via the dependency, not the bundle).
@@ -2715,7 +2715,7 @@ doctor` reports this and will fail once a majority is classified.
 ### Changed
 
 - **BREAKING: Rebranded from QA Doctor to QA Doctor.** Package name is now
-  `mjolnir-qa` (bin: `qa-doctor`). Config file: `qa-doctor.config.json`.
+  `qa-doctor-cli` (bin: `qa-doctor`). Config file: `qa-doctor.config.json`.
   Data directory: `.qa-doctor/`. Badge: `qa-doctor-badge.json`.
 - Score label: "SCORE" → "TEST HEALTH".
 - Verdicts: "HEALTHY" → "HEALTHY", "CRITICAL" → "CRITICAL".
@@ -2723,7 +2723,7 @@ doctor` reports this and will fail once a majority is classified.
 - SARIF tool.driver.name: "QA Doctor".
 - Repository: `github.com/Sergey-Bar/qa-doctor`.
 - CLI: all help text, error messages, usage strings reference `qa-doctor`.
-- Generated workflows: `qa-doctor.yml`, `npx mjolnir-qa@latest`.
+- Generated workflows: `qa-doctor.yml`, `npx qa-doctor-cli@latest`.
 
 ### Added
 

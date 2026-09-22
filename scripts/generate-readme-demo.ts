@@ -125,7 +125,7 @@ export async function buildDemoSvg(): Promise<string> {
     ascii: false,
   });
   const lines = [
-    `${PROMPT}\x1b[1mnpx mjolnir-qa@latest --verbose\x1b[0m`,
+    `${PROMPT}\x1b[1mnpx qa-doctor-cli@latest --verbose\x1b[0m`,
     ...rendered.split("\n"),
   ].map((line) =>
     line.replace(
