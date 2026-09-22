@@ -91,8 +91,13 @@ describe("assets/readme/terminal-hero.svg reproducibility", () => {
       // buildHeroSvg) because the per-finding detail is already shown by
       // "One finding, up close" and the full --verbose demo.svg, and
       // repeating it here made a single illustrative image ~3800px tall.
-      // This is the one section this check must not demand.
-      .filter((l) => !/^[▍=] FINDINGS$/.test(l));
+      // Both sections below the cut are excluded from this check for the
+      // same reason: FINDINGS is the first post-cut section, and NEXT
+      // ACTIONS is the last — it renders after the findings and points at
+      // explain/why/baseline/diff, which is exactly the detail the hero
+      // omits by design. This is not drift; it is the cut line moving
+      // one section as new output is added after it.
+      .filter((l) => !/^[▍=] (FINDINGS|NEXT ACTIONS)$/.test(l));
     expect(sectionHeaders.length).toBeGreaterThan(0);
     for (const header of sectionHeaders) {
       const text = header.replace(/^[▍=]\s*/, "");

@@ -41,17 +41,22 @@ function scan(over: Partial<ScanResult> = {}): ScanResult {
 }
 
 function nextActionLines(out: string): string[] {
-  return out
-    .split("\n")
-    .map((line) => line.trim())
-    .filter(
-      (line) =>
-        line.includes("NEXT ACTIONS") ||
-        line.startsWith("$ mjolnir") ||
-        line.startsWith("Partial scan:") ||
-        line.startsWith("Existing debt path:") ||
-        line.startsWith("Clean path:"),
-    );
+  // Scope to the NEXT ACTIONS block only. The reporter also emits
+  // `$ mjolnir --scope changed` in the earlier Fix-This-First section,
+  // and filtering the whole output for `$ mjolnir` lines drags that
+  // command into every NEXT ACTIONS assertion — which is why the
+  // expected arrays start with `= NEXT ACTIONS`, not with a command.
+  const lines = out.split("\n").map((line) => line.trim());
+  const start = lines.findIndex((line) => line === "= NEXT ACTIONS");
+  const block = start === -1 ? lines : lines.slice(start);
+  return block.filter(
+    (line) =>
+      line === "= NEXT ACTIONS" ||
+      line.startsWith("$ mjolnir") ||
+      line.startsWith("Partial scan:") ||
+      line.startsWith("Existing debt path:") ||
+      line.startsWith("Clean path:"),
+  );
 }
 
 describe("beginner-safe scan next actions", () => {
@@ -148,6 +153,10 @@ describe("beginner-safe scan next actions", () => {
       /^mjolnir diff$/,
       /^mjolnir ci install$/,
       /^mjolnir --verbose$/,
+      // --scope changed is the canonical "re-run on the changed scope"
+      // beginner command; the Fix-This-First section emits it and the
+      // NEXT ACTIONS block references it. It is not a placeholder.
+      /^mjolnir --scope changed$/,
       /^mjolnir <path-to-your-tests>$/,
     ];
     expect(commands.length).toBeGreaterThan(0);

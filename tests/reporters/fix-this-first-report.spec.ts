@@ -88,6 +88,10 @@ describe("MVP-005 default terminal report", () => {
         "$ mjolnir --scope changed",
         "= DIAGNOSTICS BY CATEGORY",
         "= FINDINGS",
+        "$ mjolnir explain QA-TEST-001",
+        "$ mjolnir why tests/login.spec.ts:12",
+        "$ mjolnir baseline",
+        "$ mjolnir diff",
       ]
     `);
   });
@@ -119,6 +123,7 @@ describe("MVP-005 default terminal report", () => {
         "FORGED — zero findings. The suite is clean.",
         "Keep it green: re-run Mjölnir on changed tests before merging, and keep the CI",
         "$ mjolnir --scope changed",
+        "$ mjolnir ci install",
       ]
     `);
   });
@@ -146,6 +151,10 @@ describe("MVP-005 default terminal report", () => {
         "$ mjolnir --scope changed",
         "= DIAGNOSTICS BY CATEGORY",
         "= FINDINGS",
+        "$ mjolnir explain QA-TEST-001",
+        "$ mjolnir why tests/login.spec.ts:12",
+        "$ mjolnir baseline",
+        "$ mjolnir diff",
         "Analysis: PARTIAL — verdict may be incomplete · 9ms",
       ]
     `);
@@ -175,6 +184,7 @@ describe("MVP-005 default terminal report", () => {
         "This scan did not analyze the full test surface. Zero findings here does not",
         "Next action: fix the cause of the partial scan (timeouts, exclusions, parse",
         "$ mjolnir --scope changed",
+        "$ mjolnir ci install",
         "Analysis: PARTIAL — verdict may be incomplete · 9ms",
       ]
     `);
