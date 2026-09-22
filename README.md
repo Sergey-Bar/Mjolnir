@@ -150,6 +150,17 @@ FP risk:     low (author estimate)
 Languages:   yaml
 Frameworks:  github-actions, azure-pipelines
 
+COPY-READY REVIEW COMMENT
+  Advisory finding — this does not block merging: Job `security-scan` runs a
+  verification gate under `continue-on-error: true`.
+  Why it weakens verification: This job can fail every day and CI will still
+  show green. The checkmark on this workflow cannot be trusted.
+  Confidence: high, evidence E2, tier quarantine; measured FP 11% (19 verdicts).
+  Suggested fix: Remove continue-on-error, or scope it to individual
+  non-blocking steps only.
+  Verify with: mjolnir --scope changed, then mjolnir explain QA-CI-001 if the
+  finding still appears.
+
 WHAT WAS FOUND (real detector output, not a mockup)
   Job `security-scan` runs a verification gate under `continue-on-error: true`.
 
@@ -167,6 +178,18 @@ WHAT WOULD CHANGE THE VERDICT
   corroborating this file lifts its findings to L3–L5
   - a documented suppression (mjolnir.config.json) lowers the finding count
   without claiming correctness
+  - quarantine findings run only under --strict and are advisory (E0) — they can
+  never gate CI
+
+NEXT ACTION
+  Fix the first occurrence, then re-run: `mjolnir --scope changed`. Every
+  occurrence of this rule is listed in the scan output.
+
+HOW TO VERIFY THE FIX
+  Re-run `mjolnir` on the changed file(s) — this finding should no longer
+  appear. `mjolnir --scope changed` scopes the check to just what you touched.
+
+Docs: mjolnir rules --md   (full catalog, this rule included)
   - quarantine findings run only under --strict and are advisory (E0) — they can
   never gate CI
 

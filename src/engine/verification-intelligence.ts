@@ -37,7 +37,7 @@ const CI_WORKFLOW_FILES = [
   "Jenkinsfile",
 ] as const;
 
-const REQUIRED_SCAN_COMMANDS = ["npx mjolnir scan", "mjolnir scan", "npm run scan"];
+const REQUIRED_SCAN_COMMANDS = ["npx mjolnir scan", "mjolnir scan"];
 
 export function detectCIWorkflows(root: string = "."): string[] {
   const found: string[] = [];
@@ -83,7 +83,8 @@ export function checkWorkflowContainsScan(
     return {
       name: workflowPath,
       status: "warn",
-      detail: "CI workflow contains scan command but lacks explicit quality gate",
+      detail:
+        "CI workflow contains scan command but lacks explicit quality gate",
     };
   }
   return {
@@ -161,16 +162,21 @@ export function computeVerificationIntelligence(
   };
 }
 
-export function renderCIIntegrityReport(report: CIWorkflowIntegrityReport): string {
+export function renderCIIntegrityReport(
+  report: CIWorkflowIntegrityReport,
+): string {
   const lines: string[] = [];
   lines.push(`CI Workflow Integrity Report`);
   lines.push(`Workflow: ${report.workflow}`);
   lines.push(`Status: ${report.overallStatus.toUpperCase()}`);
-  lines.push(`Passed: ${report.passed}, Failed: ${report.failed}, Warned: ${report.warned}`);
+  lines.push(
+    `Passed: ${report.passed}, Failed: ${report.failed}, Warned: ${report.warned}`,
+  );
   lines.push("");
 
   for (const check of report.checks) {
-    const icon = check.status === "pass" ? "✓" : check.status === "fail" ? "✗" : "⚠";
+    const icon =
+      check.status === "pass" ? "✓" : check.status === "fail" ? "✗" : "⚠";
     lines.push(`${icon} ${check.name}: ${check.detail}`);
   }
 
