@@ -296,9 +296,12 @@ export function hasVerbHelp(verb: string): boolean {
 const ROOT_HELP_VERBS: ReadonlySet<string> = new Set(["scan", "ci", "help"]);
 
 /** One per-verb help page: summary, usage, examples, next step. */
-export function renderVerbHelp(verb: string): string {
+export function renderVerbHelp(
+  verb: string,
+  options: { width?: number } = {},
+): string {
   if (!hasVerbHelp(verb) && ROOT_HELP_VERBS.has(verb)) {
-    return renderRootHelp();
+    return renderRootHelp(1, options);
   }
   const e = findEntry(verb);
   if (!e) {
@@ -377,6 +380,89 @@ const SCAN_SUMMARY_LINES: string[] = [
   "mjolnir [path]                 full-repo scan + WORTHINESS score",
 ];
 
+export interface RootHelpOptions {
+  width?: number;
+}
+
+const DEFAULT_HELP_WIDTH = 88;
+
+/**
+ * Normalizes the terminal width for help rendering. When no width is
+ * supplied, falls back to the default help width (88). Clamps to a
+ * readable minimum so narrow terminals do not produce unusably short
+ * columns.
+ */
+function normalizeHelpWidth(width: number | undefined): number {
+  if (width === undefined || !Number.isFinite(width)) return DEFAULT_HELP_WIDTH;
+  return Math.max(48, Math.floor(width));
+}
+
+function wrapWords(text: string, width: number): string[] {
+  if (text.length <= width) return [text];
+  const words = text.split(/\s+/).filter(Boolean);
+  const lines: string[] = [];
+  let current = "";
+  for (const word of words) {
+    if (current.length === 0) {
+      current = word;
+      continue;
+    }
+    if (current.length + 1 + word.length <= width) {
+      current += ` ${word}`;
+      continue;
+    }
+    lines.push(current);
+    current = word;
+  }
+  if (current.length > 0) lines.push(current);
+  return lines.length > 0 ? lines : [text];
+}
+
+function pushWrappedIndented(
+  lines: string[],
+  text: string,
+  indent: string,
+  width: number,
+): void {
+  for (const line of wrapWords(text, Math.max(16, width - indent.length))) {
+    lines.push(`${indent}${line}`);
+  }
+}
+
+/**
+ * Renders a label-summary row, wrapping the summary across continuation
+ * lines when the terminal is narrower than the label + summary.
+ */
+function pushAlignedHelpRow(
+  lines: string[],
+  label: string,
+  summary: string,
+  options: {
+    width: number;
+    labelWidth: number;
+    indent?: number;
+  },
+): void {
+  const indent = " ".repeat(options.indent ?? 2);
+  const gap = "  ";
+  const summaryIndent = `${indent}${" ".repeat(options.labelWidth)}${gap}`;
+  const summaryWidth = Math.max(16, options.width - summaryIndent.length);
+
+  if (label.length <= options.labelWidth) {
+    const summaryLines = wrapWords(summary, summaryWidth);
+    lines.push(
+      `${indent}${label.padEnd(options.labelWidth)}${gap}${summaryLines[0] ?? ""}`,
+    );
+    for (const line of summaryLines.slice(1)) {
+      lines.push(`${summaryIndent}${line}`);
+    }
+    return;
+  }
+
+  pushWrappedIndented(lines, label, indent, options.width);
+  pushWrappedIndented(lines, summary, `${indent}  `, options.width);
+}
+
 /**
  * The redesigned root help (plan M2): grouped sections, one-line
  * descriptions, copy-pasteable examples, the frozen exit-code table and
@@ -384,7 +470,11 @@ const SCAN_SUMMARY_LINES: string[] = [
  * caller decides (runHelpCommand passes a resolved palette; printUsage
  * stays plain).
  */
-export function renderRootHelp(schemaVersion = 1): string {
+export function renderRootHelp(
+  schemaVersion = 1,
+  options: RootHelpOptions = {},
+): string {
+  const width = normalizeHelpWidth(options.width);
   const byVerb = new Map(HELP_ENTRIES.map((e) => [e.verb, e]));
   const lines: string[] = [];
   lines.push(
@@ -417,19 +507,31 @@ export function renderRootHelp(schemaVersion = 1): string {
   lines.push("");
   lines.push("Options:");
   for (const f of HELP_FLAGS) {
-    const pad = f.flag.padEnd(22);
-    lines.push(`  ${pad}${f.summary}`);
+    pushAlignedHelpRow(lines, f.flag, f.summary, {
+      width,
+      labelWidth: 22,
+    });
   }
-  lines.push("  -v, --version         print the installed version and exit");
-  lines.push("  -h, --help            show this help");
+  pushAlignedHelpRow(
+    lines,
+    "-v, --version",
+    "print the installed version and exit",
+    { width, labelWidth: 22 },
+  );
+  pushAlignedHelpRow(lines, "-h, --help", "show this help", {
+    width,
+    labelWidth: 22,
+  });
   lines.push("");
   for (const g of GROUPS) {
     lines.push(`Subcommands — ${g.title}:`);
     for (const verb of g.verbs) {
       const e = byVerb.get(verb);
       if (!e) continue;
-      const usage = e.usage.replace(/^mjolnir /, "").padEnd(46);
-      lines.push(`  ${usage}${e.summary}`);
+      pushAlignedHelpRow(lines, e.usage.replace(/^mjolnir /, ""), e.summary, {
+        width,
+        labelWidth: 46,
+      });
     }
     lines.push("");
   }
