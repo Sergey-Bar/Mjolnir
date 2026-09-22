@@ -220,8 +220,40 @@ export const HELP_ENTRIES: HelpEntry[] = [
     verb: "suppression-gate",
     summary: "enforce suppression policy governance gate",
     usage: "mjolnir suppression-gate [path] [--policy <file>]",
-    examples: ["mjolnir suppression-gate", "mjolnir suppression-gate . --policy mjolnir.policy.json"],
+    examples: [
+      "mjolnir suppression-gate",
+      "mjolnir suppression-gate . --policy mjolnir.policy.json",
+    ],
     next: "mjolnir framework-maturity",
+  },
+  {
+    verb: "cross-file",
+    summary:
+      "analyze cross-file signals: duplicates, shared imports, circular deps",
+    usage: "mjolnir cross-file [path] [--json]",
+    examples: ["mjolnir cross-file", "mjolnir cross-file . --json"],
+    next: "mjolnir suppression-gate",
+  },
+  {
+    verb: "contract-verify",
+    summary: "verify machine contract integrity against scan results",
+    usage: "mjolnir contract-verify [path] [--json]",
+    examples: ["mjolnir contract-verify", "mjolnir contract-verify . --json"],
+    next: "mjolnir cross-file",
+  },
+  {
+    verb: "trust-trend",
+    summary: "track historical trust trends and detect regressions",
+    usage: "mjolnir trust-trend [path] [--json]",
+    examples: ["mjolnir trust-trend", "mjolnir trust-trend . --json"],
+    next: "mjolnir contract-verify",
+  },
+  {
+    verb: "evidence-graph",
+    summary: "build and query the verification evidence graph",
+    usage: "mjolnir evidence-graph [path] [--json]",
+    examples: ["mjolnir evidence-graph", "mjolnir evidence-graph . --json"],
+    next: "mjolnir trust-trend",
   },
   {
     verb: "create-rule",
@@ -389,6 +421,10 @@ const GROUPS: Array<{ title: string; verbs: string[] }> = [
       "doctor",
       "release-trust",
       "create-rule",
+      "cross-file",
+      "contract-verify",
+      "trust-trend",
+      "evidence-graph",
     ],
   },
   {
