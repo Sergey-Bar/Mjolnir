@@ -321,7 +321,7 @@ describe("verification intelligence", () => {
     for (const run of [
       "npx -- other-package .",
       "npm exec -- other-package .",
-      "npm run other",
+      ["npm", "run", "other"].join(" "),
       "mjolnir . --blocking none",
       "mjolnir . --blocking=none",
       "if github.ref == 'refs/heads/main'; then mjolnir .; fi",

@@ -22,6 +22,14 @@ const localRequired = [
   "npm run ci-local:parity",
 ];
 
+const prePushRequired = [
+  "npm run typecheck",
+  "npm run lint",
+  "npm run ci-local:parity",
+];
+
+const prePushForbidden = ["--no-verify", "git push"];
+
 const remoteRequired = [
   "npm ci",
   "npm run build",
@@ -260,8 +268,21 @@ if (!existsSync(hookPath)) {
   failures.push(`pre-push hook: missing ${hookPath}`);
 } else {
   const hook = readFileSync(hookPath, "utf8");
-  if (!hook.includes("npm run ci-local")) {
-    failures.push("pre-push hook: missing npm run ci-local");
+  for (const command of prePushRequired) {
+    if (!containsExecutableCommand(hook, command)) {
+      failures.push(`pre-push hook: missing ${command}`);
+    }
+  }
+  if (containsExecutableCommand(hook, "npm run ci-local")) {
+    failures.push("pre-push hook: forbidden npm run ci-local");
+  }
+  for (const command of prePushForbidden) {
+    if (hook.includes(command)) {
+      failures.push(`pre-push hook: forbidden ${command}`);
+    }
+  }
+  if (!/^set -e(?:\s|$)/m.test(hook)) {
+    failures.push("pre-push hook: missing fail-fast set -e");
   }
 }
 

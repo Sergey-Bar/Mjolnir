@@ -971,15 +971,22 @@ describe("milestone CLI commands", () => {
         ),
       ).toBe(10);
       const partialPath = join(root, "partial.json");
+      writeFileSync(
+        join(root, "oversized.spec.ts"),
+        "x".repeat(1024 * 1024 + 1),
+      );
       const partialResult = await runScan({
         target: root,
         json: false,
         verbose: false,
-        maxDurationMs: 0.000001,
+        maxDurationMs: Number.POSITIVE_INFINITY,
         scopeChanged: false,
         format: "terminal",
       });
       expect(partialResult.partial).toBe(true);
+      expect(partialResult.analysisStatus.truncationReasons).toContain(
+        "file-size",
+      );
       writeFileSync(
         partialPath,
         JSON.stringify({
@@ -989,15 +996,7 @@ describe("milestone CLI commands", () => {
       );
       expect(
         await main(
-          [
-            "contract-verify",
-            root,
-            "--contract",
-            partialPath,
-            "--max-duration",
-            "0.000001",
-            "--json",
-          ],
+          ["contract-verify", root, "--contract", partialPath, "--json"],
           capture().io,
         ),
       ).toBe(2);
