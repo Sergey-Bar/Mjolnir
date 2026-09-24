@@ -192,7 +192,6 @@ function normalizeCommand(command: string): string {
   while (prefixes.some((prefix) => normalized.startsWith(prefix))) {
     normalized = normalized.slice(normalized.indexOf(" ") + 1).trimStart();
   }
-  if (normalized.startsWith("! ")) normalized = normalized.slice(2);
   normalized = stripEnvironmentAssignments(normalized);
   for (const prefix of ["sudo ", "command ", "exec ", "env "]) {
     if (normalized.startsWith(prefix)) {
