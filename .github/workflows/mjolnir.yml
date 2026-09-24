@@ -30,7 +30,7 @@ jobs:
       - name: Mjölnir diff
         if: always()
         continue-on-error: true
-        run: npx --yes https://registry.npmjs.org/mjolnir-qa/-/mjolnir-qa-2.1.0.tgz diff . > mjolnir-diff.md
+        run: npx --yes https://registry.npmjs.org/mjolnir-qa/-/mjolnir-qa-2.0.2.tgz diff . > mjolnir-diff.md
       - name: Mjölnir verification trust scan
         id: mjolnir
         if: always()
@@ -40,17 +40,19 @@ jobs:
           scope: changed
           format: json
           fail-on: error
-          version: 2.1.0
+          # Bootstrap the release PR with the last published package;
+          # the action default becomes 2.1.0 after npm publication.
+          version: 2.0.2
       # Reporting, not gating: runs even when the scan/gate failed, from
       # the same mjolnir.json the action wrote.
       - name: Annotations + Job Summary
         if: always()
         continue-on-error: true
-        run: npx --yes https://registry.npmjs.org/mjolnir-qa/-/mjolnir-qa-2.1.0.tgz summary mjolnir.json
+        run: npx --yes https://registry.npmjs.org/mjolnir-qa/-/mjolnir-qa-2.0.2.tgz summary mjolnir.json
       - name: Render PR comment
         if: always()
         continue-on-error: true
-        run: npx --yes https://registry.npmjs.org/mjolnir-qa/-/mjolnir-qa-2.1.0.tgz pr-comment . > mjolnir-comment.md
+        run: npx --yes https://registry.npmjs.org/mjolnir-qa/-/mjolnir-qa-2.0.2.tgz pr-comment . > mjolnir-comment.md
       # Best-effort: on a pull_request event from a fork the GITHUB_TOKEN is
       # read-only and this step will 403 for every external contributor. The
       # Job Summary above is the fallback that always renders.
