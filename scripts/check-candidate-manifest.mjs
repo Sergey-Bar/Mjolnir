@@ -43,11 +43,22 @@ const lockHash = createHash("sha256")
 if (packageHash !== manifest.identity.packageSha256) fail("package hash drift");
 if (lockHash !== manifest.identity.lockfileSha256) fail("lockfile hash drift");
 const diff =
-  spawnSync("git", ["diff", "--binary", "HEAD"], {
-    cwd: root,
-    encoding: null,
-    windowsHide: true,
-  }).stdout ?? Buffer.alloc(0);
+  spawnSync(
+    "git",
+    [
+      "diff",
+      "--binary",
+      manifest.identity.baseSha,
+      "--",
+      ".",
+      ":(exclude)candidate-trust-manifest.json",
+    ],
+    {
+      cwd: root,
+      encoding: null,
+      windowsHide: true,
+    },
+  ).stdout ?? Buffer.alloc(0);
 const untracked = spawnSync(
   "git",
   ["ls-files", "--others", "--exclude-standard"],
@@ -67,15 +78,28 @@ const workingTreeHash = createHash("sha256")
   .update(Buffer.concat(treeParts))
   .digest("hex");
 if (workingTreeHash !== manifest.identity.workingTreeSha256) {
-  fail("working-tree hash drift");
+  fail(
+    `working-tree hash drift (expected ${manifest.identity.workingTreeSha256}, received ${workingTreeHash})`,
+  );
 }
 const changedPathCount = new Set(
   [
-    ...spawnSync("git", ["diff", "--name-only", "HEAD"], {
-      cwd: root,
-      encoding: "utf8",
-      windowsHide: true,
-    }).stdout.split(/\r?\n/),
+    ...spawnSync(
+      "git",
+      [
+        "diff",
+        "--name-only",
+        manifest.identity.baseSha,
+        "--",
+        ".",
+        ":(exclude)candidate-trust-manifest.json",
+      ],
+      {
+        cwd: root,
+        encoding: "utf8",
+        windowsHide: true,
+      },
+    ).stdout.split(/\r?\n/),
     ...untracked,
   ].filter(Boolean),
 ).size;
