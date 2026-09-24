@@ -26,7 +26,7 @@ The npm Trusted Publisher Environment must match the workflow exactly. Leave `NO
 
 ## `v2.0.3` decision gate
 
-The existing `v2.0.3` tag points at commit `460c7d71e67d54d667414ff36e6f100d604b6185`, which is not reachable from current `main`, while npm `latest` is `2.0.2`.
+The existing `v2.0.3` tag points at commit `460c7d71e67d54d667414ff36e6f100d604b6185`, which is not reachable from current `main`. Before the 2.1.0 promotion, npm `latest` is `2.0.2`.
 
 Do not delete, move, force-update, or republish `v2.0.3` without an owner decision. The safe options are deliberately separate:
 
@@ -43,11 +43,12 @@ The RC workflow rejects stable versions, so it cannot silently resolve this deci
    ```bash
    git switch main
    git pull --ff-only origin main
-   git switch -c release/v2.0.3
+   git switch -c release/v2.1.0
    ```
 
 2. Prepare a normal version PR:
-   - set the root `package.json` version to `2.0.3-rc.1` or the approved next RC;
+   - set the root `package.json` version to `2.1.0` or the approved next RC;
+   - the historical `2.0.3-rc.1` path remains subject to the decision gate above; do not recreate it without owner approval;
    - add the matching `CHANGELOG.md` heading;
    - update synchronized version surfaces with the existing version scripts;
    - include any reviewed corpus and golden updates;
@@ -96,7 +97,19 @@ A rerun is safe. An existing matching tag is verified, an already-published npm 
 
 ## Stable promotion
 
-Promote an RC to a stable release through a new reviewed version branch and PR. Never move an RC or historical tag to manufacture a stable release. Stable `X.Y.Z` publication remains an explicit owner decision outside the current RC-only workflow.
+Promote an RC to a stable release through a new reviewed version branch and PR. Never move an RC or historical tag to manufacture a stable release. Stable publication remains an explicit owner decision.
+
+Stable `X.Y.Z` publication is explicit and uses `stable-release.yml` from
+`release/vX.Y.Z`. First run a dry-run dispatch, then rerun with dry-run disabled:
+
+```bash
+gh workflow run stable-release.yml --ref release/v2.1.0 -f dry_run=true
+gh workflow run stable-release.yml --ref release/v2.1.0 -f dry_run=false
+```
+
+The stable workflow creates an annotated tag without force, publishes the exact
+audited tarball to npm `latest` with OIDC provenance, and creates or repairs the
+GitHub Release. RC and historical tags are never moved.
 
 ## Verification
 
@@ -151,8 +164,8 @@ No additional lifecycle hook may be added without an equivalent row explaining w
 
 ## Current state
 
-- npm `latest` is **2.0.2**.
-- protected `main`: `1cd81234` at the planning baseline.
-- historical `v2.0.3`: `460c7d71e67d54d667414ff36e6f100d604b6185`, retained pending owner decision; a tag alone is not an installable release.
+- npm `latest` is **2.1.0** after this stable promotion.
+- protected `main`: `3f31ac7e` after PR #538.
+- historical `v2.0.3`: `460c7d71e67d54d667414ff36e6f100d604b6185`, retained unchanged; a tag alone is not an installable release.
 - automatic publishing from `main`: disabled.
-- trusted npm OIDC publication: gated by the `npm-publish` Environment.
+- stable and RC npm publication: gated by their GitHub Environments.

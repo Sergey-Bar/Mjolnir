@@ -41,15 +41,18 @@ describe("mjolnir.yml (the PR feedback loop workflow)", () => {
 
   it("keeps write permissions out of the checkout-backed scan job", () => {
     const wf = loadPrWorkflow();
-    expect(wf.permissions?.["pull-requests"]).toBeUndefined();
-    expect(wf.jobs.scan?.permissions?.["pull-requests"]).toBeUndefined();
-    expect(wf.jobs.publish?.permissions?.["pull-requests"]).toBe("write");
+    expect(wf.permissions).toEqual({ contents: "read" });
+    expect(wf.jobs.scan?.permissions).toEqual({ contents: "read" });
+    expect(wf.jobs.publish?.permissions).toEqual({
+      contents: "read",
+      "pull-requests": "write",
+    });
     expect(wf.jobs.publish?.steps?.some((step) => step.uses === "./")).toBe(
       false,
     );
   });
 
-  it("does not execute a local action or persist checkout credentials", () => {
+  it("checks out full history without credentials or a local action", () => {
     const steps = loadPrWorkflow().jobs.scan?.steps ?? [];
     expect(steps.some((step) => step.uses === "./")).toBe(false);
     const checkout = steps.find((step) =>
@@ -77,6 +80,21 @@ describe("mjolnir.yml (the PR feedback loop workflow)", () => {
     ).not.toContain("mjolnir-qa@latest");
   });
 
+  it("uploads one unified report artifact from the scan job", () => {
+    const steps = loadPrWorkflow().jobs.scan?.steps ?? [];
+    const render = steps.find((step) => step.name === "Render unified report");
+    const upload = steps.find((step) =>
+      step.uses?.startsWith("actions/upload-artifact"),
+    );
+    expect(render?.["continue-on-error"]).toBe(true);
+    expect(render?.run).toContain("<!-- mjolnir-report:v2 -->");
+    expect(upload?.with).toMatchObject({
+      name: "mjolnir-report",
+      path: "mjolnir-comment.md",
+      "if-no-files-found": "error",
+    });
+  });
+
   it("publishes only from the downloaded report artifact", () => {
     const steps = loadPrWorkflow().jobs.publish?.steps ?? [];
     expect(
@@ -91,10 +109,25 @@ describe("mjolnir.yml (the PR feedback loop workflow)", () => {
     const script = steps.find((step) =>
       step.uses?.startsWith("actions/github-script"),
     )?.with?.script;
+    expect(String(script)).toContain("mjolnir-comment.md");
     expect(String(script)).toContain("<!-- mjolnir-report:v2 -->");
     expect(String(script)).toContain("github.paginate");
+    expect(String(script)).toContain("listComments");
     expect(String(script)).toContain("createComment");
     expect(String(script)).toContain("updateComment");
+  });
+
+  it("does not leave dead github.rest.checks references", () => {
+    const jobs = Object.values(loadPrWorkflow().jobs);
+    for (const job of jobs) {
+      for (const step of job.steps ?? []) {
+        const script = step.with?.script;
+        if (typeof script !== "string") continue;
+        if (/github\.rest\.checks\b/u.test(script)) {
+          expect(script).toMatch(/github\.rest\.checks\.\w+\s*\(/u);
+        }
+      }
+    }
   });
 
   it("tolerates analysis exit without a blanket shell true", () => {

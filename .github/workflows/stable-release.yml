@@ -1,0 +1,311 @@
+name: Stable Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Validate and package only; publishing still requires repository approval.
+        required: true
+        default: true
+        type: boolean
+      artifact_run_id:
+        description: Resume publishing from a prior verified run of this workflow.
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: stable-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    if: inputs.artifact_run_id == ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    outputs:
+      artifact-name: ${{ steps.package.outputs.artifact_name }}
+      checksum: ${{ steps.package.outputs.checksum }}
+      commit: ${{ steps.context.outputs.commit }}
+      dry-run: ${{ steps.context.outputs.dry_run }}
+      package-name: ${{ steps.context.outputs.package_name }}
+      tag: ${{ steps.context.outputs.tag }}
+      tag-commit: ${{ steps.context.outputs.tag_commit }}
+      tarball: ${{ steps.package.outputs.tarball }}
+      version: ${{ steps.context.outputs.version }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22.18.0
+          cache: npm
+      - run: npm ci
+      - id: context
+        name: Validate stable release identity
+        shell: bash
+        env:
+          DRY_RUN_INPUT: ${{ inputs.dry_run }}
+        run: |
+          set -euo pipefail
+          VERSION=$(node -p "require('./package.json').version")
+          PACKAGE_NAME=$(node -p "require('./package.json').name")
+          [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || {
+            echo "::error::Stable release requires a package version like 2.1.0"
+            exit 1
+          }
+          TAG="v$VERSION"
+          [[ "$GITHUB_REF_NAME" == "release/v$VERSION" ]] || {
+            echo "::error::Use release/v$VERSION for stable publication"
+            exit 1
+          }
+          grep -F "## [$VERSION]" CHANGELOG.md >/dev/null || {
+            echo "::error::CHANGELOG.md has no $VERSION release heading"
+            exit 1
+          }
+          git fetch --no-tags origin main
+          git merge-base --is-ancestor origin/main HEAD || {
+            echo "::error::Release branch is not descended from protected main"
+            exit 1
+          }
+          TAG_COMMIT=$(git rev-list -n 1 "$TAG" 2>/dev/null || true)
+          if [ -z "$TAG_COMMIT" ]; then
+            TAG_COMMIT=$(git rev-parse HEAD)
+          else
+            git merge-base --is-ancestor "$TAG_COMMIT" HEAD || {
+              echo "::error::$TAG is not an ancestor of the release branch"
+              exit 1
+            }
+          fi
+          {
+            echo "commit=$(git rev-parse HEAD)"
+            echo "tag_commit=$TAG_COMMIT"
+            echo "dry_run=$DRY_RUN_INPUT"
+            echo "package_name=$PACKAGE_NAME"
+            echo "tag=$TAG"
+            echo "version=$VERSION"
+          } >> "$GITHUB_OUTPUT"
+      - name: Materialize and build existing release tag
+        if: steps.context.outputs.tag_commit != steps.context.outputs.commit
+        shell: bash
+        env:
+          TAG_COMMIT: ${{ steps.context.outputs.tag_commit }}
+        run: |
+          set -euo pipefail
+          git checkout --detach "$TAG_COMMIT"
+          test "$(git rev-parse HEAD)" = "$TAG_COMMIT"
+          npm ci
+          npm run build
+      - name: Run release certification
+        run: npm run ci-local
+      - id: package
+        name: Pack and audit the stable release
+        shell: bash
+        env:
+          VERSION: ${{ steps.context.outputs.version }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$GITHUB_WORKSPACE/release-artifact"
+          TARBALL=$(npm pack --ignore-scripts --pack-destination "$RUNNER_TEMP" | tail -n 1)
+          test "$TARBALL" = "mjolnir-qa-$VERSION.tgz"
+          cp "$RUNNER_TEMP/$TARBALL" "$GITHUB_WORKSPACE/release-artifact/$TARBALL"
+          CHECKSUM=$(sha256sum "$GITHUB_WORKSPACE/release-artifact/$TARBALL" | cut -d ' ' -f 1)
+          printf '%s  %s\n' "$CHECKSUM" "$TARBALL" > "$GITHUB_WORKSPACE/release-artifact/$TARBALL.sha256"
+          node scripts/pack-audit.mjs "$GITHUB_WORKSPACE/release-artifact/$TARBALL"
+          SMOKE_DIR=$(mktemp -d)
+          npm install --prefix "$SMOKE_DIR" --ignore-scripts --no-audit --no-fund "$GITHUB_WORKSPACE/release-artifact/$TARBALL"
+          test "$(node "$SMOKE_DIR/node_modules/mjolnir-qa/dist/cli.mjs" --version)" = "mjolnir-qa $VERSION"
+          rm -rf "$SMOKE_DIR"
+          {
+            echo "artifact_name=stable-release-$VERSION"
+            echo "checksum=$CHECKSUM"
+            echo "tarball=$TARBALL"
+          } >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ${{ steps.package.outputs.artifact_name }}
+          path: release-artifact/
+          if-no-files-found: error
+          retention-days: 30
+
+  tag:
+    needs: verify
+    if: needs.verify.outputs.dry-run == 'false' && vars.NPM_PUBLISH == 'true' && inputs.artifact_run_id == ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: release-candidate
+    permissions:
+      contents: write
+    outputs:
+      tag: ${{ steps.identity.outputs.tag }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - id: identity
+        name: Create or verify stable tag
+        shell: bash
+        env:
+          BRANCH_COMMIT: ${{ needs.verify.outputs.commit }}
+          GIT_AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+          GIT_AUTHOR_NAME: github-actions[bot]
+          GIT_COMMITTER_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+          GIT_COMMITTER_NAME: github-actions[bot]
+          TAG: ${{ needs.verify.outputs.tag }}
+          TAG_COMMIT: ${{ needs.verify.outputs.tag-commit }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$BRANCH_COMMIT"
+          if git rev-parse "refs/tags/$TAG" >/dev/null 2>&1; then
+            test "$(git rev-list -n 1 "$TAG")" = "$TAG_COMMIT"
+          else
+            git tag -a "$TAG" -m "$TAG" "$TAG_COMMIT"
+            git push origin "refs/tags/$TAG"
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+  publish-npm:
+    needs: [verify, tag]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: npm-publish
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.tag.outputs.tag }}
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22.18.0
+          registry-url: https://registry.npmjs.org
+      - run: npm install --global npm@11.5.1
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: ${{ needs.verify.outputs.artifact-name }}
+          path: release-artifact
+      - name: Verify and publish artifact
+        shell: bash
+        env:
+          CHECKSUM: ${{ needs.verify.outputs.checksum }}
+          EXPECTED_COMMIT: ${{ needs.verify.outputs.tag-commit }}
+          PACKAGE_NAME: ${{ needs.verify.outputs.package-name }}
+          TARBALL: ${{ needs.verify.outputs.tarball }}
+          VERSION: ${{ needs.verify.outputs.version }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_COMMIT"
+          test "$(sha256sum "release-artifact/$TARBALL" | cut -d ' ' -f 1)" = "$CHECKSUM"
+          if ! npm view "$PACKAGE_NAME@$VERSION" version >/dev/null 2>&1; then
+            npm publish "./release-artifact/$TARBALL" --provenance --ignore-scripts --access public
+          fi
+          test "$(npm view "$PACKAGE_NAME@$VERSION" version)" = "$VERSION"
+          test "$(npm view "$PACKAGE_NAME" dist-tags.latest)" = "$VERSION"
+
+  github-release:
+    needs: [verify, tag, publish-npm]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: ${{ needs.verify.outputs.artifact-name }}
+          path: release-artifact
+      - name: Create or repair stable GitHub Release
+        shell: bash
+        env:
+          CHECKSUM: ${{ needs.verify.outputs.checksum }}
+          GH_REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.tag.outputs.tag }}
+          TARBALL: ${{ needs.verify.outputs.tarball }}
+        run: |
+          set -euo pipefail
+          test "$(sha256sum "release-artifact/$TARBALL" | cut -d ' ' -f 1)" = "$CHECKSUM"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "release-artifact/$TARBALL#$TARBALL" --clobber
+          else
+            gh release create "$TAG" "release-artifact/$TARBALL#$TARBALL" --verify-tag --title "$TAG" --generate-notes
+          fi
+
+  resume-npm:
+    if: inputs.artifact_run_id != '' && vars.NPM_PUBLISH == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: npm-publish
+    permissions:
+      actions: read
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22.18.0
+          registry-url: https://registry.npmjs.org
+      - run: npm install --global npm@11.5.1
+      - name: Download and publish the prior verified artifact
+        shell: bash
+        env:
+          ARTIFACT_RUN_ID: ${{ inputs.artifact_run_id }}
+          GH_REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          [[ "$ARTIFACT_RUN_ID" =~ ^[0-9]+$ ]]
+          VERSION=$(node -p "require('./package.json').version")
+          PACKAGE_NAME=$(node -p "require('./package.json').name")
+          TARBALL="mjolnir-qa-$VERSION.tgz"
+          TAG="v$VERSION"
+          git checkout --detach "$TAG"
+          gh run download "$ARTIFACT_RUN_ID" --name "stable-release-$VERSION" --dir release-artifact
+          (cd release-artifact && sha256sum --check "$TARBALL.sha256")
+          if ! npm view "$PACKAGE_NAME@$VERSION" version >/dev/null 2>&1; then
+            npm publish "./release-artifact/$TARBALL" --provenance --ignore-scripts --access public
+          fi
+          test "$(npm view "$PACKAGE_NAME@$VERSION" version)" = "$VERSION"
+          test "$(npm view "$PACKAGE_NAME" dist-tags.latest)" = "$VERSION"
+
+  resume-release:
+    needs: resume-npm
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      actions: read
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Create or repair stable GitHub Release
+        shell: bash
+        env:
+          ARTIFACT_RUN_ID: ${{ inputs.artifact_run_id }}
+          GH_REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          [[ "$ARTIFACT_RUN_ID" =~ ^[0-9]+$ ]]
+          VERSION=$(node -p "require('./package.json').version")
+          TARBALL="mjolnir-qa-$VERSION.tgz"
+          TAG="v$VERSION"
+          git checkout --detach "$TAG"
+          gh run download "$ARTIFACT_RUN_ID" --name "stable-release-$VERSION" --dir release-artifact
+          (cd release-artifact && sha256sum --check "$TARBALL.sha256")
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "release-artifact/$TARBALL#$TARBALL" --clobber
+          else
+            gh release create "$TAG" "release-artifact/$TARBALL#$TARBALL" --verify-tag --title "$TAG" --generate-notes
+          fi

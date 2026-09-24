@@ -46,7 +46,7 @@ jobs:
         shell: bash
         run: |
           set +e
-          node dist/cli.mjs pr-comment . --scope changed > mjolnir-comment.md
+          node dist/cli.mjs pr-comment --from mjolnir.json > mjolnir-comment.md
           if [ ! -s mjolnir-comment.md ]; then
             printf '<!-- mjolnir-report:v2 -->\n## Mjölnir report unavailable\n\nAnalysis could not be rendered. No clean or worthy claim is made.\n' > mjolnir-comment.md
           fi
