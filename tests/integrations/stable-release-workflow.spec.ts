@@ -88,6 +88,9 @@ describe("stable release workflow", () => {
     expect(source).toContain(
       'gh run download "$ARTIFACT_RUN_ID" --name "stable-release-$VERSION"',
     );
+    expect(source).toContain(
+      "inputs.artifact_run_id != '' && vars.NPM_PUBLISH == 'true'",
+    );
     expect(source).toContain("resume-release:");
   });
 
