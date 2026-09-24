@@ -289,9 +289,10 @@ runs:
       shell: bash
       env:
         MJ_VERSION: ${{ inputs.version }}
+        MJ_COMMIT: ${{ github.sha }}
       run: |
         MJ_PACKAGE="https://registry.npmjs.org/mjolnir-qa/-/mjolnir-qa-${MJ_VERSION}.tgz"
-        npx --yes "$MJ_PACKAGE" pr-comment --from mjolnir.json --version "$MJ_VERSION" > mjolnir-comment.md
+        npx --yes "$MJ_PACKAGE" pr-comment --from mjolnir.json --version "$MJ_VERSION" --commit "$MJ_COMMIT" > mjolnir-comment.md
         echo "file=mjolnir-comment.md" >> "$GITHUB_OUTPUT"
 
     - name: Emit annotations + step summary

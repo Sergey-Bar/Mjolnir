@@ -5,7 +5,15 @@ const root = process.argv[2] ?? process.cwd();
 const manifest = JSON.parse(
   readFileSync(join(root, "candidate-trust-manifest.json"), "utf8"),
 );
+const localStates = Object.values(manifest.evidence?.local ?? {});
+const implementationReady =
+  manifest.identity.state === "WORKING_CANDIDATE" &&
+  localStates.length > 0 &&
+  localStates.every((state) => ["LOCAL_PROVEN", "PARTIAL"].includes(state));
 const blockers = [];
+if (!implementationReady) {
+  blockers.push("local implementation evidence is incomplete");
+}
 if (manifest.identity.candidateSha === null)
   blockers.push("candidate SHA not authorized");
 if (manifest.engineeringCertificationState !== "CERTIFIED") {
@@ -22,6 +30,13 @@ if (manifest.evidence?.remote?.remoteWorkflow !== "REMOTE_PROVEN") {
 }
 const status = blockers.length === 0 ? "READY" : "BLOCKED";
 process.stdout.write(
-  `${JSON.stringify({ status, blockers, manifest: manifest.manifestId })}\n`,
+  `${JSON.stringify({
+    status,
+    implementationStatus: implementationReady
+      ? "IMPLEMENTATION_READY_CANDIDATE_COMMIT_NOT_AUTHORIZED"
+      : "IMPLEMENTATION_BLOCKED",
+    blockers,
+    manifest: manifest.manifestId,
+  })}\n`,
 );
 if (status === "BLOCKED") process.exitCode = 1;

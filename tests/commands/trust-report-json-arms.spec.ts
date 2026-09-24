@@ -203,4 +203,26 @@ describe("renderTrustReportJson — nextAction + evidence arms", () => {
     expect(j.tests.files).toBe(0);
     expect(j.tests.declarations).toBe(0);
   });
+
+  it("includes completion, scope, and verdict fields", () => {
+    const j = JSON.parse(
+      renderTrustReportJson(
+        result({
+          partial: true,
+          score: 99,
+          analysisStatus: {
+            discovery: "partial",
+            rules: "partial",
+            skippedFiles: 1,
+            durationMs: 1,
+            reasons: ["runtime-incomplete"],
+          },
+        }),
+      ),
+    ) as Record<string, unknown>;
+    expect(j["partial"]).toBe(true);
+    expect(j["verdict"]).toBe("INCOMPLETE");
+    expect(j["analysisStatus"]).toMatchObject({ discovery: "partial" });
+    expect(j["scopeIntegrity"]).toBeNull();
+  });
 });

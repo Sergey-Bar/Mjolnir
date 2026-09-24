@@ -58,6 +58,8 @@ describe("action.yml Trust Report consumption (WI-9, plan §13)", () => {
       (s) => s.name === "Generate unified PR report",
     );
     expect(gen?.run).toContain("pr-comment --from mjolnir.json");
+    expect(gen?.run).toContain('--commit "$MJ_COMMIT"');
+    expect(gen?.env?.["MJ_COMMIT"]).toBe("${{ github.sha }}");
     expect(gen?.if).toContain(
       "inputs.annotations == 'true' || inputs.pr-comment == 'true' ||",
     );

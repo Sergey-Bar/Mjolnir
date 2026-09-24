@@ -240,6 +240,8 @@ describe("root action.yml (Marketplace surface) is locked", () => {
   it("publishes one unified v2 report from the saved JSON artifact", () => {
     expect(ACTION).not.toContain("Generate Trust Report");
     expect(ACTION).toContain("pr-comment --from mjolnir.json");
+    expect(ACTION).toContain('--commit "$MJ_COMMIT"');
+    expect(ACTION).toContain("${{ github.sha }}");
     expect(ACTION).toContain("<!-- mjolnir-report:v2 -->");
     expect(ACTION).not.toContain("mjolnir-trust-report:v1");
     expect(action.inputs["trust-artifact"]?.default).toBe("false");

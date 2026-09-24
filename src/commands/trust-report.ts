@@ -342,6 +342,15 @@ export function renderTrustReportJson(
   commit?: string | null,
 ): string {
   const s = fallbackSummary(result);
+  const completionVerdict =
+    result.partial ||
+    result.analysisStatus.discovery !== "complete" ||
+    result.analysisStatus.rules !== "complete" ||
+    (result.analysisStatus.rulesCrashed ?? 0) > 0
+      ? "INCOMPLETE"
+      : result.score === null
+        ? "UNKNOWN"
+        : "COMPLETE";
   return (
     JSON.stringify(
       {
@@ -360,6 +369,10 @@ export function renderTrustReportJson(
           ceilingReasons: s.ceilingReasons,
         },
         score: result.score,
+        partial: result.partial,
+        analysisStatus: result.analysisStatus,
+        scopeIntegrity: result.scopeIntegrity ?? null,
+        verdict: completionVerdict,
         tests: {
           files: result.testFileCount ?? 0,
           declarations: result.testDeclarationCount ?? 0,

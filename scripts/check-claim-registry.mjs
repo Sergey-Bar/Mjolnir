@@ -10,10 +10,37 @@ if (registry.schemaVersion !== 1 || !Array.isArray(registry.claims)) {
 }
 const pkg = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
 const version = pkg.version;
+const manifest = JSON.parse(
+  readFileSync(join(root, "candidate-trust-manifest.json"), "utf8"),
+);
+if (manifest.identity?.version !== version) {
+  throw new Error(
+    `candidate manifest version ${manifest.identity?.version} does not match package ${version}`,
+  );
+}
 for (const claim of registry.claims) {
+  for (const field of [
+    "implementation",
+    "tests",
+    "corpus",
+    "benchmark",
+    "candidateProof",
+    "authority",
+    "expiry",
+    "state",
+  ]) {
+    if (!(field in claim)) throw new Error(`${claim.id}: missing ${field}`);
+  }
   for (const source of [claim.valueSource, ...claim.relatedSources]) {
     if (!existsSync(join(root, source))) {
       throw new Error(`${claim.id}: missing source ${source}`);
+    }
+  }
+  for (const field of ["implementation", "tests", "corpus"]) {
+    for (const source of claim[field]) {
+      if (source !== "N/A" && !existsSync(join(root, source))) {
+        throw new Error(`${claim.id}: missing ${field} evidence ${source}`);
+      }
     }
   }
   if (claim.id === "support-envelope-version") {

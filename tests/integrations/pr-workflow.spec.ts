@@ -10,6 +10,7 @@ interface WorkflowStep {
   run?: string;
   uses?: string;
   with?: Record<string, unknown>;
+  env?: Record<string, string>;
   if?: boolean | string;
   "continue-on-error"?: boolean;
 }
@@ -87,6 +88,8 @@ describe("mjolnir.yml (the PR feedback loop workflow)", () => {
       step.uses?.startsWith("actions/upload-artifact"),
     );
     expect(render?.["continue-on-error"]).toBe(true);
+    expect(render?.run).toContain('--commit "$MJ_COMMIT"');
+    expect(render?.env?.["MJ_COMMIT"]).toBe("${{ github.sha }}");
     expect(render?.run).toContain("<!-- mjolnir-report:v2 -->");
     expect(upload?.with).toMatchObject({
       name: "mjolnir-report",
