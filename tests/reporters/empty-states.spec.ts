@@ -173,7 +173,7 @@ describe("dead end: zero findings (flawless victory)", () => {
     const out = renderTerminal(scanResult({ score: 100, findings: [] }), {
       isTTY: false,
     });
-    expect(out).toMatch(/FLAWLESS VICTORY|zero findings/i);
+    expect(out).toMatch(/ZERO FINDINGS \(STATIC\)|zero findings/i);
   });
 });
 

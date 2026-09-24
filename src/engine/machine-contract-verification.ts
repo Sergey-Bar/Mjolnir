@@ -12,24 +12,55 @@
  * be deterministic.
  */
 
+import { isDeepStrictEqual } from "node:util";
+
 import type { ScanResult } from "../types.js";
-import { CONTRACT_VERSION } from "./machine-contract.js";
+import {
+  buildMachineContract,
+  CONTRACT_VERSION,
+  type MachineCompleteness,
+  type MachineContract,
+} from "./machine-contract.js";
+
+export type VerifiableMachineContract = Omit<
+  MachineContract,
+  "contractVersion"
+> & {
+  contractVersion: number;
+};
 
 export interface ContractVerificationResult {
   passed: boolean;
   contractVersion: number;
   violations: string[];
   digestMatch: boolean;
+  summaryMatch: boolean;
   completenessCheck: string[];
   trustSummaryMatch: boolean;
+  provenanceMatch: boolean;
+  forensicVerdictsMatch: boolean;
+  annotationsMatch: boolean;
   evidenceIntegrity: boolean;
+  checks: ContractIntegrityCheck[];
   summary: { findings: number; score: number | null };
+  freshScanMatch?: boolean;
+  artifactResultMatch?: boolean;
 }
 
 export interface ContractIntegrityCheck {
   name: string;
   status: "pass" | "fail" | "warn";
   detail: string;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function optionalDeepEqual(actual: unknown, expected: unknown): boolean {
+  return actual === undefined && expected === undefined
+    ? true
+    : isDeepStrictEqual(actual, expected);
 }
 
 /**
@@ -39,33 +70,103 @@ export interface ContractIntegrityCheck {
  */
 export function verifyMachineContract(
   result: ScanResult,
-  _declarationsByFile: ReadonlyMap<string, number>,
+  contract: VerifiableMachineContract = buildMachineContract(result),
 ): ContractVerificationResult {
   const violations: string[] = [];
   const checks: ContractIntegrityCheck[] = [];
+  const expected = buildMachineContract(result);
+  const contractRecord: Record<string, unknown> = isRecord(contract)
+    ? contract
+    : (Object.create(null) as Record<string, unknown>);
+  const contractVersion =
+    typeof contractRecord.contractVersion === "number"
+      ? contractRecord.contractVersion
+      : 0;
 
   // 1. Verify contract version
-  const contractVersion = CONTRACT_VERSION;
+  const versionMatches = contractVersion === CONTRACT_VERSION;
+  if (!versionMatches) {
+    violations.push(`Unsupported contract version ${contractVersion}`);
+  }
   checks.push({
     name: "contract-version",
-    status: "pass",
-    detail: `Contract version ${contractVersion} confirmed`,
+    status: versionMatches ? "pass" : "fail",
+    detail: versionMatches
+      ? `Contract version ${contractVersion} confirmed`
+      : `Unsupported contract version ${contractVersion}`,
   });
 
   // 2. Verify digest integrity
-  const digestMatch = true; // Digest is computed from the same result
+  const suppliedSummary = contractRecord.summary;
+  const digestMatch =
+    isRecord(suppliedSummary) &&
+    suppliedSummary.digest === expected.summary.digest;
+  if (!digestMatch) {
+    violations.push("Machine contract digest mismatch");
+  }
   checks.push({
     name: "digest-integrity",
-    status: "pass",
-    detail: "Digest matches scan result",
+    status: digestMatch ? "pass" : "fail",
+    detail: digestMatch
+      ? "Digest matches scan result"
+      : "Digest does not match scan result",
+  });
+  const summaryMatch = isDeepStrictEqual(suppliedSummary, expected.summary);
+  if (!summaryMatch) {
+    violations.push("Machine contract summary mismatch");
+  }
+  checks.push({
+    name: "summary",
+    status: summaryMatch ? "pass" : "fail",
+    detail: summaryMatch
+      ? "Summary matches scan result"
+      : "Summary does not match scan result",
   });
 
   // 3. Verify trust summary consistency
-  const trustSummaryMatch = true;
+  const trustSummaryMatch = optionalDeepEqual(
+    contractRecord.trustSummary,
+    expected.trustSummary,
+  );
+  if (!trustSummaryMatch) {
+    violations.push("Trust summary mismatch");
+  }
   checks.push({
     name: "trust-summary",
-    status: "pass",
-    detail: "Trust summary consistent with contract",
+    status: trustSummaryMatch ? "pass" : "fail",
+    detail: trustSummaryMatch
+      ? "Trust summary consistent with contract"
+      : "Trust summary does not match scan result",
+  });
+
+  const provenanceMatch = optionalDeepEqual(
+    contractRecord.provenance,
+    expected.provenance,
+  );
+  if (!provenanceMatch) {
+    violations.push("Provenance mismatch");
+  }
+  checks.push({
+    name: "provenance",
+    status: provenanceMatch ? "pass" : "fail",
+    detail: provenanceMatch
+      ? "Provenance matches scan result"
+      : "Provenance does not match scan result",
+  });
+
+  const forensicVerdictsMatch = optionalDeepEqual(
+    contractRecord.forensicVerdicts,
+    expected.forensicVerdicts,
+  );
+  if (!forensicVerdictsMatch) {
+    violations.push("Forensic verdicts mismatch");
+  }
+  checks.push({
+    name: "forensic-verdicts",
+    status: forensicVerdictsMatch ? "pass" : "fail",
+    detail: forensicVerdictsMatch
+      ? "Forensic verdicts match scan result"
+      : "Forensic verdicts do not match scan result",
   });
 
   // 4. Verify evidence integrity
@@ -86,7 +187,11 @@ export function verifyMachineContract(
   }
 
   // 5. Verify completeness fields
-  const completenessCheck = verifyCompleteness(result);
+  const completenessCheck = verifyCompleteness(
+    result,
+    contractRecord.completeness,
+    expected.completeness,
+  );
   if (completenessCheck.length > 0) {
     violations.push(...completenessCheck);
     checks.push({
@@ -103,31 +208,36 @@ export function verifyMachineContract(
   }
 
   // 6. Verify annotations match findings
-  const findingCount = result.findings.length;
-  const annotationsMatch = true;
+  const findingCount = Array.isArray(result.findings)
+    ? result.findings.length
+    : 0;
+  const annotationsMatch =
+    isDeepStrictEqual(contractRecord.annotations, expected.annotations) &&
+    contractRecord.annotationsTruncated === expected.annotationsTruncated;
   if (!annotationsMatch) {
-    violations.push("Annotation count does not match finding count");
-    checks.push({
-      name: "annotations",
-      status: "fail",
-      detail: `Expected ${findingCount} annotations`,
-    });
-  } else {
-    checks.push({
-      name: "annotations",
-      status: "pass",
-      detail: "Annotation count matches findings",
-    });
+    violations.push("Annotation projection mismatch");
   }
+  checks.push({
+    name: "annotations",
+    status: annotationsMatch ? "pass" : "fail",
+    detail: annotationsMatch
+      ? `Expected ${findingCount} annotation(s)`
+      : `Expected ${expected.annotations.length} annotation(s)`,
+  });
 
   return {
     passed: violations.length === 0,
     contractVersion,
     violations,
     digestMatch,
+    summaryMatch,
     completenessCheck,
     trustSummaryMatch,
+    provenanceMatch,
+    forensicVerdictsMatch,
+    annotationsMatch,
     evidenceIntegrity,
+    checks,
     summary: {
       findings: findingCount,
       score: result.score,
@@ -136,19 +246,39 @@ export function verifyMachineContract(
 }
 
 function verifyEvidenceIntegrity(result: ScanResult): boolean {
+  if (!Array.isArray(result.findings)) return false;
   for (const finding of result.findings) {
-    if (!finding.ruleId || !finding.file) {
+    if (
+      !finding.ruleId ||
+      !finding.file ||
+      !finding.message ||
+      !Number.isInteger(finding.line) ||
+      finding.line < 1 ||
+      !Number.isInteger(finding.column) ||
+      finding.column < 1
+    ) {
       return false;
     }
   }
   return true;
 }
 
-function verifyCompleteness(result: ScanResult): string[] {
+function verifyCompleteness(
+  result: ScanResult,
+  completeness: unknown,
+  expected: MachineCompleteness,
+): string[] {
   const violations: string[] = [];
 
-  if (result.partial !== result.partial) {
+  if (!isRecord(completeness)) {
+    return ["Missing completeness"];
+  }
+  const supplied = completeness as unknown as MachineCompleteness;
+  if (supplied.partial !== result.partial) {
     violations.push("Partial flag mismatch");
+  }
+  if (!isDeepStrictEqual(supplied, expected)) {
+    violations.push("Completeness projection mismatch");
   }
   if (!result.analysisStatus) {
     violations.push("Missing analysisStatus");
@@ -165,8 +295,18 @@ export function renderContractVerification(
   lines.push(`Result: ${result.passed ? "PASSED" : "FAILED"}`);
   lines.push(`Contract Version: ${result.contractVersion}`);
   lines.push(`Digest Match: ${result.digestMatch}`);
+  lines.push(`Summary Match: ${result.summaryMatch}`);
   lines.push(`Trust Summary Match: ${result.trustSummaryMatch}`);
+  lines.push(`Provenance Match: ${result.provenanceMatch}`);
+  lines.push(`Forensic Verdicts Match: ${result.forensicVerdictsMatch}`);
+  lines.push(`Annotations Match: ${result.annotationsMatch}`);
   lines.push(`Evidence Integrity: ${result.evidenceIntegrity}`);
+  if (result.freshScanMatch !== undefined) {
+    lines.push(`Fresh Scan Match: ${result.freshScanMatch}`);
+  }
+  if (result.artifactResultMatch !== undefined) {
+    lines.push(`Artifact Result Match: ${result.artifactResultMatch}`);
+  }
   lines.push(`Findings: ${result.summary.findings}`);
   lines.push(`Score: ${result.summary.score}`);
   lines.push("");

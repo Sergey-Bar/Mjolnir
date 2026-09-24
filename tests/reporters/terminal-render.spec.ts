@@ -266,7 +266,7 @@ describe("score instrument layout", () => {
       isTTY: false,
       ascii: true,
     });
-    expect(ascii).toContain("*** FLAWLESS VICTORY ***");
+    expect(ascii).toContain("*** ZERO FINDINGS (STATIC) ***");
     expect(ascii).toContain("zero findings");
     const unicode = renderTerminal(scan({ score: 100 }), {
       isTTY: false,
@@ -275,12 +275,14 @@ describe("score instrument layout", () => {
     expect(unicode).toContain("F O R G E D");
     expect(unicode).toContain("'._==_==_=_.'");
     expect(unicode).toContain("zero findings");
-    expect(unicode).not.toContain("*** FLAWLESS VICTORY ***");
+    expect(unicode).not.toContain("*** ZERO FINDINGS (STATIC) ***");
   });
 
   it("the forged headline is the deterministic zero-findings template", () => {
     const out = renderTerminal(scan({ score: 100 }), { isTTY: false });
-    expect(out).toContain("Forged complete. Zero findings.");
+    expect(out).toContain(
+      "Static score 100 — no findings on the analyzed surface.",
+    );
   });
 });
 

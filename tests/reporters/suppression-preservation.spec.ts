@@ -103,14 +103,14 @@ describe("Preservation: Terminal Output Unchanged for Non-Suppression Cases", ()
    * test-locked in terminal-render.spec.ts). Relying on shouldUseAscii()
    * made this platform-dependent: win32 defaults to ASCII, Linux CI does not.
    */
-  it("property: FLAWLESS VICTORY appears for score=100 with zero findings and no suppressions", () => {
+  it("property: the static zero-findings marker appears for score=100 with no suppressions", () => {
     // Test with undefined suppressionCount
     const resultUndefined = makeResult({ score: 100, findings: [] });
     const outputUndefined = renderTerminal(resultUndefined, {
       isTTY: false,
       ascii: true,
     });
-    expect(outputUndefined).toContain("*** FLAWLESS VICTORY ***");
+    expect(outputUndefined).toContain("*** ZERO FINDINGS (STATIC) ***");
 
     // Test with suppressionCount = 0
     const resultZero = makeResult({
@@ -122,7 +122,7 @@ describe("Preservation: Terminal Output Unchanged for Non-Suppression Cases", ()
       isTTY: false,
       ascii: true,
     });
-    expect(outputZero).toContain("*** FLAWLESS VICTORY ***");
+    expect(outputZero).toContain("*** ZERO FINDINGS (STATIC) ***");
 
     // Unicode mode: the FORGED wordmark block replaces the bare line —
     // the victory state must appear in BOTH modes.

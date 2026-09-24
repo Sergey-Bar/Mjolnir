@@ -1,7 +1,7 @@
 /**
- * Pure release-bump decision logic for the auto-release path (merge to
- * `main` → publish with zero manual commands — see docs/PUBLISHING.md,
- * "Automated release (default path)").
+ * Pure release-bump decision logic retained for planning/reporting tools.
+ * It does not publish, version, tag, or update any branch. Release Candidate
+ * publishing is approval-gated in .github/workflows/release.yml.
  *
  * Input: the commit subjects since the last release tag, plus an async
  * labels-lookup function (injected so the decision is unit-testable

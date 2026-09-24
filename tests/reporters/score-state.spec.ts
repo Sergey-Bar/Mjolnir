@@ -101,7 +101,7 @@ describe("headline templates are deterministic and self-consistent", () => {
     // The forged headline has no placeholder — it already says zero.
     const forged = deriveScoreState(100);
     expect(headlineFor(forged, 0)).toBe(
-      "Forged complete. Zero findings. The suite is clean.",
+      "Static score 100 — no findings on the analyzed surface.",
     );
   });
 });

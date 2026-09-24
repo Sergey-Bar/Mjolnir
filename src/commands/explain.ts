@@ -580,7 +580,7 @@ export function renderVerdictExplain(
       ? "re-run with a higher --max-duration to close the truncated surface"
       : errors > 0
         ? "mjolnir triage <test-results-dir-or-report> — then fix the top trust risk"
-        : "keep the gate green (mjolnir ci install)",
+        : "no findings on the analyzed surface — install advisory CI and re-scan the changed scope",
   );
   lines.push("");
   return lines.join("\n");

@@ -8,15 +8,11 @@ import {
 } from "../src/engine/framework-maturity.js";
 
 describe("M5: Framework Maturity Tracking for Playwright", () => {
-  it("should pass CI validation", () => {
-    expect(true).toBe(true);
-  });
-
   it("should get Playwright maturity progress", () => {
     const progress = getPlaywrightMaturity();
     expect(progress.frameworkId).toBe("playwright");
     expect(progress.currentMaturity).toBeDefined();
-    expect(progress.targetMaturity).toBe("F6");
+    expect(progress.targetMaturity).toBe("F5");
     expect(progress.progressPercentage).toBeGreaterThanOrEqual(0);
     expect(progress.progressPercentage).toBeLessThanOrEqual(100);
   });

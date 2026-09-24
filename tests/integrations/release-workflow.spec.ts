@@ -1,377 +1,271 @@
-/**
- * release.yml review (Master-Stabilization-Plan Sprint 4, Task 18).
- *
- * Asserts the workflow is valid YAML and that the npm-publish step is
- * *intentionally* gated off (if: false), not accidentally live — a
- * publish to the parked/wrong npm name would be a real, damaging
- * mistake (see docs/plans/Master-Stabilization-Plan.md §5).
- *
- * Auto-NPM-Release plan (2026-09-05): extended for the two-job shape —
- * a `version` job (auto-release brain: label-driven bump, CHANGELOG
- * collapse, bot commit + tag) ahead of the `release` job (the publish
- * pipeline, byte-identical). The one-workflow-file constraint is hard:
- * npmjs.com's Trusted Publisher matches the workflow FILENAME, so a
- * second file would fail OIDC with ENEEDAUTH.
- */
-
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { parse } from "yaml";
 
-const ROOT = join(import.meta.dirname, "..", "..");
+const root = join(import.meta.dirname, "..", "..");
+const path = join(root, ".github", "workflows", "release.yml");
+const source = readFileSync(path, "utf8");
 
-interface WorkflowStep {
+interface Step {
+  id?: string;
   name?: string;
   run?: string;
   uses?: string;
-  if?: boolean | string;
+  if?: string;
   with?: Record<string, unknown>;
   env?: Record<string, string>;
+  needs?: string | string[];
 }
 
-interface WorkflowJob {
-  permissions?: Record<string, string>;
-  steps?: WorkflowStep[];
+interface Job {
   if?: string;
   needs?: string | string[];
+  environment?: string;
+  permissions?: Record<string, string>;
   outputs?: Record<string, string>;
+  env?: Record<string, string>;
+  steps?: Step[];
 }
 
 interface Workflow {
-  on?: Record<string, unknown>;
-  jobs: Record<string, WorkflowJob>;
+  on: {
+    push?: { branches?: string[]; tags?: string[] };
+    workflow_dispatch?: {
+      inputs?: Record<string, { default?: boolean; type?: string }>;
+    };
+  };
+  permissions: Record<string, string>;
+  jobs: Record<string, Job>;
 }
 
-function loadReleaseWorkflow(): Workflow {
-  const text = readFileSync(
-    join(ROOT, ".github", "workflows", "release.yml"),
-    "utf8",
-  );
-  return parse(text) as Workflow;
+const workflow = parse(source) as Workflow;
+const steps = (job: string): Step[] => workflow.jobs[job]?.steps ?? [];
+
+function stepIndex(job: string, predicate: (step: Step) => boolean): number {
+  return steps(job).findIndex(predicate);
 }
 
-describe("release.yml", () => {
-  it("parses as valid YAML", () => {
-    expect(() => loadReleaseWorkflow()).not.toThrow();
+describe("release candidate workflow", () => {
+  it("parses and defaults every manual run to dry-run", () => {
+    expect(workflow.on.workflow_dispatch?.inputs?.dry_run).toEqual({
+      default: true,
+      required: true,
+      type: "boolean",
+      description:
+        "Validate and package only; publishing still requires repository approval.",
+    });
+    expect(workflow.permissions).toEqual({ contents: "read" });
   });
 
-  it("has a release job", () => {
-    const wf = loadReleaseWorkflow();
-    expect(wf.jobs.release).toBeDefined();
+  it("never auto-releases from main", () => {
+    expect(workflow.on.push?.branches).toBeUndefined();
+    expect(workflow.on.push?.tags).toEqual(["v*-rc.*"]);
+    expect(source).not.toContain("refs/heads/main");
+    expect(source).not.toContain("git push origin main");
+    expect(workflow.jobs.version).toBeUndefined();
   });
 
-  it("creates a GitHub Release with the packed tarball attached", () => {
-    const wf = loadReleaseWorkflow();
-    const steps = wf.jobs.release?.steps ?? [];
+  it("validates RC identity, tag, changelog, and protected-main ancestry", () => {
+    const validation = steps("verify").find(
+      (step) => step.name === "Validate release identity",
+    )?.run;
+
+    expect(validation).toContain("^[0-9]+\\.[0-9]+\\.[0-9]+-rc\\.[0-9]+$");
+    expect(validation).toContain('git cat-file -t "refs/tags/$TAG"');
+    expect(validation).toContain('"$REF_NAME" == "release/v$BASE_VERSION"');
+    expect(validation).toContain('"## [$BASE_VERSION]" CHANGELOG.md');
+    expect(validation).toContain(
+      "git merge-base --is-ancestor origin/main HEAD",
+    );
+    expect(validation).not.toContain("git push");
+  });
+
+  it("builds, certifies, packs once, audits, and uploads the candidate", () => {
     expect(
-      steps.some((s) => s.uses?.startsWith("softprops/action-gh-release")),
+      steps("verify").some((step) => step.run === "npm run ci-local"),
     ).toBe(true);
+    const pack = stepIndex("verify", (step) =>
+      (step.run ?? "").includes("npm pack"),
+    );
+    const audit = stepIndex("verify", (step) =>
+      (step.run ?? "").includes("scripts/pack-audit.mjs"),
+    );
+    const upload = stepIndex(
+      "verify",
+      (step) => step.uses?.startsWith("actions/upload-artifact") === true,
+    );
+    expect(pack).toBeGreaterThanOrEqual(0);
+    expect(audit).toBeGreaterThanOrEqual(pack);
+    expect(upload).toBeGreaterThan(audit);
+    expect(steps("verify")[pack]?.run).toContain("npm pack --ignore-scripts");
+    expect(steps("verify")[pack]?.run).toContain("sha256sum");
   });
 
-  it("the npm publish step exists and is gated behind an explicit opt-in variable, never unconditional", () => {
-    const wf = loadReleaseWorkflow();
-    const steps = wf.jobs.release?.steps ?? [];
-    const publishStep = steps.find((s) => s.run?.includes("npm publish"));
-    expect(
-      publishStep,
-      "expected a documented npm publish step — Task 18 requires writing " +
-        "it, not omitting it entirely",
-    ).toBeDefined();
-    // The gate must be present and must reference a repo variable — never
-    // absent (which would publish on every tag), and never a bare boolean
-    // literal that a copy-paste could flip to `true` with OIDC not set up,
-    // failing the release job.
-    expect(
-      typeof publishStep?.if === "string" &&
-        /vars\.NPM_PUBLISH\s*==\s*'true'/.test(publishStep.if),
-      `npm publish must be gated on \`vars.NPM_PUBLISH == 'true'\` so it ` +
-        `only runs once the npmjs.com OIDC trusted-publisher setup is ` +
-        `done (see docs/PUBLISHING.md). Found: ${JSON.stringify(publishStep?.if)}`,
-    ).toBe(true);
+  it("requires explicit repository approval before creating a tag", () => {
+    const job = workflow.jobs.tag;
+    expect(job?.environment).toBe("release-candidate");
+    expect(job?.permissions).toEqual({ contents: "write" });
+    expect(job?.if).toContain("needs.verify.outputs.dry-run == 'false'");
+    expect(job?.if).toContain("vars.NPM_PUBLISH == 'true'");
+    expect(job?.outputs).toEqual({
+      commit:
+        "${{ steps.identity.outputs.commit || steps.verify.outputs.commit }}",
+      tag: "${{ steps.identity.outputs.tag || steps.verify.outputs.tag }}",
+    });
+
+    const checkout = steps("tag").find((step) =>
+      step.uses?.startsWith("actions/checkout"),
+    );
+    expect(checkout?.with?.["persist-credentials"]).toBe(true);
+    const tagRun = steps("tag")
+      .map((step) => step.run ?? "")
+      .join("\n");
+    expect(tagRun).toContain('git tag -a "$TAG"');
+    expect(tagRun).toContain('git push origin "refs/tags/$TAG"');
+    expect(tagRun).not.toContain("--force");
   });
 
-  it("publishes with --provenance (verifiable attestation), not a bare publish", () => {
-    const wf = loadReleaseWorkflow();
-    const steps = wf.jobs.release?.steps ?? [];
-    const publishStep = steps.find((s) => s.run?.includes("npm publish"));
+  it("verifies an existing tag points to the verified commit", () => {
+    const verify = steps("tag").find((step) => step.id === "verify");
+    expect(verify?.env?.EXPECTED_COMMIT).toBe(
+      "${{ needs.verify.outputs.commit }}",
+    );
+    expect(verify?.run).toContain(
+      'test "$(git rev-list -n 1 "$EXPECTED_TAG")" = "$EXPECTED_COMMIT"',
+    );
+  });
+
+  it("publishes the audited tarball through npm trusted publishing", () => {
+    const job = workflow.jobs["publish-npm"];
+    expect(job?.environment).toBe("npm-publish");
+    expect(job?.permissions).toEqual({
+      contents: "read",
+      "id-token": "write",
+    });
+    expect(job?.needs).toEqual(["verify", "tag"]);
+    expect(job?.env?.NPM_CONFIG_USERCONFIG).toBe("/dev/null");
+
+    const upgrade = stepIndex("publish-npm", (step) =>
+      (step.run ?? "").includes("npm install --global npm@"),
+    );
+    const publish = stepIndex("publish-npm", (step) =>
+      (step.run ?? "").includes("npm publish"),
+    );
+    expect(upgrade).toBeGreaterThanOrEqual(0);
+    expect(upgrade).toBeLessThan(publish);
+    expect(steps("publish-npm")[upgrade]?.run).toContain("npm@11.5.1");
+
+    const publishStep = steps("publish-npm")[publish];
+    expect(publishStep?.env?.TARBALL).toBe(
+      "${{ needs.verify.outputs.tarball }}",
+    );
+    expect(publishStep?.run).toContain(
+      'npm publish "release-artifact/$TARBALL"',
+    );
+    expect(publishStep?.run).toContain("--tag next");
     expect(publishStep?.run).toContain("--provenance");
+    expect(publishStep?.run).toContain("--ignore-scripts");
+    const commands = steps("publish-npm").map((step) => step.run ?? "");
+    expect(commands.join("\n")).not.toContain("npm run build");
+    expect(commands.join("\n")).not.toContain("npm ci");
+    expect(commands.join("\n")).toContain("sha256sum");
   });
 
-  it("publishes the persisted audited tarball without lifecycle rebuilds", () => {
-    const steps = loadReleaseWorkflow().jobs.release?.steps ?? [];
-    const auditAt = steps.findIndex((s) =>
-      s.run?.includes("scripts/pack-audit.mjs"),
-    );
-    const publishAt = steps.findIndex((s) => s.run?.includes("npm publish"));
-    const audit = steps[auditAt]?.run ?? "";
-    expect(auditAt).toBeGreaterThanOrEqual(0);
-    expect(publishAt).toBeGreaterThan(auditAt);
-    expect(audit).toContain('node scripts/pack-audit.mjs "$TARBALL"');
-    expect(audit).toContain('echo "TARBALL=$TARBALL" >> "$GITHUB_ENV"');
-    expect(steps[publishAt]?.run).toContain('npm publish "$TARBALL"');
-    expect(steps[publishAt]?.run).toContain("--ignore-scripts");
-    const install = steps.find((s) =>
-      s.run?.includes("tests/integrations/registry-install.spec.ts"),
-    );
-    expect(install?.env?.REGISTRY_INSTALL_TARBALL).toBe("${{ env.TARBALL }}");
-    for (const step of steps.slice(auditAt + 1, publishAt)) {
-      expect(step.run ?? "").not.toMatch(/^\s*(?:export\s+)?TARBALL=/m);
-      expect(step.run ?? "").not.toContain("npm run build");
+  it("normalizes the multi-directory artifact extraction", () => {
+    for (const job of ["publish-npm", "github-release"]) {
+      const download = steps(job).find((step) =>
+        step.uses?.startsWith("actions/download-artifact"),
+      );
+      expect(download?.with?.path).toBe(".");
     }
   });
 
-  it("declares id-token: write for future OIDC provenance publishing", () => {
-    const wf = loadReleaseWorkflow();
-    expect(wf.jobs.release?.permissions?.["id-token"]).toBe("write");
-  });
-
-  it("the publish step uses --provenance", () => {
-    const wf = loadReleaseWorkflow();
-    const steps = wf.jobs.release?.steps ?? [];
-    const publishStep = steps.find((s) => s.run?.includes("npm publish"));
-    expect(publishStep?.run).toContain("--provenance");
-  });
-
-  it("verifies the git tag matches package.json's version before releasing", () => {
-    const wf = loadReleaseWorkflow();
-    const steps = wf.jobs.release?.steps ?? [];
-    expect(
-      steps.some(
-        (s) =>
-          s.run?.includes("package.json") && s.run?.includes("RELEASE_TAG"),
-      ),
-    ).toBe(true);
-  });
-
-  // ── Ordering: publish before Release ────────────────────────────────
-  //
-  // v0.5.0 shipped a public "Latest" GitHub Release for a version npm
-  // never received: the gh-release step ran first and succeeded, then the
-  // publish step failed. A GitHub Release is a promise that `npm i` works,
-  // so it must not be created until that is true. These three tests lock
-  // the ordering, the verification gate, and the retry trigger.
-
-  function stepIndex(
-    steps: WorkflowStep[],
-    predicate: (s: WorkflowStep) => boolean,
-  ): number {
-    return steps.findIndex(predicate);
-  }
-
-  it("publishes to npm BEFORE creating the GitHub Release", () => {
-    const steps = loadReleaseWorkflow().jobs.release?.steps ?? [];
-    const publishAt = stepIndex(steps, (s) => !!s.run?.includes("npm publish"));
-    const releaseAt = stepIndex(
-      steps,
-      (s) => !!s.uses?.startsWith("softprops/action-gh-release"),
+  it("creates or reconciles the GitHub prerelease only after npm succeeds", () => {
+    expect(workflow.jobs["github-release"]?.needs).toEqual([
+      "verify",
+      "tag",
+      "publish-npm",
+    ]);
+    expect(workflow.jobs["github-release"]?.permissions).toEqual({
+      contents: "write",
+    });
+    const reconcile = steps("github-release").find(
+      (step) => step.name === "Reconcile immutable GitHub Release",
     );
-    expect(publishAt, "no npm publish step found").toBeGreaterThanOrEqual(0);
-    expect(releaseAt, "no gh-release step found").toBeGreaterThanOrEqual(0);
-    expect(
-      publishAt,
-      "npm publish must run before the GitHub Release is created — " +
-        "otherwise a failed publish still leaves a public Release " +
-        "advertising a version nobody can install (v0.5.0 did exactly this)",
-    ).toBeLessThan(releaseAt);
+    expect(reconcile?.env?.GH_REPO).toBe("${{ github.repository }}");
+    expect(reconcile?.env?.CHECKSUM).toBe(
+      "${{ needs.verify.outputs.checksum }}",
+    );
+    expect(reconcile?.env?.EXPECTED_COMMIT).toBe(
+      "${{ needs.verify.outputs.commit }}",
+    );
+    expect(reconcile?.run).toContain(
+      'test "$(git rev-list -n 1 "$TAG")" = "$EXPECTED_COMMIT"',
+    );
+    expect(reconcile?.run).toContain("gh release create");
+    expect(reconcile?.run).toContain("--verify-tag");
+    expect(reconcile?.run).toContain("--prerelease");
+    expect(reconcile?.run).toContain("gh release upload");
+    expect(reconcile?.run).toContain("cmp --");
+    expect(reconcile?.run).toContain("sha256sum");
+    expect(reconcile?.run).not.toContain("already has a GitHub Release");
   });
 
-  it("verifies the version is live on the registry before creating the Release", () => {
-    const steps = loadReleaseWorkflow().jobs.release?.steps ?? [];
-    const verifyAt = stepIndex(
-      steps,
-      (s) => !!s.run?.includes("npm view") && !!s.run?.includes("::error::"),
-    );
-    const releaseAt = stepIndex(
-      steps,
-      (s) => !!s.uses?.startsWith("softprops/action-gh-release"),
-    );
-    expect(
-      verifyAt,
-      "expected a step that resolves the published version via `npm view` " +
-        "and fails the job when it is not there",
-    ).toBeGreaterThanOrEqual(0);
-    expect(verifyAt).toBeLessThan(releaseAt);
+  it("passes expression outputs to shell only through quoted env variables", () => {
+    for (const job of Object.values(workflow.jobs)) {
+      for (const step of job.steps ?? []) {
+        expect(step.run ?? "").not.toContain("${{");
+      }
+    }
   });
 
-  it("can be re-run for an existing tag without force-pushing it", () => {
-    const text = readFileSync(
-      join(ROOT, ".github", "workflows", "release.yml"),
+  it("uses only immutable full-SHA action references", () => {
+    for (const job of Object.values(workflow.jobs)) {
+      for (const step of job.steps ?? []) {
+        if (!step.uses) continue;
+        const [ref] = step.uses.split("@").slice(1);
+        expect(ref, step.uses).toMatch(/^[0-9a-f]{40}$/u);
+      }
+    }
+  });
+
+  it("does not hide release failures with continue-on-error", () => {
+    expect(source).not.toContain("continue-on-error");
+  });
+
+  it("moves stable action tags only outside RC releases", () => {
+    const actionTags = readFileSync(
+      join(root, ".github", "workflows", "action-tags.yml"),
       "utf8",
     );
-    const wf = parse(text) as { on?: Record<string, unknown> };
-    expect(
-      wf.on?.["workflow_dispatch"],
-      "release.yml needs a workflow_dispatch trigger: when a release fails " +
-        "for a reason outside the repo (registry auth), the only other " +
-        "retry path is deleting and force-pushing the tag",
-    ).toBeDefined();
+    expect(actionTags).toContain("!contains(github.ref_name, '-rc.')");
+    expect(actionTags).toContain('git tag -f "$major" "$GITHUB_SHA"');
+    expect(actionTags).toContain('git push origin "refs/tags/$major" --force');
   });
 
-  it("skips the publish when the version is already on npm, instead of failing", () => {
-    const steps = loadReleaseWorkflow().jobs.release?.steps ?? [];
-    const publishStep = steps.find((s) => s.run?.includes("npm publish"));
-    expect(
-      typeof publishStep?.if === "string" &&
-        /steps\.registry\.outputs\.published\s*!=\s*'true'/.test(
-          publishStep.if,
-        ),
-      "re-running a release for an already-published version must skip the " +
-        "publish (npm rejects duplicates with E403), not fail the job. " +
-        `Found: ${JSON.stringify(publishStep?.if)}`,
-    ).toBe(true);
-  });
-
-  // ── Auto-release: the version job (merge to main → publish) ─────────
-  //
-  // Every merge to main must produce exactly one npm release with zero
-  // manual commands. The version job computes the bump from PR labels,
-  // collapses the CHANGELOG [Unreleased] sections, and pushes the bot
-  // commit + tag; the release job then publishes from that tag. These
-  // tests lock the two-job shape so neither job can regress silently.
-
-  const pushTriggers = loadReleaseWorkflow().on?.push as
-    { branches?: string[]; tags?: string[] } | undefined;
-
-  it("triggers on main-branch pushes and semver release tags, not moving major tags", () => {
-    expect(
-      pushTriggers?.branches,
-      "release.yml must trigger on pushes to main — that is the whole " +
-        "auto-release path (plan: merge → publish, zero manual commands)",
-    ).toContain("main");
-    expect(
-      pushTriggers?.tags,
-      "the manual rc path (push a vX.Y.Z tag) must keep working",
-    ).toContain("v*.*.*");
-    expect(
-      pushTriggers?.tags,
-      "moving major tags such as v2 are action pointers, not publishable " +
-        "releases; they must not trigger release.yml.",
-    ).not.toContain("v*");
-  });
-
-  it("has a version job with contents: write + pull-requests: read", () => {
-    const wf = loadReleaseWorkflow();
-    const version = wf.jobs.version;
-    expect(
-      version,
-      "the auto-release brain job must exist before the release job",
-    ).toBeDefined();
-    expect(
-      version?.permissions?.["contents"],
-      "the version job pushes the bump commit and tag to main",
-    ).toBe("write");
-    expect(
-      version?.permissions?.["pull-requests"],
-      "the version job resolves PR labels via gh pr view",
-    ).toBe("read");
-  });
-
-  it("the release job needs the version job", () => {
-    const wf = loadReleaseWorkflow();
-    const needs = wf.jobs.release?.needs;
-    expect(
-      Array.isArray(needs) ? needs : [needs],
-      "publishing must be chained behind the version job (needs: version) " +
-        "in the SAME workflow file — a GITHUB_TOKEN-pushed tag fires no " +
-        "new run, so chaining is what makes the tag publish at all",
-    ).toContain("version");
-  });
-
-  it("the version job has a tag-exists loop-guard step", () => {
-    const steps = loadReleaseWorkflow().jobs.version?.steps ?? [];
-    expect(
-      steps.some(
-        (s) =>
-          s.run?.includes("git describe --tags --exact-match") &&
-          s.run?.includes("skip=true"),
-      ),
-      "the version job must detect that HEAD is already the bot's own " +
-        "release commit (tagged v<package.json version> at HEAD) and exit " +
-        "with skip=true — without it a re-run or PAT-based push would " +
-        "release in an infinite loop",
-    ).toBe(true);
-  });
-
-  it("the version job only runs on main-branch pushes", () => {
-    const jobIf = loadReleaseWorkflow().jobs.version?.if;
-    expect(
-      typeof jobIf === "string" &&
-        jobIf.includes("github.event_name == 'push'") &&
-        jobIf.includes("startsWith(github.ref, 'refs/heads/')"),
-      "the version job must be restricted to branch pushes (tag pushes and " +
-        "workflow_dispatch go straight to the release job). " +
-        `Found: ${JSON.stringify(jobIf)}`,
-    ).toBe(true);
-  });
-
-  it("the release job checks out the version job's tag on the auto path", () => {
-    const steps = loadReleaseWorkflow().jobs.release?.steps ?? [];
-    const checkout = steps.find((s) => s.uses?.startsWith("actions/checkout"));
-    expect(
-      typeof checkout?.with?.ref === "string" &&
-        checkout.with.ref.includes("needs.version.outputs.tag"),
-      "on a main-branch push the release job must check out the tag the " +
-        "version job just cut (needs.version.outputs.tag), not the branch " +
-        `tip. Found: ${JSON.stringify(checkout?.with?.ref)}`,
-    ).toBe(true);
-  });
-
-  it("the release job publishes only when the version job actually cut a tag", () => {
-    const jobIf = loadReleaseWorkflow().jobs.release?.if;
-    expect(
-      typeof jobIf === "string" && jobIf.includes("needs.version.outputs.skip"),
-      "the release job must consult needs.version.outputs.skip so a skipped " +
-        "decision (bot-commit loop guard, all-release:skip) does not publish " +
-        "a half state. Found: " +
-        JSON.stringify(jobIf),
-    ).toBe(true);
-    expect(
-      typeof jobIf === "string" &&
-        jobIf.includes("needs.version.result == 'success'") &&
-        jobIf.includes("needs.version.result == 'skipped'"),
-      "the release job must run when the version job was skipped (tag-push " +
-        "and dispatch triggers) but NOT when it failed — a failed version " +
-        "job means no release commit, and publishing the branch tip would " +
-        "ship unversioned code. Found: " +
-        JSON.stringify(jobIf),
-    ).toBe(true);
-  });
-
-  it("every spec path a workflow executes exists in the tree", () => {
-    // Product-Experience Master Plan Phase 7: the M6 spec reorg moved
-    // whole spec files; a workflow step that still names the old path
-    // fails the release pipeline only when the pipeline next runs — the
-    // worst possible moment to learn about it. This pins every
-    // `tests/…` .spec.ts path in every workflow's run commands to a
-    // real file (comment references are prose, commands are contracts).
-    const files = readdirSync(join(ROOT, ".github", "workflows")).filter(
-      (f) => f.endsWith(".yml") || f.endsWith(".yaml"),
+  it("executes only real spec paths", () => {
+    const files = readdirSync(join(root, ".github", "workflows")).filter(
+      (file) => file.endsWith(".yml") || file.endsWith(".yaml"),
     );
     const missing: string[] = [];
     for (const file of files) {
       const raw = readFileSync(
-        join(ROOT, ".github", "workflows", file),
+        join(root, ".github", "workflows", file),
         "utf8",
       );
-      // Strip comments first: a stale path in prose is bad documentation,
-      // not a pipeline failure waiting to happen.
       const active = raw
         .split("\n")
-        .map((l) => l.replace(/(^|\s)#.*$/, "$1"))
+        .map((line) => line.replace(/(^|\s)#.*$/u, "$1"))
         .join("\n");
-      for (const m of active.matchAll(
-        /(?:npx vitest run |vitest run )?(tests\/[\w/.-]+\.spec\.ts)/g,
+      for (const match of active.matchAll(
+        /(?:npx vitest run |vitest run )?(tests\/[\w/.-]+\.spec\.ts)/gu,
       )) {
-        const spec = m[1] ?? "";
-        if (spec && !existsSync(join(ROOT, spec)))
+        const spec = match[1];
+        if (spec && !existsSync(join(root, spec)))
           missing.push(`${file}: ${spec}`);
       }
     }
-    expect(
-      missing,
-      "these workflows execute spec files that do not exist — a moved or " +
-        "renamed spec was not tracked back into CI",
-    ).toEqual([]);
+    expect(missing).toEqual([]);
   });
 });

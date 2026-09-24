@@ -11,6 +11,17 @@ once shipped, so this file is the record of what changed between versions.
 
 ## [Unreleased]
 
+### Changed
+
+- **Advisory-first CI adoption** — `mjolnir ci install` and the root
+  GitHub Action now default to non-blocking findings and non-blocking partial
+  scans. Blocking remains explicit through `--gate error`, `--gate warning`,
+  or `fail-on`.
+- Suppression counts now report matched findings, not configured entries;
+  `suppression-gate` evaluates all-tier pre-suppression findings and enforces
+  total-count limits.
+- Zero-finding reports no longer claim the suite is clean or that CI is green.
+
 ### Added
 
 - **Zero-touch PR framework** — Conventional Commits enforcement via

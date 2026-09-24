@@ -17,6 +17,8 @@ import {
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
+import { normalizeCliJson } from "../../scripts/lib/normalize-cli-json.mjs";
+
 const ROOT = resolve(import.meta.dirname, "..", "..");
 const RUNS = 20;
 const DRIFT_DIR = join(ROOT, "soak-drift");
@@ -32,14 +34,6 @@ if (!existsSync(join(ROOT, "dist", "cli.mjs"))) {
 // otherwise masquerade as this run's evidence (and CI uploads the dir).
 rmSync(DRIFT_DIR, { recursive: true, force: true });
 mkdirSync(DRIFT_DIR, { recursive: true });
-
-/** Strip timing fields exactly like output-determinism.spec.ts. */
-function normalize(json) {
-  const r = JSON.parse(json);
-  const status = r.analysisStatus;
-  if (status) delete status.durationMs;
-  return JSON.stringify(r);
-}
 
 const rssSamples = [];
 const signatures = [];
@@ -68,7 +62,7 @@ for (const target of TARGETS) {
     const rssAfter = process.memoryUsage().rss;
     rssSamples.push(rssAfter - rssBefore);
 
-    const sig = normalize(json);
+    const sig = normalizeCliJson(json);
     const prev = firstJsonByTarget.get(target);
     if (prev === undefined) {
       firstJsonByTarget.set(target, sig);

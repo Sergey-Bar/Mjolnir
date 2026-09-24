@@ -106,9 +106,19 @@ describe("runCiInstall", () => {
     expect(code).toBe(0);
     expect(cap.text()).toContain("Created");
     expect(cap.text()).toContain("Action-based template");
-    expect(
-      readFileSync(join(dir, ".github", "workflows", "mjolnir.yml"), "utf8"),
-    ).toContain("Sergey-Bar/Mjolnir@4a588bc62d517bc85fc44c0eae64c6587d3bf70b");
+    const workflow = readFileSync(
+      join(dir, ".github", "workflows", "mjolnir.yml"),
+      "utf8",
+    );
+    expect(workflow).toContain(
+      "Sergey-Bar/Mjolnir@4a588bc62d517bc85fc44c0eae64c6587d3bf70b",
+    );
+    expect(workflow).toContain("fail-on: none");
+    expect(workflow).toContain(
+      "Advisory mode — findings reported, never blocking.",
+    );
+    expect(cap.text()).toContain("Gate: advisory");
+    expect(cap.text()).toContain("without blocking");
     expect(existsSync(join(dir, ".github", "workflows", "mjolnir.yml"))).toBe(
       true,
     );
@@ -183,7 +193,7 @@ describe("runSuppressions", () => {
     process.chdir(dir);
     const cap = capture();
     expect(runSuppressions({ out: cap.out })).toBe(0);
-    expect(cap.text()).toContain("No suppressed findings");
+    expect(cap.text()).toContain("No configured suppression entries");
   });
 
   it("surfaces a corrupted config on the usage-error path instead of an empty report (bug-audit M6)", () => {

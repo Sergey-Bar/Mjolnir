@@ -167,7 +167,7 @@ describe("E2E journey 8: config journey", () => {
           ],
         }),
       );
-      const scan = runCli([dir, "--json"]);
+      const scan = runCli([dir, "--json", "--strict"]);
       const result = JSON.parse(scan.stdout) as {
         findings: Array<{ ruleId: string }>;
         suppressionCount: number;

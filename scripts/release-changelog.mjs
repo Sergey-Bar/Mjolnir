@@ -1,6 +1,7 @@
 /**
- * Deterministic CHANGELOG transform for the auto-release path
- * (docs/PUBLISHING.md, "Automated release (default path)").
+ * Deterministic CHANGELOG transform for reviewed release branches.
+ * The Release Candidate workflow validates the resulting version and
+ * changelog; it does not use this helper to mutate a branch.
  *
  * Keep-a-Changelog forbids version bumps with no changelog record, but
  * this repo accumulates MULTIPLE thematic `## [Unreleased] — <title>`

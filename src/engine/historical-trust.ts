@@ -81,10 +81,11 @@ export function computeTrustSnapshot(
   result: ScanResult,
   runIdentity: RunIdentity,
   trustSummary: TrustSummary,
+  recordedAt: string,
 ): TrustSnapshot {
   return {
     scanId: runIdentity.scanId,
-    timestamp: new Date().toISOString(),
+    timestamp: recordedAt,
     score: result.score,
     findings: result.findings.length,
     errors: result.findings.filter((f) => f.severity === "error").length,

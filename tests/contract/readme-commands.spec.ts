@@ -11,6 +11,7 @@
 
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import { CLI_COMMAND_NAMES } from "../../src/engine/command-registry.js";
 import { describe, expect, it } from "vitest";
 
 const ROOT = join(import.meta.dirname, "..", "..");
@@ -63,11 +64,12 @@ function firstSubcommandToken(rest: string): string | null {
   return null;
 }
 
-// Every string literal `main()` checks argv[0] against, read directly
-// from source so this list can't drift from the real dispatch table.
-const KNOWN_SUBCOMMANDS = [...CLI_SOURCE.matchAll(/argv\[0\] === "([^"]+)"/g)]
-  .map((m) => m[1])
-  .filter((s): s is string => Boolean(s));
+const KNOWN_SUBCOMMANDS = [
+  ...CLI_COMMAND_NAMES,
+  ...[...CLI_SOURCE.matchAll(/argv\[0\] === "([^"]+)"/g)].map(
+    (match) => match[1],
+  ),
+];
 
 describe("README command table", () => {
   const commands = extractReadmeCommands(README);

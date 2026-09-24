@@ -6,11 +6,14 @@
  * a full governance gate result.
  */
 
+import { isSuppressionActive } from "../config/config.js";
 import {
   computeSuppressionIntegrity,
+  detectMassSuppression,
   type SuppressionEntry,
   type SuppressionIntegrityReport,
   type MassSuppressionResult,
+  type SuppressionFinding,
 } from "./suppression-integrity.js";
 
 export interface SuppressionPolicyConfig {
@@ -42,15 +45,24 @@ export interface SuppressionGovernanceResult {
 
 export function computeSuppressionGovernanceGate(
   suppressions: SuppressionEntry[],
-  totalFindings: number,
+  findings: readonly SuppressionFinding[],
   policy: SuppressionPolicyConfig = DEFAULT_SUPPRESSION_POLICY,
   knownRuleIds?: ReadonlySet<string>,
+  now: Date = new Date(),
 ): SuppressionGovernanceResult {
-  const integrityReport = computeSuppressionIntegrity(
+  const allIntegrityReport = computeSuppressionIntegrity(
     suppressions,
-    totalFindings,
+    findings,
     knownRuleIds ?? new Set<string>(),
+    now,
   );
+  const activeSuppressions = suppressions.filter((suppression) =>
+    isSuppressionActive(suppression, now),
+  );
+  const integrityReport: SuppressionIntegrityReport = {
+    ...allIntegrityReport,
+    massSuppression: detectMassSuppression(activeSuppressions, findings),
+  };
 
   const policyViolations: string[] = [];
 
@@ -61,6 +73,14 @@ export function computeSuppressionGovernanceGate(
   }
 
   if (policy.requireExpiration) {
+    const permanentCount = suppressions.filter(
+      (suppression) => suppression.expires === undefined,
+    ).length;
+    if (permanentCount > 0) {
+      policyViolations.push(
+        `Suppressions without an expiration: ${permanentCount}`,
+      );
+    }
     const expired = integrityReport.expiredSuppressions;
     if (expired.length > policy.maxExpiredSuppressions) {
       policyViolations.push(
@@ -69,25 +89,25 @@ export function computeSuppressionGovernanceGate(
     }
   }
 
-  if (
-    policy.maxTotalSuppressions > 0 &&
-    suppressions.length > policy.maxTotalSuppressions
-  ) {
+  if (suppressions.length > policy.maxTotalSuppressions) {
     policyViolations.push(
       `Total suppressions (${suppressions.length}) exceed policy maximum ${policy.maxTotalSuppressions}`,
     );
   }
 
   if (
-    policy.allowedRuleIds.length > 0 &&
+    knownRuleIds !== undefined &&
     integrityReport.unknownRuleSuppressions.length > 0
   ) {
-    const disallowedUnknown = integrityReport.unknownRuleSuppressions.filter(
-      (ruleId) => !policy.allowedRuleIds.includes(ruleId),
-    );
+    const disallowedUnknown =
+      policy.allowedRuleIds.length > 0
+        ? integrityReport.unknownRuleSuppressions.filter(
+            (ruleId) => !policy.allowedRuleIds.includes(ruleId),
+          )
+        : integrityReport.unknownRuleSuppressions;
     if (disallowedUnknown.length > 0) {
       policyViolations.push(
-        `Unknown rule suppressions not in allowed list: ${disallowedUnknown.join(", ")}`,
+        `Unknown rule suppressions: ${disallowedUnknown.join(", ")}`,
       );
     }
   }
@@ -109,9 +129,10 @@ export function computeSuppressionGovernanceGate(
 
 export function enforceSuppressionPolicy(
   suppressions: SuppressionEntry[],
-  totalFindings: number,
+  findings: readonly SuppressionFinding[],
   policy: SuppressionPolicyConfig = DEFAULT_SUPPRESSION_POLICY,
   knownRuleIds?: ReadonlySet<string>,
+  now: Date = new Date(),
 ): {
   allowed: SuppressionEntry[];
   blocked: SuppressionEntry[];
@@ -119,29 +140,45 @@ export function enforceSuppressionPolicy(
 } {
   const result = computeSuppressionGovernanceGate(
     suppressions,
-    totalFindings,
+    findings,
     policy,
     knownRuleIds,
+    now,
   );
 
   if (result.passed) {
     return { allowed: suppressions, blocked: [], violations: [] };
   }
 
+  if (result.massSuppression.ratio > policy.maxMassSuppressionRatio) {
+    return {
+      allowed: [],
+      blocked: [...suppressions],
+      violations: result.policyViolations,
+    };
+  }
+
   const blocked: SuppressionEntry[] = [];
-  const allowed: SuppressionEntry[] = [];
+  const valid: SuppressionEntry[] = [];
 
-  for (const s of suppressions) {
-    const isExpired =
-      s.expires !== undefined && new Date(s.expires) <= new Date();
-    const isUnknown = knownRuleIds !== undefined && !knownRuleIds.has(s.ruleId);
+  for (const suppression of suppressions) {
+    const isExpired = !isSuppressionActive(suppression, now);
+    const isUnknown =
+      knownRuleIds !== undefined &&
+      !knownRuleIds.has(suppression.ruleId) &&
+      !policy.allowedRuleIds.includes(suppression.ruleId);
+    const isMissingExpiry =
+      policy.requireExpiration && suppression.expires === undefined;
 
-    if (isExpired || isUnknown) {
-      blocked.push(s);
+    if (isExpired || isUnknown || isMissingExpiry) {
+      blocked.push(suppression);
     } else {
-      allowed.push(s);
+      valid.push(suppression);
     }
   }
+
+  const allowed = valid.slice(0, policy.maxTotalSuppressions);
+  blocked.push(...valid.slice(policy.maxTotalSuppressions));
 
   return {
     allowed,

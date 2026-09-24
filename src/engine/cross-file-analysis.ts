@@ -41,22 +41,26 @@ export interface CrossFileAnalysisResult {
 export function analyzeCrossFileSignals(
   files: ReadonlyArray<{ path: string; text: string }>,
   findings: readonly Finding[],
+  root: string,
 ): CrossFileAnalysisResult {
-  const duplicateTestNames = findDuplicateTestNames(files).map((dup) => ({
-    type: "duplicate-test-name" as const,
-    files: dup.files,
-    message: `Duplicate test name "${dup.name}" found in ${dup.files.length} files`,
-    severity: "warning" as const,
-  }));
+  const orderedFiles = [...files].sort((a, b) => a.path.localeCompare(b.path));
+  const duplicateTestNames = findDuplicateTestNames(orderedFiles).map(
+    (dup) => ({
+      type: "duplicate-test-name" as const,
+      files: dup.files,
+      message: `Duplicate test name "${dup.name}" found in ${dup.files.length} files`,
+      severity: "warning" as const,
+    }),
+  );
 
-  const sharedImports = detectSharedImports(files).map((imp) => ({
+  const sharedImports = detectSharedImports(orderedFiles).map((imp) => ({
     type: "shared-import" as const,
     files: imp.files,
     message: imp.message,
     severity: "info" as const,
   }));
 
-  const circularDependencies = detectCircularDependencies(files).map(
+  const circularDependencies = detectCircularDependencies(orderedFiles).map(
     (circ) => ({
       type: "circular-dep" as const,
       files: circ.files,
@@ -69,9 +73,9 @@ export function analyzeCrossFileSignals(
     .map((c) => `${c.conclusionType}: ${c.corroboration}`)
     .join("; ");
 
-  const graph = buildDependencyGraph(".");
+  const graph = buildDependencyGraph(root);
   const reachableFiles = getReachableFiles(
-    files.map((f) => f.path),
+    orderedFiles.map((f) => f.path),
     graph,
   );
 
@@ -91,7 +95,7 @@ function detectSharedImports(
 ): Array<{ files: string[]; message: string }> {
   const importByModule = new Map<string, Set<string>>();
   for (const { path, text } of files) {
-    const importRegex = /from\s+['"]([^'"]+)['"]/g;
+    const importRegex = /\b(?:from\s+|import\s*)['"]([^'"]+)['"]/g;
     let match: RegExpExecArray | null;
     while ((match = importRegex.exec(text)) !== null) {
       const module = match[1] as string;
@@ -121,7 +125,7 @@ function detectCircularDependencies(
 
   for (const { path: filePath, text } of files) {
     const imports: string[] = [];
-    const importRegex = /from\s+['"]([^'"]+)['"]/g;
+    const importRegex = /\b(?:from\s+|import\s*)['"]([^'"]+)['"]/g;
     let match: RegExpExecArray | null;
     while ((match = importRegex.exec(text)) !== null) {
       const imported = match[1] as string;

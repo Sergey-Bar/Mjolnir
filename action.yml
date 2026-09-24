@@ -4,8 +4,8 @@
 # documented amendment to the repo's root contract
 # (tests/contract/repo-hygiene.spec.ts), never a silent one.
 #
-# Consumers pin a major tag (`uses: Sergey-Bar/Mjolnir@v1`); release.yml's
-# action-tags job keeps that tag moving to every stable release.
+# Consumers pin a major tag (`uses: Sergey-Bar/Mjolnir@v1`); the separate
+# action-tags workflow moves that tag only after a stable, non-RC release.
 # Scanning runs through the published npm package (`npx mjolnir-qa@…`),
 # never an `npm ci` of this repo — the action must work for consumers,
 # not contributors.
@@ -50,20 +50,20 @@ inputs:
     default: "terminal"
   fail-on:
     description: >-
-      Exit-status gate: error (block on error findings), warning (block
-      on warnings too), or none (report only, never block)
+      Exit-status gate: error (default, block on error findings), warning
+      (block on warnings and errors), or none (advisory)
     required: false
     default: "error"
   node-version:
     description: "Node.js version to run the scan with"
     required: false
-    default: "22"
+    default: "22.18"
   version:
     description: >-
-      mjolnir-qa npm spec to run. Default: latest. Pin an exact version
-      in your workflow for reproducible gates.
+      Exact mjolnir-qa npm version to run. Defaults to the current released
+      package version; override only with another exact version.
     required: false
-    default: "latest"
+    default: "2.0.2"
   upload-sarif:
     description: >-
       Upload SARIF to GitHub Code Scanning (requires security-events:
@@ -94,8 +94,8 @@ inputs:
   fail-on-partial:
     description: >-
       Fail the job when the scan is partial (exit 2). Default: false
-      (partial scans produce a warning, not a failure). Set to true for
-      release gates that require a complete scan.
+      (partial scans produce a warning, not a failure). Set to true only
+      when a complete scan is required.
     required: false
     default: "false"
 
@@ -213,10 +213,9 @@ runs:
         set -e
         echo "exit=$EXIT" >> "$GITHUB_OUTPUT"
         # Exit-code contract: 2 = partial scan. By default, partial scans
-        # produce a warning (gate not enforced). When fail-on-partial is
-        # true, exit 2 fails the job — a release gate that requires a
-        # complete scan. Exit 1 (findings at gate) and 10/20 (usage/
-        # internal) always fail regardless of this setting.
+        # produce a warning and never block. An explicit true opt-in makes
+        # a complete scan mandatory. Exit 1 (findings at gate) and 10/20
+        # (usage/internal) follow the selected finding gate.
         if [ "$EXIT" = "2" ]; then
           echo "::warning::Mjölnir scan was PARTIAL — some files were not analyzed; the gate is not enforced."
           if [ "$MJ_FAIL_ON_PARTIAL" = "true" ]; then

@@ -8,14 +8,21 @@
 
 import { createHash } from "node:crypto";
 
+import { globToRegExp } from "../discovery/ignores.js";
+
 export interface SuppressionEntry {
   ruleId: string;
   /** Repo-relative file globs this suppression covers. */
-  files: string[];
+  files?: string[];
   /** Human-readable reason for the suppression. */
   reason: string;
   /** ISO-8601 expiration date; absent means no expiration. */
   expires?: string;
+}
+
+export interface SuppressionFinding {
+  ruleId: string;
+  file: string;
 }
 
 export interface MassSuppressionResult {
@@ -44,7 +51,7 @@ export function suppressionFingerprint(
   const canonical = suppressions
     .map((s) => ({
       ruleId: s.ruleId,
-      files: [...s.files].sort(),
+      files: [...(s.files ?? [])].sort(),
       reason: s.reason,
       ...(s.expires !== undefined ? { expires: s.expires } : {}),
     }))
@@ -58,13 +65,26 @@ export function suppressionFingerprint(
  */
 export function detectMassSuppression(
   suppressions: SuppressionEntry[],
-  totalFindings: number,
+  findings: readonly SuppressionFinding[],
   threshold = 0.5,
 ): MassSuppressionResult {
-  const suppressedCount = suppressions.reduce(
-    (sum, s) => sum + s.files.length,
-    0,
-  );
+  const matchers = suppressions.map((suppression) => ({
+    ruleId: suppression.ruleId,
+    patterns: (suppression.files ?? []).map((glob) =>
+      globToRegExp(glob.replaceAll("\\", "/")),
+    ),
+    ruleOnly: !suppression.files?.length,
+  }));
+  const suppressedCount = findings.filter((finding) => {
+    const file = finding.file.replaceAll("\\", "/");
+    return matchers.some(
+      (matcher) =>
+        matcher.ruleId === finding.ruleId &&
+        (matcher.ruleOnly ||
+          matcher.patterns.some((pattern) => pattern.test(file))),
+    );
+  }).length;
+  const totalFindings = findings.length;
   const ratio = totalFindings === 0 ? 0 : suppressedCount / totalFindings;
   return {
     isMassSuppression: ratio >= threshold,
@@ -110,13 +130,13 @@ export function detectExpiredSuppressions(
  */
 export function computeSuppressionIntegrity(
   suppressions: SuppressionEntry[],
-  totalFindings: number,
+  findings: readonly SuppressionFinding[],
   knownRuleIds: ReadonlySet<string>,
   now: Date = new Date(),
 ): SuppressionIntegrityReport {
   return {
     fingerprint: suppressionFingerprint(suppressions),
-    massSuppression: detectMassSuppression(suppressions, totalFindings),
+    massSuppression: detectMassSuppression(suppressions, findings),
     unknownRuleSuppressions: detectUnknownRuleSuppressions(
       suppressions,
       knownRuleIds,

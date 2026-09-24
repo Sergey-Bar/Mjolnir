@@ -26,6 +26,8 @@ npm run typecheck        # tsc, twice: src/ (strict, ships in dist/),
 npm run lint              # eslint . && prettier --check .
 npm test                  # vitest run — full suite
 npm run test:coverage     # vitest run --coverage — floors enforced
+npm run test:property      # seeded property suite + 200-run floor
+npm run test:fuzz          # dedicated *.fuzz.ts suite
 npx vitest run tests/rules          # one domain slice (path filter)
 npm run build              # tsdown src/cli.ts, then any workspace package
 npm run self-scan          # the tool scans its own repo — must add

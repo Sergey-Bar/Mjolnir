@@ -1,4 +1,6 @@
 {
+  "schemaVersion": 1,
+  "sourceRevision": "47a4aac2bec15524f9ceafded2dd2012b8aefd68",
   "countsByRule": {
     "QA-CI-001": 16,
     "QA-CI-002": 14,

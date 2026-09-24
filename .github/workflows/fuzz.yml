@@ -4,6 +4,7 @@ on:
   schedule:
     # Nightly at 03:00 UTC — sustained property-based testing window.
     - cron: "0 3 * * *"
+  pull_request:
   workflow_dispatch:
 
 permissions:
@@ -11,24 +12,16 @@ permissions:
 
 jobs:
   fuzz:
-    name: Property-based fuzz (30 min)
+    name: fuzz
     runs-on: ubuntu-latest
     timeout-minutes: 35
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: actions/setup-node@49933d53a40c3446e537b1f26e8c8a8f5e5e6b2a # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          node-version: 22
+          node-version: 22.18.0
           cache: npm
       - run: npm ci
-      - run: npm run build
       - name: Run fuzz tests (30 min budget)
-        run: npx vitest run tests/fuzz/ --testTimeout=120000
+        run: npm run test:fuzz
         timeout-minutes: 30
-      - name: Upload fuzz results
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: fuzz-results
-          path: tests/fuzz/results/
-          retention-days: 14

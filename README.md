@@ -208,22 +208,17 @@ Three steps to trust your release pipeline:
 2. **Block in CI** — `npx mjolnir-qa@latest --scope changed` — scans only changed lines, blocks PRs with error findings
 3. **Fix and re-verify** — `mjolnir fix` applies safe auto-fixes, then re-scans to prove each one landed
 
-Add it to your pipeline so it gates releases on error findings:
+Install the advisory PR workflow first, so existing trust debt cannot break
+CI on day one:
 
 ```bash
-npx mjolnir-qa@latest --scope changed --blocking error
+mjolnir ci install
 ```
 
-`mjolnir ci install` writes the GitHub Actions workflow with a blocking gate (error severity), pinned to this version:
+After reviewing the findings or baselining existing debt, opt into blocking:
 
 ```bash
 mjolnir ci install --gate error
-```
-
-Run advisory mode only when you want to preview findings without blocking:
-
-```bash
-mjolnir ci install --gate advisory
 ```
 
 | Command                             | What it does                                    |
@@ -231,7 +226,8 @@ mjolnir ci install --gate advisory
 | `mjolnir`                           | Trust Report: verdict, confidence, next action  |
 | `mjolnir --scope changed`           | Only what your branch introduced (CI form)      |
 | `mjolnir --blocking error`          | Exit 1 on error findings — gate releases        |
-| `mjolnir ci install --gate error`   | Write the blocking PR workflow                  |
+| `mjolnir ci install`                | Write the advisory PR workflow (default)        |
+| `mjolnir ci install --gate error`   | Opt into the blocking PR workflow               |
 | `mjolnir business-case`             | ROI estimate: projected savings per finding     |
 | `mjolnir explain QA-CI-001`         | What, why and fix, plus the measured FP rate    |
 | `mjolnir why src/a.spec.ts:42`      | Why this exact line was flagged. Never gates.   |
@@ -247,30 +243,37 @@ mjolnir ci install --gate advisory
 
 <br />
 
-| Command                             | What it does                                         |
-| ----------------------------------- | ---------------------------------------------------- |
-| `mjolnir --classic`                 | The pre-Trust-Report score banner render             |
-| `mjolnir explain verdict`           | Why the saved scan's verdict is what it is           |
-| `mjolnir triage ./test-results/`    | Guided triage. Every row ends in a next action.      |
-| `mjolnir pw-report ./test-results/` | Playwright run summary: retries, flakes, slowest     |
-| `mjolnir doctor:playwright`         | Playwright-only deep scan plus Selector Health Score |
-| `mjolnir fix --dry-run` / `fix`     | Safe auto-fixes, each re-scanned to prove it landed  |
-| `mjolnir baseline` / `diff`         | Snapshot findings, then report only new or worse     |
-| `mjolnir impact --since <ref>`      | What a commit introduced and resolved                |
-| `mjolnir summary`                   | CI annotations and a step summary from a report      |
-| `mjolnir pr-comment`                | A scoped PR comment, as Markdown                     |
-| `mjolnir debt`                      | Test-debt register with a cost model                 |
-| `mjolnir handover`                  | Onboarding map of the suite for a new QA engineer    |
-| `mjolnir init`                      | Detect frameworks, print a setup checklist           |
-| `mjolnir suppressions`              | List suppressed findings, for governance             |
-| `mjolnir rules --unmeasured`        | The rules running on assumption, not measurement     |
-| `mjolnir rules --md`                | Full rule catalog (JSON or Markdown)                 |
-| `mjolnir doctor`                    | Self-audit of Mjölnir's own rule base                |
-| `mjolnir create-rule <ID>`          | Scaffold a new rule and its fixtures                 |
-| `mjolnir stats`                     | Local all-time counters of fixes seen                |
-| `mjolnir badge`                     | shields.io endpoint JSON and snippet                 |
-| `mjolnir --cache`                   | Incremental re-scans via a local verdict cache       |
-| `mjolnir --format mermaid`          | Test-architecture diagram for a PR comment           |
+| Command                             | What it does                                          |
+| ----------------------------------- | ----------------------------------------------------- |
+| `mjolnir --classic`                 | The pre-Trust-Report score banner render              |
+| `mjolnir explain verdict`           | Why the saved scan's verdict is what it is            |
+| `mjolnir triage ./test-results/`    | Guided triage. Every row ends in a next action.       |
+| `mjolnir pw-report ./test-results/` | Playwright run summary: retries, flakes, slowest      |
+| `mjolnir doctor:playwright`         | Playwright-only deep scan plus Selector Health Score  |
+| `mjolnir fix --dry-run` / `fix`     | Safe auto-fixes, each re-scanned to prove it landed   |
+| `mjolnir baseline` / `diff`         | Snapshot findings, then report only new or worse      |
+| `mjolnir impact --since <ref>`      | What a commit introduced and resolved                 |
+| `mjolnir summary`                   | CI annotations and a step summary from a report       |
+| `mjolnir pr-comment`                | A scoped PR comment, as Markdown                      |
+| `mjolnir debt`                      | Test-debt register with a cost model                  |
+| `mjolnir handover`                  | Onboarding map of the suite for a new QA engineer     |
+| `mjolnir init`                      | Detect frameworks, print a setup checklist            |
+| `mjolnir suppressions`              | List suppressed findings, for governance              |
+| `mjolnir ci-integrity`              | Verify blocking CI scans and suppression policy       |
+| `mjolnir framework-maturity`        | Inspect bounded maturity with human calibration       |
+| `mjolnir suppression-gate`          | Enforce expiry, allowlist, and mass-suppression rules |
+| `mjolnir cross-file`                | Analyze duplicate, shared, and circular test signals  |
+| `mjolnir contract-verify`           | Verify a persisted machine contract artifact          |
+| `mjolnir trust-trend`               | Persist and compare trust snapshots over time         |
+| `mjolnir evidence-graph`            | Build or query the verification evidence graph        |
+| `mjolnir rules --unmeasured`        | The rules running on assumption, not measurement      |
+| `mjolnir rules --md`                | Full rule catalog (JSON or Markdown)                  |
+| `mjolnir doctor`                    | Self-audit of Mjölnir's own rule base                 |
+| `mjolnir create-rule <ID>`          | Scaffold a new rule and its fixtures                  |
+| `mjolnir stats`                     | Local all-time counters of fixes seen                 |
+| `mjolnir badge`                     | shields.io endpoint JSON and snippet                  |
+| `mjolnir --cache`                   | Incremental re-scans via a local verdict cache        |
+| `mjolnir --format mermaid`          | Test-architecture diagram for a PR comment            |
 
 `mjolnir help <command>` prints usage, examples and the next step for any
 of them.
@@ -567,22 +570,20 @@ propagate, always-success steps, reports consumed but never generated, and
 gates skipped on the events that should block. Each finding names the job,
 the step and the line, and carries its own evidence level.
 
-Generate the PR workflow with a blocking gate (error severity) — this is the
-default for a reason: findings that survive your pipeline survive your release.
+Generate an advisory PR workflow first. It reports findings without blocking
+and is pinned to this version, so adopting it cannot change gate semantics:
+
+```bash
+mjolnir ci install
+```
+
+After reviewing existing debt, opt into an enforcing gate:
 
 ```bash
 mjolnir ci install --gate error
 ```
 
-The gate is pinned to this version — a new release must not change your gate
-semantics without a commit of yours. Switch to advisory only when you want
-to preview findings without blocking:
-
-```bash
-mjolnir ci install --gate advisory
-```
-
-In your existing workflow, pin the action and gate on error severity:
+In your existing workflow, pin the action and explicitly opt into an error gate:
 
 ```yaml
 - uses: Sergey-Bar/Mjolnir@4a588bc62d517bc85fc44c0eae64c6587d3bf70b0
@@ -645,11 +646,11 @@ SCAN → EVIDENCE → HANDOFF → AGENT → RE-SCAN → PROOF
 **AI writes the fix. Mjölnir verifies it.** The proof comes from the
 re-scan, never from the agent's own report of success.
 
-| Command           | What the agent gets                                                                                                                                           |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `mjolnir mcp`     | An [MCP](https://modelcontextprotocol.io) server over stdio. `scan`, `explain` and `diff` become callable tools.                                              |
-| `mjolnir handoff` | A saved `--json` report becomes a deterministic Markdown plan: what was detected, the evidence boundary per finding, what must **not** change, how to verify. |
-| `mjolnir install` | Writes into the agent surfaces your repo already has (`.claude/`, `.cursor/`, `.kilo/`, `AGENTS.md`) so the agent re-scans before it claims it is done.       |
+| Command           | What the agent gets                                                                                                                                                    |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `mjolnir mcp`     | An [MCP](https://modelcontextprotocol.io) server over stdio. `scan`, `explain`, `diff`, `verify`, `forensics`, `triage`, and `pw-report` are read-only callable tools. |
+| `mjolnir handoff` | A saved `--json` report becomes a deterministic Markdown plan: what was detected, the evidence boundary per finding, what must **not** change, how to verify.          |
+| `mjolnir install` | Writes into the agent surfaces your repo already has (`.claude/`, `.cursor/`, `.kilo/`, `AGENTS.md`) so the agent re-scans before it claims it is done.                |
 
 Add it to a client that ships its own CLI:
 

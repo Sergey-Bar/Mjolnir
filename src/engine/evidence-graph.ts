@@ -12,9 +12,12 @@
 
 import type { Finding, ScanResult } from "../types.js";
 
-import { classifyProvenance } from "./provenance.js";
+import {
+  classifyProvenance,
+  computeAgenticProfile,
+  type AgenticTrustProfile,
+} from "./provenance.js";
 import { buildEvidenceGraph, type EvidenceGraph } from "./run-identity.js";
-import type { AgenticTrustProfile } from "./provenance.js";
 import type { RunIdentity } from "./run-identity.js";
 
 export interface EvidenceNode {
@@ -85,7 +88,7 @@ export interface EvidenceGraphResult {
 export function buildEvidenceGraphFromScan(
   result: ScanResult,
   runIdentity: RunIdentity,
-  declarationsByFile: ReadonlyMap<string, number>,
+  files: ReadonlyArray<{ path: string; text: string }>,
 ): EvidenceGraphResult {
   const nodes: EvidenceNode[] = [];
   const edges: EvidenceEdge[] = [];
@@ -179,38 +182,20 @@ export function buildEvidenceGraphFromScan(
   };
 
   // Build provenance
-  const filesForProvenance = Array.from(fileNodes.keys()).map((path) => ({
-    path,
-    provenance: classifyProvenance({ text: "" }),
+  const filesForProvenance = files.map((file) => ({
+    path: file.path,
+    provenance: classifyProvenance(file),
   }));
-  const agenticProfile: AgenticTrustProfile = {
-    testFiles: filesForProvenance.length,
-    generatedMarkedFiles: filesForProvenance.filter(
-      (f) => f.provenance === "generated-marked",
-    ).length,
-    codegenLikeFiles: filesForProvenance.filter(
-      (f) => f.provenance === "codegen-like",
-    ).length,
-    shareMarkedGenerated:
-      filesForProvenance.length > 0
-        ? filesForProvenance.filter((f) => f.provenance !== "unmarked").length /
-          filesForProvenance.length
-        : 0,
-    findingsInGeneratedFiles: 0,
-    findingsInUnmarkedFiles: result.findings.length,
-    note: "Static provenance markers only. Absence of a marker does not prove human authorship.",
-  };
+  const agenticProfile = computeAgenticProfile(
+    filesForProvenance,
+    result.findings,
+  );
 
   // Build the evidence graph using the existing infrastructure
-  const graphParts: { runId?: RunIdentity; source: string; fixture?: string } =
-    {
-      runId: runIdentity,
-      source: "scan",
-    };
-  if (declarationsByFile.size > 0) {
-    graphParts.fixture = `declarations:${declarationsByFile.size}`;
-  }
-  const graph = buildEvidenceGraph(graphParts);
+  const graph = buildEvidenceGraph({
+    runId: runIdentity,
+    source: "scan",
+  });
 
   return {
     graph,

@@ -44,7 +44,8 @@ Subcommands — Scan:
 
 Subcommands — CI & PRs:
   ci install [--gate advisory|error|warning] [--no-action] [--force]
-    generate the PR workflow (action-based by default; scan + annotations + gate)
+    generate the PR workflow (advisory by default; action-based; scan + annotations +
+    gate)
   summary [mjolnir.json] [--stdout] [--path-prefix <dir>]
     CI annotations + step summary from a saved --json report
   pr-comment [path] [--base <ref>]                render a scoped PR comment (Markdown)
@@ -61,7 +62,7 @@ Subcommands — CI & PRs:
   verify [path] [--json] [scan flags]             agent-loop digest:
                                                   resolved/new/unchanged vs baseline +
                                                   score delta
-  ci-integrity [path] [--json]                    verify CI workflow integrity and
+  ci-integrity [path] [--policy <file>] [--json]  verify CI workflow integrity and
                                                   suppression governance
 
 Subcommands — Forensics:
@@ -101,16 +102,16 @@ Subcommands — Maintenance:
   cross-file [path] [--json]                      analyze cross-file signals:
                                                   duplicates, shared imports, circular
                                                   deps
-  contract-verify [path] [--json]                 verify machine contract integrity
-                                                  against scan results
-  trust-trend [path] [--json]                     track historical trust trends and
-                                                  detect regressions
-  evidence-graph [path] [--json]                  build and query the verification
-                                                  evidence graph
-  framework-maturity [--framework <name>]         track framework maturity levels,
-                                                  especially Playwright F4→F6
-  suppression-gate [path] [--policy <file>]       enforce suppression policy governance
-                                                  gate
+  contract-verify [path] [--contract <scan-json>] [--json]
+    verify machine contract integrity against scan results
+  trust-trend [path] [--history <file>] [--recorded-at <iso>] [--json]
+    track historical trust trends and detect regressions
+  evidence-graph [path] [--file <path>|--rule <id>] [--json]
+    build and query the verification evidence graph
+  framework-maturity [--framework <name>] [--json]
+    track framework maturity levels, especially Playwright F4→F5
+  suppression-gate [path] [--policy <file>] [--json]
+    enforce suppression policy governance gate
 
 Subcommands — Meta:
   rules [--md] [--unmeasured|--measured] [--external] | [--stats] | [--health]
@@ -124,8 +125,9 @@ Subcommands — Meta:
     deterministic fix-handoff artifact from a saved --json report
   install [--staged-hook] [--dry-run] [--force]   install the agent instruction surfaces
                                                   + optional staged hook
-  mcp                                             run as an MCP server over stdio (scan
-                                                  / explain / diff / verify tools)
+  mcp                                             run as a read-only MCP server over
+                                                  stdio (scan / explain / diff / verify
+                                                  / forensics / triage / pw-report)
 
 Copy-paste starts:
   $ mjolnir                         score this repo's test suite
@@ -197,8 +199,8 @@ Subcommands — Scan:
 Subcommands — CI & PRs:
   ci install [--gate advisory|error|warning] [--no-action]
   [--force]
-    generate the PR workflow (action-based by default; scan
-    + annotations + gate)
+    generate the PR workflow (advisory by default;
+    action-based; scan + annotations + gate)
   summary [mjolnir.json] [--stdout] [--path-prefix <dir>]
     CI annotations + step summary from a saved --json report
   pr-comment [path] [--base <ref>]                render a scoped
@@ -228,7 +230,7 @@ Subcommands — CI & PRs:
                                                   resolved/new/unchanged
                                                   vs baseline +
                                                   score delta
-  ci-integrity [path] [--json]                    verify CI
+  ci-integrity [path] [--policy <file>] [--json]  verify CI
                                                   workflow
                                                   integrity and
                                                   suppression
@@ -300,26 +302,18 @@ Subcommands — Maintenance:
                                                   duplicates,
                                                   shared imports,
                                                   circular deps
-  contract-verify [path] [--json]                 verify machine
-                                                  contract
-                                                  integrity
-                                                  against scan
-                                                  results
-  trust-trend [path] [--json]                     track historical
-                                                  trust trends and
-                                                  detect
-                                                  regressions
-  evidence-graph [path] [--json]                  build and query
-                                                  the verification
-                                                  evidence graph
-  framework-maturity [--framework <name>]         track framework
-                                                  maturity levels,
-                                                  especially
-                                                  Playwright F4→F6
-  suppression-gate [path] [--policy <file>]       enforce
-                                                  suppression
-                                                  policy
-                                                  governance gate
+  contract-verify [path] [--contract <scan-json>] [--json]
+    verify machine contract integrity against scan results
+  trust-trend [path] [--history <file>] [--recorded-at
+  <iso>] [--json]
+    track historical trust trends and detect regressions
+  evidence-graph [path] [--file <path>|--rule <id>] [--json]
+    build and query the verification evidence graph
+  framework-maturity [--framework <name>] [--json]
+    track framework maturity levels, especially Playwright
+    F4→F5
+  suppression-gate [path] [--policy <file>] [--json]
+    enforce suppression policy governance gate
 
 Subcommands — Meta:
   rules [--md] [--unmeasured|--measured] [--external] |
@@ -341,11 +335,15 @@ Subcommands — Meta:
                                                   surfaces +
                                                   optional staged
                                                   hook
-  mcp                                             run as an MCP
+  mcp                                             run as a
+                                                  read-only MCP
                                                   server over
                                                   stdio (scan /
                                                   explain / diff /
-                                                  verify tools)
+                                                  verify /
+                                                  forensics /
+                                                  triage /
+                                                  pw-report)
 
 Copy-paste starts:
   $ mjolnir                         score this repo's test suite

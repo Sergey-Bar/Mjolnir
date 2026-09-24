@@ -3,7 +3,13 @@
  */
 
 import { describe, expect, it, vi } from "vitest";
-import { existsSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  writeFileSync,
+  rmSync,
+} from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
@@ -215,28 +221,40 @@ describe("QUARANTINE (TL-3)", () => {
 });
 
 describe("CI-ADAPTER (SDET-4)", () => {
-  it("generates GitHub workflow", async () => {
+  it("generates GitHub workflow", () => {
     const dir = makeTempDir();
-    const code = await runCiAdapterCommand(["github", dir], { out, err });
+    const code = runCiAdapterCommand(["github", dir], { out, err });
     expect(code).toBe(EXIT_CLEAN);
     expect(out).toHaveBeenCalledWith(expect.stringContaining("qa-check.yml"));
+    const workflow = readFileSync(join(dir, "qa-check.yml"), "utf8");
+    expect(workflow).toContain(
+      "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+    );
+    expect(workflow).toContain("mjolnir-qa@2.0.2 --blocking error");
+    expect(workflow).not.toContain("npx mjolnir scan");
     rmSync(dir, { recursive: true, force: true });
   });
-  it("generates GitLab CI config", async () => {
+  it("generates GitLab CI config", () => {
     const dir = makeTempDir();
-    const code = await runCiAdapterCommand(["gitlab", dir], { out, err });
+    const code = runCiAdapterCommand(["gitlab", dir], { out, err });
     expect(code).toBe(EXIT_CLEAN);
+    const workflow = readFileSync(join(dir, ".gitlab-ci.yml"), "utf8");
+    expect(workflow).toContain("mjolnir-qa@2.0.2 --blocking error");
+    expect(workflow).not.toContain("npx mjolnir scan");
     rmSync(dir, { recursive: true, force: true });
   });
-  it("generates Jenkinsfile", async () => {
+  it("generates Jenkinsfile", () => {
     const dir = makeTempDir();
-    const code = await runCiAdapterCommand(["jenkins", dir], { out, err });
+    const code = runCiAdapterCommand(["jenkins", dir], { out, err });
     expect(code).toBe(EXIT_CLEAN);
+    const workflow = readFileSync(join(dir, "Jenkinsfile"), "utf8");
+    expect(workflow).toContain("mjolnir-qa@2.0.2 --blocking error");
+    expect(workflow).not.toContain("npx mjolnir scan");
     rmSync(dir, { recursive: true, force: true });
   });
-  it("exits usage for unknown adapter", async () => {
+  it("exits usage for unknown adapter", () => {
     const dir = makeTempDir();
-    const code = await runCiAdapterCommand(["unknown", dir], { out, err });
+    const code = runCiAdapterCommand(["unknown", dir], { out, err });
     expect(code).toBe(EXIT_USAGE);
     rmSync(dir, { recursive: true, force: true });
   });

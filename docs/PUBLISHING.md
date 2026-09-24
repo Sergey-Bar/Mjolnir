@@ -1,355 +1,158 @@
 # Publishing Runbook
 
-Covers: the automated release path (default — merge to `main` and the
-release happens), the manual release checklist for rc versions and
-retries, and the one-time account-level setup required before
-`npm publish` can go live.
+Mjölnir releases are prepared on protected release branches and published only after a reviewed dry run. Merging to protected `main` never bumps a version, pushes a tag, or publishes to npm.
 
-## Automated release (default path)
+## Release model
 
-Every merge to `main` produces exactly one npm release — major, minor
-or patch, no gaps, no manual `npm version` / `git push --follow-tags`.
-`release.yml` runs two jobs in sequence (one file, because the
-npmjs.com Trusted Publisher matches the workflow **filename**; a second
-workflow file would fail OIDC with `ENEEDAUTH`):
+- `main` is the stable integration branch and stays protected.
+- A release branch such as `release/v2.0.3` contains the reviewed version and changelog PR.
+- The package version for a release candidate must be `X.Y.Z-rc.N`; the corresponding annotated tag is `vX.Y.Z-rc.N`.
+- `.github/workflows/release.yml` is dry-run by default.
+- Publishing additionally requires the repository variable `NPM_PUBLISH=true` and approval of the `release-candidate` and `npm-publish` GitHub Environments.
+- npm publication upgrades to npm 11.5.1 or newer, uses OIDC trusted publishing and provenance, and publishes release candidates under the `next` dist-tag. No long-lived npm token is stored in the repository.
+- The GitHub Release is created as a prerelease only after the exact audited tarball is resolvable from npm.
 
-1. **`version`** — computes the bump and cuts the release:
-   - **Label-driven with patch default.** PR labels `release:major` /
-     `release:minor` override the default; **no label = patch**;
-     `release:skip` excludes that PR's commits. Direct pushes to
-     `main` without a PR are patch.
-   - **Batch behavior.** Labels are collected across EVERY commit since
-     the last tag and the highest bump wins — if three PRs merge
-     between releases and one carries `release:minor`, the single
-     release cut by the last of them is a minor.
-   - **Changelog.** `scripts/release-changelog.mjs` merges every
-     `## [Unreleased] — …` section under the new
-     `## [X.Y.Z] — date` heading (hand-curated content stays
-     authoritative). No Unreleased sections → a minimal
-     `### Changes since vX` list is generated from merged PR titles —
-     a version bump with no changelog record remains forbidden.
-   - The job commits `chore(release): vX.Y.Z` as
-     `mjolnir-release-bot`, tags it, and pushes both; the `release`
-     job then publishes from that tag.
-2. **`release`** — the existing publish pipeline, byte-identical:
-   full gate → registry duplicate check → fresh-install gate → publish
-   (OIDC, provenance) → registry poll → GitHub Release.
+## Repository configuration
 
-Guardrails and failure modes:
+Configure these once before publishing:
 
-| Symptom                                             | Behavior                                                                                                                |
-| --------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| The push IS the bot's own bump commit (loop risk)   | Loop guard: HEAD already tagged `v<package.json version>` → the version job exits with `skip=true`, nothing re-releases |
-| PR subject lacks `(#N)` (direct push)               | Patch default + `::warning::` in the run log                                                                            |
-| `gh` label lookup fails (API blip)                  | Patch default + `::warning::` — a lookup failure never fails or drops a release                                         |
-| Every commit in the range is labeled `release:skip` | Version job succeeds with a `::notice::`, no tag cut, no release                                                        |
-| Version job fails (dirty tree, bad transform)       | Release job is skipped — no publish, no half state; the next main-branch push retries the whole chain                   |
-| Two main-push runs race                             | Serialized by the `release-refs/heads/main` concurrency group; the registry duplicate-skip absorbs any remaining race   |
-| Version already on npm (re-run / dispatch)          | Publish skipped, verification still runs (existing behavior)                                                            |
+1. Protect `main` and `release/*` so unreviewed direct pushes cannot create a candidate.
+2. Create a `release-candidate` Environment with required reviewer approval.
+3. Create an `npm-publish` Environment with required reviewer approval.
+4. Set `NPM_PUBLISH` as a repository Actions variable with value `true`.
+5. Configure npm Trusted Publisher for repository `Sergey-Bar/Mjolnir`, workflow `release.yml`, and Environment `npm-publish`.
 
-So the default contribution flow is: **add a label → merge → done.**
-Verify from the registry, not the green tick:
+The npm Trusted Publisher Environment must match the workflow exactly. Leave `NODE_AUTH_TOKEN` unset.
 
-```bash
-npm view mjolnir-qa version      # must print the new version
-npm audit signatures             # provenance attestation present
-```
+## `v2.0.3` decision gate
 
-## Manual release checklist (rc and retries)
+The existing `v2.0.3` tag points at commit `460c7d71e67d54d667414ff36e6f100d604b6185`, which is not reachable from current `main`, while npm `latest` is `2.0.2`.
 
-The checklist below is the **manual/rc flow** — the automated path
-above replaced it for ordinary merges to `main`. Use it for release
-candidates (the `next` dist-tag flow) and for anything else the
-automation must not decide.
+Do not delete, move, force-update, or republish `v2.0.3` without an owner decision. The safe options are deliberately separate:
 
-1. **Version bump** — `npm version patch|minor|major`. This is the
-   single source of truth for the version (per Master-Stabilization-Plan
-   Sprint 0 Task 4) — nothing else should hardcode it except
-   `src/reporter/sarif.ts`'s `driver.version`, which
-   `scripts/sync-sarif-version.cjs` keeps in sync automatically during
-   release, and `tests/version-consistency.spec.ts` verifies locally.
-2. **Changelog entry** — add a dated entry to `CHANGELOG.md` under
-   `## [Unreleased]` before bumping (or move `[Unreleased]`'s contents
-   under the new version heading as part of the bump). Rule behavior
-   changes (new rules, FP-rate changes, severity changes, deprecations —
-   see `docs/RULE-LIFECYCLE.md`) are first-class entries; a version bump
-   with no changelog entry is a release with no record of what changed.
-3. **FP-audit docs sync** — if any rule's detection logic changed, run
-   the reviewed corpus-audit update and regenerate the docs page:
+- leave the historical tag untouched and publish a new reviewed version;
+- recreate `v2.0.3` on a new release branch only after explicitly deciding how the existing tag is handled;
+- retain the tag as historical metadata and document that it is not an installable release.
+
+The RC workflow rejects stable versions, so it cannot silently resolve this decision.
+
+## Prepare a release candidate
+
+1. Start from protected `main`.
+
    ```bash
-   npm run corpus:regression:update   # review every new finding manually first
-   npm run fp-audit:generate
+   git switch main
+   git pull --ff-only origin main
+   git switch -c release/v2.0.3
    ```
-4. **Golden lock** — if the change legitimately shifts scores, run
-   `npm run golden:update` and include the reviewed diff in the PR. An
-   unreviewed score shift is a regression, not an improvement.
-5. **Standing gate** — `npm run typecheck && npm run lint && npm test &&
-npm run test:coverage && npm run build && npm run self-scan`. All
-   must pass before tagging.
-6. **Tag and push** — `git push --follow-tags`. This triggers
-   `.github/workflows/release.yml`, in this order:
 
-   1. re-verifies the tag matches `package.json`'s version,
-   2. re-runs typecheck / lint / test / test:coverage, builds, packs,
-   3. checks whether the version is already on npm (if so, the publish is
-      **skipped**, not failed — see "Re-running a release" below),
-   4. **publishes to npm** with provenance — rc versions under the
-      `next` dist-tag, stable versions under `latest` (see
-      "rc channels" below),
-   5. **verifies** the version actually resolves on the registry under
-      the dist-tag it was published to, polling for up to a minute,
-   6. **only then** creates the GitHub Release with auto-generated notes
-      and the tarball attached (marked Pre-release for rc tags).
+2. Prepare a normal version PR:
+   - set the root `package.json` version to `2.0.3-rc.1` or the approved next RC;
+   - add the matching `CHANGELOG.md` heading;
+   - update synchronized version surfaces with the existing version scripts;
+   - include any reviewed corpus and golden updates;
+   - do not edit or move the existing `v2.0.3` tag.
 
-   Steps 4–6 are in that order deliberately, and
-   `tests/release-workflow.spec.ts` fails the build if anyone reorders
-   them. See "Why publish comes before the Release" below.
+3. Run the local release gate.
 
-7. **npm publish** — automatic when `vars.NPM_PUBLISH == 'true'` (done)
-   **and** the npmjs.com trusted publisher is configured (see below).
+   ```bash
+   npm ci
+   npm run ci-local
+   ```
 
-## Why publish comes before the Release
+4. Open the version PR into protected `main`. The PR must receive normal review and merge protection.
 
-v0.5.0 shipped a public `v0.5.0 · Latest` GitHub Release for a version
-npm never received. The gh-release step ran first and succeeded; the
-publish step then failed on registry auth. The result was a Release page
-telling people to install something that did not exist, while
-`npx mjolnir-qa@latest` kept serving the broken 0.4.0.
+5. Run a dry-run dispatch from the merged release branch. Keep **Dry run** enabled.
 
-A GitHub Release is a promise that `npm i` works. It must not be made
-before that is true. Hence the ordering above and the verification step
-between them — the job now fails rather than creating a Release for a
-version nobody can install.
+   ```bash
+   gh workflow run release.yml --ref release/v2.0.3 -f dry_run=true
+   ```
 
-## rc channels (Beta-to-Stable 1.0 plan, M4)
+The dry run validates the RC-only version, release branch, changelog, ancestry from protected `main`, complete local gate, tarball contents, and SHA-256. It uploads the candidate artifact but creates no tag, npm version, or GitHub Release.
 
-Prerelease versions (`vX.Y.Z-rc.N` tags) publish under the **`next`
-dist-tag, never `latest`** — nobody running `npx mjolnir-qa@latest`
-should receive a release candidate by accident. The final (non-rc) tag
-publishes under `latest` as usual; that is the promotion step.
+## Publish an approved candidate
 
-The full `rc.N → stable` flow, run for every release that matters
-enough to dogfood first:
+After reviewing the dry-run artifact and approving the two Environments:
 
-1. Bump to the rc version (`npm version` accepts prerelease suffixes,
-   e.g. `1.0.0-rc.1`), update the CHANGELOG, tag `v1.0.0-rc.1`,
-   `git push --follow-tags`.
-2. The workflow runs the full gate and publishes under `next`:
-   `npm i mjolnir-qa@next` / `npx mjolnir-qa@next` for the feedback
-   window.
-3. Fix whatever the window surfaces; cut `v1.0.0-rc.2` the same way if
-   the changes are non-trivial.
-4. Bump to the final version (`1.0.0`), final CHANGELOG entry, tag
-   `v1.0.0`, push. That publish lands on `latest` — done. rc versions
-   stay installed only where `@next` was requested explicitly.
-
-Rollback policy: **deprecate, never unpublish** (see `docs/VERSIONING.md`
-— a published version must stay resolvable for pinners). If an rc is
-abandoned, `npm deprecate mjolnir-qa@1.0.0-rc.1 "superseded by …"`.
-
-## Failure-mode runbook
-
-Symptoms seen from outside, causes, and the fix for each:
-
-| Symptom                                                                           | Cause                                                                                                                                                                                                         | Fix                                                                                                                                                                                                                                                                                          |
-| --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `OIDC token exchange error - package not found` / `ENEEDAUTH` on publish          | npmjs.com trusted-publisher config does not match this run's OIDC claims (case-sensitive org, workflow filename, non-empty Environment)                                                                       | Correct the Trusted Publisher per "One-time setup" below; re-run via `gh workflow run release.yml -f tag=vX.Y.Z`                                                                                                                                                                             |
-| Publish succeeded but the poll step fails for the full 60s                        | Registry read lag beyond the poll window, or the version landed under an unexpected dist-tag                                                                                                                  | Check `npm view mjolnir-qa@<version>` and `npm view mjolnir-qa dist-tags`; if it is live, re-run the workflow — the duplicate publish is skipped and the poll re-verifies. If it never appears, treat as a failed publish and re-tag                                                         |
-| GitHub Release exists but `npm i` 404s                                            | Should be impossible since the 2026-08-30 ordering fix (publish → poll → Release). If seen: the Release lies                                                                                                  | Follow the rollback policy below and open a tracking issue — this is a P0 against the release pipeline itself                                                                                                                                                                                |
-| `E403` "cannot publish over the previously published version" on a re-run         | The version is already live — expected on workflow_dispatch re-runs                                                                                                                                           | Nothing to fix; the job skips publish and proceeds to verification                                                                                                                                                                                                                           |
-| Fresh-install gate fails (`tests/integrations/registry-install.spec.ts`)          | The packed tarball is broken (missing files, bad bin) — the gate ran before anything was published                                                                                                            | Do NOT publish. Fix the packaging issue, cut a new tag                                                                                                                                                                                                                                       |
-| Fresh-install gate fails with `npm pack --json produced no entry with a filename` | A new npm major changed `pack --json`'s output shape — npm 12.0 turned the array into an object keyed by package name (hit by the v0.5.1 auto-release, 2026-09-05: tag cut, publish stopped, nothing shipped) | Fixed by the shape-tolerant parser (`tests/helpers/npm-pack-json.ts`); the release toolchain is pinned to `npm@11` so majors reach the publish path only as deliberate verified changes. Merge the fix — the next auto-release cuts the next version; never rewrite the failed version's tag |
-
-## Rollback policy: deprecate, never unpublish
-
-npm unpublishing breaks every `package-lock.json` pinning the version
-and every mirror that resolved it. The rollback path for a bad release:
-
-1. `npm deprecate mjolnir-qa@<version> "<reason>; use <fixed version>"`
-2. Cut and publish the fixed version immediately (tag → workflow).
-3. If `latest` must move back (bad stable release), publish the
-   corrected version — a re-point of the `latest` dist-tag without a new
-   version (`npm dist-tag add mjolnir-qa@<older> latest`) is the
-   emergency brake, used only when no fixed version can ship quickly,
-   and always with a CHANGELOG entry explaining it.
-
-## Re-running a release
-
-`release.yml` also accepts `workflow_dispatch` with a `tag` input, so a
-release that failed for a reason **outside** the repo (registry auth, a
-flaky runner) can be retried against the same tag:
+1. Dispatch the same release branch with **Dry run** disabled.
+2. Confirm repository variable `NPM_PUBLISH` is `true`.
+3. Approve the `release-candidate` Environment.
+4. Approve the `npm-publish` Environment.
 
 ```bash
-gh workflow run release.yml -f tag=v0.5.0
+gh workflow run release.yml --ref release/v2.0.3 -f dry_run=false
 ```
 
-Without this the only retry path is deleting and force-pushing the tag,
-which rewrites history for anyone who already fetched it. Re-running is
-safe: if the version is already on npm the publish is skipped and the job
-still verifies and completes.
+The workflow:
+
+1. re-runs all validation and produces one audited tarball;
+2. creates `vX.Y.Z-rc.N` at the validated commit if the tag does not exist, or verifies that an existing tag resolves to that exact commit, without force;
+3. downloads the same tarball and verification assets with their release directory structure intact, then verifies its SHA-256;
+4. upgrades to npm 11.5.1 and publishes with `npm publish --tag next --provenance --ignore-scripts`;
+5. verifies the package version on the registry;
+6. creates a GitHub prerelease with the tarball and trust verdict attached.
+
+A rerun is safe. An existing matching tag is verified, an already-published npm version is not republished, and an existing GitHub Release is updated to prerelease form while missing assets are uploaded and matching assets are compared byte-for-byte.
+
+## Stable promotion
+
+Promote an RC to a stable release through a new reviewed version branch and PR. Never move an RC or historical tag to manufacture a stable release. Stable `X.Y.Z` publication remains an explicit owner decision outside the current RC-only workflow.
+
+## Verification
+
+Use the registry as publication evidence:
+
+```bash
+npm view mjolnir-qa@next version
+npm view mjolnir-qa@2.0.3-rc.1 version
+npm view mjolnir-qa dist-tags
+npm audit signatures
+gh release view v2.0.3-rc.1
+```
+
+A green workflow alone is not proof of publication.
+
+## Failure and recovery
+
+| Symptom                                                | Required response                                                                                                                                         |
+| ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Dry run rejects version, changelog, or branch          | Fix the release PR; do not bypass validation.                                                                                                             |
+| Candidate scan or build is incomplete                  | Fix the repository; never package a partial result.                                                                                                       |
+| Tag creation succeeds but npm publish fails            | Re-run the same dispatch. The verified tag is retained and publish retries.                                                                               |
+| npm publish succeeds but GitHub Release creation fails | Re-run; the registry check skips republishing and the Release step uploads missing assets, verifies existing assets, and updates the prerelease metadata. |
+| Protected-main ancestry fails                          | Rebase or recreate the release branch from current protected `main`; do not edit the protected branch directly.                                           |
+| Trusted publishing returns `ENEEDAUTH`                 | Verify exact Organization/repository casing and that the npm Environment is `npm-publish`.                                                                |
+| A published version is defective                       | Deprecate it and publish a new version. Do not unpublish or move the tag.                                                                                 |
+
+```bash
+npm deprecate mjolnir-qa@<version> "defective; use <fixed-version>"
+```
+
+## Local pack verification
+
+Before dispatching, inspect the same kind of artifact the workflow publishes:
+
+```bash
+npm run build
+TARBALL=$(npm pack --ignore-scripts --pack-destination "$RUNNER_TEMP" | tail -n 1)
+node scripts/pack-audit.mjs "$RUNNER_TEMP/$TARBALL"
+```
+
+`npm run ci-local` already performs the build, certification, property, fuzz, coverage, ratchet, audit, brand, and site checks. Corpus audit remains a separate fail-closed network gate because authoritative upstream revisions and baseline provenance require owner review.
+
+## Lifecycle scripts
+
+| Hook             | Command         | Consumer behavior and justification                                                                             |
+| ---------------- | --------------- | --------------------------------------------------------------------------------------------------------------- |
+| `prepare`        | `husky`         | Developer checkouts only; installs local Git hooks after `npm ci`. Published consumers do not run it.           |
+| `prepublishOnly` | `npm run build` | Runs only on an explicit publish attempt and ensures `dist/` cannot be stale. Consumers never receive the hook. |
+
+No additional lifecycle hook may be added without an equivalent row explaining who executes it and why.
 
 ## Current state
 
-**Automated publishing is live.** `mjolnir-qa` on npmjs.com, with
-`bin: { "mjolnir": ..., "mjolnir-qa": ... }`, so both the stable
-`mjolnir` command and the package-name `npx mjolnir-qa@latest` path
-resolve to the CLI. `latest` is **2.0.2** on npm, matching
-`package.json` and the public GitHub Release `v2.0.2`; verify with
-`npm view mjolnir-qa version`.
-Stable publishes use OIDC trusted publishing with a SLSA provenance
-attestation (`npm audit signatures`).
-
-- Version 0.4.0 was published **manually** (no `v0.4.0` git tag; npm
-  records its `gitHead` as `7b7a61a`). It shipped a POSIX-broken bin —
-  superseded by 0.5.0.
-- Since the 2026-09 auto-release landing, every merge to `main`
-  releases by itself (see "Automated release (default path)" above);
-  `git push --follow-tags` remains the manual/rc path.
-  No `NODE_AUTH_TOKEN` exists anywhere — OIDC replaces it.
-- Version 0.5.1 was **tagged by the auto-release but never published**
-  (2026-09-05): its release run's fresh-install gate caught npm 12's
-  `pack --json` output-shape change and stopped the publish exactly as
-  designed — no Release ever advertised it. The tag stays (never
-  rewrite tags); npm's next version is the first one after the repair.
-- Tag `v2.0.1` exists in the repository, but there is no matching npm
-  package or GitHub Release. It is superseded by the registry-published
-  `v2.0.2`; a tag alone is not an installable release.
-
-### What was wrong before 0.5.0
-
-The publish step failed on every tag with:
-
-```
-npm http fetch POST 404 .../oidc/token/exchange/package/mjolnir-qa
-npm verbose oidc  OIDC token exchange error - package not found
-npm error code ENEEDAUTH
-```
-
-That message does **not** mean the package is missing. It means npm found
-no trusted-publisher entry matching the workflow's OIDC claims. Root
-cause: the npmjs.com Trusted Publisher had the owner as `Sergey-bar`
-while GitHub's `repository` claim is `Sergey-Bar/Mjolnir` — npm matches
-it **case-sensitively**. Corrected on npmjs.com, then re-run against the
-existing `v0.5.0` tag with `gh workflow run release.yml -f tag=v0.5.0`.
-
-## One-time setup (already done — recorded for a rebuild)
-
-Neither can be automated from inside this repository.
-
-**1. Configure the npmjs.com Trusted Publisher (account-level, on npmjs.com).**
-✅ **DONE — 2026-08-30.**
-On `mjolnir-qa`'s package page → **Settings** → **Publishing access** →
-add a **Trusted Publisher**:
-
-| Field         | Value                     |
-| ------------- | ------------------------- |
-| Publisher     | GitHub Actions            |
-| Organization  | `Sergey-Bar` (exact case) |
-| Repository    | `Mjolnir`                 |
-| Workflow file | `release.yml`             |
-| Environment   | _(leave blank)_           |
-
-The **Organization** value must match GitHub's login casing exactly
-(`Sergey-Bar`, not `Sergey-bar`) — npm matches the OIDC `repository`
-claim case-sensitively, and a mismatch surfaces as the `ENEEDAUTH` /
-`package not found` above with everything else looking correct.
-
-Once configured, `npm publish --provenance` from that exact workflow
-needs **no `NODE_AUTH_TOKEN`** — npm verifies the OIDC token GitHub
-Actions presents (via `id-token: write`, already on the `release` job).
-That is why there is no token secret anywhere: OIDC trusted publishing
-replaces long-lived tokens.
-
-The `Environment` field must be **left blank**. A value there becomes
-part of the OIDC claim the registry matches against, and this workflow
-does not run in a GitHub Environment — a non-empty value is the most
-common cause of `ENEEDAUTH` surviving an otherwise-correct setup.
-
-**2. Turn the publish step on.** ✅ **DONE** — `NPM_PUBLISH` was set to
-`true` on 2026-08-29. Recorded here for anyone rebuilding this from
-scratch:
-
-```bash
-gh variable set NPM_PUBLISH --body true
-```
-
-(or Settings → Secrets and variables → Actions → Variables → New variable
-`NPM_PUBLISH` = `true`.)
-
-**3. Release.** `git push --follow-tags` after `npm version …`. To retry a
-tag that already exists (a failure outside the repo), use
-`gh workflow run release.yml -f tag=vX.Y.Z` instead of re-tagging.
-
-Confirm the outcome from outside CI — the job's own green tick is not the
-proof, the registry is:
-
-```bash
-npm view mjolnir-qa version      # must print the version just tagged
-npm audit signatures             # provenance attestation present
-```
-
-To eyeball a tarball before tagging: `npm publish --provenance --dry-run`,
-cross-checked against `tests/package-smoke.spec.ts`.
-
-## Verifying provenance after a real publish
-
-Once live, every published version gets a verifiable provenance
-attestation visible on its npmjs.com page ("Provenance" tab) and
-checkable via:
-
-```bash
-npm audit signatures
-```
-
-This is the same falsifiable-claim philosophy the rest of this project
-uses (badges, self-scan artifacts) applied to the package itself: a
-stranger can verify the published tarball was built by this exact
-workflow from this exact commit, not hand-assembled and uploaded.
-
-## Lifecycle scripts (SC-7)
-
-The published package carries exactly two npm lifecycle hooks, both
-deliberate:
-
-| Script           | Command         | Why it exists                                                                                                                                                                                                                 |
-| ---------------- | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `prepare`        | `husky`         | Dev-only: installs the repo's git hooks when a contributor runs `npm ci`/`install`. npm skips `prepare` for the published tarball's consumers, so it never executes on user machines — it only touches contributor checkouts. |
-| `prepublishOnly` | `npm run build` | Belt and braces: `dist/` must exist before any publish. The release workflow builds explicitly before packing; this hook guarantees that no publish path (manual included) can ship a stale or missing `dist/`.               |
-
-No other lifecycle hook (`preinstall`, `install`, `postinstall`,
-`prepack`, `postpack`, `prepublish`) may be added without updating this
-section: the repo-hygiene suite fails when a hook exists that this
-document does not justify (supply-chain gate SC-7 — hooks run arbitrary
-code on consumer machines, so the set stays minimal and written down).
-
-## Build determinism (SC-8)
-
-`node scripts/verify-build-determinism.mjs` builds the current HEAD twice
-from two independent clean checkouts (fresh worktree + `npm ci` from the
-committed lockfile), compares every `dist/` artifact byte-for-byte, then
-both tarballs.
-
-Recorded run (2026-09-11, tree @ `a000aa2`, Windows 11 · Node 26 ·
-npm 11): **dist byte-identical (4 files) · tarballs byte-identical**
-(`mjolnir-qa-1.0.8.tgz`, sha256 prefix `d10243d8018988f8`).
-
-The honest claim this supports: **same-input clean-build determinism
-under the pinned project toolchain**. It is deliberately NOT a
-cross-environment "reproducible builds" claim — that would require
-recording toolchain hashes and reproducing on foreign machines, which
-this project does not assert.
-
-## Secret-material controls (SC-11)
-
-Two different controls, stated separately and honestly:
-
-- **Artifact side (implemented):** the pack-audit gate (`SC-6`,
-  `scripts/pack-audit.mjs`) scans every file of the packed tarball for
-  private-key material and machine-local absolute paths before any
-  registry write.
-- **Repository side (owner action pending):** GitHub secret scanning and
-  push protection are currently **disabled** on this repository (verified
-  via the API, 2026-09-11). Enabling both is a two-toggle, zero-cost
-  owner action (Settings → Code security → Secret scanning + Push
-  protection). Until then, the repo-side control is NO_EVIDENCE — CodeQL
-  and OSV are code and dependency analyzers and are NOT secret scanning.
+- npm `latest` is **2.0.2**.
+- protected `main`: `1cd81234` at the planning baseline.
+- historical `v2.0.3`: `460c7d71e67d54d667414ff36e6f100d604b6185`, retained pending owner decision; a tag alone is not an installable release.
+- automatic publishing from `main`: disabled.
+- trusted npm OIDC publication: gated by the `npm-publish` Environment.

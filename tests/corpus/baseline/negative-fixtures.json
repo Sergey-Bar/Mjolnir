@@ -1,4 +1,6 @@
 {
+  "schemaVersion": 1,
+  "sourceRevision": "de4996258f669b9df715b9cc37fe1a9f5deb662a",
   "countsByRule": {
     "QA-PW-115": 1,
     "QA-PW-122": 60,

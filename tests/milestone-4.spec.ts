@@ -42,14 +42,65 @@ describe("M4: Verification Intelligence for CI Workflow Integrity", () => {
   });
 
   it("should handle empty suppressions", () => {
-    const report = computeVerificationIntelligence(".", [], 0);
+    const report = computeVerificationIntelligence(".", [], []);
     expect(report.overallStatus).toBeDefined();
   });
 
-  it("should check workflow contains scan command", () => {
-    const check = checkWorkflowContainsScan(".github/workflows/ci.yml", ".");
-    expect(check.name).toBeDefined();
-    expect(["pass", "fail", "warn"]).toContain(check.status);
+  it("accepts real bare-CLI scan invocations", () => {
+    const workflows = [
+      "npx mjolnir-qa . --json",
+      "mjolnir packages/app",
+      "env CI=1 mjolnir .",
+      "node dist/cli.mjs . --format json",
+    ];
+    for (const command of workflows) {
+      expect(
+        checkWorkflowContainsScan(
+          `name: ci\njobs:\n  test:\n    steps:\n      - run: ${JSON.stringify(command)}\n`,
+          "ci.yml",
+        ),
+      ).toBe(true);
+    }
+  });
+
+  it("rejects non-gating lookalikes and disabled invocations", () => {
+    const workflows = [
+      "echo 'mjolnir .'",
+      "curl https://example.test/mjolnir",
+      "npm install mjolnir",
+      "mjolnir . --blocking none",
+      "mjolnir . || true",
+    ];
+    for (const command of workflows) {
+      expect(
+        checkWorkflowContainsScan(
+          `name: ci\njobs:\n  test:\n    steps:\n      - run: ${JSON.stringify(command)}\n`,
+          "ci.yml",
+        ),
+        command,
+      ).toBe(false);
+    }
+    expect(
+      checkWorkflowContainsScan(
+        'name: ci\njobs:\n  test:\n    steps:\n      - run: "npx mjolnir scan"\n',
+        "ci.yml",
+      ),
+    ).toBe(true);
+  });
+
+  it("accounts for step and job continue-on-error", () => {
+    expect(
+      checkWorkflowContainsScan(
+        "name: ci\njobs:\n  test:\n    continue-on-error: true\n    steps:\n      - run: mjolnir .\n",
+        "ci.yml",
+      ),
+    ).toBe(false);
+    expect(
+      checkWorkflowContainsScan(
+        "name: ci\njobs:\n  test:\n    continue-on-error: true\n    steps:\n      - continue-on-error: false\n        run: mjolnir .\n",
+        "ci.yml",
+      ),
+    ).toBe(true);
   });
 });
 
@@ -58,7 +109,7 @@ describe("M5: Framework Maturity Tracking for Playwright", () => {
     const progress = getPlaywrightMaturity();
     expect(progress.frameworkId).toBe("playwright");
     expect(progress.currentMaturity).toBeDefined();
-    expect(progress.targetMaturity).toBe("F6");
+    expect(progress.targetMaturity).toBe("F5");
     expect(progress.progressPercentage).toBeGreaterThanOrEqual(0);
     expect(progress.progressPercentage).toBeLessThanOrEqual(100);
   });
@@ -105,7 +156,7 @@ describe("M5: Framework Maturity Tracking for Playwright", () => {
 
 describe("M6: Suppression Policy Governance Gate", () => {
   it("should pass with empty suppressions", () => {
-    const result = computeSuppressionGovernanceGate([], 0);
+    const result = computeSuppressionGovernanceGate([], []);
     expect(result.passed).toBe(true);
     expect(result.policyViolations).toHaveLength(0);
   });
@@ -116,7 +167,17 @@ describe("M6: Suppression Policy Governance Gate", () => {
       files: [`file${i}.ts`],
       reason: "test suppression",
     }));
-    const result = computeSuppressionGovernanceGate(suppressions, 100);
+    const findings = [
+      ...suppressions.map((suppression) => ({
+        ruleId: suppression.ruleId,
+        file: suppression.files?.[0] ?? "",
+      })),
+      ...Array.from({ length: 40 }, (_, i) => ({
+        ruleId: "OTHER",
+        file: `other-${i}.ts`,
+      })),
+    ];
+    const result = computeSuppressionGovernanceGate(suppressions, findings);
     expect(result.massSuppression.isMassSuppression).toBe(true);
     expect(result.passed).toBe(false);
   });
@@ -128,7 +189,13 @@ describe("M6: Suppression Policy Governance Gate", () => {
     const knownRuleIds = new Set(["QA-TEST-001"]);
     const result = enforceSuppressionPolicy(
       suppressions,
-      10,
+      [
+        { ruleId: "QA-TEST-001", file: "file1.ts" },
+        ...Array.from({ length: 9 }, (_, i) => ({
+          ruleId: "OTHER",
+          file: `other-${i}.ts`,
+        })),
+      ],
       DEFAULT_SUPPRESSION_POLICY,
       knownRuleIds,
     );
@@ -143,15 +210,21 @@ describe("M6: Suppression Policy Governance Gate", () => {
     const knownRuleIds = new Set(["QA-TEST-001"]);
     const result = enforceSuppressionPolicy(
       suppressions,
-      10,
+      [
+        { ruleId: "QA-TEST-001", file: "file1.ts" },
+        ...Array.from({ length: 9 }, (_, i) => ({
+          ruleId: "OTHER",
+          file: `other-${i}.ts`,
+        })),
+      ],
       DEFAULT_SUPPRESSION_POLICY,
       knownRuleIds,
     );
-    expect(result.blocked.length).toBeGreaterThanOrEqual(0);
+    expect(result.blocked).toHaveLength(1);
   });
 
   it("should render governance result as string", () => {
-    const result = computeSuppressionGovernanceGate([], 0);
+    const result = computeSuppressionGovernanceGate([], []);
     const rendered = renderSuppressionGovernanceResult(result);
     expect(typeof rendered).toBe("string");
     expect(rendered.length).toBeGreaterThan(0);
@@ -162,7 +235,9 @@ describe("M6: Suppression Policy Governance Gate", () => {
     const suppressions = [
       { ruleId: "QA-TEST-001", files: ["file1.ts"], reason: "test" },
     ];
-    const result = computeSuppressionGovernanceGate(suppressions, 10);
+    const result = computeSuppressionGovernanceGate(suppressions, [
+      { ruleId: "QA-TEST-001", file: "file1.ts" },
+    ]);
     expect(result.fingerprint).toBeDefined();
     expect(typeof result.fingerprint).toBe("string");
     expect(result.fingerprint.length).toBeGreaterThan(0);
@@ -178,7 +253,21 @@ describe("M6: Suppression Policy Governance Gate", () => {
       files: [`file${i}.ts`],
       reason: "test",
     }));
-    const result = computeSuppressionGovernanceGate(suppressions, 100, policy);
+    const findings = [
+      ...suppressions.map((suppression) => ({
+        ruleId: suppression.ruleId,
+        file: suppression.files?.[0] ?? "",
+      })),
+      ...Array.from({ length: 80 }, (_, i) => ({
+        ruleId: "OTHER",
+        file: `other-${i}.ts`,
+      })),
+    ];
+    const result = computeSuppressionGovernanceGate(
+      suppressions,
+      findings,
+      policy,
+    );
     expect(result.passed).toBe(false);
     expect(result.policyViolations.length).toBeGreaterThan(0);
   });

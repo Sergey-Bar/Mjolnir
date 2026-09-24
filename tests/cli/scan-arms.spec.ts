@@ -177,7 +177,7 @@ describe("files-scoped suppressions", () => {
     // glob matching nothing here.
     expect(ruleIds).not.toContain("QA-PW-101");
     expect(ruleIds).toContain("QA-TEST-004");
-    expect(result.suppressionCount).toBe(2);
+    expect(result.suppressionCount).toBe(1);
   });
 });
 

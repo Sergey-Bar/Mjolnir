@@ -712,25 +712,28 @@ function maxSeverity(findings: Finding[]): Finding["severity"] {
  * VICTORY line: wordmark + the trophy retained inside, all in the
  * forged gold-white pair. The halo hammer itself is the score
  * instrument above — one mark, calmly (brand usage rule); ASCII mode
- * keeps the `*** FLAWLESS VICTORY ***` contract string (test-locked in
- * empty-states/long-tail-arms).
+ * labels the result as static rather than claiming a clean suite.
  */
 function appendForgedBlock(lines: string[], ui: UiContext): void {
   const { p, ascii } = ui;
   lines.push("");
   if (ascii) {
-    lines.push(p.forged("*** FLAWLESS VICTORY ***"));
+    lines.push(p.forged("*** ZERO FINDINGS (STATIC) ***"));
   } else {
     lines.push(`  ${p.forged(FORGED_WORDMARK)}`);
   }
-  lines.push(p.forged("  FORGED — zero findings. The suite is clean."));
+  lines.push(
+    p.forged(
+      "  FORGED — zero findings on the analyzed surface; runtime evidence is still required for higher trust.",
+    ),
+  );
   lines.push("");
   lines.push(p.forged(TROPHY));
   lines.push("");
   pushWrapped(
     lines,
     p,
-    "Keep it green: re-run Mjölnir on changed tests before merging, and keep the CI workflow installed so regressions are caught early.",
+    "Next: re-scan changed tests and keep the advisory CI workflow installed so new regressions are surfaced.",
     ui.width,
   );
   lines.push(nextStep("mjolnir --scope changed", ui));

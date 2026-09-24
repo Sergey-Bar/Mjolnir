@@ -2,7 +2,7 @@
  * M5 — Framework Maturity Tracking for Playwright.
  *
  * Provides functions to track and report framework maturity levels,
- * with special focus on Playwright's progression from F4 toward F6.
+ * with special focus on Playwright's progression from F4 toward F5.
  */
 
 import {
@@ -19,7 +19,7 @@ import {
 export interface MaturityProgress {
   frameworkId: string;
   currentMaturity: MaturityLevel;
-  targetMaturity: string;
+  targetMaturity: MaturityLevel;
   currentSupportStatus: SupportStatus;
   targetSupportStatus: SupportStatus;
   maturityScore: number;
@@ -32,7 +32,7 @@ export interface MaturityProgress {
 export interface PlaywrightMaturityReport {
   frameworkId: string;
   currentMaturity: MaturityLevel;
-  targetMaturity: string;
+  targetMaturity: MaturityLevel;
   currentSupportStatus: SupportStatus;
   targetSupportStatus: SupportStatus;
   maturityScore: number;
@@ -64,62 +64,11 @@ const SUPPORT_SCORES: Record<SupportStatus, number> = {
 };
 
 export function getPlaywrightMaturity(): MaturityProgress {
-  const pw = getFrameworkById("playwright");
-  if (!pw) {
-    return {
-      frameworkId: "playwright",
-      currentMaturity: "F4",
-      targetMaturity: "F6",
-      currentSupportStatus: "OFFICIAL_PARTIAL",
-      targetSupportStatus: "OFFICIAL_FULL",
-      maturityScore: 80,
-      dimensionsComplete: 0,
-      dimensionsTotal: 0,
-      gaps: [],
-      progressPercentage: 0,
-    };
+  const progress = getFrameworkMaturity("playwright");
+  if (!progress) {
+    throw new Error("Playwright is missing from the framework inventory");
   }
-
-  const scorecard = FRAMEWORK_SCORECARDS.find(
-    (s) => s.frameworkId === "playwright",
-  );
-  const entries = scorecard?.entries ?? [];
-  const totalDimensions = entries.length;
-  const completeDimensions = entries.filter(
-    (e) => e.current === "EXCELLENT" || e.current === "GOOD",
-  ).length;
-
-  const gaps = entries
-    .filter((e) => e.gapId !== null)
-    .map((e) => e.gapId ?? "");
-
-  const currentScore = MATURITY_SCORES[pw.maturity] ?? 80;
-  const supportScore = SUPPORT_SCORES[pw.supportStatus] ?? 75;
-  const dimensionScore =
-    totalDimensions > 0
-      ? Math.round((completeDimensions / totalDimensions) * 100)
-      : 0;
-  const maturityScore = Math.round(
-    currentScore * 0.4 + supportScore * 0.3 + dimensionScore * 0.3,
-  );
-
-  const progressPercentage = Math.min(
-    100,
-    Math.round((maturityScore / 100) * 100),
-  );
-
-  return {
-    frameworkId: "playwright",
-    currentMaturity: pw.maturity,
-    targetMaturity: "F6",
-    currentSupportStatus: pw.supportStatus,
-    targetSupportStatus: pw.targetSupportStatus,
-    maturityScore,
-    dimensionsComplete: completeDimensions,
-    dimensionsTotal: totalDimensions,
-    gaps,
-    progressPercentage,
-  };
+  return progress;
 }
 
 export function getPlaywrightMaturityReport(): PlaywrightMaturityReport {

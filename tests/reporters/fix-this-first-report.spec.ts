@@ -59,9 +59,9 @@ function reportMilestones(out: string): string[] {
         line.includes("$ mjolnir") ||
         line.includes("DIAGNOSTICS BY CATEGORY") ||
         line.includes("FINDINGS") ||
-        line.includes("FLAWLESS VICTORY") ||
+        line.includes("ZERO FINDINGS (STATIC)") ||
         line.includes("zero findings") ||
-        line.includes("Keep it green") ||
+        line.includes("Next: re-scan changed tests") ||
         line.startsWith("Analysis: PARTIAL") ||
         line.includes("NO TESTS DETECTED") ||
         line.includes("PARTIAL SCAN") ||
@@ -110,7 +110,7 @@ describe("MVP-005 default terminal report", () => {
     expect(verbose).toContain("Verify");
   });
 
-  it("clean state says how to keep the gate green", () => {
+  it("clean static state avoids claiming the suite is clean", () => {
     const out = renderTerminal(scan({ score: 100, findings: [] }), {
       isTTY: false,
       ascii: true,
@@ -119,9 +119,9 @@ describe("MVP-005 default terminal report", () => {
       [
         "WORTHINESS 100/100  WORTHY",
         "= DIAGNOSTICS BY CATEGORY",
-        "*** FLAWLESS VICTORY ***",
-        "FORGED — zero findings. The suite is clean.",
-        "Keep it green: re-run Mjölnir on changed tests before merging, and keep the CI",
+        "*** ZERO FINDINGS (STATIC) ***",
+        "FORGED — zero findings on the analyzed surface; runtime evidence is still required for higher trust.",
+        "Next: re-scan changed tests and keep the advisory CI workflow installed so new",
         "$ mjolnir --scope changed",
         "$ mjolnir ci install",
       ]
@@ -189,8 +189,8 @@ describe("MVP-005 default terminal report", () => {
       ]
     `);
     // Ensure the FORGED block is NOT present
-    expect(out).not.toContain("FLAWLESS VICTORY");
-    expect(out).not.toContain("FORGED — zero findings. The suite is clean.");
+    expect(out).not.toContain("ZERO FINDINGS (STATIC)");
+    expect(out).not.toContain("FORGED — zero findings on the analyzed surface");
     // Ensure the partial guidance IS present
     expect(out).toContain(
       "PARTIAL SCAN — no findings, but analysis was incomplete",

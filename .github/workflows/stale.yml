@@ -21,7 +21,7 @@ jobs:
       pull-requests: write
 
     steps:
-      - uses: actions/stale@28ca1036281a5e592210e068a4c8e57e5e5e6795 # v5.2.0
+      - uses: actions/stale@99b6c709598e2b0d0841cd037aaf1ba07a4410bd # v5.2.0
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           stale-issue-message: "Stale issue message"
