@@ -8,8 +8,9 @@
  * each finding becomes a "test" entry with Mjölnir's verdict as outcome.
  */
 
-import { existsSync, mkdirSync, writeFileSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { existsSync, mkdirSync } from "node:fs";
+import { isAbsolute, relative, resolve } from "node:path";
+import { writeFileAtomic } from "../lib/fs-atomic.js";
 
 import type { Finding } from "../types.js";
 import { runScan } from "../engine/scan-pipeline.js";
@@ -165,13 +166,22 @@ export async function runReportPlaywrightCommand(
     io.err(`mjolnir report playwright: target does not exist: ${target}`);
     return EXIT_USAGE;
   }
+  const root = resolve(target);
+  const requestedOutput = resolve(outputPath);
+  const outputRelative = relative(root, requestedOutput);
+  if (isAbsolute(outputRelative) || outputRelative.startsWith("..")) {
+    io.err(
+      "mjolnir report playwright: output must stay within the target root",
+    );
+    return EXIT_USAGE;
+  }
 
   try {
     const result = await runScan({
       target,
       json: true,
       verbose: false,
-      maxDurationMs: Number.POSITIVE_INFINITY,
+      maxDurationMs: 600_000,
       scopeChanged: false,
       format: "json",
       strict: false,
@@ -182,8 +192,10 @@ export async function runReportPlaywrightCommand(
     if (!existsSync(outDir)) {
       mkdirSync(outDir, { recursive: true });
     }
-    const fullPath = join(outDir, outputPath);
-    writeFileSync(fullPath, JSON.stringify(report, null, 2) + "\n");
+    const fullPath = requestedOutput;
+    writeFileAtomic(fullPath, JSON.stringify(report, null, 2) + "\n", {
+      encoding: "utf8",
+    });
 
     const header = sectionHeader("PLAYWRIGHT REPORT", ui);
     io.out(`${header}\n`);

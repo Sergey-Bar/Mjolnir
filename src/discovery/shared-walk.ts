@@ -33,9 +33,9 @@ export interface SharedWalkOptions {
   /** Memo map shared across every walk of one scan (audit P-2). */
   fixtureDirMemo: Map<string, boolean>;
   /** R4c Scope Integrity: counted matcher exclusions. */
-  onIgnored?: (() => void) | undefined;
+  onIgnored?: ((path: string) => void) | undefined;
   /** R4c Scope Integrity: counted files no adapter claims. */
-  onUnrecognized?: (() => void) | undefined;
+  onUnrecognized?: ((path: string) => void) | undefined;
 }
 
 export function sharedWalk(options: SharedWalkOptions): void {
@@ -67,10 +67,10 @@ export function sharedWalk(options: SharedWalkOptions): void {
       // scan root is a drive root ("C:\") or carries a trailing
       // separator — the relative path came out empty or mis-sliced.
       const rel = relative(options.root, full).replaceAll("\\", "/");
+      if (entry.isDirectory() && options.skipDirs.includes(entry.name))
+        continue;
       if (options.ignoreMatcher.isIgnored(rel)) {
-        // R4c Scope Integrity: ignored files are COUNTED — the scope
-        // verdict must know how much of the tree the matcher excluded.
-        options.onIgnored?.();
+        if (!rel.startsWith(".mjolnir/")) options.onIgnored?.(rel);
         continue;
       }
       // Symlinks are never followed: a link can point outside the repo
@@ -82,7 +82,6 @@ export function sharedWalk(options: SharedWalkOptions): void {
         continue;
       }
       if (entry.isDirectory()) {
-        if (options.skipDirs.includes(entry.name)) continue;
         if (rel.split("/").length > LIMITS.maxDepth) {
           options.onSkipped("max-depth");
           continue;
@@ -112,7 +111,7 @@ export function sharedWalk(options: SharedWalkOptions): void {
         // R4c Scope Integrity: a file no adapter claims is COUNTED as
         // unrecognized — the scan can state what it saw but did not
         // analyze, instead of pretending the tree was fully covered.
-        options.onUnrecognized?.();
+        options.onUnrecognized?.(rel);
       }
     }
   };

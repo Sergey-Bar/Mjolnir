@@ -89,14 +89,14 @@ describe("loadLocalRules — the folder contract (zero network)", () => {
     expect(findings[0]?.line).toBe(2);
   });
 
-  it("a JS module exporting rules loads like an npm plugin", async () => {
+  it("a JS module exporting rules loads like an npm plugin after explicit trust", async () => {
     const dir = workspace();
     mkdirSync(join(dir, "mjolnir-rules"), { recursive: true });
     writeFileSync(
       join(dir, "mjolnir-rules", "acme.mjs"),
       `export const rules = [{ id: "QA-ACME-002", title: "Module rule", category: "QA-TEST", severity: "info", confidence: "medium", findingType: "deterministic-defect", qaImpact: "HYGIENE", appliesTo: "test-files", tier: "quarantine", run: () => [] }];`,
     );
-    const { rules, errors } = await loadLocalRules(dir);
+    const { rules, errors } = await loadLocalRules(dir, true);
     expect(errors).toEqual([]);
     expect(rules.map((r) => r.id)).toEqual(["QA-ACME-002"]);
   });
@@ -116,7 +116,7 @@ describe("loadLocalRules — the folder contract (zero network)", () => {
       join(dir, "mjolnir-rules", "core.mjs"),
       `export const rules = [{ id: "QA-ACME-003", title: "Wants core", category: "QA-TEST", severity: "error", confidence: "high", findingType: "deterministic-defect", qaImpact: "BLOCKS-RELEASE", appliesTo: "test-files", tier: "core", run: () => [] }];`,
     );
-    const { rules, errors } = await loadLocalRules(dir);
+    const { rules, errors } = await loadLocalRules(dir, true);
     expect((rules[0] as { tier?: string }).tier).toBe("extended");
     expect(errors[0]).toContain('clamped to "extended"');
   });

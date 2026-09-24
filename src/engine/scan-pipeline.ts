@@ -13,7 +13,7 @@
  * module moved. Re-exports in cli.ts keep the historical import surface.
  */
 
-import { readFileSync } from "node:fs";
+import { existsSync, lstatSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { basename, dirname, relative, resolve, sep } from "node:path";
 
@@ -25,6 +25,7 @@ import {
   type RuleCategory,
   type ScanResult,
 } from "../types.js";
+import { deriveCompletion } from "./completion.js";
 import { buildTrustSummary } from "./trust-summary.js";
 import { buildEvidenceGraph, buildRunIdentity } from "./run-identity.js";
 import { ENGINE_VERSION } from "./version.js";
@@ -74,6 +75,7 @@ import { buildDependencyGraph } from "./dependency-graph.js";
 import { isIncrementalSafe } from "./incremental-analysis.js";
 import { analyzeMonorepo } from "./monorepo-analysis.js";
 import { getCodeTextForCounting } from "./code-text.js";
+import { readFileBounded } from "../lib/fs-bounded.js";
 import {
   computeRulesDigest,
   createScanCache,
@@ -100,6 +102,8 @@ import {
 } from "../plugins/trust-gate.js";
 
 const UNIVERSAL_RULES = RULES.map(asUniversal);
+const DEFAULT_MAX_DURATION_MS = 600_000;
+const MAX_DURATION_MS = 3_600_000;
 
 /** Registered rule IDs — used to warn on unknown severityOverrides keys (M4). */
 export const KNOWN_RULE_IDS: ReadonlySet<string> = new Set(
@@ -555,7 +559,9 @@ export interface FileAnalysisResult {
   testDeclarationCount: number;
   rulesPartial: boolean;
   parseFailed: number;
+  parseFallbacks: number;
   scanned: number;
+  analyzed: number;
 }
 
 export async function runFileAnalysisPhase(
@@ -580,7 +586,9 @@ export async function runFileAnalysisPhase(
   let testDeclarationCount = 0;
   let rulesPartial = false;
   let parseFailed = 0;
+  let parseFallbacks = 0;
   let scanned = 0;
+  let analyzed = 0;
 
   for (const path of testFiles) {
     if (Date.now() > deadline) {
@@ -598,7 +606,13 @@ export async function runFileAnalysisPhase(
     if (!isCiAdapter) testFileCount++;
     let text: string;
     try {
-      text = readFileSync(path, "utf8")
+      const readResult = readFileBounded(path, LIMITS.maxFileBytes);
+      if (!readResult.ok) {
+        skippedFiles++;
+        continue;
+      }
+      text = readResult.data
+        .toString("utf8")
         .replace(/^\uFEFF/, "")
         .replace(/\r\n?/g, "\n");
     } catch {
@@ -643,6 +657,7 @@ export async function runFileAnalysisPhase(
     const cachedFindings = cache.lookup(cacheKey);
     if (cachedFindings) {
       for (const f of cachedFindings) findings.push(f);
+      analyzed++;
       continue;
     }
     hooks.onProgress?.({
@@ -666,10 +681,12 @@ export async function runFileAnalysisPhase(
       }
       const actualMode: "ast" | "regex" = parsed ? "ast" : "regex";
       if (wantsAst && actualMode === "regex") {
+        parseFallbacks++;
         cacheKey = fileCacheKey(rulesDigest, text, identity(actualMode));
         const fallbackFindings = cache.lookup(cacheKey);
         if (fallbackFindings) {
           for (const f of fallbackFindings) findings.push(f);
+          analyzed++;
           continue;
         }
       }
@@ -707,6 +724,7 @@ export async function runFileAnalysisPhase(
           },
         },
       );
+      if (!fileRuleFailed && !fileBudgetExceeded) analyzed++;
       if (!fileRuleFailed) {
         cache.store(
           cacheKey,
@@ -716,6 +734,7 @@ export async function runFileAnalysisPhase(
       }
     } catch {
       // intentional: parse/analysis failure — counted via skippedFiles/parseFailed, never fatal
+      if (wantsAst) parseFallbacks++;
       skippedFiles++;
       parseFailed++;
     } finally {
@@ -729,7 +748,9 @@ export async function runFileAnalysisPhase(
     testDeclarationCount,
     rulesPartial,
     parseFailed,
+    parseFallbacks,
     scanned,
+    analyzed,
   };
 }
 
@@ -739,6 +760,7 @@ export interface PostScanResult {
   suppressionCount: number;
   frameworks: ReturnType<typeof detectFrameworks>;
   runtimeReportPath: string | undefined;
+  runtimeIncomplete: boolean;
   /** Aggregate forensic classifications from the ingested runtime report. */
   forensicVerdicts: ForensicVerdictSummary | undefined;
   config: ReturnType<typeof loadConfig>["config"];
@@ -847,6 +869,9 @@ export function applyPostScanProcessing(
   }
   const discoveredReport = discoverAndParseRuntimeReport(scanRoot.root);
   const runtimeReportPath = discoveredReport?.path;
+  const runtimeIncomplete =
+    discoveredReport !== undefined &&
+    discoveredReport.report.analysisComplete !== true;
   let forensicVerdicts: ForensicVerdictSummary | undefined;
   if (discoveredReport && discoveredReport.report.analysisComplete === true) {
     try {
@@ -867,6 +892,7 @@ export function applyPostScanProcessing(
     suppressionCount,
     frameworks,
     runtimeReportPath,
+    runtimeIncomplete,
     forensicVerdicts,
     config,
   };
@@ -885,7 +911,9 @@ export interface AssembleScanResultInput {
   scopeIgnored: number;
   scopeUnrecognized: number;
   parseFailed: number;
+  parseFallbacks?: number;
   scanned: number;
+  analyzed?: number;
   testFiles: string[];
   workspace: Workspace;
   scanRoot: Workspace;
@@ -898,6 +926,7 @@ export interface AssembleScanResultInput {
   suppressionCount: number;
   frameworks: ReturnType<typeof detectFrameworks>;
   runtimeReportPath: string | undefined;
+  runtimeIncomplete?: boolean;
   forensicVerdicts: ForensicVerdictSummary | undefined;
   config: ReturnType<typeof loadConfig>["config"];
   fileProvenance: Array<{
@@ -1007,11 +1036,16 @@ export function assembleScanResult(o: AssembleScanResultInput): ScanResult {
     scopeReasons.push(`unrecognized:${o.scopeUnrecognized}`);
   }
   if (o.parseFailed > 0) scopeReasons.push(`parseFailed:${o.parseFailed}`);
+  if (o.skippedFiles > 0) scopeReasons.push(`skipped:${o.skippedFiles}`);
+  if (o.scopeInfo.degraded) {
+    scopeReasons.push(`degraded:${o.scopeInfo.degraded}`);
+  }
+  if (o.runtimeIncomplete) scopeReasons.push("runtime-incomplete");
   for (const reason of o.truncationReasons)
     scopeReasons.push(`truncated:${reason}`);
   const scopeIntegrity = {
     discovered: o.testFiles.length,
-    analyzed: Math.max(0, o.scanned),
+    analyzed: Math.max(0, o.analyzed ?? o.scanned),
     ignored: o.scopeIgnored,
     unrecognized: o.scopeUnrecognized,
     parseFailed: o.parseFailed,
@@ -1021,32 +1055,59 @@ export function assembleScanResult(o: AssembleScanResultInput): ScanResult {
   } as const;
   const scopeAdjustedTotal =
     scopeReasons.length > 0 && total >= 100 ? 99 : total;
+  let identityIncomplete = false;
   const inputSnapshot = o.testFiles.map((p) => {
     const relPath = relative(o.workspace.root, p).replaceAll("\\", "/");
     try {
-      const content = readFileSync(p);
-      const hash = createHash("sha256")
-        .update(content)
-        .digest("hex")
-        .slice(0, 16);
-      return { path: relPath, size: content.length, hash };
+      const read = readFileBounded(
+        resolve(o.workspace.root, p),
+        LIMITS.maxFileBytes,
+      );
+      if (!read.ok) {
+        if (existsSync(o.workspace.root)) identityIncomplete = true;
+        return { path: relPath, size: 0, hash: "UNAVAILABLE" };
+      }
+      const hash = createHash("sha256").update(read.data).digest("hex");
+      return { path: relPath, size: read.data.length, hash };
     } catch {
-      // intentional: file vanished between discovery and hashing — honest fallback (size: 0)
-      return { path: relPath, size: 0 };
+      if (existsSync(o.workspace.root)) identityIncomplete = true;
+      return { path: relPath, size: 0, hash: "UNAVAILABLE" };
     }
   });
   let reportDigest: string | undefined;
   if (o.runtimeReportPath) {
     try {
-      const reportBytes = readFileSync(o.runtimeReportPath);
-      reportDigest = createHash("sha256")
-        .update(reportBytes)
-        .digest("hex")
-        .slice(0, 16);
+      const reportPath = resolve(o.workspace.root, o.runtimeReportPath);
+      if (lstatSync(reportPath).isFile()) {
+        const read = readFileBounded(reportPath, LIMITS.maxFileBytes);
+        if (!read.ok) {
+          identityIncomplete = true;
+        } else {
+          reportDigest = createHash("sha256").update(read.data).digest("hex");
+        }
+      }
     } catch {
-      /* unreadable → omit from identity */
+      identityIncomplete = true;
     }
   }
+  const completion = deriveCompletion({
+    discoveryTruncated: o.discoveryTruncated,
+    rulesPartial: o.rulesPartial,
+    skippedFiles: o.skippedFiles,
+    rulesCrashed: o.rulesCrashed,
+    truncationReasons: o.truncationReasons,
+    scopeIgnored: o.scopeIgnored,
+    scopeUnrecognized: o.scopeUnrecognized,
+    parseFailed: o.parseFailed,
+    parseFallbacks: o.parseFallbacks ?? 0,
+    ...(o.scopeInfo.degraded !== undefined
+      ? { scopeDegraded: o.scopeInfo.degraded }
+      : {}),
+    ...(o.runtimeIncomplete !== undefined
+      ? { runtimeIncomplete: o.runtimeIncomplete }
+      : {}),
+    identityIncomplete,
+  });
   const runIdentity = buildRunIdentity({
     files: inputSnapshot,
     rules: [...o.REVISION_BY_RULE_ID.entries()].map(
@@ -1069,18 +1130,18 @@ export function assembleScanResult(o: AssembleScanResultInput): ScanResult {
         .map((f) => f.ruleId),
     ),
   ].sort();
+  const finalScore = hasTests
+    ? completion.partial && scopeAdjustedTotal >= 100
+      ? 99
+      : scopeAdjustedTotal
+    : null;
   const result: ScanResult = {
     schemaVersion: SCHEMA_VERSION,
-    partial:
-      o.discoveryTruncated ||
-      o.rulesPartial ||
-      o.skippedFiles > 0 ||
-      o.rulesCrashed > 0 ||
-      o.scopeInfo.degraded !== undefined,
+    partial: completion.partial,
     scopeIntegrity,
     runIdentity,
     evidenceGraph,
-    score: hasTests ? scopeAdjustedTotal : null,
+    score: finalScore,
     ...(hasTests ? {} : { reason: "no-tests-found" as const }),
     frameworks: o.frameworks.frameworks,
     frameworkDetectionUnknown: o.frameworks.unknown,
@@ -1116,14 +1177,8 @@ export function assembleScanResult(o: AssembleScanResultInput): ScanResult {
         }
       : {}),
     analysisStatus: {
-      discovery: o.discoveryTruncated ? "partial" : "complete",
-      rules: o.rulesPartial ? "partial" : "complete",
-      skippedFiles: o.skippedFiles,
+      ...completion.analysisStatus,
       durationMs: elapsed,
-      rulesCrashed: o.rulesCrashed,
-      ...(o.truncationReasons.size > 0
-        ? { truncationReasons: [...o.truncationReasons].sort() }
-        : {}),
     },
     scoringModelVersion: SCORING_MODEL_VERSION,
   };
@@ -1195,7 +1250,14 @@ export async function runScan(
   hooks: ScanHooks = {},
 ): Promise<ScanResult> {
   const started = Date.now();
-  const deadline = started + args.maxDurationMs;
+  const requestedDuration = Number.isFinite(args.maxDurationMs)
+    ? args.maxDurationMs
+    : DEFAULT_MAX_DURATION_MS;
+  const boundedDuration = Math.min(
+    Math.max(1, requestedDuration),
+    MAX_DURATION_MS,
+  );
+  const deadline = started + boundedDuration;
   // package.json workspace OR non-JS repo (Python etc.) — fall back to the
   // target dir itself so language adapters can still discover their files.
   // Audit S3: the explicit scan target is the anchor. Config,
@@ -1385,7 +1447,9 @@ export async function runScan(
   testDeclarationCount = analysis.testDeclarationCount;
   rulesPartial = analysis.rulesPartial;
   parseFailed = analysis.parseFailed;
+  const parseFallbacks = analysis.parseFallbacks;
   const scanned = analysis.scanned;
+  const analyzed = analysis.analyzed;
 
   const postScan = applyPostScanProcessing(
     findings,
@@ -1413,7 +1477,9 @@ export async function runScan(
     scopeIgnored,
     scopeUnrecognized,
     parseFailed,
+    parseFallbacks,
     scanned,
+    analyzed,
     testFiles,
     workspace,
     scanRoot,
@@ -1426,6 +1492,7 @@ export async function runScan(
     suppressionCount: postScan.suppressionCount,
     frameworks: postScan.frameworks,
     runtimeReportPath: postScan.runtimeReportPath,
+    runtimeIncomplete: postScan.runtimeIncomplete,
     forensicVerdicts: postScan.forensicVerdicts,
     config: postScan.config,
     fileProvenance,

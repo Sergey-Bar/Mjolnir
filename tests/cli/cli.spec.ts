@@ -115,7 +115,7 @@ describe("runCiInstall", () => {
     );
     expect(workflow).toContain("fail-on: none");
     expect(workflow).toContain(
-      "Advisory mode — findings reported, never blocking.",
+      "Advisory mode — findings are reported, never blocking.",
     );
     expect(cap.text()).toContain("Gate: advisory");
     expect(cap.text()).toContain("without blocking");

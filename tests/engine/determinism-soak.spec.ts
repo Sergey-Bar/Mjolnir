@@ -153,7 +153,7 @@ describe("TI-015: determinism soak", () => {
   });
 
   describe("config key ordering", () => {
-    it("JSON.stringify preserves insertion order (known limitation)", () => {
+    it("canonicalizes config key ordering", () => {
       // NOTE: buildRunIdentity uses JSON.stringify for config, which
       // preserves insertion order. Different key order = different fingerprint.
       // This is a known limitation — callers must canonicalize config before
@@ -173,9 +173,7 @@ describe("TI-015: determinism soak", () => {
 
       const a = buildRunIdentity(inputA);
       const b = buildRunIdentity(inputB);
-      // Different key order produces different fingerprint — this is by
-      // design since the scan pipeline controls config key ordering.
-      expect(a.configFingerprint).not.toBe(b.configFingerprint);
+      expect(a.configFingerprint).toBe(b.configFingerprint);
     });
 
     it("same config object produces same fingerprint", () => {

@@ -6,12 +6,19 @@
  * mutable state. Outputs findings that reference multiple files.
  */
 
-import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { existsSync, lstatSync, readdirSync } from "node:fs";
 import { join, relative } from "node:path";
 
 import { sectionHeader, plainContext } from "../reporter/ui.js";
 import { internalErrorMessage, type Output } from "../cli-io.js";
-import { EXIT_CLEAN, EXIT_INTERNAL, EXIT_USAGE } from "../exit-codes.js";
+import { LIMITS } from "../discovery/ignores.js";
+import { readFileBounded } from "../lib/fs-bounded.js";
+import {
+  EXIT_CLEAN,
+  EXIT_INTERNAL,
+  EXIT_PARTIAL,
+  EXIT_USAGE,
+} from "../exit-codes.js";
 
 const ui = plainContext();
 
@@ -54,31 +61,50 @@ export function runAnalyzeCommand(
     const fileImports = new Map<string, Map<string, number>>();
     const fileContents = new Map<string, string>();
 
-    function walk(dir: string): void {
+    let limited = false;
+    const deadline = Date.now() + 600_000;
+    function walk(dir: string, depth = 0): void {
+      if (limited || depth > LIMITS.maxDepth || Date.now() >= deadline) {
+        limited = true;
+        return;
+      }
       for (const name of readdirSync(dir)) {
         const path = join(dir, name);
         if (name === "node_modules" || name === ".git") continue;
-        if (statSync(path).isDirectory()) {
-          walk(path);
+        let stat: ReturnType<typeof lstatSync>;
+        try {
+          stat = lstatSync(path);
+        } catch {
+          continue;
+        }
+        if (stat.isSymbolicLink()) continue;
+        if (stat.isDirectory()) {
+          walk(path, depth + 1);
+          if (limited) return;
         } else if (
           name.endsWith(".ts") ||
           name.endsWith(".tsx") ||
           name.endsWith(".js") ||
           name.endsWith(".jsx")
         ) {
-          try {
-            const content = readFileSync(path, "utf8");
-            const rel = relative(process.cwd(), path);
-            fileContents.set(rel, content);
-            const imports = collectImports(content);
-            const importCounts = new Map<string, number>();
-            for (const imp of imports) {
-              importCounts.set(imp, (importCounts.get(imp) ?? 0) + 1);
-            }
-            fileImports.set(rel, importCounts);
-          } catch {
-            // skip unreadable files
+          if (fileContents.size >= LIMITS.maxFilesPerAdapter) {
+            limited = true;
+            return;
           }
+          const read = readFileBounded(path, LIMITS.maxFileBytes);
+          if (!read.ok) {
+            limited = true;
+            continue;
+          }
+          const content = read.data.toString("utf8");
+          const rel = relative(process.cwd(), path);
+          fileContents.set(rel, content);
+          const imports = collectImports(content);
+          const importCounts = new Map<string, number>();
+          for (const imp of imports) {
+            importCounts.set(imp, (importCounts.get(imp) ?? 0) + 1);
+          }
+          fileImports.set(rel, importCounts);
         }
       }
     }
@@ -156,6 +182,12 @@ export function runAnalyzeCommand(
       io.out("");
     }
 
+    if (limited) {
+      io.err(
+        "mjolnir analyze: resource limit reached; cross-file analysis is partial",
+      );
+      return EXIT_PARTIAL;
+    }
     return EXIT_CLEAN;
   } catch (e) {
     internalErrorMessage(e, io.err, false);

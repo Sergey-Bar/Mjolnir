@@ -12,10 +12,8 @@
  * The fix: resolve git ONCE per process to an ABSOLUTE path by walking
  * the PATH directly (never consulting the CWD), verify the candidate is
  * an existing file, and pass that path to execFileSync. Resolution is
- * memoized; a failure to find a real git anywhere on PATH degrades to
- * the plain name (previous behavior) with the resolution error recorded
- * — degraded git data already means full-file attribution, never a
- * crash.
+ * memoized; a failure to find a real git anywhere on PATH is recorded
+ * and callers degrade without invoking a bare name.
  */
 
 import { execFileSync } from "node:child_process";
@@ -27,9 +25,8 @@ let resolutionError: string | undefined;
 
 /**
  * The absolute path of the git binary Mjölnir will invoke, or null when
- * PATH carries no executable `git` at all (S1 degradation: callers fall
- * back to the bare name and their own try/catch — same honest degrade
- * as before, minus the CWD-hijack surface).
+ * PATH carries no executable `git` at all. Callers must degrade without
+ * invoking a bare name.
  */
 export function resolveGitPath(): string | null {
   if (resolvedGit !== undefined) return resolvedGit;
@@ -86,7 +83,8 @@ export interface GitRunOptions {
  * the previous inline `git()` helpers, with the hijack surface closed.
  */
 export function runGit(root: string, args: string[]): string | null {
-  const exe = resolveGitPath() ?? "git";
+  const exe = resolveGitPath();
+  if (!exe) return null;
   try {
     return execFileSync(exe, ["-C", root, ...args], {
       encoding: "utf8",

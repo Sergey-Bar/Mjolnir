@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "registryId": "mjolnir-public-claims-001",
+  "claims": [
+    {
+      "id": "support-envelope-version",
+      "valueSource": "package.json",
+      "relatedSources": [
+        "action.yml",
+        ".github/workflows/mjolnir.yml",
+        "docs/DISTRIBUTION-KIT.md"
+      ],
+      "scope": "current"
+    },
+    {
+      "id": "rule-registry-census",
+      "valueSource": "docs/RULE-CAPABILITY-MATRIX.md",
+      "relatedSources": [
+        "src/rules/index.ts",
+        "tests/rules/registry-ratchet.spec.ts"
+      ],
+      "scope": "generated-current"
+    },
+    {
+      "id": "unified-pr-report-marker",
+      "valueSource": "src/reporter/pr-report-shared.ts",
+      "relatedSources": ["action.yml", ".github/workflows/mjolnir.yml"],
+      "scope": "current"
+    },
+    {
+      "id": "enterprise-threat-model",
+      "valueSource": "enterprise/threat-model.json",
+      "relatedSources": [
+        "enterprise/data-flows.json",
+        "scripts/enterprise/validate-threat-model.mjs"
+      ],
+      "scope": "release-gate"
+    }
+  ],
+  "historicalSources": [
+    "docs/CERTIFICATION-0.6.md",
+    "docs/CERTIFICATION-1.0.md"
+  ]
+}

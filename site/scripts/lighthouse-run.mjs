@@ -41,6 +41,7 @@ const BASE = "/Mjolnir/";
 // checked, so it is on the list.
 const ROUTES = ["", "guide/getting-started", "guide/scoring", "rules/"];
 const PERF_GATE = 95;
+const MOBILE_PERF_GATE = 85;
 
 const MIME = {
   ".html": "text/html",
@@ -172,21 +173,17 @@ async function main() {
       shown = r.profile;
       console.log(`  === ${shown} ===`);
     }
-    // Only desktop gates. Mobile is measured and printed anyway because
-    // it is the harder number, and hiding it would be exactly the kind
-    // of selective reporting this site argues against.
-    const gated = r.profile === "desktop";
-    const ok = r.perf >= PERF_GATE;
-    if (gated && !ok) failed++;
-    const mark = gated ? (ok ? "PASS" : "FAIL") : ok ? "ok  " : "note";
-    console.log(`  ${mark}  ${r.label}`);
+    const gate = r.profile === "desktop" ? PERF_GATE : MOBILE_PERF_GATE;
+    const ok = r.perf >= gate;
+    if (!ok) failed++;
+    console.log(`  ${ok ? "PASS" : "FAIL"}  ${r.label}`);
     console.log(
-      `          perf ${r.perf}${gated ? ` (gate ${PERF_GATE})` : ""} · a11y ${r.a11y} · ` +
+      `          perf ${r.perf} (gate ${gate}) · a11y ${r.a11y} · ` +
         `best-practices ${r.bp} · seo ${r.seo}`,
     );
     console.log(`          LCP ${r.lcp} · CLS ${r.cls} · TBT ${r.tbt}`);
   }
-  console.log(`\n  ${failed} desktop run(s) below the performance gate\n`);
+  console.log(`\n  ${failed} run(s) below the profile performance gate\n`);
   process.exit(failed ? 1 : 0);
 }
 

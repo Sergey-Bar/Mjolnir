@@ -11,11 +11,18 @@
  * (config, plugins) use stricter checks that throw descriptive errors.
  */
 
+const MAX_JSON_BYTES = 16 * 1024 * 1024;
+
 export function parseJsonFile<T>(
   text: string,
   source: string,
   validate: (v: unknown) => v is T,
 ): T {
+  if (Buffer.byteLength(text, "utf8") > MAX_JSON_BYTES) {
+    throw new Error(
+      `JSON source exceeds the ${MAX_JSON_BYTES}-byte limit: ${source}`,
+    );
+  }
   let parsed: unknown;
   try {
     parsed = JSON.parse(text);

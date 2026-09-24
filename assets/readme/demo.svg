@@ -283,8 +283,8 @@
     <text class="ln" style="animation-delay:12.25s" x="22" y="4709.0" xml:space="preserve"><tspan fill="rgb(139,147,157)">  11 advisory findings (E0 — observation only, no score impact)</tspan></text>
     <text class="ln" style="animation-delay:12.30s" x="22" y="4728.0" xml:space="preserve"><tspan fill="rgb(139,147,157)">  Rule coverage: 12/12 rules that fired here have a measured false-positive</tspan></text>
     <text class="ln" style="animation-delay:12.35s" x="22" y="4747.0" xml:space="preserve"><tspan fill="rgb(139,147,157)">  rate; the rest are heuristics. `mjolnir rules --unmeasured` lists them.</tspan></text>
-    <text class="ln" style="animation-delay:12.40s" x="22" y="4766.0" xml:space="preserve"><tspan fill="rgb(139,147,157)">  Scope: PARTIAL — unrecognized:2; analyzed 5 of 5 discovered files. No</tspan></text>
-    <text class="ln" style="animation-delay:12.45s" x="22" y="4785.0" xml:space="preserve"><tspan fill="rgb(139,147,157)">  repository-verified claim applies to this scan.</tspan></text>
+    <text class="ln" style="animation-delay:12.40s" x="22" y="4766.0" xml:space="preserve"><tspan fill="rgb(139,147,157)">  Scope: PROVEN — analyzed == claimed scope (5/5 discovered files; no</tspan></text>
+    <text class="ln" style="animation-delay:12.45s" x="22" y="4785.0" xml:space="preserve"><tspan fill="rgb(139,147,157)">  exclusions, no parse failures).</tspan></text>
     <text class="ln" style="animation-delay:12.50s" x="22" y="4804.0" xml:space="preserve"><tspan fill="rgb(139,147,157)">  Runtime evidence: 4/18 findings corroborated by a real run report (trust</tspan></text>
     <text class="ln" style="animation-delay:12.55s" x="22" y="4823.0" xml:space="preserve"><tspan fill="rgb(139,147,157)">  L3–L5); the rest are static-only.</tspan></text>
 

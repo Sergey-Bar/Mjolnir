@@ -37,6 +37,19 @@ const FULL_INPUT = {
 };
 
 describe("buildRunIdentity", () => {
+  it("canonicalizes nested config key order", () => {
+    const a = buildRunIdentity({
+      ...FULL_INPUT,
+      config: { a: 1, b: { c: 2, d: 3 } },
+    });
+    const b = buildRunIdentity({
+      ...FULL_INPUT,
+      config: { b: { d: 3, c: 2 }, a: 1 },
+    });
+    expect(a.scanId).toBe(b.scanId);
+    expect(a.inputFingerprint).toBe(b.inputFingerprint);
+  });
+
   it("returns deterministic scanId for identical inputs", () => {
     const a = buildRunIdentity(FULL_INPUT);
     const b = buildRunIdentity(FULL_INPUT);

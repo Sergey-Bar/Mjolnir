@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "manifestId": "mjolnir-working-candidate-001",
+  "generatedAt": "2026-09-24",
+  "identity": {
+    "state": "WORKING_CANDIDATE",
+    "baseSha": "254ac741ad914d220b592f92b4f01ac71f2ed5c0",
+    "candidateSha": null,
+    "version": "2.0.2",
+    "packageSha256": "9f0b89d9972839a56a97ea5fea6ff9d6bca3a98b7591b36283f1b508316ba3cb",
+    "lockfileSha256": "0e8f54efed15605f25e455371c59fd355c8b9527856c36708ae839e73904813e",
+    "workingTreeSha256": "45320308cc485ff973788ae3ca203a808d37ed99332dfea7671ca0be6c6727d4",
+    "changedPathCount": 114,
+    "supportEnvelope": "self-hosted; hosted services require explicit consent and separate proof"
+  },
+  "claimRegistry": {
+    "path": "docs/claim-registry.json",
+    "status": "LOCAL_PROVEN"
+  },
+  "evidence": {
+    "local": {
+      "phaseMinus1": "LOCAL_PROVEN",
+      "phase0": "LOCAL_PROVEN",
+      "phase1": "LOCAL_PROVEN",
+      "phase2": "LOCAL_PROVEN",
+      "phase3": "LOCAL_PROVEN",
+      "phase4": "LOCAL_PROVEN",
+      "phase4A": "LOCAL_PROVEN",
+      "phase4B": "LOCAL_PROVEN",
+      "phase5": "LOCAL_PROVEN",
+      "threatModel": "LOCAL_PROVEN",
+      "generatedDemoAndVideo": "LOCAL_PROVEN"
+    },
+    "certificationWaves": {
+      "CERT-W1": "PARTIAL",
+      "CERT-W2": "PARTIAL",
+      "CERT-W3": "PARTIAL",
+      "CERT-W4": "PARTIAL",
+      "CERT-W5": "PARTIAL",
+      "CERT-W6": "NOT_RUN"
+    },
+    "remote": {
+      "protectedHoldout": "REMOTE_BLOCKED",
+      "realWorldRepositories": "REMOTE_BLOCKED",
+      "platformMatrix": "NOT_RUN",
+      "consumerInstall": "NOT_RUN",
+      "remoteWorkflow": "NOT_RUN"
+    }
+  },
+  "engineeringCertificationState": "NOT_CERTIFIED",
+  "releaseAuthorizationState": "NOT_AUTHORIZED",
+  "knownLimitations": [
+    "No immutable candidate SHA exists before explicit commit authorization.",
+    "Human adjudication, protected holdout, real-world repositories, platform matrix, and consumer install proof are not available.",
+    "Plugin sandbox/provider decisions remain external or conditional.",
+    "Translated README drift remains visible and is not converted into a current claim."
+  ],
+  "invalidationConditions": [
+    "Any source, lockfile, generated artifact, claim, workflow, rule, detector, or support-envelope change.",
+    "Any change to the release action, site, documentation, or report copy.",
+    "Any external or human evidence refresh after this manifest is generated."
+  ],
+  "sourceRefs": [
+    "tests/",
+    "enterprise/threat-model.json",
+    "docs/claim-registry.json",
+    "assets/video/script.demo.json",
+    "assets/readme/demo.svg",
+    ".github/workflows/mjolnir.yml",
+    "action.yml"
+  ]
+}

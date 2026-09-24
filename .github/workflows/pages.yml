@@ -29,6 +29,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
         with:
+          persist-credentials: false
           # VitePress reads git history for per-page "last updated" stamps;
           # the default shallow clone would date every page to this commit.
           fetch-depth: 0

@@ -69,9 +69,13 @@ export interface MachineCompleteness {
   rules: "complete" | "partial";
   skippedFiles: number;
   rulesCrashed: number;
+  parseFallbacks?: number;
   truncationReasons: string[];
+  reasons?: string[];
   frameworkDetectionUnknown: boolean;
   durationMs: number;
+  scopeIntegrity?: ScanResult["scopeIntegrity"];
+  runIdentity?: ScanResult["runIdentity"];
 }
 
 /** Deterministic verification digest over the canonical findings. */
@@ -162,6 +166,10 @@ function digestView(f: Finding): Record<string, unknown> {
     trustLevel: f.trustLevel ?? null,
     confidence: f.confidence,
     findingType: f.findingType,
+    qaImpact: f.qaImpact,
+    findingId: f.findingId ?? null,
+    rootCauseId: f.rootCauseId ?? null,
+    deduplicationGroup: f.deduplicationGroup ?? null,
     fixGroupId: f.fixGroupId ?? null,
   };
 }
@@ -183,8 +191,12 @@ function canonicalScanJson(result: ScanResult): string {
       rules: result.analysisStatus.rules,
       skippedFiles: result.analysisStatus.skippedFiles,
       rulesCrashed: result.analysisStatus.rulesCrashed ?? 0,
+      parseFallbacks: result.analysisStatus.parseFallbacks ?? 0,
       truncationReasons: result.analysisStatus.truncationReasons ?? [],
+      reasons: result.analysisStatus.reasons ?? [],
     },
+    scopeIntegrity: result.scopeIntegrity ?? null,
+    runIdentity: result.runIdentity ?? null,
     findings: result.findings.map(digestView),
   });
 }
@@ -256,9 +268,21 @@ export function buildMachineContract(result: ScanResult): MachineContract {
       rules: result.analysisStatus.rules,
       skippedFiles: result.analysisStatus.skippedFiles,
       rulesCrashed: result.analysisStatus.rulesCrashed ?? 0,
+      ...(result.analysisStatus.parseFallbacks !== undefined
+        ? { parseFallbacks: result.analysisStatus.parseFallbacks }
+        : {}),
       truncationReasons: result.analysisStatus.truncationReasons ?? [],
+      ...(result.analysisStatus.reasons !== undefined
+        ? { reasons: result.analysisStatus.reasons }
+        : {}),
       frameworkDetectionUnknown: result.frameworkDetectionUnknown,
       durationMs: result.analysisStatus.durationMs,
+      ...(result.scopeIntegrity !== undefined
+        ? { scopeIntegrity: result.scopeIntegrity }
+        : {}),
+      ...(result.runIdentity !== undefined
+        ? { runIdentity: result.runIdentity }
+        : {}),
     },
     // WI-4 additive extensions: verbatim pass-through of the canonical
     // measurements (never re-derived here — one semantic truth, §18).

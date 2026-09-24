@@ -10,7 +10,13 @@
  *    baseline schemaVersion is checked.
  */
 
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import {
+  mkdirSync,
+  mkdtempSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -131,7 +137,7 @@ describe("audit-C2: plugin trust gate — npm plugins", () => {
 });
 
 describe("audit-C2: plugin trust gate — JS modules vs JSON manifests", () => {
-  it("a JS module in mjolnir-rules/ is NOT imported when the gate is closed", async () => {
+  it("a JS module in mjolnir-rules/ is NOT imported by the default gate", async () => {
     const dir = tmpRepo("c2-js");
     mkdirSync(join(dir, "mjolnir-rules"), { recursive: true });
     // If this module were imported, its top-level throw would surface as
@@ -140,10 +146,36 @@ describe("audit-C2: plugin trust gate — JS modules vs JSON manifests", () => {
       join(dir, "mjolnir-rules", "hostile.mjs"),
       "throw new Error('MODULE EXECUTED — gate failed');\n",
     );
-    const result = await loadLocalRules(dir, false);
+    const result = await loadLocalRules(dir);
     expect(result.rules).toHaveLength(0);
     expect(result.errors.join("\n")).not.toContain("MODULE EXECUTED");
     expect(result.skipped).toEqual(["mjolnir-rules/hostile.mjs"]);
+  });
+
+  it("rejects symlinked local rule entries", async () => {
+    const dir = tmpRepo("c2-link");
+    const outside = mkdtempSync(join(tmpdir(), "mjolnir-m2-outside-"));
+    try {
+      mkdirSync(join(dir, "mjolnir-rules"), { recursive: true });
+      writeFileSync(
+        join(outside, "linked.json"),
+        JSON.stringify({ id: "QA-ACME-LINK", patterns: ["x"] }),
+      );
+      try {
+        symlinkSync(
+          join(outside, "linked.json"),
+          join(dir, "mjolnir-rules", "linked.json"),
+          "file",
+        );
+      } catch {
+        return;
+      }
+      const result = await loadLocalRules(dir, true);
+      expect(result.rules).toHaveLength(0);
+      expect(result.errors.join("\n")).toContain("symlink");
+    } finally {
+      rmSync(outside, { recursive: true, force: true });
+    }
   });
 
   it("the same JS module IS loaded when the gate is open (and its rules accepted)", async () => {

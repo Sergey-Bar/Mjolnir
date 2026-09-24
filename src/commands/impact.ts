@@ -72,16 +72,16 @@ export interface ImpactReport {
 // hijack Mjölnir's own git invocations.
 import { resolveGitPath } from "../scope/git-resolve.js";
 
-/** The S1-resolved absolute git binary, or the bare name to fail on. */
-function gitExe(): string {
-  return resolveGitPath() ?? "git";
+/** The S1-resolved absolute git binary, or null when none is available. */
+function gitExe(): string | null {
+  return resolveGitPath();
 }
 
 function git(root: string, args: string[]): string | null {
-  // When PATH carries no git at all, gitExe() degrades to the bare name
-  // and the exec below fails — one degrade path, expressed once.
+  const executable = gitExe();
+  if (!executable) return null;
   try {
-    return execFileSync(gitExe(), ["-C", root, ...args], {
+    return execFileSync(executable, ["-C", root, ...args], {
       encoding: "utf8",
       stdio: ["ignore", "pipe", "ignore"],
       timeout: 30_000,
@@ -93,8 +93,10 @@ function git(root: string, args: string[]): string | null {
 
 /** Like git(), but returns the raw bytes — no utf8 decode round-trip. */
 function gitBuffer(root: string, args: string[]): Buffer | null {
+  const executable = gitExe();
+  if (!executable) return null;
   try {
-    return execFileSync(gitExe(), ["-C", root, ...args], {
+    return execFileSync(executable, ["-C", root, ...args], {
       // "buffer" makes stdout a Buffer: base blobs are written byte-exact,
       // so non-UTF8 files compare honestly (bug-audit M9).
       encoding: "buffer",
@@ -147,7 +149,16 @@ export async function computeImpact(
   } else {
     // Resolve whatever ref the caller passed to a concrete commit sha so
     // the report can state exactly what was compared.
-    baseRef = git(root, ["rev-parse", baseRef])?.trim() ?? baseRef;
+    baseRef = git(root, ["rev-parse", baseRef])?.trim();
+    if (!baseRef) {
+      return {
+        hasComparison: false,
+        unknownReason: "base-ref-invalid",
+        resolved: [],
+        introduced: [],
+        unknownFacts,
+      };
+    }
   }
   if (!baseRef) {
     return {
@@ -159,7 +170,17 @@ export async function computeImpact(
     };
   }
 
-  const headRef = git(root, ["rev-parse", "HEAD"])?.trim() ?? "HEAD";
+  const headRef = git(root, ["rev-parse", "HEAD"])?.trim();
+  if (!headRef) {
+    return {
+      hasComparison: false,
+      unknownReason: "head-ref-invalid",
+      baseRef,
+      resolved: [],
+      introduced: [],
+      unknownFacts,
+    };
+  }
   if (baseRef === headRef) {
     return {
       hasComparison: false,

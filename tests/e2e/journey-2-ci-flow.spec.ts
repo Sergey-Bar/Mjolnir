@@ -58,9 +58,10 @@ describe("E2E journey 2: CI PR flow", () => {
     const text = readFileSync(wf, "utf8");
     expect(text).toContain("jobs:");
     expect(text).toContain("on:");
-    // Template v2: the summary step is the `mjolnir summary` command,
-    // not an inline script (plan M4 — one emitter, one code path).
-    expect(text).toContain("summary mjolnir.json");
+    // The action template runs the pinned remote action in a read-only
+    // scan job and publishes a separate downloaded artifact.
+    expect(text).toContain("mjolnir-comment.md");
+    expect(text).toContain("actions/download-artifact@");
   });
 
   it(

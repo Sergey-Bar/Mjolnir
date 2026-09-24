@@ -404,7 +404,7 @@ describe("scope/changed per-file diff failures", () => {
     execFileSync("git", ["-C", dir, ...args], { stdio: "ignore" });
   }
 
-  it("treats a per-file diff failure as no changed lines for that file", () => {
+  it("marks a per-file diff failure as an explicit scope degradation", () => {
     git(["init", "-b", "main"]);
     git(["config", "user.email", "t@t"]);
     git(["config", "user.name", "t"]);
@@ -423,8 +423,9 @@ describe("scope/changed per-file diff failures", () => {
     // broken textconv — it fails and the file contributes no lines.
     writeFileSync(join(dir, "a.spec.ts"), "it('changed', () => {});\n");
     const diff = computeChangedScope(dir);
-    expect(diff.degraded).toBe(false);
-    expect(Object.keys(diff.changed)).toContain("a.spec.ts");
+    expect(diff.degraded).toBe(true);
+    expect(diff.reason).toBe("diff-failed");
+    expect(Object.keys(diff.changed)).not.toContain("a.spec.ts");
   });
 
   it("treats a worktree-deleted changed file as unreadable lines", () => {

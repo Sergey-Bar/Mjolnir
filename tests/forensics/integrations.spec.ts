@@ -34,7 +34,7 @@ describe("ciInstall", () => {
     );
     expect(text).toContain("fail-on: none");
     expect(text).toContain(
-      "Advisory mode — findings reported, never blocking.",
+      "Advisory mode — findings are reported, never blocking.",
     );
     expect(text).not.toMatch(/\$\{gate\}/); // no raw interpolation leaks
   });

@@ -7,68 +7,68 @@ contract enforces: **every external import in src/ must belong to the
 allowlist**, and the shipped surface (adapters, rules, flags, formats, exit
 codes) must match this document exactly.
 
-## Inventory: 299 files, 59557 LOC
+## Inventory: 301 files, 60486 LOC
 
 | Area             | Files | LOC   |
 | ---------------- | ----- | ----- |
-| src/commands     | 44    | 12769 |
+| src/commands     | 44    | 13128 |
 | src/rules        | 87    | 11695 |
-| src/engine       | 45    | 11013 |
-| src/reporter     | 15    | 3308  |
-| src/forensics    | 17    | 3063  |
-| src/(root)       | 6     | 2772  |
+| src/engine       | 46    | 11240 |
+| src/reporter     | 15    | 3366  |
+| src/forensics    | 17    | 3067  |
+| src/(root)       | 6     | 2820  |
+| src/discovery    | 10    | 1686  |
 | src/adapters     | 11    | 1677  |
-| src/discovery    | 10    | 1643  |
-| src/integrations | 11    | 1539  |
+| src/integrations | 11    | 1545  |
 | src/gaps         | 2     | 1390  |
 | src/frameworks   | 4     | 1321  |
-| src/plugins      | 5     | 988   |
+| src/plugins      | 5     | 1064  |
+| src/mcp          | 3     | 816   |
 | src/brand        | 3     | 807   |
-| src/mcp          | 3     | 777   |
 | src/release      | 5     | 638   |
 | src/bench        | 4     | 589   |
-| src/config       | 3     | 549   |
+| src/config       | 3     | 555   |
 | src/scorer       | 3     | 533   |
 | src/mutation     | 5     | 496   |
 | src/traceability | 2     | 441   |
-| src/scope        | 2     | 419   |
+| src/scope        | 2     | 427   |
 | src/playwright   | 2     | 312   |
-| src/lib          | 4     | 243   |
+| src/lib          | 5     | 298   |
 | src/trust        | 2     | 232   |
 | src/benchmark    | 2     | 174   |
 | src/anti-gaming  | 2     | 169   |
 
 ## Internal fan-in — top 15 (change-blast candidates)
 
-| Module                              | Importers |
-| ----------------------------------- | --------- |
-| src/types                           | 132       |
-| src/rules/rule                      | 81        |
-| src/rules/shared/positions          | 62        |
-| src/reporter/ui                     | 26        |
-| src/cli-io                          | 20        |
-| src/forensics/types                 | 19        |
-| src/exit-codes                      | 16        |
-| src/engine/adapter                  | 14        |
-| src/rules/index                     | 12        |
-| src/engine/scan-pipeline            | 12        |
-| src/discovery/ignores               | 10        |
-| src/engine/ts-ast                   | 10        |
-| src/rules/measured-fp.generated     | 10        |
-| src/discovery/azure-pipeline-parser | 8         |
-| src/engine/code-text                | 8         |
+| Module                          | Importers |
+| ------------------------------- | --------- |
+| src/types                       | 133       |
+| src/rules/rule                  | 81        |
+| src/rules/shared/positions      | 62        |
+| src/reporter/ui                 | 26        |
+| src/cli-io                      | 20        |
+| src/forensics/types             | 19        |
+| src/exit-codes                  | 16        |
+| src/engine/adapter              | 14        |
+| src/rules/index                 | 12        |
+| src/engine/scan-pipeline        | 12        |
+| src/discovery/ignores           | 11        |
+| src/lib/fs-atomic               | 11        |
+| src/forensics/evidence-hygiene  | 11        |
+| src/engine/ts-ast               | 10        |
+| src/rules/measured-fp.generated | 10        |
 
 ## External dependency allowlist (containment)
 
 | Dependency         | Files importing it |
 | ------------------ | ------------------ |
-| node:fs            | 68                 |
-| node:path          | 63                 |
+| node:fs            | 69                 |
+| node:path          | 64                 |
 | node:crypto        | 14                 |
 | ts-morph           | 7                  |
-| node:child_process | 5                  |
 | node:url           | 4                  |
 | node:os            | 3                  |
+| node:child_process | 3                  |
 | web-tree-sitter    | 3                  |
 | yaml               | 2                  |
 | node:process       | 2                  |

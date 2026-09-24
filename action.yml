@@ -87,10 +87,10 @@ inputs:
     default: "true"
   trust-artifact:
     description: >-
-      Upload the Trust Report (mjolnir-trust-report.md) and the raw
-      JSON report as workflow artifacts.
+      Opt-in upload of the generated unified PR report and raw JSON. Raw JSON
+      may contain source paths and should not be uploaded by default.
     required: false
-    default: "true"
+    default: "false"
   fail-on-partial:
     description: >-
       Fail the job when the scan is partial (exit 2). Default: false
@@ -110,8 +110,8 @@ outputs:
     description: "Path of the SARIF report when format is sarif, else empty"
     value: ${{ steps.scan.outputs.sarif-file }}
   trust-report-file:
-    description: "Path of the generated Trust Report (mjolnir-trust-report.md)"
-    value: ${{ steps.trust-report.outputs.file }}
+    description: "Path of the generated unified PR report (mjolnir-comment.md)"
+    value: ${{ steps.pr-report.outputs.file }}
 
 runs:
   using: "composite"
@@ -131,6 +131,7 @@ runs:
         MJ_PR_COMMENT: ${{ inputs.pr-comment }}
         MJ_TRUST_ARTIFACT: ${{ inputs.trust-artifact }}
         MJ_FAIL_ON_PARTIAL: ${{ inputs.fail-on-partial }}
+        MJ_VERSION: ${{ inputs.version }}
       run: |
         case "$MJ_SCOPE" in
           all|changed) ;;
@@ -164,6 +165,10 @@ runs:
           true|false) ;;
           *) echo "::error::fail-on-partial must be 'true' or 'false', got '$MJ_FAIL_ON_PARTIAL'"; exit 10 ;;
         esac
+        if ! [[ "$MJ_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+([+-][0-9A-Za-z.-]+)?$ ]]; then
+          echo "::error::version must be an exact semantic version, got '$MJ_VERSION'"
+          exit 10
+        fi
 
     - name: Scan
       id: scan
@@ -191,11 +196,7 @@ runs:
           warning) ARGS+=(--blocking warning) ;;
           none)    ARGS+=(--blocking none) ;;
         esac
-        if [ "$MJ_VERSION" = "latest" ]; then
-          MJ_PACKAGE="$(npm view mjolnir-qa@latest dist.tarball)"
-        else
-          MJ_PACKAGE="https://registry.npmjs.org/mjolnir-qa/-/mjolnir-qa-${MJ_VERSION}.tgz"
-        fi
+        MJ_PACKAGE="https://registry.npmjs.org/mjolnir-qa/-/mjolnir-qa-${MJ_VERSION}.tgz"
         echo "Running: npx --yes ${MJ_PACKAGE} ${ARGS[*]}"
         set +e
         if [ "$MJ_FORMAT" = "json" ]; then
@@ -275,12 +276,13 @@ runs:
         if [ "$MJ_SCOPE" = "changed" ]; then ARGS+=(--scope changed); fi
         if [ "$MJ_STRICT" = "true" ]; then ARGS+=(--strict); fi
         set +e
-        npx --yes "mjolnir-qa@${MJ_VERSION}" "${ARGS[@]}" > mjolnir.json
+        MJ_PACKAGE="https://registry.npmjs.org/mjolnir-qa/-/mjolnir-qa-${MJ_VERSION}.tgz"
+        npx --yes "$MJ_PACKAGE" "${ARGS[@]}" > mjolnir.json
         echo "exit=$?" >> "$GITHUB_OUTPUT"
         exit 0
 
-    - name: Generate Trust Report
-      id: trust-report
+    - name: Generate unified PR report
+      id: pr-report
       if: >-
         (inputs.annotations == 'true' || inputs.pr-comment == 'true' ||
         inputs.trust-artifact == 'true')
@@ -288,14 +290,9 @@ runs:
       env:
         MJ_VERSION: ${{ inputs.version }}
       run: |
-        if [ "$MJ_VERSION" = "latest" ]; then
-          MJ_PACKAGE="$(npm view mjolnir-qa@latest dist.tarball)"
-        else
-          MJ_PACKAGE="https://registry.npmjs.org/mjolnir-qa/-/mjolnir-qa-${MJ_VERSION}.tgz"
-        fi
-        npx --yes "$MJ_PACKAGE" trust-report --from mjolnir.json
-        echo "exit=$?" >> "$GITHUB_OUTPUT"
-        echo "file=mjolnir-trust-report.md" >> "$GITHUB_OUTPUT"
+        MJ_PACKAGE="https://registry.npmjs.org/mjolnir-qa/-/mjolnir-qa-${MJ_VERSION}.tgz"
+        npx --yes "$MJ_PACKAGE" pr-comment --from mjolnir.json --version "$MJ_VERSION" > mjolnir-comment.md
+        echo "file=mjolnir-comment.md" >> "$GITHUB_OUTPUT"
 
     - name: Emit annotations + step summary
       if: inputs.annotations == 'true'
@@ -307,14 +304,10 @@ runs:
         # GITHUB_ACTIONS=true) and the step summary to
         # $GITHUB_STEP_SUMMARY — the CLI's own CI surface, zero action-
         # side rendering logic.
-        if [ "$MJ_VERSION" = "latest" ]; then
-          MJ_PACKAGE="$(npm view mjolnir-qa@latest dist.tarball)"
-        else
-          MJ_PACKAGE="https://registry.npmjs.org/mjolnir-qa/-/mjolnir-qa-${MJ_VERSION}.tgz"
-        fi
+        MJ_PACKAGE="https://registry.npmjs.org/mjolnir-qa/-/mjolnir-qa-${MJ_VERSION}.tgz"
         npx --yes "$MJ_PACKAGE" summary mjolnir.json --stdout | tee "${GITHUB_STEP_SUMMARY:-/dev/null}"
 
-    - name: Post Trust Report as PR comment
+    - name: Post unified report as PR comment
       if: >-
         inputs.pr-comment == 'true' &&
         github.event_name == 'pull_request'
@@ -324,34 +317,31 @@ runs:
         MJ_PR_NUMBER: ${{ github.event.pull_request.number }}
         MJ_REPO: ${{ github.repository }}
       run: |
-        # Upsert by marker: one Trust Report comment per PR, updated in
-        # place on every push (no comment flood). Event data reaches gh
-        # through env only (audit S-5).
-        BODY_FILE="mjolnir-trust-report.md"
+        BODY_FILE="mjolnir-comment.md"
         if [ ! -s "$BODY_FILE" ]; then
-          echo "::warning::Trust Report body missing — skipping PR comment"
+          echo "::warning::Unified report body missing — skipping PR comment"
           exit 0
         fi
-        MARKER='<!-- mjolnir-trust-report:v1 -->'
+        MARKER='<!-- mjolnir-report:v2 -->'
         COMMENT_ID="$(gh api "repos/${MJ_REPO}/issues/${MJ_PR_NUMBER}/comments" \
           --paginate --jq ".[] | select(.body | startswith(\"$MARKER\")) | .id" | head -n1)"
         if [ -n "$COMMENT_ID" ]; then
           gh api --method PATCH "repos/${MJ_REPO}/issues/comments/${COMMENT_ID}" \
             -F body="@${BODY_FILE}" >/dev/null
-          echo "Updated Trust Report comment ${COMMENT_ID}"
+          echo "Updated unified report comment ${COMMENT_ID}"
         else
           gh api --method POST "repos/${MJ_REPO}/issues/${MJ_PR_NUMBER}/comments" \
             -F body="@${BODY_FILE}" >/dev/null
-          echo "Posted Trust Report comment"
+          echo "Posted unified report comment"
         fi
 
-    - name: Upload Trust Report artifacts
+    - name: Upload unified report artifacts
       if: inputs.trust-artifact == 'true'
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
-        name: mjolnir-trust-report
+        name: mjolnir-report
         path: |
-          mjolnir-trust-report.md
+          mjolnir-comment.md
           mjolnir.json
         if-no-files-found: warn
         retention-days: 30

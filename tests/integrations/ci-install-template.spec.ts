@@ -45,7 +45,10 @@ interface WorkflowStep {
 interface Workflow {
   on?: unknown;
   permissions?: Record<string, string>;
-  jobs: Record<string, { steps?: WorkflowStep[] }>;
+  jobs: Record<
+    string,
+    { steps?: WorkflowStep[]; permissions?: Record<string, string> }
+  >;
 }
 
 const GATES: GateLevel[] = ["advisory", "error", "warning"];
@@ -96,7 +99,7 @@ describe("ci-install template (all gates)", () => {
   it("runs annotate/summary/reporting steps with if: always()", () => {
     for (const gate of GATES) {
       const { wf } = renderParsed(gate);
-      const steps = wf.jobs.scan?.steps ?? [];
+      const steps = Object.values(wf.jobs).flatMap((job) => job.steps ?? []);
       const summary = steps.find((s) => s.name?.includes("Job Summary"));
       const comment = steps.find((s) =>
         s.uses?.startsWith("actions/github-script"),
@@ -165,13 +168,12 @@ describe("ci-install template (all gates)", () => {
     }
   });
 
-  it("keeps least-privilege permissions (contents read + pull-requests write only)", () => {
+  it("keeps write permissions out of the scan job", () => {
     for (const gate of GATES) {
       const { wf } = renderParsed(gate);
-      expect(wf.permissions).toEqual({
-        contents: "read",
-        "pull-requests": "write",
-      });
+      expect(wf.permissions).toEqual({ contents: "read" });
+      expect(wf.jobs.scan?.permissions?.["pull-requests"]).toBeUndefined();
+      expect(wf.jobs.publish?.permissions?.["pull-requests"]).toBe("write");
     }
   });
 
@@ -261,20 +263,22 @@ describe("template parity with the dogfooded .github/workflows/mjolnir.yml (B2.6
   it("mirrors the dogfooded PR-comment script structure (marker + list/update/create)", () => {
     const dogfoodScript =
       (
-        (dogfood.jobs.scan?.steps ?? []).find((s) =>
-          s.uses?.startsWith("actions/github-script"),
-        )?.with as { script?: string } | undefined
+        Object.values(dogfood.jobs)
+          .flatMap((job) => job.steps ?? [])
+          .find((step) => step.uses?.startsWith("actions/github-script"))
+          ?.with as { script?: string } | undefined
       )?.script ?? "";
     const { wf } = renderParsed("advisory");
     const templateScript =
       (
-        (wf.jobs.scan?.steps ?? []).find((s) =>
-          s.uses?.startsWith("actions/github-script"),
-        )?.with as { script?: string } | undefined
+        Object.values(wf.jobs)
+          .flatMap((job) => job.steps ?? [])
+          .find((s) => s.uses?.startsWith("actions/github-script"))?.with as
+          { script?: string } | undefined
       )?.script ?? "";
     for (const fragment of [
-      "<!-- mjolnir-pr-comment -->",
-      "listComments(",
+      "<!-- mjolnir-report:v2 -->",
+      "listComments",
       "updateComment(",
       "createComment(",
     ]) {

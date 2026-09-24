@@ -26,13 +26,14 @@
 import { createHash } from "node:crypto";
 import {
   existsSync,
+  lstatSync,
   mkdirSync,
   readFileSync,
   readdirSync,
-  writeFileSync,
 } from "node:fs";
 import { join } from "node:path";
 
+import { writeFileAtomic } from "../lib/fs-atomic.js";
 import type { Finding } from "../types.js";
 import { parseJsonFile, isRecord } from "../lib/safe-json.js";
 
@@ -46,6 +47,39 @@ const MAX_ENTRIES = 4096;
  * serialized size; the newest entries win (real LRU-by-use).
  */
 const MAX_TOTAL_BYTES = 32 * 1024 * 1024;
+const MAX_FINDINGS_PER_ENTRY = 10_000;
+
+function isCachedFinding(value: unknown): value is Finding {
+  if (!isRecord(value)) return false;
+  return (
+    typeof value["ruleId"] === "string" &&
+    typeof value["category"] === "string" &&
+    typeof value["severity"] === "string" &&
+    typeof value["confidence"] === "string" &&
+    typeof value["findingType"] === "string" &&
+    typeof value["file"] === "string" &&
+    Number.isSafeInteger(value["line"]) &&
+    Number.isSafeInteger(value["column"]) &&
+    typeof value["message"] === "string" &&
+    typeof value["why"] === "string" &&
+    typeof value["fix"] === "string"
+  );
+}
+
+function isCacheFile(value: unknown): value is CacheFile {
+  if (!isRecord(value) || value["version"] !== CACHE_VERSION) return false;
+  const entries = value["entries"];
+  if (!isRecord(entries) || Object.keys(entries).length > MAX_ENTRIES) {
+    return false;
+  }
+  return Object.values(entries).every(
+    (entry) =>
+      isRecord(entry) &&
+      Array.isArray(entry["findings"]) &&
+      entry["findings"].length <= MAX_FINDINGS_PER_ENTRY &&
+      entry["findings"].every(isCachedFinding),
+  );
+}
 
 export interface CacheStats {
   hits: number;
@@ -212,20 +246,28 @@ export function createScanCache(root: string): ScanCache {
   let totalBytes = 0;
   try {
     if (existsSync(file)) {
+      const stat = lstatSync(file);
+      if (
+        !stat.isFile() ||
+        stat.isSymbolicLink() ||
+        stat.size > MAX_TOTAL_BYTES
+      ) {
+        throw new Error("invalid cache file");
+      }
       const parsed = parseJsonFile(
         readFileSync(file, "utf8"),
         file,
-        (v): v is CacheFile =>
-          isRecord(v) &&
-          v["version"] === CACHE_VERSION &&
-          isRecord(v["entries"]),
+        isCacheFile,
       );
       entries = parsed.entries;
       for (const [k, v] of Object.entries(entries)) {
-        const size = JSON.stringify(v).length + k.length + 4;
+        const size =
+          Buffer.byteLength(JSON.stringify(v), "utf8") + k.length + 4;
         entryBytes.set(k, size);
         totalBytes += size;
       }
+      if (totalBytes > MAX_TOTAL_BYTES)
+        throw new Error("cache byte budget exceeded");
     }
   } catch {
     entries = {}; // corrupt cache = cold cache; the scan stays honest
@@ -258,11 +300,13 @@ export function createScanCache(root: string): ScanCache {
       if (fileBudgetExceeded) return;
       // Audit M5: refresh on re-store (same file scanned twice in one
       // process — e.g. library consumers) must not duplicate its slot.
+      if (findings.length > MAX_FINDINGS_PER_ENTRY) return;
+      const entryJson = JSON.stringify(findings);
+      const newBytes = Buffer.byteLength(entryJson, "utf8") + key.length + 4;
+      if (newBytes > MAX_TOTAL_BYTES) return;
       const replacedBytes = entryBytes.get(key) ?? 0;
       delete entries[key];
-      const entryJson = JSON.stringify(findings);
       entries[key] = { findings: structuredClone(findings) };
-      const newBytes = entryJson.length + key.length + 4;
       entryBytes.set(key, newBytes);
       totalBytes = totalBytes - replacedBytes + newBytes;
       // Evict oldest-by-use until both caps hold. The byte budget is the
@@ -288,10 +332,10 @@ export function createScanCache(root: string): ScanCache {
       if (!dirty) return;
       try {
         mkdirSync(dir, { recursive: true });
-        writeFileSync(
+        writeFileAtomic(
           file,
           JSON.stringify({ version: CACHE_VERSION, entries }),
-          "utf8",
+          { encoding: "utf8" },
         );
       } catch {
         // A read-only or vanished .mjolnir/ must never fail a scan —

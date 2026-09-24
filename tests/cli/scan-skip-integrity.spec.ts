@@ -33,6 +33,20 @@ vi.mock("node:fs", async (importOriginal) => {
   return { ...actual, statSync, readFileSync };
 });
 
+vi.mock("../../src/lib/fs-bounded.js", async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import("../../src/lib/fs-bounded.js")>();
+  return {
+    ...actual,
+    readFileBounded: (path: string, maxBytes: number) => {
+      if (String(path).endsWith("locked.spec.ts")) {
+        return { ok: false as const, reason: "unreadable" as const };
+      }
+      return actual.readFileBounded(path, maxBytes);
+    },
+  };
+});
+
 import { runScanCommand } from "../../src/cli.js";
 
 let dir: string;

@@ -127,6 +127,20 @@ describe("root action.yml (Marketplace surface) is locked", () => {
     }
   });
 
+  it("rejects floating package versions and never resolves latest at runtime", () => {
+    const validate = action.runs.steps.find(
+      (s) => s.name === "Validate inputs",
+    );
+    expect(validate?.env?.MJ_VERSION).toBe("${{ inputs.version }}");
+    expect(validate?.run ?? "").toContain(
+      "version must be an exact semantic version",
+    );
+    for (const step of action.runs.steps) {
+      expect(step.run ?? "").not.toContain("npm view");
+      expect(step.run ?? "").not.toContain("mjolnir-qa@${MJ_VERSION}");
+    }
+  });
+
   it("pins every action reference to a 40-hex SHA with a version comment (audit S-3)", () => {
     for (const step of action.runs.steps) {
       if (!step.uses) continue;
@@ -221,6 +235,14 @@ describe("root action.yml (Marketplace surface) is locked", () => {
         `step "${step.name}" has run: without shell: — composite actions require an explicit shell`,
       ).toBeTruthy();
     }
+  });
+
+  it("publishes one unified v2 report from the saved JSON artifact", () => {
+    expect(ACTION).not.toContain("Generate Trust Report");
+    expect(ACTION).toContain("pr-comment --from mjolnir.json");
+    expect(ACTION).toContain("<!-- mjolnir-report:v2 -->");
+    expect(ACTION).not.toContain("mjolnir-trust-report:v1");
+    expect(action.inputs["trust-artifact"]?.default).toBe("false");
   });
 
   it("streams summary output while tee writes the GitHub step summary", () => {

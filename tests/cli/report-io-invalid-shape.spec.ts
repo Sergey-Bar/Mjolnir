@@ -22,6 +22,7 @@ import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 
 import type { Output } from "../../src/cli-io.js";
+import { validateReportJson } from "../../src/commands/report-io.js";
 import { runHandoffCommand } from "../../src/commands/handoff.js";
 import { runSummaryCommand } from "../../src/commands/summary.js";
 import { runWhyCommand } from "../../src/commands/why.js";
@@ -105,10 +106,91 @@ describe("F1 — schema-incomplete report (no frameworks array) is an honest exi
         frameworkDetectionUnknown: true,
         dimensions: [],
         findings: [],
+        analysisStatus: {
+          discovery: "complete",
+          rules: "complete",
+          skippedFiles: 0,
+          durationMs: 0,
+        },
       }),
     );
     const cap = capture();
     expect(runHandoffCommand([p], cap.io)).toBe(0);
     expect(cap.text()).toContain("Fix Handoff");
+  });
+
+  it("rejects a report without completion metadata", () => {
+    expect(() =>
+      validateReportJson(
+        JSON.stringify({
+          schemaVersion: 1,
+          partial: false,
+          score: 100,
+          frameworks: [],
+          frameworkDetectionUnknown: false,
+          dimensions: [],
+          findings: [],
+        }),
+      ),
+    ).toThrow(/analysisStatus/);
+  });
+
+  it("rejects contradictory completion flags", () => {
+    expect(() =>
+      validateReportJson(
+        JSON.stringify({
+          schemaVersion: 1,
+          partial: false,
+          score: 100,
+          frameworks: [],
+          frameworkDetectionUnknown: false,
+          dimensions: [],
+          findings: [],
+          analysisStatus: {
+            discovery: "partial",
+            rules: "complete",
+            skippedFiles: 0,
+            durationMs: 0,
+          },
+        }),
+      ),
+    ).toThrow(/partial=false/);
+  });
+
+  it("rejects a finding with an invalid severity", () => {
+    expect(() =>
+      validateReportJson(
+        JSON.stringify({
+          schemaVersion: 1,
+          partial: false,
+          score: 100,
+          frameworks: [],
+          frameworkDetectionUnknown: false,
+          dimensions: [],
+          findings: [
+            {
+              ruleId: "QA-TEST-001",
+              category: "QA-TEST",
+              severity: "critical",
+              confidence: "high",
+              findingType: "deterministic-defect",
+              qaImpact: "HYGIENE",
+              file: "a.ts",
+              line: 1,
+              column: 1,
+              message: "bad",
+              why: "why",
+              fix: "fix",
+            },
+          ],
+          analysisStatus: {
+            discovery: "complete",
+            rules: "complete",
+            skippedFiles: 0,
+            durationMs: 0,
+          },
+        }),
+      ),
+    ).toThrow(/severity/);
   });
 });

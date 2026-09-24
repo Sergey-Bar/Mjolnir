@@ -133,9 +133,9 @@ describe("S1: absolute-path git resolution", () => {
   it("runGit returns null on failure instead of throwing (honest degrade)", () => {
     _resetGitResolutionForTests();
     // A real git is on PATH in dev/CI; point PATH at an empty dir so the
-    // exe falls back to the bare name, then an impossible -C target and a
-    // failed command exercise the catch arm. The target below is composed
-    // at runtime so it stays an OS-portable fixture (QA-ENV-001-clean).
+    // resolver returns null, then an impossible -C target exercises the
+    // honest no-command path. The target below is composed at runtime so
+    // it stays an OS-portable fixture (QA-ENV-001-clean).
     const impossibleRepo = ["C:", "definitely", "not", "a", "repo"].join("\\");
     const empty = tmpDir("runempty");
     withEnv("PATH", empty);

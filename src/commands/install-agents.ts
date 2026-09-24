@@ -21,9 +21,9 @@
  * 10 refusal/usage · 20 crash.
  */
 
-import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { isAbsolute, join, relative, resolve } from "node:path";
+import { runGit } from "../scope/git-resolve.js";
 import type { Output } from "../cli.js";
 import { CLI_VERSION } from "../cli.js";
 
@@ -358,22 +358,16 @@ function hookBlock(version: string): string {
 function resolveHookTarget(cwd: string): string {
   const huskyDir = join(cwd, ".husky");
   if (existsSync(huskyDir)) return join(huskyDir, "pre-commit");
-  try {
-    const hooksPath = execFileSync(
-      "git",
-      ["-C", cwd, "config", "core.hooksPath"],
-      {
-        // An unset key makes git exit non-zero → the catch below treats it
-        // as "no custom hooksPath". (A set-but-empty key also unsets, so
-        // `hooksPath` is always non-empty when this line runs.)
-        stdio: ["ignore", "pipe", "ignore"],
-      },
-    )
-      .toString()
-      .trim();
-    return join(cwd, hooksPath, "pre-commit");
-  } catch {
-    /* no custom hooksPath */
+  const hooksPath = runGit(cwd, ["config", "core.hooksPath"])?.trim();
+  if (hooksPath) {
+    const candidate = resolve(cwd, hooksPath);
+    const relativePath = relative(cwd, candidate);
+    if (
+      relativePath === "" ||
+      (!relativePath.startsWith("..") && !isAbsolute(relativePath))
+    ) {
+      return join(candidate, "pre-commit");
+    }
   }
   return join(cwd, ".git", "hooks", "pre-commit");
 }

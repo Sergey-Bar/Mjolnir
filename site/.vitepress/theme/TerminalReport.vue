@@ -108,6 +108,7 @@ async function copyReport() {
       v-show="active === 'terminal'"
       id="panel-terminal"
       role="tabpanel"
+      tabindex="0"
       aria-labelledby="tab-terminal"
       class="term-body"
     >
@@ -189,6 +190,7 @@ async function copyReport() {
       :key="f.id"
       :id="`panel-${f.id}`"
       role="tabpanel"
+      tabindex="0"
       :aria-labelledby="`tab-${f.id}`"
       class="term-body"
     >

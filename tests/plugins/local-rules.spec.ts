@@ -104,6 +104,29 @@ describe("loadLocalRules — the folder contract (zero network)", () => {
     expect(rule.run({ path: "bounded.spec.ts", text: "ab" })).toHaveLength(2);
   });
 
+  it("rejects nested quantifiers, too many patterns, and oversized files", async () => {
+    const nested = workspace();
+    writeRule(nested, "nested.json", { ...VALID_RULE, patterns: ["(a+)+"] });
+    const nestedResult = await loadLocalRules(nested, true);
+    expect(nestedResult.errors.join("\n")).toContain("nested quantifier");
+
+    const many = workspace();
+    writeRule(many, "many.json", {
+      ...VALID_RULE,
+      patterns: Array.from({ length: 101 }, (_, index) => `x${index}`),
+    });
+    const manyResult = await loadLocalRules(many, true);
+    expect(manyResult.errors.join("\n")).toContain("patterns");
+
+    const large = workspace();
+    mkdirSync(join(large, "mjolnir-rules"), { recursive: true });
+    writeFileSync(
+      join(large, "mjolnir-rules", "large.json"),
+      "x".repeat(1024 * 1024 + 1),
+    );
+    const largeResult = await loadLocalRules(large, true);
+    expect(largeResult.errors.join("\n")).toContain("size budget");
+  });
   it("advances past zero-width matches and retains their exact positions", async () => {
     const dir = workspace();
     writeRule(dir, "positions.json", { ...VALID_RULE, patterns: ["(?=a)|$"] });

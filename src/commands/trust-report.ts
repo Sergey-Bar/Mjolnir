@@ -23,7 +23,7 @@
  * (like the label), not noise: a different HEAD is a different run.
  */
 
-import { writeFileSync, statSync, readFileSync } from "node:fs";
+import { statSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 
 import type { ScanResult, TrustSummary } from "../types.js";
@@ -38,6 +38,10 @@ import { errorMessage, type Output } from "../cli-io.js";
 import { pct } from "../lib/format.js";
 import { evidenceTag } from "../reporter/evidence-tag.js";
 import { currentCommit } from "../lib/git-utils.js";
+import { loadSavedReport } from "./report-io.js";
+import { writeFileAtomic } from "../lib/fs-atomic.js";
+import { sanitizeErrorText } from "../forensics/evidence-hygiene.js";
+import { sanitizeForMarkdown } from "../integrations/github/evidence-sanitization.js";
 
 export const TRUST_REPORT_MD = "mjolnir-trust-report.md";
 export const TRUST_REPORT_JSON = "mjolnir-trust-report.json";
@@ -60,11 +64,42 @@ function fallbackSummary(result: ScanResult): TrustSummary {
 
 /** HTML-escape a text interpolation (the artifact is hostile-input-safe). */
 function esc(text: string): string {
-  return text
+  const stripped = [...text]
+    .filter((character) => {
+      const code = character.codePointAt(0) ?? 0;
+      return !(
+        code <= 0x1f ||
+        (code >= 0x7f && code <= 0x9f) ||
+        code === 0x200f ||
+        code === 0x202e ||
+        (code >= 0x2066 && code <= 0x2069)
+      );
+    })
+    .join("")
+    .slice(0, 1_000);
+  return stripped
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;");
+}
+
+function publicText(text: string): string {
+  return sanitizeForMarkdown(sanitizeErrorText(text, { maxLength: 1_000 }));
+}
+
+function publicJsonText(text: string): string {
+  return sanitizeErrorText(text, { maxLength: 1_000 });
+}
+
+function writeArtifact(path: string, content: string): void {
+  try {
+    writeFileAtomic(path, content, { encoding: "utf8" });
+  } catch (err) {
+    throw new Error(`failed to write artifact ${path}: ${errorMessage(err)}`, {
+      cause: err,
+    });
+  }
 }
 
 /**
@@ -188,7 +223,7 @@ export function checkArtifactFreshness(
 /** The MD identity section lines (§9 R9). */
 function identityLinesMd(identity: ArtifactIdentity): string[] {
   const revs = identity.detectorRevisions
-    .map((r) => `\`${r.ruleId}@${r.detectorRevision}\``)
+    .map((r) => `\`${sanitizeForMarkdown(r.ruleId)}@${r.detectorRevision}\``)
     .join(" · ");
   const levels = Object.entries(identity.evidenceInventory.byEvidenceLevel)
     .map(([level, n]) => `${level}:${n}`)
@@ -196,8 +231,8 @@ function identityLinesMd(identity: ArtifactIdentity): string[] {
   return [
     `## Artifact integrity`,
     "",
-    `- **scanId**: ${identity.scanId ?? "unbound (pre-R9 producer — regenerate)"}`,
-    `- **Commit**: ${identity.commit ?? "unknown (not bound)"}`,
+    `- **scanId**: ${identity.scanId ? sanitizeForMarkdown(identity.scanId) : "unbound (pre-R9 producer — regenerate)"}`,
+    `- **Commit**: ${identity.commit ? sanitizeForMarkdown(identity.commit) : "unknown (not bound)"}`,
     `- **Rule(rev) inventory**: ${revs === "" ? "none fired" : revs}`,
     `- **Evidence inventory**: ${identity.evidenceInventory.totalFindings} finding(s), ${identity.evidenceInventory.corroborated} runtime-corroborated, by level ${levels === "" ? "none" : levels}.`,
     "",
@@ -217,7 +252,7 @@ export function renderTrustReportMarkdown(
   // searching for this line — one comment per PR, never a flood.
   lines.push(`<!-- mjolnir-trust-report:v1 -->`);
   lines.push("");
-  lines.push(`# Mjölnir Trust Report — ${label}`);
+  lines.push(`# Mjölnir Trust Report — ${publicText(label)}`);
   lines.push("");
   lines.push(
     `> Tests tell you what passed. Mjölnir tells you what you can trust.`,
@@ -252,7 +287,9 @@ export function renderTrustReportMarkdown(
   );
   lines.push("");
   if (s.ceilingReasons.length > 0) {
-    lines.push(`Incompleteness factors: ${s.ceilingReasons.join(", ")}.`);
+    lines.push(
+      `Incompleteness factors: ${s.ceilingReasons.map(publicText).join(", ")}.`,
+    );
     lines.push("");
   }
   lines.push(`## Top trust risks`);
@@ -266,7 +303,7 @@ export function renderTrustReportMarkdown(
     for (const f of risks) {
       const ev = evidenceTag(f);
       lines.push(
-        `| ${f.ruleId} | ${f.file}:${f.line} | ${ev} | ${f.message.replaceAll("|", "\\|")} |`,
+        `| ${publicText(f.ruleId)} | ${publicText(f.file)}:${f.line} | ${ev} | ${publicText(f.message)} |`,
       );
     }
   }
@@ -287,7 +324,7 @@ export function renderTrustReportMarkdown(
   lines.push("");
   // NEXT ACTION — one canonical derivation (parity law): the same
   // nextAction() the Trust Report and the JSON twin use.
-  lines.push(nextAction(result));
+  lines.push(publicText(nextAction(result)));
   lines.push("");
   lines.push(...identityLinesMd(buildArtifactIdentity(result, commit)));
   lines.push(`---`);
@@ -336,17 +373,17 @@ export function renderTrustReportJson(
           advisory: result.findings.filter((f) => isAdvisoryFinding(f)).length,
         },
         topTrustRisks: topTrustRisks(result.findings, 10).map((f) => ({
-          ruleId: f.ruleId,
-          file: f.file,
+          ruleId: publicJsonText(f.ruleId),
+          file: publicJsonText(f.file),
           line: f.line,
           severity: f.severity,
           evidence:
             f.runtimeCorroboration === undefined
               ? (f.evidenceLevel ?? "E2")
               : f.runtimeCorroboration.level,
-          message: f.message,
+          message: publicJsonText(f.message),
         })),
-        nextAction: nextAction(result),
+        nextAction: publicJsonText(nextAction(result)),
       },
       null,
       2,
@@ -523,37 +560,26 @@ export async function runTrustReportCommand(
       io.err("error: --commit requires the run's HEAD sha");
       return 10;
     }
-    let raw: string;
+    let scan: ScanResult;
     try {
-      raw = readFileSync(resolve(fromPath), "utf8");
+      scan = loadSavedReport(resolve(fromPath));
     } catch (err) {
       io.err(`error: cannot read ${fromPath}: ${errorMessage(err)}`);
       return 10;
     }
-    let parsed: unknown;
-    try {
-      parsed = JSON.parse(raw) as {
-        schemaVersion?: number;
-        contract?: unknown;
-      };
-    } catch (err) {
-      io.err(`error: cannot read ${fromPath}: ${errorMessage(err)}`);
-      return 10;
-    }
-    // The Action saves `{...result, contract}` — the contract rides on
-    // the same object. Accept either shape; require schemaVersion 1.
     if (
-      typeof parsed !== "object" ||
-      parsed === null ||
-      (parsed as { schemaVersion?: number }).schemaVersion !== 1
+      commitArg &&
+      scan.runIdentity?.commit &&
+      scan.runIdentity.commit !== commitArg
     ) {
       io.err(
-        `error: ${fromPath} is not a canonical mjolnir scan result (schemaVersion 1)`,
+        `error: report commit ${scan.runIdentity.commit} does not match --commit ${commitArg}`,
       );
       return 10;
     }
-    const { contract: _contract, ...rest } = parsed as Record<string, unknown>;
-    const scan: ScanResult = rest as unknown as ScanResult;
+    if (commitArg && scan.runIdentity) {
+      scan.runIdentity = { ...scan.runIdentity, commit: commitArg };
+    }
     const md = renderTrustReportMarkdown(scan, fromPath, commitArg ?? null);
     if (argv.includes("--stdout")) {
       io.out(md);
@@ -566,9 +592,9 @@ export async function runTrustReportCommand(
       // the MD exactly as before.
       const html = renderTrustReportHtml(scan, fromPath, commitArg ?? null);
       const json = renderTrustReportJson(scan, commitArg ?? null);
-      writeFileSync(outPath, md);
-      writeFileSync(resolve(dirname(fromPath), TRUST_REPORT_HTML), html);
-      writeFileSync(resolve(dirname(fromPath), TRUST_REPORT_JSON), json);
+      writeArtifact(outPath, md);
+      writeArtifact(resolve(dirname(fromPath), TRUST_REPORT_HTML), html);
+      writeArtifact(resolve(dirname(fromPath), TRUST_REPORT_JSON), json);
       io.out(
         `trust report written: ${outPath} (plus ${TRUST_REPORT_HTML}, ${TRUST_REPORT_JSON} — same identity binding)`,
       );
@@ -593,7 +619,7 @@ export async function runTrustReportCommand(
       target,
       json: true,
       verbose: false,
-      maxDurationMs: Number.POSITIVE_INFINITY,
+      maxDurationMs: 600_000,
       scopeChanged: false,
       format: "json",
     });
@@ -601,12 +627,15 @@ export async function runTrustReportCommand(
     // HEAD commit (offline git read, null when unresolvable) + the
     // machine anchor from the scan's runIdentity.
     const commit = currentCommit(target, { nullable: true });
+    if (commit && result.runIdentity) {
+      result.runIdentity = { ...result.runIdentity, commit };
+    }
     const md = renderTrustReportMarkdown(result, targetArg, commit);
     const json = renderTrustReportJson(result, commit);
     const html = renderTrustReportHtml(result, targetArg, commit);
-    writeFileSync(join(target, TRUST_REPORT_MD), md);
-    writeFileSync(join(target, TRUST_REPORT_JSON), json);
-    writeFileSync(join(target, TRUST_REPORT_HTML), html);
+    writeArtifact(join(target, TRUST_REPORT_MD), md);
+    writeArtifact(join(target, TRUST_REPORT_JSON), json);
+    writeArtifact(join(target, TRUST_REPORT_HTML), html);
     io.out(
       `trust report written: ${TRUST_REPORT_MD}, ${TRUST_REPORT_JSON}, ${TRUST_REPORT_HTML} (deterministic — same scan, same bytes)`,
     );

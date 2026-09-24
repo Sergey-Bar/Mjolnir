@@ -14,9 +14,10 @@
  * locally before committing still sees the change.
  */
 
-import { existsSync, readFileSync, statSync } from "node:fs";
+import { existsSync, lstatSync } from "node:fs";
 import { join } from "node:path";
 import { LIMITS } from "../discovery/ignores.js";
+import { readFileBounded } from "../lib/fs-bounded.js";
 import { isKnownTestFile } from "../discovery/scan-adapters.js";
 import { runGit } from "./git-resolve.js";
 import type { Finding } from "../types.js";
@@ -147,7 +148,10 @@ export function computeChangedScope(
   // scan's wall time. One batched `--unified=0` diff for ALL committed
   // files and one for ALL working-tree files, split per header, pays
   // exactly two spawns total.
-  const batchDiff = (args: string[], files: string[]): Map<string, string> => {
+  const batchDiff = (
+    args: string[],
+    files: string[],
+  ): Map<string, string> | null => {
     const perFile = new Map<string, string>();
     if (files.length === 0) return perFile;
     // Chunk the pathspec list — a 10,000-file branch blows the Windows
@@ -157,7 +161,7 @@ export function computeChangedScope(
     for (let start = 0; start < files.length; start += CHUNK) {
       const chunk = files.slice(start, start + CHUNK);
       const output = runGit(gitRoot, [...args, "--", ...chunk]);
-      if (output === null) continue;
+      if (output === null) return null;
       // Split per `diff --git` header. parseChangedLines already resets
       // hunk state on headers, so feeding it whole sections is safe.
       const sections = output.split("\ndiff --git ");
@@ -190,6 +194,9 @@ export function computeChangedScope(
     changedFiles,
   );
   const workingDiffs = batchDiff(["diff", "--unified=0", "HEAD"], changedFiles);
+  if (committedDiffs === null || workingDiffs === null) {
+    return { changed: {}, degraded: true, reason: "diff-failed" };
+  }
   for (const file of changedFiles) {
     const committedDiff = committedDiffs.get(file);
     const workingDiff = workingDiffs.get(file);
@@ -225,8 +232,11 @@ const LIMITS_MAX_LINES = 1_000_000;
 function allLinesOf(root: string, file: string): number[] | null {
   const full = join(root, file);
   try {
-    if (statSync(full).size > LIMITS.maxFileBytes) return null;
-    const lineCount = readFileSync(full, "utf8").split("\n").length;
+    const stat = lstatSync(full);
+    if (stat.isSymbolicLink() || !stat.isFile()) return null;
+    const read = readFileBounded(full, LIMITS.maxFileBytes);
+    if (!read.ok) return null;
+    const lineCount = read.data.toString("utf8").split("\n").length;
     return Array.from({ length: lineCount }, (_, i) => i + 1);
   } catch {
     return null;

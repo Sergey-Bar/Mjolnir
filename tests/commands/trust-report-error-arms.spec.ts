@@ -8,6 +8,7 @@
 
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { tmpdir } from "node:os";
+import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 // Hoist-safe holders (vi.mock factories are hoisted above all imports).
@@ -86,6 +87,7 @@ describe('trust-report hostile-error arms (String(err) + ?? ".")', () => {
     mockState.readThrowKind = "nonerror";
     const dir = mkdtempSync(join(tmpdir(), "mjolnir-tr-arms-"));
     const p = join(dir, "read-nonerror.json");
+    writeFileSync(p, "{}");
     // The mocked readFileSync throws before any content is read.
     const code = await runTrustReportCommand(["--from", p], io);
     expect(code).toBe(10);
@@ -147,4 +149,4 @@ describe('trust-report hostile-error arms (String(err) + ?? ".")', () => {
 });
 
 // Local re-exports used above (writeFileSync is the real one here).
-import { writeFileSync, mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync, rmSync } from "node:fs";

@@ -538,7 +538,7 @@ describe("trust-report --from (WI-9 consumption path)", () => {
         unknown
       >;
       delete bare.trustSummary;
-      delete bare.score;
+      bare.score = null;
       delete bare.testFileCount;
       delete bare.testDeclarationCount;
       // evidenceLevel omitted: the JSON twin's (evidenceLevel ?? "E2")

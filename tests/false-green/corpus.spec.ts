@@ -258,7 +258,7 @@ describe("rule-failures — a crashing rule degrades truthfully (RULE CRASH ≠ 
       } as never);
       expect(scan.analysisStatus.rulesCrashed ?? 0).toBeGreaterThanOrEqual(1);
       // The scan itself completed honestly (no crash-propagation).
-      expect(scan.analysisStatus.rules).toBe("complete");
+      expect(scan.analysisStatus.rules).toBe("partial");
       assertReportFields(scan, c.expectedReportFields);
     } finally {
       cleanupDir(dir);

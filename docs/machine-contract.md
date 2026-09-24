@@ -77,6 +77,20 @@ contract (object):
     - `truncationReasons` (array)
     - `frameworkDetectionUnknown` (boolean)
     - `durationMs` (number)
+    - `scopeIntegrity` (object):
+      - `discovered` (number)
+      - `analyzed` (number)
+      - `ignored` (number)
+      - `unrecognized` (number)
+      - `parseFailed` (number)
+      - `truncated` (number)
+      - `scopeVerdict` (string (enum'd))
+    - `runIdentity` (object):
+      - `scanId` (string (enum'd))
+      - `inputFingerprint` (string (enum'd))
+      - `rulesDigest` (string (enum'd))
+      - `configFingerprint` (string (enum'd))
+      - `engineVersion` (string (enum'd))
   - `trustSummary` (object):
     - `level` (string (enum'd))
     - `confidence` (number)

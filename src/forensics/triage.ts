@@ -186,17 +186,21 @@ export function trustVerdictFor(v: TestVerdict): string {
  * today the honest command set is repeat/compare/inspect, not
  * "collect a trace", because trace.zip is not yet ingested.
  */
+function safeTriageText(value: string): string {
+  return value.replace(/[;&|`$()\\\r\n]/g, " ").slice(0, 200);
+}
+
 export function nextActionFor(v: TestVerdict): string {
   const c = classifyVerdict(v);
   switch (c) {
     case "RETRY-DEPENDENT":
-      return `repeat execution of this test (3+ runs) to confirm the flake rate, then quarantine + ticket: ${v.file}`;
+      return `repeat execution of this test (3+ runs) to confirm the flake rate, then quarantine + ticket: ${safeTriageText(v.file)}`;
     case "TIMEOUT":
-      return `re-run in isolation to separate slowness from a hang: npx playwright test ${v.file} --timeout 60000`;
+      return `re-run this test in isolation with a 60-second timeout to separate slowness from a hang: ${safeTriageText(v.file)}`;
     case "FAILING":
-      return `reproduce locally: npx playwright test ${v.file} -g "${v.title.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}" — then fix and re-run`;
+      return `reproduce this test in isolation, then fix and re-run: ${safeTriageText(v.file)} — ${safeTriageText(v.title)}`;
     case "SKIPPED":
-      return `inspect the skip condition in ${v.file} — a skip after a failure usually hides an environment problem`;
+      return `inspect the skip condition in ${safeTriageText(v.file)} — a skip after a failure usually hides an environment problem`;
   }
 }
 
@@ -260,7 +264,7 @@ export function renderTriageWorkflow(report: ForensicsReport): string {
           ? "FAILING"
           : undefined;
     lines.push(
-      `[${r.classification}${flag ? ` · ${flag}` : ""}] ${r.test} (${r.file})`,
+      `[${r.classification}${flag ? ` · ${flag}` : ""}] ${safeTriageText(r.test)} (${safeTriageText(r.file)})`,
     );
     for (const e of r.evidence) lines.push(`    evidence: ${e}`);
     lines.push(`    trust:    ${r.trustVerdict}`);

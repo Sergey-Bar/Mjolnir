@@ -79,6 +79,9 @@ export interface UsageErrorDetail {
   flag?: string | undefined;
 }
 
+export const DEFAULT_MAX_DURATION_MS = 600_000;
+export const MAX_DURATION_MS = 3_600_000;
+
 export function parseArgs(
   argv: string[],
   onError?: (detail: UsageErrorDetail) => void,
@@ -87,7 +90,7 @@ export function parseArgs(
     target: ".",
     json: false,
     verbose: false,
-    maxDurationMs: Number.POSITIVE_INFINITY,
+    maxDurationMs: DEFAULT_MAX_DURATION_MS,
     scopeChanged: false,
     format: "terminal",
   };
@@ -124,7 +127,7 @@ export function parseArgs(
       args.base = ref;
     } else if (a === "--max-duration") {
       const v = Number(argv[++i]);
-      if (!Number.isFinite(v) || v <= 0)
+      if (!Number.isFinite(v) || v <= 0 || v * 1000 > MAX_DURATION_MS)
         return reject({ flag: "--max-duration", token: argv[i] });
       args.maxDurationMs = v * 1000;
     } else if (a === "--width") {

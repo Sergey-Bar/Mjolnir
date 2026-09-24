@@ -9,74 +9,80 @@ concurrency:
 
 permissions:
   contents: read
-  pull-requests: write
 
 jobs:
   scan:
     runs-on: ubuntu-latest
-    # A hung scan must not sit for the 6-hour default.
     timeout-minutes: 10
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          fetch-depth: 0 # needed for --scope changed merge-base
+          fetch-depth: 0
           persist-credentials: false
-      # The action scans with the published mjolnir-qa package. The
-      # composite action is loaded from this checkout so the PR tests the
-      # exact action.yml being reviewed; the
-      # scan package is pinned to the same reviewed release. The fail-on input is the gate: it
-      # fails the job on findings at the gate and never on a partial
-      # scan (exit 2 downgrades to a warning — the frozen exit-code
-      # contract). Advisory mode reports, never blocks.
-      - name: Mjölnir diff
-        if: always()
-        continue-on-error: true
-        run: npx --yes https://registry.npmjs.org/mjolnir-qa/-/mjolnir-qa-2.0.2.tgz diff . > mjolnir-diff.md
-      - name: Mjölnir verification trust scan
-        id: mjolnir
-        if: always()
-        continue-on-error: false
-        uses: ./
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          scope: changed
-          format: json
-          fail-on: error
-          version: 2.0.2
-      # Reporting, not gating: runs even when the scan/gate failed, from
-      # the same mjolnir.json the action wrote.
-      - name: Annotations + Job Summary
+          node-version: 24.13.1
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm run build
+      - name: Run analysis
+        id: analysis
+        continue-on-error: true
+        shell: bash
+        run: |
+          set +e
+          node dist/cli.mjs . --scope changed --format json > mjolnir.json
+          code=$?
+          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          if [ ! -s mjolnir.json ]; then
+            printf '{"schemaVersion":1,"partial":true,"score":null,"reason":"analysis-failed","frameworks":[],"frameworkDetectionUnknown":true,"dimensions":[],"findings":[],"analysisStatus":{"discovery":"partial","rules":"partial","skippedFiles":0,"durationMs":0,"reasons":["analysis-failed"]}}\n' > mjolnir.json
+          fi
+          exit 0
+      - name: Render unified report
         if: always()
         continue-on-error: true
-        run: npx --yes https://registry.npmjs.org/mjolnir-qa/-/mjolnir-qa-2.0.2.tgz summary mjolnir.json
-      - name: Render PR comment
+        shell: bash
+        run: |
+          set +e
+          node dist/cli.mjs pr-comment . --scope changed > mjolnir-comment.md
+          if [ ! -s mjolnir-comment.md ]; then
+            printf '<!-- mjolnir-report:v2 -->\n## Mjölnir report unavailable\n\nAnalysis could not be rendered. No clean or worthy claim is made.\n' > mjolnir-comment.md
+          fi
+          exit 0
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
-        continue-on-error: true
-        run: npx --yes https://registry.npmjs.org/mjolnir-qa/-/mjolnir-qa-2.0.2.tgz pr-comment . > mjolnir-comment.md
-      # Best-effort: on a pull_request event from a fork the GITHUB_TOKEN is
-      # read-only and this step will 403 for every external contributor. The
-      # Job Summary above is the fallback that always renders.
-      # (pull_request_target would fix the token but is a code-execution
-      # risk — deliberately NOT used.)
-      - name: Post or update PR comment
-        if: always()
-        continue-on-error: true
-        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          name: mjolnir-report
+          path: mjolnir-comment.md
+          if-no-files-found: error
+          retention-days: 30
+
+  publish:
+    needs: scan
+    if: ${{ always() && needs.scan.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: mjolnir-report
+      - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             const fs = require('fs');
-            let body = '';
-            try { body = fs.readFileSync('mjolnir-comment.md', 'utf8'); } catch (e) {}
-            if (!body.trim()) {
-              console.log('mjolnir-comment.md is empty or missing — nothing to post.');
-              return;
-            }
-            const marker = '<!-- mjolnir-pr-comment -->';
-            const listed = await github.rest.issues.listComments({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-            });
-            const existing = listed.data.find((c) => c.body?.startsWith(marker));
+            const body = fs.readFileSync('mjolnir-comment.md', 'utf8');
+            if (!body.trim()) return;
+            const marker = '<!-- mjolnir-report:v2 -->';
+            const comments = await github.paginate(
+              github.rest.issues.listComments,
+              { owner: context.repo.owner, repo: context.repo.repo, issue_number: context.issue.number, per_page: 100 },
+            );
+            const existing = comments.find((comment) => comment.body?.includes(marker));
             if (existing) {
               await github.rest.issues.updateComment({
                 owner: context.repo.owner,
@@ -92,9 +98,3 @@ jobs:
                 body,
               });
             }
-      # Gate enforcement: the action step above IS the gate — fail-on
-      # error exits 1 on findings at the gate and the step is
-      # continue-on-error: false, so its failure fails the job. A partial
-      # scan never blocks (the action downgrades exit 2 to a warning per
-      # the frozen exit-code contract). The reporting steps above ran
-      # first (if: always()), so a red gate never suppresses the report.

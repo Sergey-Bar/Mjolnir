@@ -66,6 +66,18 @@ describe("sanitizeForMarkdown", () => {
     expect(result).not.toContain("\u202e");
   });
 
+  it("strips numeric and hex HTML entities", () => {
+    const result = sanitizeForMarkdown("&#x3c;img&#x3e; &#65;");
+    expect(result).not.toContain("&#x");
+    expect(result).not.toContain("&#65;");
+  });
+
+  it("neutralizes malformed links containing markup", () => {
+    const result = sanitizeForMarkdown("[x](<script>)");
+    expect(result).not.toMatch(/\]\([^)]*</);
+    expect(result).not.toContain("<script>");
+  });
+
   it("strips bidirectional isolation characters", () => {
     const result = sanitizeForMarkdown("test\u2066name\u2069");
     expect(result).not.toContain("\u2066");

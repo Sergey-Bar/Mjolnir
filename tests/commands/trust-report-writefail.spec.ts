@@ -21,16 +21,20 @@ import type { ScanResult } from "../../src/types.js";
 // The factory is hoisted, so the real module is imported lazily INSIDE
 // it; the `failWrite` flag lives in a hoist-safe holder object.
 const writeFailHolder = { fail: false };
-vi.mock("node:fs", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("node:fs")>();
+vi.mock("../../src/lib/fs-atomic.js", async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import("../../src/lib/fs-atomic.js")>();
   return {
     ...actual,
-    writeFileSync: (...args: Parameters<typeof actual.writeFileSync>) => {
-      const target = String(args[0]);
-      if (target.endsWith("mjolnir-trust-report.md") && writeFailHolder.fail) {
+    writeFileAtomic: (
+      path: string,
+      content: string,
+      options?: { encoding?: BufferEncoding },
+    ) => {
+      if (writeFailHolder.fail && path.endsWith("mjolnir-trust-report.md")) {
         throw new Error("ENOSPC: no space left on device");
       }
-      return actual.writeFileSync(...args);
+      return actual.writeFileAtomic(path, content, options);
     },
   };
 });

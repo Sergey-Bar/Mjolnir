@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -43,6 +43,48 @@ describe("loadConfig", () => {
       JSON.stringify({ gate: "advisory" }),
     );
     expect(loadConfig(dir).config.gate).toBe("advisory");
+  });
+
+  it("rejects symlinked and oversized config files", () => {
+    const outside = mkdtempSync(join(tmpdir(), "mjolnir-cfg-outside-"));
+    try {
+      const outsideFile = join(outside, "secret.json");
+      writeFileSync(outsideFile, JSON.stringify({ gate: "error" }), "utf8");
+      const link = join(dir, "mjolnir.config.json");
+      try {
+        symlinkSync(outsideFile, link, "file");
+        expect(() => loadConfig(dir)).toThrow(ConfigValidationError);
+      } catch (error) {
+        if (error instanceof ConfigValidationError) throw error;
+      }
+      writeFileSync(link, "x".repeat(1024 * 1024 + 1), "utf8");
+      expect(() => loadConfig(dir)).toThrow(ConfigValidationError);
+    } finally {
+      rmSync(outside, { recursive: true, force: true });
+    }
+  });
+
+  it("rejects invalid ignore file globs and exclude entries", () => {
+    writeFileSync(
+      join(dir, "mjolnir.config.json"),
+      JSON.stringify({ ignore: [{ ruleId: "R", reason: "x", files: [1] }] }),
+    );
+    expect(() => loadConfig(dir)).toThrow(/files/);
+    writeFileSync(
+      join(dir, "mjolnir.config.json"),
+      JSON.stringify({ exclude: [1] }),
+    );
+    expect(() => loadConfig(dir)).toThrow(/exclude/);
+  });
+
+  it("handles an invalid expiry date explicitly", () => {
+    writeFileSync(
+      join(dir, "mjolnir.config.json"),
+      JSON.stringify({
+        ignore: [{ ruleId: "R", reason: "x", expires: "not-a-date" }],
+      }),
+    );
+    expect(() => loadConfig(dir)).toThrow(/expires/);
   });
 
   it("throws on invalid JSON", () => {
