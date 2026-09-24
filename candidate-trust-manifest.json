@@ -9,8 +9,8 @@
     "version": "2.1.0",
     "packageSha256": "60c635ccb268d1411d5208e44d940fa2a1e8c1fd07e0a086fe01aca64b958a0b",
     "lockfileSha256": "ece7e9f48125c6d1e61961ebad1244cb1d9b4494835dc2614c956c1d2066c25c",
-    "workingTreeSha256": "2721a5e661875e57e4764bda36e1bcbf1073a6a3b99efb9a51307fc3ce7272d4",
-    "changedPathCount": 131,
+    "workingTreeSha256": "df703901c53315da764f29fb431740c300f5d04a41d0c7666c641cbecad04364",
+    "changedPathCount": 3,
     "supportEnvelope": "self-hosted; hosted services require explicit consent and separate proof"
   },
   "claimRegistry": {

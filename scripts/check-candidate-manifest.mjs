@@ -42,23 +42,6 @@ const lockHash = createHash("sha256")
   .digest("hex");
 if (packageHash !== manifest.identity.packageSha256) fail("package hash drift");
 if (lockHash !== manifest.identity.lockfileSha256) fail("lockfile hash drift");
-const diff =
-  spawnSync(
-    "git",
-    [
-      "diff",
-      "--binary",
-      manifest.identity.baseSha,
-      "--",
-      ".",
-      ":(exclude)candidate-trust-manifest.json",
-    ],
-    {
-      cwd: root,
-      encoding: null,
-      windowsHide: true,
-    },
-  ).stdout ?? Buffer.alloc(0);
 const untracked = spawnSync(
   "git",
   ["ls-files", "--others", "--exclude-standard"],
@@ -67,13 +50,21 @@ const untracked = spawnSync(
   .stdout.split(/\r?\n/)
   .filter((value) => value && value !== "candidate-trust-manifest.json")
   .sort();
-const treeParts = [
-  diff,
-  ...untracked.flatMap((value) => [
-    Buffer.from(`${value}\0`),
-    readFileSync(join(root, value)),
-  ]),
-];
+const tracked =
+  spawnSync("git", ["ls-files", "-z"], {
+    cwd: root,
+    encoding: null,
+    windowsHide: true,
+  })
+    .stdout?.toString("utf8")
+    .split("\0")
+    .filter((value) => value && value !== "candidate-trust-manifest.json") ??
+  [];
+const treePaths = [...new Set([...tracked, ...untracked])].sort();
+const treeParts = treePaths.flatMap((value) => [
+  Buffer.from(`${value}\0`),
+  readFileSync(join(root, value)),
+]);
 const workingTreeHash = createHash("sha256")
   .update(Buffer.concat(treeParts))
   .digest("hex");
@@ -84,22 +75,13 @@ if (workingTreeHash !== manifest.identity.workingTreeSha256) {
 }
 const changedPathCount = new Set(
   [
-    ...spawnSync(
-      "git",
-      [
-        "diff",
-        "--name-only",
-        manifest.identity.baseSha,
-        "--",
-        ".",
-        ":(exclude)candidate-trust-manifest.json",
-      ],
-      {
-        cwd: root,
-        encoding: "utf8",
-        windowsHide: true,
-      },
-    ).stdout.split(/\r?\n/),
+    ...spawnSync("git", ["diff", "--name-only", "HEAD"], {
+      cwd: root,
+      encoding: "utf8",
+      windowsHide: true,
+    })
+      .stdout.split(/\r?\n/)
+      .filter((value) => value && value !== "candidate-trust-manifest.json"),
     ...untracked,
   ].filter(Boolean),
 ).size;

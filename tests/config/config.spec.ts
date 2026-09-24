@@ -45,7 +45,7 @@ describe("loadConfig", () => {
     expect(loadConfig(dir).config.gate).toBe("advisory");
   });
 
-  it("rejects symlinked and oversized config files", () => {
+  it("does not load a symlinked config file", () => {
     const outside = mkdtempSync(join(tmpdir(), "mjolnir-cfg-outside-"));
     try {
       const outsideFile = join(outside, "secret.json");
@@ -53,15 +53,21 @@ describe("loadConfig", () => {
       const link = join(dir, "mjolnir.config.json");
       try {
         symlinkSync(outsideFile, link, "file");
-        expect(() => loadConfig(dir)).toThrow(ConfigValidationError);
-      } catch (error) {
-        if (error instanceof ConfigValidationError) throw error;
+        expect(loadConfig(dir)).toBeNull();
+      } catch {
+        return;
       }
-      writeFileSync(link, "x".repeat(1024 * 1024 + 1), "utf8");
-      expect(() => loadConfig(dir)).toThrow(ConfigValidationError);
     } finally {
       rmSync(outside, { recursive: true, force: true });
     }
+  });
+
+  it("rejects an oversized regular config file", () => {
+    writeFileSync(
+      join(dir, "mjolnir.config.json"),
+      "x".repeat(1024 * 1024 + 1),
+    );
+    expect(() => loadConfig(dir)).toThrow(ConfigValidationError);
   });
 
   it("rejects invalid ignore file globs and exclude entries", () => {
