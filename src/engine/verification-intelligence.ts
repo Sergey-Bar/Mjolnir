@@ -228,7 +228,6 @@ function commandInvocation(command: string): { args: string } | null {
     ]);
     for (let index = 1; index < tokens.length; index++) {
       const token = tokens[index];
-      if (!token) continue;
       if (token.length === 2 && token[0] === "-" && token[1] === "-") {
         continue;
       }
@@ -244,7 +243,6 @@ function commandInvocation(command: string): { args: string } | null {
     const optionsWithValues = new Set(["--package", "-p"]);
     for (let index = 2; index < tokens.length; index++) {
       const token = tokens[index];
-      if (!token) continue;
       if (token.length === 2 && token[0] === "-" && token[1] === "-") {
         continue;
       }
@@ -320,7 +318,7 @@ function runParts(
     current = "";
   };
   for (let index = 0; index < run.length; index++) {
-    const character = run[index] ?? "";
+    const character = run[index] as string;
     if (escaped) {
       current += character;
       escaped = false;
