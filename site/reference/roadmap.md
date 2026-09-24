@@ -8,7 +8,7 @@ entry condition.
 
 ## Where Mjölnir is now
 
-- **v2.0.2 — current stable.** Published on npm and GitHub Releases, with
+- **v2.1.0 — current stable.** Published on npm and GitHub Releases, with
   <!-- census:total-rules -->79 rules<!-- /census:total-rules -->,
   <!-- census:measured -->74<!-- /census:measured --> of them carrying a
   false-positive rate measured against real OSS code

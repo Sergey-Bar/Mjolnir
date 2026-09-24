@@ -19,7 +19,7 @@ The artifacts this kit ships in-repo:
 
 ## Versioning & pinning guidance (P1.2)
 
-`release.yml`'s `action-tags` job moves the **`v2` major moving tag** to
+`action-tags.yml` moves the **`v2` major moving tag** to
 every stable release (rc tags never move it — the same ruling as npm's
 `next` dist-tag). Consumers choose their exposure:
 
@@ -28,13 +28,13 @@ every stable release (rc tags never move it — the same ruling as npm's
 - uses: Sergey-Bar/Mjolnir@v2
 
 # Pin an exact release for a reproducible gate (no surprises on merge):
-- uses: Sergey-Bar/Mjolnir@v2.0.2
+- uses: Sergey-Bar/Mjolnir@v2.1.0
 ```
 
 The scan itself always runs the **published npm package**
 (`npx mjolnir-qa@<version>`), never a build of this repo — the action
 works for consumers, not contributors. Pin the tool exactly in your
-workflow (`with: version: 2.0.2`); the Action also defaults to the current
+workflow (`with: version: 2.1.0`); the Action also defaults to the current
 released version. Do not use `version: latest` in an enforcing gate.
 
 ## GitHub Actions Marketplace (P1.5)
@@ -42,7 +42,7 @@ released version. Do not use `version: latest` in an enforcing gate.
 **Owner clicks only:** publish from the repo's "Releases" side panel
 ("Publish to GitHub Marketplace" → draft → publish), accepting the tag
 it offers (`v2` must be a valid tag at publish time — the action-tags
-job guarantees it after the first stable release following this merge).
+workflow guarantees it after a stable release).
 
 Listing content (paste verbatim into the marketplace draft):
 
@@ -66,13 +66,13 @@ Listing content (paste verbatim into the marketplace draft):
 
 Checklist (tick with dates, states in the table header):
 
-| #   | Step                                                                               | State   |
-| --- | ---------------------------------------------------------------------------------- | ------- |
-| 1   | Merge P1; confirm `v2` tag moved by the action-tags job on the next stable release | pending |
-| 2   | Draft marketplace listing on the repo Releases page                                | pending |
-| 3   | Attach screenshots, categories, link README                                        | pending |
-| 4   | **Owner: click Publish**                                                           | pending |
-| 5   | Verify: `uses: Sergey-Bar/Mjolnir@v2` on a scratch repo runs green                 | pending |
+| #   | Step                                                                                    | State   |
+| --- | --------------------------------------------------------------------------------------- | ------- |
+| 1   | Merge P1; confirm `v2` tag moved by the action-tags workflow on the next stable release | pending |
+| 2   | Draft marketplace listing on the repo Releases page                                     | pending |
+| 3   | Attach screenshots, categories, link README                                             | pending |
+| 4   | **Owner: click Publish**                                                                | pending |
+| 5   | Verify: `uses: Sergey-Bar/Mjolnir@v2` on a scratch repo runs green                      | pending |
 
 ## Awesome-list PRs (P1.6)
 
