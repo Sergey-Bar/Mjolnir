@@ -27,6 +27,7 @@ jobs:
       dry-run: ${{ steps.context.outputs.dry_run }}
       package-name: ${{ steps.context.outputs.package_name }}
       tag: ${{ steps.context.outputs.tag }}
+      tag-commit: ${{ steps.context.outputs.tag_commit }}
       tarball: ${{ steps.package.outputs.tarball }}
       version: ${{ steps.context.outputs.version }}
     steps:
@@ -66,13 +67,34 @@ jobs:
             echo "::error::Release branch is not descended from protected main"
             exit 1
           }
+          TAG_COMMIT=$(git rev-list -n 1 "$TAG" 2>/dev/null || true)
+          if [ -z "$TAG_COMMIT" ]; then
+            TAG_COMMIT=$(git rev-parse HEAD)
+          else
+            git merge-base --is-ancestor "$TAG_COMMIT" HEAD || {
+              echo "::error::$TAG is not an ancestor of the release branch"
+              exit 1
+            }
+          fi
           {
             echo "commit=$(git rev-parse HEAD)"
+            echo "tag_commit=$TAG_COMMIT"
             echo "dry_run=$DRY_RUN_INPUT"
             echo "package_name=$PACKAGE_NAME"
             echo "tag=$TAG"
             echo "version=$VERSION"
           } >> "$GITHUB_OUTPUT"
+      - name: Materialize and build existing release tag
+        if: steps.context.outputs.tag_commit != steps.context.outputs.commit
+        shell: bash
+        env:
+          TAG_COMMIT: ${{ steps.context.outputs.tag_commit }}
+        run: |
+          set -euo pipefail
+          git checkout --detach "$TAG_COMMIT"
+          test "$(git rev-parse HEAD)" = "$TAG_COMMIT"
+          npm ci
+          npm run build
       - name: Run release certification
         run: npm run ci-local
       - id: package
@@ -123,19 +145,20 @@ jobs:
         name: Create or verify stable tag
         shell: bash
         env:
-          EXPECTED_COMMIT: ${{ needs.verify.outputs.commit }}
+          BRANCH_COMMIT: ${{ needs.verify.outputs.commit }}
           GIT_AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
           GIT_AUTHOR_NAME: github-actions[bot]
           GIT_COMMITTER_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
           GIT_COMMITTER_NAME: github-actions[bot]
           TAG: ${{ needs.verify.outputs.tag }}
+          TAG_COMMIT: ${{ needs.verify.outputs.tag-commit }}
         run: |
           set -euo pipefail
-          test "$(git rev-parse HEAD)" = "$EXPECTED_COMMIT"
+          test "$(git rev-parse HEAD)" = "$BRANCH_COMMIT"
           if git rev-parse "refs/tags/$TAG" >/dev/null 2>&1; then
-            test "$(git rev-list -n 1 "$TAG")" = "$EXPECTED_COMMIT"
+            test "$(git rev-list -n 1 "$TAG")" = "$TAG_COMMIT"
           else
-            git tag -a "$TAG" -m "$TAG" "$EXPECTED_COMMIT"
+            git tag -a "$TAG" -m "$TAG" "$TAG_COMMIT"
             git push origin "refs/tags/$TAG"
           fi
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
@@ -166,7 +189,7 @@ jobs:
         shell: bash
         env:
           CHECKSUM: ${{ needs.verify.outputs.checksum }}
-          EXPECTED_COMMIT: ${{ needs.verify.outputs.commit }}
+          EXPECTED_COMMIT: ${{ needs.verify.outputs.tag-commit }}
           PACKAGE_NAME: ${{ needs.verify.outputs.package-name }}
           TARBALL: ${{ needs.verify.outputs.tarball }}
           VERSION: ${{ needs.verify.outputs.version }}

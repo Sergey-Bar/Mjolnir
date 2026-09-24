@@ -82,6 +82,14 @@ describe("stable release workflow", () => {
     expect(identityStep?.env?.GIT_COMMITTER_NAME).toBe("github-actions[bot]");
   });
 
+  it("materializes an existing immutable tag before packing", () => {
+    expect(source).toContain("tag_commit=$TAG_COMMIT");
+    expect(source).toContain("Materialize and build existing release tag");
+    expect(source).toContain(
+      "EXPECTED_COMMIT: ${{ needs.verify.outputs.tag-commit }}",
+    );
+  });
+
   it("validates the packaged CLI version banner", () => {
     expect(source).toContain('= "mjolnir-qa $VERSION"');
   });
