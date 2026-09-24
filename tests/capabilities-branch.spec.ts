@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { join } from "node:path";
 
 import {
+  CAPABILITY_MATRIX,
   validateCapabilityMatrix,
   resolvePointer,
   symbolHome,
@@ -43,6 +44,22 @@ describe("capabilities branch coverage (lines 304-307 — yes with no evidence)"
     // This should work because we're running from the actual repo
     expect(typeof result.ok).toBe("boolean");
     expect(Array.isArray(result.failures)).toBe(true);
+  });
+
+  it("rejects a yes cell without an evidence pointer", () => {
+    const cell = CAPABILITY_MATRIX[0]?.cols.detect as { evidence?: string[] };
+    const original = cell.evidence;
+    try {
+      cell.evidence = [];
+      const result = validateCapabilityMatrix(process.cwd());
+      expect(result.ok).toBe(false);
+      expect(
+        result.failures.some((failure) => failure.includes("no evidence")),
+      ).toBe(true);
+    } finally {
+      if (original === undefined) delete cell.evidence;
+      else cell.evidence = original;
+    }
   });
 
   it("validateCapabilityMatrix returns ok: false on a fake root", () => {

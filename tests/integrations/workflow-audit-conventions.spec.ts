@@ -32,7 +32,7 @@ interface WorkflowStep {
   run?: string;
   uses?: string;
   shell?: string;
-  with?: Record<string, string>;
+  with?: Record<string, unknown>;
   if?: string;
 }
 
@@ -85,6 +85,48 @@ function loadWorkflow(file: string): Workflow {
 
 describe("every GitHub workflow satisfies the repo's own audit conventions", () => {
   const files = workflowFiles();
+
+  it("does not persist credentials in untrusted or code-executing checkouts", () => {
+    const filesNeedingNoCredentials = [
+      "ci.yml",
+      "codeql.yml",
+      "corpus-audit.yml",
+      "demo-video.yml",
+      "fuzz.yml",
+      "merge-verify.yml",
+      "pages.yml",
+      "release-smoke.yml",
+      "sarif-code-scanning.yml",
+      "stress.yml",
+    ];
+    for (const file of filesNeedingNoCredentials) {
+      const wf = loadWorkflow(file);
+      for (const job of Object.values(wf.jobs ?? {})) {
+        for (const step of job.steps ?? []) {
+          if (!step.uses?.startsWith("actions/checkout@")) continue;
+          expect(
+            step.with?.["persist-credentials"],
+            `${file} checkout must set persist-credentials: false`,
+          ).toBe(false);
+        }
+      }
+    }
+  });
+
+  it("checks pull_request_target workflows in scalar, array, and object forms", () => {
+    const allow = new Set(["label.yml", "greetings.yml"]);
+    for (const file of allow) {
+      const wf = loadWorkflow(file);
+      const onText = JSON.stringify(wf.on);
+      expect(onText).toContain("pull_request_target");
+      for (const job of Object.values(wf.jobs ?? {})) {
+        for (const step of job.steps ?? []) {
+          expect(step.uses ?? "").not.toContain("actions/checkout");
+          expect(step.run ?? "").not.toMatch(/\b(?:git|npm|npx)\b/);
+        }
+      }
+    }
+  });
 
   it("discovers the expected workflow files (fails if workflows vanish)", () => {
     expect(files).toEqual(

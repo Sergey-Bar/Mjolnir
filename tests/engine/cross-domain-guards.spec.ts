@@ -224,6 +224,33 @@ describe("runRulesCommand --external (loaded-catalog branch)", () => {
       process.chdir(prevCwd);
     }
   });
+
+  it("rules --external does not execute JS modules without the trust flag", async () => {
+    const { runRulesCommand } = await import("../../src/cli.js");
+    const d = mkdtempSync(join(tmpdir(), "mjolnir-extcat-gated-"));
+    dirs.push(d);
+    mkdirSync(join(d, "mjolnir-rules"), { recursive: true });
+    writeFileSync(
+      join(d, "mjolnir-rules", "hostile.mjs"),
+      "throw new Error('MODULE EXECUTED — gate failed');\n",
+    );
+    const out: string[] = [];
+    const err: string[] = [];
+    const prevCwd = process.cwd();
+    try {
+      process.chdir(d);
+      const code = await runRulesCommand(["--external"], {
+        out: (value: unknown) => out.push(String(value)),
+        err: (value: unknown) => err.push(String(value)),
+      });
+      expect(code).toBe(0);
+      expect(err.join("\n")).toContain("plugin code execution is DISABLED");
+      expect(err.join("\n")).toContain("hostile.mjs");
+      expect(out.join("\n")).not.toContain("MODULE EXECUTED");
+    } finally {
+      process.chdir(prevCwd);
+    }
+  });
 });
 
 // ─── adapters — config-rule gating branches (§15.2) ──────────────────

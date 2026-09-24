@@ -11,6 +11,30 @@ once shipped, so this file is the record of what changed between versions.
 
 ## [Unreleased]
 
+### Changed
+
+- **Advisory-first CI adoption** — `mjolnir ci install` and the root
+  GitHub Action now default to non-blocking findings and non-blocking partial
+  scans. Blocking remains explicit through `--gate error`, `--gate warning`,
+  or `fail-on`.
+- Suppression counts now report matched findings, not configured entries;
+  `suppression-gate` evaluates all-tier pre-suppression findings and enforces
+  total-count limits.
+- Zero-finding reports no longer claim the suite is clean or that CI is green.
+
+### Added
+
+- **Zero-touch PR framework** — Conventional Commits enforcement via
+  `commitlint` + `.husky/commit-msg` (scope is mandatory; WIP/fixup/squash
+  commits are rejected before they reach the object store); pinned-seed
+  property tests (`vitest.property.config.ts`, `tests/scope/property-invariants.spec.ts`
+  with a shared `SEED` constant so failures are reproducible); the
+  `merge-verify` CI job that runs the full gate on the **merge result**,
+  not the PR head, so a green PR that merges into a red `main` is visible
+  before it ships; and `scripts/check-ci-local-parity.mjs`, which keeps
+  `ci.yml`, `merge-verify.yml` and the local gate exercising the same
+  command list. All additive — no frozen surface changed.
+
 ## [2.1.0] — 2026-09-24
 
 ### Added

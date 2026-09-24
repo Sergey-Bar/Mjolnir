@@ -1009,6 +1009,10 @@ describe("milestone CLI commands", () => {
   it("returns partial for bounded short scans across scan-backed commands", async () => {
     const root = createRepo();
     try {
+      writeFileSync(
+        join(root, "oversized.spec.ts"),
+        "x".repeat(1024 * 1024 + 1),
+      );
       for (const command of [
         "suppression-gate",
         "cross-file",

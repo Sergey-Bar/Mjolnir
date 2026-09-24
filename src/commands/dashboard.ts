@@ -7,7 +7,10 @@
  * in team wikis or sharing via static hosting.
  */
 
-import { existsSync, writeFileSync } from "node:fs";
+import { existsSync } from "node:fs";
+import { isAbsolute, relative, resolve } from "node:path";
+import { sanitizeErrorText } from "../forensics/evidence-hygiene.js";
+import { writeFileAtomic } from "../lib/fs-atomic.js";
 import { internalErrorMessage, type Output } from "../cli-io.js";
 import {
   EXIT_CLEAN,
@@ -31,6 +34,15 @@ export interface DashboardData {
   generatedAt: string;
 }
 
+function escapeHtml(text: string): string {
+  return sanitizeErrorText(text, { maxLength: 1_000 })
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
 function generateDashboardHtml(data: DashboardData): string {
   const scoreColor =
     data.score === null
@@ -44,7 +56,7 @@ function generateDashboardHtml(data: DashboardData): string {
   const rows = data.findings
     .map(
       (f) =>
-        `<tr><td>${f.ruleId}</td><td><span style="color:${f.severity === "error" ? "#ef4444" : f.severity === "warning" ? "#eab308" : "#22c55e"}">${f.severity}</span></td><td>${f.file}</td><td>${f.message}</td></tr>`,
+        `<tr><td>${escapeHtml(f.ruleId)}</td><td><span style="color:${f.severity === "error" ? "#ef4444" : f.severity === "warning" ? "#eab308" : "#22c55e"}">${escapeHtml(f.severity)}</span></td><td>${escapeHtml(f.file)}</td><td>${escapeHtml(f.message)}</td></tr>`,
     )
     .join("");
 
@@ -68,7 +80,7 @@ function generateDashboardHtml(data: DashboardData): string {
 </head>
 <body>
 <h1>🔍 Quality Dashboard</h1>
-<p>Generated: ${data.generatedAt}</p>
+<p>Generated: ${escapeHtml(data.generatedAt)}</p>
 <div class="score">${data.score !== null ? data.score + "/100" : "N/A"}</div>
 <div class="kpi-grid">
   <div class="kpi"><div class="value">${data.totalFindings}</div><div class="label">Findings</div></div>
@@ -97,6 +109,13 @@ export async function runDashboardCommand(
     io.err(`mjolnir dashboard: target does not exist: ${target}`);
     return EXIT_USAGE;
   }
+  const root = resolve(target);
+  const resolvedOutput = resolve(outputPath);
+  const outputRelative = relative(root, resolvedOutput);
+  if (isAbsolute(outputRelative) || outputRelative.startsWith("..")) {
+    io.err("mjolnir dashboard: output must stay within the target root");
+    return EXIT_USAGE;
+  }
 
   try {
     const { runScan } = await import("../engine/scan-pipeline.js");
@@ -104,7 +123,7 @@ export async function runDashboardCommand(
       target,
       json: true,
       verbose: false,
-      maxDurationMs: Number.POSITIVE_INFINITY,
+      maxDurationMs: 600_000,
       scopeChanged: false,
       format: "json",
       strict: false,
@@ -127,9 +146,9 @@ export async function runDashboardCommand(
     };
 
     const html = generateDashboardHtml(data);
-    writeFileSync(outputPath, html);
+    writeFileAtomic(resolvedOutput, html, { encoding: "utf8" });
 
-    io.out(`Dashboard written to ${outputPath}`);
+    io.out(`Dashboard written to ${resolvedOutput}`);
     io.out(`Score: ${data.score !== null ? data.score + "/100" : "N/A"}`);
     io.out(
       `Findings: ${data.totalFindings} (${data.errorCount} errors, ${data.warningCount} warnings)`,

@@ -8,6 +8,8 @@
  */
 
 import type { PrCommentModelV1 } from "./pr-comment-publisher.js";
+import { sanitizeErrorText } from "../../forensics/evidence-hygiene.js";
+import { sanitizeForMarkdown } from "./evidence-sanitization.js";
 
 export interface SummaryWriter {
   write(content: string): void;
@@ -35,7 +37,7 @@ export function renderJobSummary(model: PrCommentModelV1): string {
         : "FAIL";
 
   let summary = `## :${icon}: Mjolnir QA — ${verdictLabel}\n\n`;
-  summary += `**Score:** ${model.score}/100\n\n`;
+  summary += `**Score:** ${sanitizeForMarkdown(String(model.score))}/100\n\n`;
 
   if (model.findings.errors > 0 || model.findings.warnings > 0) {
     summary += `| Severity | Count |\n| --- | --- |\n`;
@@ -48,14 +50,14 @@ export function renderJobSummary(model: PrCommentModelV1): string {
     summary += "\n";
   }
 
-  summary += `${model.summary}\n`;
+  summary += `${sanitizeForMarkdown(sanitizeErrorText(model.summary, { maxLength: 2_000 }))}\n`;
 
   if (model.details) {
-    summary += `\n<details>\n<summary>Details</summary>\n\n${model.details}\n\n</details>\n`;
+    summary += `\n<details>\n<summary>Details</summary>\n\n${sanitizeForMarkdown(sanitizeErrorText(model.details, { maxLength: 10_000 }))}\n\n</details>\n`;
   }
 
   if (model.sha) {
-    summary += `\n---\n*Commit: \`${model.sha.slice(0, 7)}\`*\n`;
+    summary += `\n---\n*Commit: \`${sanitizeForMarkdown(model.sha.slice(0, 7))}\`*\n`;
   }
 
   summary += `\n> **Note:** This report was published to the job summary because PR comment publishing was not available.\n`;

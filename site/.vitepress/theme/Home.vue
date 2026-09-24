@@ -1781,6 +1781,7 @@ onBeforeUnmount(() => {
   display: grid;
   gap: 10px;
   margin-top: 20px;
+  min-height: 180px;
 }
 .found li {
   display: grid;
@@ -1915,6 +1916,8 @@ onBeforeUnmount(() => {
 .chip {
   display: grid;
   grid-template-rows: 0fr;
+  min-height: 86px;
+  contain: layout;
   transition: grid-template-rows 480ms var(--settle);
 }
 .chip.open {

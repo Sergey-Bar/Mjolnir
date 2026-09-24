@@ -498,6 +498,48 @@ describe("renderUnifiedReport", () => {
     expect(out).toContain("No new findings");
   });
 
+  it("marks partial no-findings as incomplete instead of worthy", () => {
+    const r = result({
+      partial: true,
+      score: 99,
+      findings: [],
+      analysisStatus: {
+        discovery: "partial",
+        rules: "partial",
+        skippedFiles: 1,
+        durationMs: 5,
+        reasons: ["runtime-incomplete"],
+      },
+    });
+    const out = renderUnifiedReport(r);
+    expect(out).toContain("INCOMPLETE");
+    expect(out).toContain("not proof of cleanliness");
+    expect(out).not.toContain("WORTHY");
+  });
+
+  it("marks L0 with zero evidence as incomplete even on a complete scan", () => {
+    const out = renderUnifiedReport(
+      result({
+        trustSummary: {
+          level: "L0",
+          confidence: 1,
+          evidenceCoverage: 0,
+          inconclusiveRate: 0,
+          provisionalRuleIds: [],
+          ceilingReasons: [],
+        },
+      }),
+    );
+    expect(out).toContain("INCOMPLETE");
+    expect(out).not.toContain("WORTHY");
+  });
+
+  it("does not call a full scan's empty finding set a clean PR", () => {
+    const out = renderUnifiedReport(result({ findings: [] }));
+    expect(out).toContain("analyzed surface");
+    expect(out).not.toContain("this PR's changes");
+  });
+
   it("renders findings grouped by severity", () => {
     const r = result({
       findings: [

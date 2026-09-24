@@ -697,6 +697,21 @@ describe("param-validator arms (§21 strict shape validation)", () => {
     expect(res.error?.message).toContain("maxDurationMs");
   });
 
+  it("scan rejects non-finite and over-budget maxDurationMs", async () => {
+    for (const maxDurationMs of [
+      Number.NaN,
+      Number.POSITIVE_INFINITY,
+      3_600_001,
+    ]) {
+      const res = await handleToolCall({
+        id: 200 + String(maxDurationMs).length,
+        name: "scan",
+        args: { path: tmpRepo("duration"), maxDurationMs },
+      });
+      expect(res.error?.code).toBe(MCP_ERRORS.INVALID_PARAMS);
+    }
+  });
+
   it("scan: a non-string path is INVALID_PARAMS", async () => {
     const res = await handleToolCall({
       id: 21,

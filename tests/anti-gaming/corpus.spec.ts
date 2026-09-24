@@ -110,6 +110,20 @@ describe("validateAntiGamingScenario", () => {
       expect.stringContaining("expectedScoreChange"),
     );
   });
+
+  it("reports empty required narrative fields", () => {
+    const valid = ANTI_GAMING_SCENARIOS[0];
+    if (!valid) return;
+    const result = validateAntiGamingScenario({
+      ...valid,
+      description: "",
+      gamingAttempt: "",
+      expectedDetection: "",
+      correctedBehavior: "",
+    });
+    expect(result.valid).toBe(false);
+    expect(result.errors).toHaveLength(4);
+  });
 });
 
 describe("validateAntiGamingCorpus", () => {

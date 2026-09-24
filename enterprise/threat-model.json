@@ -1,0 +1,114 @@
+{
+  "schemaVersion": 1,
+  "modelId": "mjolnir-enterprise-001",
+  "status": "approved-for-working-candidate",
+  "scope": {
+    "product": "Mjolnir",
+    "deploymentModes": ["self-hosted", "hosted-ai-opt-in"],
+    "outOfScope": ["unapproved hosted processing", "implicit telemetry"]
+  },
+  "actors": [
+    { "id": "developer", "trust": "local-principal" },
+    { "id": "ci-runner", "trust": "ephemeral-workload" },
+    { "id": "reviewer", "trust": "human-authority" },
+    { "id": "external-service", "trust": "untrusted-until-consented" }
+  ],
+  "boundaries": [
+    {
+      "id": "workspace",
+      "description": "Local repository and bounded scan inputs"
+    },
+    { "id": "artifact", "description": "Reports and evidence artifacts" },
+    { "id": "network", "description": "Any external or hosted boundary" },
+    { "id": "plugin", "description": "Code-executing extension boundary" }
+  ],
+  "scenarios": [
+    {
+      "id": "prompt-injection",
+      "risk": "high",
+      "status": "tested",
+      "owner": "security-owner",
+      "evidence": [
+        "tests/contract/privacy-network-isolation.spec.ts",
+        "tests/adversarial/adversarial-index.spec.ts"
+      ],
+      "abuseScenario": "Untrusted source text attempts to redirect analysis or exfiltrate data.",
+      "controls": [
+        "source is treated as data",
+        "network tools are not implicit",
+        "public output is escaped"
+      ],
+      "failureBehavior": "Refuse or mark partial; never execute the prompt."
+    },
+    {
+      "id": "confused-deputy",
+      "risk": "high",
+      "status": "tested",
+      "owner": "security-owner",
+      "evidence": [
+        "tests/contract/privacy-network-isolation.spec.ts",
+        "tests/integrations/ci-trust-surface.spec.ts"
+      ],
+      "abuseScenario": "A scan or report uses a broader authority than the caller intended.",
+      "controls": [
+        "least-privilege workflow permissions",
+        "explicit plugin gate",
+        "canonical report identity"
+      ],
+      "failureBehavior": "Deny the operation and emit an explicit refusal."
+    },
+    {
+      "id": "supply-chain",
+      "risk": "high",
+      "status": "tested",
+      "owner": "release-owner",
+      "evidence": [
+        "tests/integrations/action-surface.spec.ts",
+        "tests/integrations/workflow-audit-conventions.spec.ts"
+      ],
+      "abuseScenario": "A mutable dependency or action reference changes the analyzer before review.",
+      "controls": [
+        "lockfile and exact action SHA",
+        "exact version input",
+        "generated-artifact checks"
+      ],
+      "failureBehavior": "Reject the candidate and block publication."
+    },
+    {
+      "id": "path-containment",
+      "risk": "high",
+      "status": "tested",
+      "owner": "security-owner",
+      "evidence": [
+        "tests/lib/fs-bounded.spec.ts",
+        "tests/scope/scope.spec.ts",
+        "tests/audit/audit-m2-trust.spec.ts"
+      ],
+      "abuseScenario": "A symlink or traversal points a reader or writer outside the workspace.",
+      "controls": [
+        "bounded reads",
+        "symlink rejection",
+        "contained output paths"
+      ],
+      "failureBehavior": "Skip the surface and mark the result partial."
+    },
+    {
+      "id": "hosted-ai-consent",
+      "risk": "high",
+      "status": "tested",
+      "owner": "privacy-owner",
+      "evidence": [
+        "enterprise/data-flows.json",
+        "tests/contract/privacy-network-isolation.spec.ts"
+      ],
+      "abuseScenario": "Source or prompts are sent to a hosted service without an approved purpose and explicit consent.",
+      "controls": [
+        "network disabled by default",
+        "explicit consent field",
+        "no implicit telemetry"
+      ],
+      "failureBehavior": "Reject the hosted operation."
+    }
+  ],
+  "legalConclusions": []
+}

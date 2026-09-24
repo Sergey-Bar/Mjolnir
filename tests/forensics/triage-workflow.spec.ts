@@ -135,7 +135,9 @@ describe("the acceptance law — every row ends with a concrete next action", ()
       expect(
         r.nextAction.includes("npx playwright test") ||
           r.nextAction.includes("repeat execution") ||
-          r.nextAction.includes("inspect"),
+          r.nextAction.includes("inspect") ||
+          r.nextAction.includes("re-run this test") ||
+          r.nextAction.includes("reproduce this test"),
       ).toBe(true);
     }
   });
@@ -193,6 +195,23 @@ describe("determinism + hostile inputs", () => {
     expect(out).toContain("Nothing to triage");
   });
 
+  it("does not emit executable shell syntax for hostile file or test names", () => {
+    const out = renderTriageWorkflow(
+      report({
+        verdicts: [
+          verdict({
+            file: "$(touch /tmp/pwn); `touch /tmp/pwn`",
+            title: "'; touch /tmp/pwn; #",
+            finalStatus: "failed",
+            everFailed: true,
+          }),
+        ],
+      }),
+    );
+    expect(out).not.toContain("$(touch");
+    expect(out).not.toContain("`touch");
+    expect(out).not.toContain("; touch");
+  });
   it("a passed-only run has nothing to triage (passed = not a row)", () => {
     const out = renderTriageWorkflow(
       report({ verdicts: [verdict({})], failed: 0 }),

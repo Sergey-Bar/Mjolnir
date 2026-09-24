@@ -65,10 +65,14 @@ function findingLineMd(f: Finding): string {
 }
 
 /** Score cell with color-coded emoji and optional delta. */
-export function renderScoreBadge(score: number | null, delta?: number): string {
+export function renderScoreBadge(
+  score: number | null,
+  delta?: number,
+  verdictOverride?: string,
+): string {
   if (score === null) return "### Score\n*n/a*";
   const _state = deriveScoreState(score);
-  const verdict = verdictFor(score);
+  const verdict = verdictOverride ?? verdictFor(score);
   let text = `**${score}**/100 ${verdict}`;
   if (delta !== undefined && delta !== 0) {
     const sign = delta > 0 ? "+" : "";
@@ -183,6 +187,18 @@ export interface UnifiedReportOptions {
   commit?: string | null;
 }
 
+function isIncompleteResult(result: ScanResult): boolean {
+  const status = result.analysisStatus;
+  return (
+    result.partial ||
+    status === undefined ||
+    status.discovery !== "complete" ||
+    status.rules !== "complete" ||
+    (status.rulesCrashed ?? 0) > 0 ||
+    result.scopeIntegrity?.scopeVerdict === "PARTIAL"
+  );
+}
+
 /**
  * Render the unified "Mjölnir Verification Report" PR comment.
  *
@@ -203,10 +219,14 @@ export function renderUnifiedReport(
     provisionalRuleIds: [],
     ceilingReasons: [],
   };
+  const incomplete =
+    isIncompleteResult(result) ||
+    !result.trustSummary ||
+    (summary.level === "L0" && summary.evidenceCoverage === 0);
 
   // ─── Hero header ───
   lines.push(
-    '## <img width="16" src="https://raw.githubusercontent.com/Sergey-Bar/Mjolnir/main/assets/mjolnir-icon.svg"/> Mjölnir Verification Report',
+    '## <img width="16" alt="Mjölnir" src="https://raw.githubusercontent.com/Sergey-Bar/Mjolnir/main/assets/mjolnir-icon.svg"/> Mjölnir Verification Report',
   );
   lines.push("");
   lines.push(
@@ -215,6 +235,13 @@ export function renderUnifiedReport(
   lines.push("");
   if (result.scope === "changed") {
     lines.push("_Scope: only the lines this PR changed._");
+    lines.push("");
+  }
+  if (incomplete) {
+    const reasons = result.analysisStatus?.reasons ?? [];
+    lines.push(
+      `> **Analysis status: INCOMPLETE.** ${reasons.length > 0 ? reasons.map((reason) => escMd(reason)).join(", ") : "The scan did not complete a trustworthy analysis."}`,
+    );
     lines.push("");
   }
 
@@ -230,7 +257,7 @@ export function renderUnifiedReport(
       ? result.score - baseScore
       : undefined;
 
-  lines.push("<table>");
+  lines.push('<table role="presentation">');
   lines.push("<tr>");
   lines.push('<td width="130">');
   lines.push("");
@@ -239,7 +266,13 @@ export function renderUnifiedReport(
   lines.push("</td>");
   lines.push('<td width="130">');
   lines.push("");
-  lines.push(renderScoreBadge(result.score, delta));
+  lines.push(
+    renderScoreBadge(
+      result.score,
+      delta,
+      incomplete ? "INCOMPLETE" : undefined,
+    ),
+  );
   lines.push("");
   lines.push("</td>");
   lines.push('<td width="130">');
@@ -259,7 +292,11 @@ export function renderUnifiedReport(
   // ─── Headline ───
   const state = deriveScoreState(result.score);
   const headlineFindings = usingDiff ? findings.length : result.findings.length;
-  lines.push(`**Headline:** ${headlineFor(state, headlineFindings)}`);
+  lines.push(
+    incomplete
+      ? "**Headline:** Analysis is incomplete; this report is not a clean or worthy verdict."
+      : `**Headline:** ${headlineFor(state, headlineFindings)}`,
+  );
   lines.push("");
   lines.push("---");
   lines.push("");
@@ -278,7 +315,13 @@ export function renderUnifiedReport(
 
   // ─── Findings by severity ───
   if (findings.length === 0) {
-    lines.push("✅ No new findings in this PR's changes.");
+    lines.push(
+      incomplete
+        ? "⚠️ No findings were observed, but the analysis is incomplete; this is not proof of cleanliness."
+        : usingDiff
+          ? "✅ No new findings in this PR's changes."
+          : "✅ No new findings in the analyzed surface.",
+    );
     lines.push("");
   } else {
     const errors = findings.filter((f) => f.severity === "error");
@@ -357,7 +400,9 @@ export function renderUnifiedReport(
   lines.push("");
   const repoLink = options.repoUrl ? ` — ${options.repoUrl}` : "";
   lines.push(
-    `<sub>Posted by GitHub Actions${repoLink} — blocks merging when the CI gate reports findings at the configured severity.</sub>`,
+    incomplete
+      ? `<sub>Posted by GitHub Actions${repoLink} — analysis incomplete; no release verdict is claimed.</sub>`
+      : `<sub>Posted by GitHub Actions${repoLink} — blocks merging when the CI gate reports findings at the configured severity.</sub>`,
   );
 
   return lines.join("\n");

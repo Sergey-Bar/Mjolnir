@@ -647,7 +647,9 @@ export function checkArtifactIntegrity(root: string): {
       ok:
         report.includes("TRUST_REPORT_HTML") &&
         report.includes("renderTrustReportHtml") &&
-        /writeFileSync\(join\(target,\s*TRUST_REPORT_HTML\)/.test(report),
+        /write(?:FileSync|Artifact)\(join\(target,\s*TRUST_REPORT_HTML\)/.test(
+          report,
+        ),
       what: "the HTML artifact ships and the command writes all three formats",
     },
     {

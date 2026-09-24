@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 1,
+  "registryId": "mjolnir-public-claims-002",
+  "claims": [
+    {
+      "id": "support-envelope-version",
+      "valueSource": "package.json",
+      "relatedSources": [
+        "action.yml",
+        ".github/workflows/mjolnir.yml",
+        "docs/DISTRIBUTION-KIT.md"
+      ],
+      "scope": "current",
+      "implementation": [
+        "package.json",
+        "action.yml",
+        ".github/workflows/mjolnir.yml"
+      ],
+      "tests": [
+        "tests/integrations/action-surface.spec.ts",
+        "tests/contract/version-consistency.spec.ts"
+      ],
+      "corpus": ["tests/e2e/journey-2-ci-flow.spec.ts"],
+      "benchmark": "N/A",
+      "candidateProof": "npm run claims:check",
+      "authority": "release-owner",
+      "expiry": "on version or support-envelope change",
+      "state": "CURRENT"
+    },
+    {
+      "id": "rule-registry-census",
+      "valueSource": "docs/RULE-CAPABILITY-MATRIX.md",
+      "relatedSources": [
+        "src/rules/index.ts",
+        "tests/rules/registry-ratchet.spec.ts"
+      ],
+      "scope": "generated-current",
+      "implementation": [
+        "scripts/generate-capability-matrix.ts",
+        "docs/RULE-CAPABILITY-MATRIX.json"
+      ],
+      "tests": [
+        "tests/rules/capability-matrix.spec.ts",
+        "tests/contract/census-drift.spec.ts"
+      ],
+      "corpus": [
+        "tests/corpus/audit.ts",
+        "tests/corpus/audit-contract.spec.ts"
+      ],
+      "benchmark": "docs/RULE-CAPABILITY-MATRIX.json",
+      "candidateProof": "npm run docs:capability",
+      "authority": "rule-owner",
+      "expiry": "on rule or detector revision change",
+      "state": "GENERATED"
+    },
+    {
+      "id": "unified-pr-report-marker",
+      "valueSource": "src/reporter/pr-report-shared.ts",
+      "relatedSources": ["action.yml", ".github/workflows/mjolnir.yml"],
+      "scope": "current",
+      "implementation": [
+        "src/reporter/pr-report-shared.ts",
+        "action.yml",
+        ".github/workflows/mjolnir.yml"
+      ],
+      "tests": [
+        "tests/reporters/pr-report-shared.spec.ts",
+        "tests/integrations/pr-workflow.spec.ts"
+      ],
+      "corpus": [
+        "tests/cli/pr-comment.spec.ts",
+        "tests/integrations/github/pr-comment-renderer.spec.ts"
+      ],
+      "benchmark": "N/A",
+      "candidateProof": "npm run ci-local",
+      "authority": "release-owner",
+      "expiry": "on reporter or workflow change",
+      "state": "CURRENT"
+    },
+    {
+      "id": "enterprise-threat-model",
+      "valueSource": "enterprise/threat-model.json",
+      "relatedSources": [
+        "enterprise/data-flows.json",
+        "scripts/enterprise/validate-threat-model.mjs"
+      ],
+      "scope": "release-gate",
+      "implementation": [
+        "enterprise/threat-model.json",
+        "enterprise/data-flows.json",
+        "scripts/enterprise/validate-threat-model.mjs"
+      ],
+      "tests": ["tests/enterprise/threat-model.contract.test.ts"],
+      "corpus": ["N/A"],
+      "benchmark": "N/A",
+      "candidateProof": "npm run enterprise:threat-model",
+      "authority": "security-owner",
+      "expiry": "on model, data-flow, or boundary change",
+      "state": "LOCAL_PROVEN"
+    }
+  ],
+  "historicalSources": [
+    "docs/CERTIFICATION-0.6.md",
+    "docs/CERTIFICATION-1.0.md"
+  ]
+}

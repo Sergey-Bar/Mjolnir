@@ -94,6 +94,16 @@ describe("parseJsonFile", () => {
     expect(result).toEqual({});
   });
 
+  it("rejects oversized JSON before parsing", () => {
+    expect(() =>
+      parseJsonFile(
+        `"${"x".repeat(16 * 1024 * 1024)}"`,
+        "large.json",
+        isRecord,
+      ),
+    ).toThrow(/exceeds the 16777216-byte limit/);
+  });
+
   it("handles whitespace-only JSON object", () => {
     const result = parseJsonFile("  { }  ", "ws.json", isRecord);
     expect(result).toEqual({});

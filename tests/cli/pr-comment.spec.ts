@@ -6,6 +6,9 @@
  * scan results, independent of any real GitHub PR or network call.
  */
 
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   renderPrComment,
@@ -19,6 +22,7 @@ import {
   diffAgainstBaseline,
   buildBaseline,
 } from "../../src/commands/baseline.js";
+import { runPrCommentCommand } from "../../src/cli-handlers.js";
 import type { Finding, ScanResult } from "../../src/types.js";
 
 function finding(overrides: Partial<Finding>): Finding {
@@ -59,10 +63,35 @@ function scanResult(
       skippedFiles: 0,
       durationMs: 10,
     },
+    trustSummary: {
+      level: "L2",
+      confidence: 0.7,
+      evidenceCoverage: 0.4,
+      inconclusiveRate: 0,
+      provisionalRuleIds: [],
+      ceilingReasons: [],
+    },
   };
 }
 
 describe("renderPrComment — rendering against fixture scan results", () => {
+  it("renders the saved report path without rescanning", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "mjolnir-pr-from-"));
+    try {
+      const path = join(dir, "report.json");
+      writeFileSync(path, JSON.stringify(scanResult([])), "utf8");
+      const out: string[] = [];
+      const code = await runPrCommentCommand(["--from", path], {
+        out: (value: unknown) => out.push(String(value)),
+        err: () => undefined,
+      });
+      expect(code).toBe(0);
+      expect(out.join("\n")).toContain("No new findings");
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
   it("includes the idempotency marker so a workflow can find/update its own comment", () => {
     const body = renderPrComment(scanResult([]));
     expect(body.startsWith(PR_COMMENT_MARKER)).toBe(true);
@@ -71,6 +100,16 @@ describe("renderPrComment — rendering against fixture scan results", () => {
   it("renders a clean-scan comment when there are no findings", () => {
     const body = renderPrComment(scanResult([]));
     expect(body).toContain("No new findings");
+  });
+
+  it("rejects an invalid saved report path", async () => {
+    const err: string[] = [];
+    const code = await runPrCommentCommand(["--from"], {
+      out: () => undefined,
+      err: (value: unknown) => err.push(String(value)),
+    });
+    expect(code).toBe(10);
+    expect(err.join("\n")).toContain("--from");
   });
 
   it("renders every finding with rule id, file:line, message, and fix", () => {
@@ -450,6 +489,18 @@ describe("renderPrComment — utility exports coverage", () => {
     );
     expect(line).toContain("🔵");
     expect(line).not.toContain("🔴");
+  });
+
+  it("covers warning observation and code-fix branches", () => {
+    const warning = finding({
+      severity: "warning",
+      evidenceLevel: "E0",
+      fix: "await expect(page).toBeVisible();",
+    });
+    expect(evidenceTag(warning)).toContain("E0 · observation");
+    const line = findingLine(warning);
+    expect(line).toContain("🟡");
+    expect(line).toContain("`await");
   });
 
   it("renders the repoUrl option when provided", () => {

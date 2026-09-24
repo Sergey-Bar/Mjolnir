@@ -159,7 +159,8 @@ onBeforeUnmount(() => {
     "DejaVu Sans Mono", Menlo, monospace;
   font-size: clamp(10px, 2.6vw, 13px);
   line-height: 1.55;
-  color: var(--vp-c-text-2);
+  color: var(--mj-ink-100);
+  background-color: var(--mj-ink-950);
   white-space: pre;
   overflow: auto;
 }

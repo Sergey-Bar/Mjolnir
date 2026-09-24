@@ -1,13 +1,15 @@
+/* eslint-disable security/detect-non-literal-fs-filename -- config candidates are compile-time names */
 /**
  * Config file support (Sprint-Plan W7, Product-MVP §27 + GAP-F).
  * Zero-config preserved: config presence never changes detection
  * semantics — only severity, scope, and gating.
  */
 
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, lstatSync } from "node:fs";
 import { join } from "node:path";
 import { SEVERITY_ORDER, type Severity } from "../types.js";
 import { parseJsonFile, isRecord } from "../lib/safe-json.js";
+import { readFileBounded } from "../lib/fs-bounded.js";
 import { validateConfigSchema } from "./config-schema.js";
 
 export interface IgnoreEntry {
@@ -49,8 +51,11 @@ const CONFIG_NAMES = ["mjolnir.config.json", ".mjolnir.json"] as const;
 export function findConfigPath(root: string): string | null {
   for (const name of CONFIG_NAMES) {
     const p = join(root, name);
-    // eslint-disable-next-line security/detect-non-literal-fs-filename -- CONFIG_NAMES is a compile-time constant
-    if (existsSync(p)) return p;
+    try {
+      if (existsSync(p) && !lstatSync(p).isSymbolicLink()) return p;
+    } catch {
+      continue;
+    }
   }
   return null;
 }
@@ -81,12 +86,13 @@ export function loadConfig(
     // CONFIG_NAMES constant — no untrusted input reaches the fs call.
 
     const p = join(root, name);
-    // eslint-disable-next-line security/detect-non-literal-fs-filename
     if (!existsSync(p)) continue;
     try {
+      if (!existsSync(p) || lstatSync(p).isSymbolicLink()) continue;
+      const read = readFileBounded(p, 1 * 1024 * 1024);
+      if (!read.ok) throw new Error("config source could not be read safely");
       const parsed = parseJsonFile(
-        // eslint-disable-next-line security/detect-non-literal-fs-filename
-        readFileSync(p, "utf8"),
+        read.data.toString("utf8"),
         p,
         (v): v is QADoctorConfig => isRecord(v),
       );

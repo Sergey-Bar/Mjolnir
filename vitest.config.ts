@@ -2,7 +2,7 @@ import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   test: {
-    include: ["tests/**/*.spec.ts"],
+    include: ["tests/**/*.spec.ts", "tests/enterprise/**/*.test.ts"],
     // E2E journeys (tests/e2e/**) spawn dist/cli.mjs as a real child
     // process — parallel workers must not race a concurrent tsdown
     // rebuild (tsdown cleans outDir), so the build happens once, here,

@@ -48,6 +48,7 @@ The RC workflow rejects stable versions, so it cannot silently resolve this deci
 
 2. Prepare a normal version PR:
    - set the root `package.json` version to `2.1.0` or the approved next RC;
+   - the historical `2.0.3-rc.1` path remains subject to the decision gate above; do not recreate it without owner approval;
    - add the matching `CHANGELOG.md` heading;
    - update synchronized version surfaces with the existing version scripts;
    - include any reviewed corpus and golden updates;
@@ -95,6 +96,8 @@ The workflow:
 A rerun is safe. An existing matching tag is verified, an already-published npm version is not republished, and an existing GitHub Release is updated to prerelease form while missing assets are uploaded and matching assets are compared byte-for-byte.
 
 ## Stable promotion
+
+Promote an RC to a stable release through a new reviewed version branch and PR. Never move an RC or historical tag to manufacture a stable release. Stable publication remains an explicit owner decision.
 
 Stable `X.Y.Z` publication is explicit and uses `stable-release.yml` from
 `release/vX.Y.Z`. First run a dry-run dispatch, then rerun with dry-run disabled:

@@ -123,27 +123,21 @@ concurrency:
 
 permissions:
   contents: read
-  pull-requests: write
 
 jobs:
   scan:
     runs-on: ubuntu-latest
-    # A hung scan must not sit for the 6-hour default.
     timeout-minutes: 10
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          fetch-depth: 0   # needed for --scope changed merge-base
+          fetch-depth: 0
           persist-credentials: false
-      # Scan with the pinned version. No subcommand: npx resolves
-      # the package bin directly; passing mjolnir as an arg causes
-      # npm 10+ npx to invoke it twice (unknown subcommand).
       - name: Scan changed code (exit 1/2 is data — the gate step decides)
         continue-on-error: true
         run: npx --yes https://registry.npmjs.org/mjolnir-qa/-/mjolnir-qa-${CLI_VERSION}.tgz . --scope changed --json > mjolnir.json
-      # Reporting, not gating: a crashed scan leaves mjolnir.json empty/missing
-      # and the summary step exits 2/10 — continue-on-error keeps the advisory
-      # job green, exactly like the v1 inline script did (the gate step decides).
       - name: Annotations + Job Summary
         if: always()
         continue-on-error: true
@@ -151,32 +145,53 @@ jobs:
       - name: Render PR comment
         if: always()
         continue-on-error: true
-        run: npx --yes https://registry.npmjs.org/mjolnir-qa/-/mjolnir-qa-${CLI_VERSION}.tgz pr-comment . > mjolnir-comment.md
-      # Best-effort: on a pull_request event from a fork the GITHUB_TOKEN is
-      # read-only and this step will 403 for every external contributor. The
-      # Job Summary above is the fallback that always renders.
-      # (pull_request_target would fix the token but is a code-execution
-      # risk — deliberately NOT used.)
-      - name: Post or update PR comment
+        run: npx --yes https://registry.npmjs.org/mjolnir-qa/-/mjolnir-qa-${CLI_VERSION}.tgz pr-comment --from mjolnir.json > mjolnir-comment.md
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: mjolnir-report
+          path: mjolnir-comment.md
+          if-no-files-found: warn
+          retention-days: 30
+${
+  gate === "advisory"
+    ? `      - name: Gate (advisory)
+        if: always()
+        run: echo "Advisory mode — findings reported, never blocking."`
+    : `      - name: Gate (${gate})
+        if: always()
+        run: |
+          node -e '
+${indentBlock(gateScript(gate), 10)}
+          '`
+}
+
+  publish:
+    needs: scan
+    if: always() && needs.scan.result != 'cancelled'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: mjolnir-report
+      - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         if: always()
         continue-on-error: true
-        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             const fs = require('fs');
-            let body = '';
-            try { body = fs.readFileSync('mjolnir-comment.md', 'utf8'); } catch (e) {}
-            if (!body.trim()) {
-              console.log('mjolnir-comment.md is empty or missing — nothing to post.');
-              return;
-            }
-            const marker = '<!-- mjolnir-pr-comment -->';
-            const { data: comments } = await github.rest.issues.listComments({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-            });
-            const existing = comments.find((c) => c.body?.startsWith(marker));
+            const body = fs.readFileSync('mjolnir-comment.md', 'utf8');
+            if (!body.trim()) return;
+            const marker = '<!-- mjolnir-report:v2 -->';
+            const comments = await github.paginate(
+              github.rest.issues.listComments,
+              { owner: context.repo.owner, repo: context.repo.repo, issue_number: context.issue.number, per_page: 100 },
+            );
+            const existing = comments.find((comment) => comment.body?.includes(marker));
             if (existing) {
               await github.rest.issues.updateComment({
                 owner: context.repo.owner,
@@ -194,21 +209,10 @@ jobs:
             }
 ${
   gate === "advisory"
-    ? `      # Advisory mode: findings are reported in the Job Summary and the
-      # PR comment, never blocking. The scan step's exit code is visible
-      # as the step outcome, but continue-on-error keeps the job green.
-      - name: Gate (advisory)
+    ? `      - name: Advisory note
         if: always()
-        run: echo "Advisory mode — findings reported, never blocking."`
-    : `      # Gate enforcement: the scan step's own exit code is deliberately
-      # neutralized (continue-on-error) so reporting steps always run; THIS
-      # step is what fails the job. A partial scan never blocks.
-      - name: Gate (${gate})
-        if: always()
-        run: |
-          node -e '
-${indentBlock(gateScript(gate), 10)}
-          '`
+        run: echo "Advisory mode — findings are reported, never blocking."`
+    : ""
 }
 `;
 
@@ -248,69 +252,77 @@ concurrency:
 
 permissions:
   contents: read
-  pull-requests: write
 
 jobs:
   scan:
     runs-on: ubuntu-latest
-    # A hung scan must not sit for the 6-hour default.
     timeout-minutes: 10
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          fetch-depth: 0   # needed for --scope changed merge-base
+          fetch-depth: 0
           persist-credentials: false
-      # The action scans with the published mjolnir-qa package
-      # pinned to this CLI release. The composite action is pinned via
-      # ACTION_REF. The fail-on input is the gate: it fails the
-      # job on findings at the gate and never on a partial scan
-      # (exit 2 downgrades to a warning — the frozen exit-code
-      # contract). Advisory mode reports, never blocks.
       - name: Mjölnir verification trust scan
         id: mjolnir
-        if: always()
-        continue-on-error: ${gate === "advisory" ? "true" : "false"}
+        continue-on-error: true
         uses: ${ACTION_REF}
         with:
           scope: changed
           format: json
           fail-on: ${gate === "advisory" ? "none" : gate}
           version: ${CLI_VERSION}
-      # Reporting, not gating: runs even when the scan/gate failed, from
-      # the same mjolnir.json the action wrote.
-      - name: Annotations + Job Summary
+          pr-comment: "false"
+          trust-artifact: "false"
+          annotations: "true"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: mjolnir-report
+          path: mjolnir-comment.md
+          if-no-files-found: warn
+          retention-days: 30
+      - name: Gate (${gate})
+        if: always()
+        shell: bash
+        env:
+          MJ_SCAN_EXIT: \${{ steps.mjolnir.outputs.exit }}
+        run: |
+          if [ "$MJ_SCAN_EXIT" = "1" ]; then
+            exit 1
+          fi
+          if [ "$MJ_SCAN_EXIT" = "2" ]; then
+            echo "::warning::Mjolnir analysis is partial; reporting remains visible but the gate is not claimed."
+          fi
+          exit 0
+
+  publish:
+    needs: scan
+    if: always() && needs.scan.result != 'cancelled'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: mjolnir-report
+      - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         if: always()
         continue-on-error: true
-        run: npx --yes https://registry.npmjs.org/mjolnir-qa/-/mjolnir-qa-${CLI_VERSION}.tgz summary mjolnir.json
-      - name: Render PR comment
-        if: always()
-        continue-on-error: true
-        run: npx --yes https://registry.npmjs.org/mjolnir-qa/-/mjolnir-qa-${CLI_VERSION}.tgz pr-comment . > mjolnir-comment.md
-      # Best-effort: on a pull_request event from a fork the GITHUB_TOKEN is
-      # read-only and this step will 403 for every external contributor. The
-      # Job Summary above is the fallback that always renders.
-      # (pull_request_target would fix the token but is a code-execution
-      # risk — deliberately NOT used.)
-      - name: Post or update PR comment
-        if: always()
-        continue-on-error: true
-        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             const fs = require('fs');
-            let body = '';
-            try { body = fs.readFileSync('mjolnir-comment.md', 'utf8'); } catch (e) {}
-            if (!body.trim()) {
-              console.log('mjolnir-comment.md is empty or missing — nothing to post.');
-              return;
-            }
-            const marker = '<!-- mjolnir-pr-comment -->';
-            const listed = await github.rest.issues.listComments({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-            });
-            const existing = listed.data.find((c) => c.body?.startsWith(marker));
+            const body = fs.readFileSync('mjolnir-comment.md', 'utf8');
+            if (!body.trim()) return;
+            const marker = '<!-- mjolnir-report:v2 -->';
+            const comments = await github.paginate(
+              github.rest.issues.listComments,
+              { owner: context.repo.owner, repo: context.repo.repo, issue_number: context.issue.number, per_page: 100 },
+            );
+            const existing = comments.find((comment) => comment.body?.includes(marker));
             if (existing) {
               await github.rest.issues.updateComment({
                 owner: context.repo.owner,
@@ -328,18 +340,10 @@ jobs:
             }
 ${
   gate === "advisory"
-    ? `      # Advisory mode: findings are reported in the Job Summary,
-      # never blocking — the action ran with fail-on: none and
-      # continue-on-error, so even a crashed scan cannot fail this job.
-      - name: Gate (advisory)
+    ? `      - name: Advisory note
         if: always()
-        run: echo "Advisory mode — findings reported, never blocking."`
-    : `      # Gate enforcement: the action step above IS the gate — fail-on
-      # ${gate} exits 1 on findings at the gate and the step is
-      # continue-on-error: false, so its failure fails the job. A partial
-      # scan never blocks (the action downgrades exit 2 to a warning per
-      # the frozen exit-code contract). The reporting steps above ran
-      # first (if: always()), so a red gate never suppresses the report.`
+        run: echo "Advisory mode — findings are reported, never blocking."`
+    : ""
 }
 `;
 

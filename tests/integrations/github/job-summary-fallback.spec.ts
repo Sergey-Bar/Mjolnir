@@ -51,6 +51,17 @@ describe("renderJobSummary", () => {
     expect(summary).toContain(":information_source: Info");
   });
 
+  it("sanitizes untrusted summary and detail text", () => {
+    const summary = renderJobSummary(
+      model({
+        summary: "<script>alert(1)</script> Bearer secret-token",
+        details: "[link](javascript:alert(1))",
+      }),
+    );
+    expect(summary).not.toContain("<script>");
+    expect(summary).not.toMatch(/\]\(javascript:/);
+    expect(summary).toContain("REDACTED");
+  });
   it("includes the fallback note", () => {
     const summary = renderJobSummary(model());
     expect(summary).toContain("published to the job summary");

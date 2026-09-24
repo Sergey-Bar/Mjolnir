@@ -97,7 +97,14 @@ function parseAnsi(line: string): TermLine {
         codes[i + 1] === 2 &&
         codes[i + 4] !== undefined
       ) {
-        color = `rgb(${codes[i + 2]}, ${codes[i + 3]}, ${codes[i + 4]})`;
+        const red = codes[i + 2] ?? 0;
+        const green = codes[i + 3] ?? 0;
+        const blue = codes[i + 4] ?? 0;
+        if (red === 139 && green === 147 && blue === 157) {
+          color = undefined;
+        } else {
+          color = `rgb(${red}, ${green}, ${blue})`;
+        }
         i += 4;
       }
     }

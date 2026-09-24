@@ -54,10 +54,15 @@ export function discoverAllTestFiles(
   // languages, so the shared walk descends into every non-ignored
   // directory and the OWNING adapter's dirSkips are applied per file
   // below — preserving each language's pre-single-walk discovery exactly.
-  const walkSkips = languageAdapters.reduce<readonly string[]>(
-    (common, a) => common.filter((name) => a.dirSkips.includes(name)),
-    languageAdapters[0]?.dirSkips ?? [],
-  );
+  const walkSkips = [
+    ...new Set([
+      ...languageAdapters.reduce<readonly string[]>(
+        (common, a) => common.filter((name) => a.dirSkips.includes(name)),
+        languageAdapters[0]?.dirSkips ?? [],
+      ),
+      ".mjolnir",
+    ]),
+  ];
   sharedWalk({
     root: ctx.workspace.root,
     deadline: ctx.deadline,
@@ -101,9 +106,51 @@ export function discoverAllTestFiles(
     fixtureDirMemo,
     // R4c Scope Integrity: the walk's exclusion accounting feeds the
     // scope verdict (claimed scope ≡ analyzed scope).
-    onIgnored: ctx.onIgnored,
-    onUnrecognized: ctx.onUnrecognized,
+    onIgnored: (path) => {
+      if (isScopeRelevantIgnored(path)) ctx.onIgnored?.(path);
+    },
+    onUnrecognized: (path) => {
+      if (typeof path === "string" && isUnrecognizedSourceCandidate(path)) {
+        ctx.onUnrecognized?.(path);
+      }
+    },
   });
+}
+
+function isScopeRelevantIgnored(path: string): boolean {
+  const name = path.replaceAll("\\", "/").split("/").pop() ?? path;
+  return /\.(?:[cm]?[jt]sx?|py|java|cs|ya?ml|min\.js)$/i.test(name);
+}
+
+function isUnrecognizedSourceCandidate(path: string): boolean {
+  const normalized = path.replaceAll("\\", "/");
+  const name = normalized.split("/").pop() ?? normalized;
+  if (
+    normalized.includes(".github/workflows/") ||
+    name === "azure-pipelines.yml" ||
+    name === "Jenkinsfile"
+  ) {
+    return false;
+  }
+  const extensionIndex = name.lastIndexOf(".");
+  const stem = extensionIndex > 0 ? name.slice(0, extensionIndex) : name;
+  if (
+    name === "mjolnir.config.json" ||
+    name === ".mjolnir.json" ||
+    name === "package.json" ||
+    name === "package-lock.json" ||
+    name === "pnpm-lock.yaml" ||
+    name === "yarn.lock" ||
+    ["playwright", "vitest", "vite", "eslint", "tsconfig", "jsconfig"].some(
+      (prefix) => stem === prefix || stem.startsWith(`${prefix}.`),
+    )
+  ) {
+    return false;
+  }
+  const testLike =
+    /(?:^|\/)__tests__\//i.test(normalized) ||
+    /\.(?:spec|test)\.[cm]?[jt]sx?$/i.test(name);
+  return /\.(?:[cm]?[jt]sx?|py|java|cs|ya?ml)$/i.test(name) && testLike;
 }
 
 /** Whether ANY shipped adapter would discover this path as a test file. */

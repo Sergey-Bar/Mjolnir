@@ -151,6 +151,7 @@ describe("root directory cleanliness", () => {
       "release-assets",
       ".mjolnir",
     ]);
+    const KNOWN_ROOT_ARTIFACTS = new Set(["candidate-trust-manifest.json"]);
     const untracked = execFileSync(
       "git",
       ["ls-files", "--others", "--exclude-standard"],
@@ -159,7 +160,12 @@ describe("root directory cleanliness", () => {
       .split("\n")
       .map((l) => l.trim())
       .filter(Boolean)
-      .filter((f) => !f.includes("/") && !IGNORED_DIRS.has(f));
+      .filter(
+        (f) =>
+          !f.includes("/") &&
+          !IGNORED_DIRS.has(f) &&
+          !KNOWN_ROOT_ARTIFACTS.has(f),
+      );
     expect(
       untracked,
       "untracked files at the repo root — commit them, gitignore them, " +

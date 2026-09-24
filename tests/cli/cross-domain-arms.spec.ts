@@ -113,7 +113,7 @@ describe("scope/changed degradation arms", () => {
     expect(diff.reason).toBe("diff-failed");
   });
 
-  it("treats a missing blob as zero changed lines for that file", () => {
+  it("marks a missing blob as an explicit scope degradation", () => {
     git(["init", "-b", "main"]);
     git(["config", "user.email", "t@t"]);
     git(["config", "user.name", "t"]);
@@ -134,8 +134,9 @@ describe("scope/changed degradation arms", () => {
       force: true,
     });
     const diff = computeChangedScope(dir);
-    expect(diff.degraded).toBe(false);
-    expect(Object.keys(diff.changed)).toContain("a.spec.ts");
+    expect(diff.degraded).toBe(true);
+    expect(diff.reason).toBe("diff-failed");
+    expect(Object.keys(diff.changed)).not.toContain("a.spec.ts");
   });
 
   it("degrades when the untracked listing fails", () => {

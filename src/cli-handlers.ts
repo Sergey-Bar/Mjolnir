@@ -76,6 +76,7 @@ import {
   MILESTONE_MESSAGES,
 } from "./commands/stats.js";
 import { renderPrComment } from "./commands/pr-comment.js";
+import { errorText, loadSavedReport } from "./commands/report-io.js";
 import { runInit, renderInit, tryReadPackageJson } from "./commands/init.js";
 import { renderPwRunSummary, summarizePwRun } from "./commands/pw-report.js";
 import { planAndApplyFixes, renderFixReport } from "./commands/fix.js";
@@ -89,6 +90,7 @@ import { explainRule, renderExplain } from "./commands/explain.js";
 import { loadConfig, ConfigValidationError } from "./config/config.js";
 import { createIgnoreMatcher } from "./discovery/ignores.js";
 import { loadLocalRules } from "./plugins/local-rules.js";
+import { pluginsGateOpen, renderGateNotice } from "./plugins/trust-gate.js";
 import { writeFileAtomic } from "./lib/fs-atomic.js";
 import { currentCommit } from "./lib/git-utils.js";
 import {
@@ -690,6 +692,35 @@ export async function runPrCommentCommand(
   argv: string[],
   io: { out: Output; err: Output } = { out, err },
 ): Promise<number> {
+  const fromIdx = argv.indexOf("--from");
+  if (fromIdx !== -1) {
+    const fromPath = argv[fromIdx + 1];
+    if (!fromPath || fromPath.startsWith("-")) {
+      io.err("error: --from requires a saved report path");
+      return EXIT_USAGE;
+    }
+    try {
+      const saved = loadSavedReport(resolve(fromPath));
+      const option = (flag: string): string | undefined => {
+        const index = argv.indexOf(flag);
+        return index >= 0 ? argv[index + 1] : undefined;
+      };
+      const version = option("--version");
+      const commit = option("--commit");
+      const repoUrl = option("--repo-url");
+      io.out(
+        renderPrComment(saved, {
+          ...(version ? { version } : {}),
+          ...(commit ? { commit } : {}),
+          ...(repoUrl ? { repoUrl } : {}),
+        }),
+      );
+      return EXIT_CLEAN;
+    } catch (err) {
+      io.err(`error: cannot read ${fromPath}: ${errorText(err)}`);
+      return EXIT_USAGE;
+    }
+  }
   const args = parseArgsOrUsage(argv, io);
   if (!args) {
     return EXIT_USAGE;
@@ -895,7 +926,17 @@ export async function runRulesCommand(
   }
 
   const root = process.cwd();
-  const external = withExternal ? await loadLocalRules(root) : undefined;
+  const gateOpen = pluginsGateOpen(argv.includes("--enable-plugins"));
+  const external = withExternal
+    ? await loadLocalRules(root, gateOpen)
+    : undefined;
+  if (external?.skipped.length) {
+    io.err(
+      renderGateNotice(
+        external.skipped.map((name) => ({ kind: "js-module", name })),
+      ),
+    );
+  }
   let catalog = [
     ...buildCatalog(),
     ...(external

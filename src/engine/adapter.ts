@@ -80,9 +80,9 @@ export interface ScanContext {
   maxFiles: number;
   /** R4c Scope Integrity: counted matcher exclusions (optional — adapters
    * whose discovery walks sharedWalk pass this through to the counters). */
-  onIgnored?: () => void;
+  onIgnored?: (path: string) => void;
   /** R4c Scope Integrity: counted files no adapter claims (optional). */
-  onUnrecognized?: () => void;
+  onUnrecognized?: (path: string) => void;
   /**
    * Called when a rule throws on a file (audit R-9): crash isolation
    * stays silent by default, but the scan counts it and `--debug`

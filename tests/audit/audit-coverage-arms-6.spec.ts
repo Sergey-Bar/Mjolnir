@@ -37,6 +37,23 @@ vi.mock("node:fs", async (importOriginal) => {
   return { ...actual, readFileSync };
 });
 
+vi.mock("../../src/lib/fs-bounded.js", async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import("../../src/lib/fs-bounded.js")>();
+  return {
+    ...actual,
+    readFileBounded: (path: string, maxBytes: number) => {
+      if (
+        state.poisonReadFile !== null &&
+        String(path).endsWith(state.poisonReadFile)
+      ) {
+        return { ok: false as const, reason: "unreadable" as const };
+      }
+      return actual.readFileBounded(path, maxBytes);
+    },
+  };
+});
+
 vi.mock("web-tree-sitter", () => ({
   Parser: class {
     init(): void {

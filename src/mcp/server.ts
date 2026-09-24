@@ -24,7 +24,7 @@
 import { Buffer } from "node:buffer";
 import { createHash } from "node:crypto";
 import { existsSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { isAbsolute, join, relative, resolve } from "node:path";
 
 import { runScan } from "../engine/scan-pipeline.js";
 import { ENGINE_VERSION as CLI_VERSION } from "../engine/version.js";
@@ -42,7 +42,19 @@ import { summarizePwRun, renderPwRunSummary } from "../commands/pw-report.js";
 
 /** Hard caps (§21 threat model: parameter size + resource bounds). */
 const MAX_PARAM_BYTES = 64 * 1024;
+const MAX_DURATION_MS = 3_600_000;
+const DEFAULT_MAX_DURATION_MS = 600_000;
 const PROTOCOL_VERSION = "2025-06-18";
+const CONFIGURED_ROOT = process.env.MJOLNIR_WORKSPACE_ROOT
+  ? resolve(process.env.MJOLNIR_WORKSPACE_ROOT)
+  : null;
+
+function isPathAllowed(path: string): boolean {
+  if (!CONFIGURED_ROOT) return true;
+  const candidate = resolve(path);
+  const rel = relative(CONFIGURED_ROOT, candidate);
+  return rel === "" || (!rel.startsWith("..") && !isAbsolute(rel));
+}
 
 export interface McpToolCall {
   id: unknown;
@@ -190,11 +202,16 @@ function validateParams(
     if (typeof args["path"] !== "string" || args["path"].length === 0) {
       return "scan requires a non-empty string `path`";
     }
-    if (
-      args["maxDurationMs"] !== undefined &&
-      typeof args["maxDurationMs"] !== "number"
-    ) {
-      return "`maxDurationMs` must be a number";
+    if (args["maxDurationMs"] !== undefined) {
+      const duration = args["maxDurationMs"];
+      if (
+        typeof duration !== "number" ||
+        !Number.isFinite(duration) ||
+        duration <= 0 ||
+        duration > MAX_DURATION_MS
+      ) {
+        return "`maxDurationMs` must be a finite positive number within the server budget";
+      }
     }
   }
   if (name === "explain") {
@@ -258,6 +275,28 @@ export async function handleToolCall(call: McpToolCall): Promise<McpResponse> {
       error: { code: MCP_ERRORS.INVALID_PARAMS, message: paramError },
     };
   }
+  const pathArgument = call.args["path"];
+  if (typeof pathArgument === "string" && !isPathAllowed(pathArgument)) {
+    return {
+      jsonrpc: "2.0",
+      id: call.id,
+      error: {
+        code: MCP_ERRORS.INVALID_PARAMS,
+        message: "path is outside the configured workspace root",
+      },
+    };
+  }
+  const fixturesRoot = call.args["fixturesRoot"];
+  if (typeof fixturesRoot === "string" && !isPathAllowed(fixturesRoot)) {
+    return {
+      jsonrpc: "2.0",
+      id: call.id,
+      error: {
+        code: MCP_ERRORS.INVALID_PARAMS,
+        message: "fixturesRoot is outside the configured workspace root",
+      },
+    };
+  }
 
   try {
     if (call.name === "scan") {
@@ -275,7 +314,7 @@ export async function handleToolCall(call: McpToolCall): Promise<McpResponse> {
       const maxDurationMs =
         typeof call.args["maxDurationMs"] === "number"
           ? call.args["maxDurationMs"]
-          : Number.POSITIVE_INFINITY;
+          : DEFAULT_MAX_DURATION_MS;
       const result = await serializeScan(() =>
         runScan({
           target,

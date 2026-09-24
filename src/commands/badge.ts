@@ -5,8 +5,8 @@
  * score + date + commit. Anyone can click through and verify.
  */
 
-import { execFileSync } from "node:child_process";
 import { writeFileAtomic } from "../lib/fs-atomic.js";
+import { runGit } from "../scope/git-resolve.js";
 import { join } from "node:path";
 
 import { BADGE_BAND } from "../brand/tokens.js";
@@ -86,18 +86,9 @@ export function renderBadgeSnippet(
   result: ScanResult,
   repoUrl = "https://github.com/Sergey-Bar/Mjolnir",
 ): string {
-  let commit = "unknown";
-  try {
-    commit = execFileSync("git", ["rev-parse", "--short", "HEAD"], {
-      cwd: process.cwd(),
-      encoding: "utf8",
-      // Silence git's own "fatal: not a git repository" on stderr — the
-      // catch below is the honest fallback, no need to leak the noise.
-      stdio: ["ignore", "pipe", "ignore"],
-    }).trim();
-  } catch {
-    /* not a git repo or git missing — honest fallback */
-  }
+  const commit =
+    runGit(process.cwd(), ["rev-parse", "--short", "HEAD"])?.trim() ??
+    "unknown";
   const date = new Date().toISOString().slice(0, 10);
   const errors = result.findings.filter((f) => f.severity === "error").length;
   const lines = [

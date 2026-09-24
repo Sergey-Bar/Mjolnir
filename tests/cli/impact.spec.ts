@@ -258,9 +258,11 @@ describe("computeImpact — real comparison against a fixture git history", () =
       expect(report.hasComparison).toBe(false);
       // git rev-parse on an unresolvable ref returns null, so the raw
       // string is kept as baseRef and ls-tree against it then fails too.
-      expect(["tree-listing-failed", "no-prior-commit"]).toContain(
-        report.unknownReason,
-      );
+      expect([
+        "base-ref-invalid",
+        "tree-listing-failed",
+        "no-prior-commit",
+      ]).toContain(report.unknownReason);
     },
   );
 

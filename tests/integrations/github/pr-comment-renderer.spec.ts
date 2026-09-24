@@ -272,4 +272,50 @@ describe("renderPrComment", () => {
       expect(output).toContain("\\[used\\]");
     });
   });
+
+  it("renders collapsed, suppressed, and error detail branches", () => {
+    const output = renderPrComment(
+      baseModel({
+        importantFindings: Array.from({ length: 8 }, (_, index) => ({
+          ruleId: `QA-TEST-${index}`,
+          severity: "warning" as const,
+          message: "finding",
+          file: "test.spec.ts",
+          line: index + 1,
+        })),
+        frameworkSupportSummary: {
+          detected: [],
+          unknown: false,
+          details: "",
+        },
+        analysisErrors: 2,
+        suppressionSummary: { suppressedCount: 1, details: "one" },
+      }),
+    );
+    expect(output).toContain("collapsed");
+    expect(output).toContain("Suppressed: 1");
+    expect(output).toContain("Analysis errors: 2");
+    expect(output).not.toContain("Frameworks");
+  });
+
+  it("returns no optional sections for a minimal complete model", () => {
+    const output = renderPrComment(
+      baseModel({
+        reportArtifactReference: { url: "", format: "json" },
+        analysisCompleteness: "COMPLETE",
+        frameworkSupportSummary: {
+          detected: [],
+          unknown: false,
+          details: "",
+        },
+        evidenceSummary: {
+          evidenceLevel: "E0",
+          trustLevel: "L0",
+          details: "",
+        },
+        ciIntegritySummary: { passed: false, details: "failed" },
+      }),
+    );
+    expect(output).not.toContain("Full report");
+  });
 });

@@ -80,6 +80,9 @@ export function trustHeadline(s: TrustSummary): string {
       ? "The relevant files executed — solid static + runtime signal."
       : "Files executed, evidence is thin — treat findings as leads.";
   }
+  if (s.level === "L0") {
+    return "Static signal only, with no runtime evidence — treat as an observation, not a verdict.";
+  }
   if (s.confidence >= 0.75) {
     return "Deterministic static analysis — trustworthy, uncorroborated by a run.";
   }
@@ -93,9 +96,14 @@ export function trustReasons(result: ScanResult, s: TrustSummary): string[] {
     (f) => f.runtimeCorroboration !== undefined,
   ).length;
   if (result.findings.length === 0) {
+    const incomplete =
+      result.partial ||
+      result.analysisStatus.discovery !== "complete" ||
+      result.analysisStatus.rules !== "complete" ||
+      (s.level === "L0" && s.evidenceCoverage === 0);
     reasons.push(
-      result.partial
-        ? "No findings so far, but the scan did not finish — the gaps are not proof of cleanliness."
+      incomplete
+        ? "No findings so far, but the scan or evidence is incomplete — the gaps are not proof of cleanliness."
         : "No findings fired on the analyzed surface — the scan found nothing to report.",
     );
   } else {
@@ -149,7 +157,12 @@ export function topTrustRisks(findings: readonly Finding[], n = 3): Finding[] {
 
 /** NEXT ACTION — one concrete command, deterministic. */
 export function nextAction(result: ScanResult): string {
-  if (result.partial) {
+  if (
+    result.partial ||
+    result.analysisStatus.discovery !== "complete" ||
+    result.analysisStatus.rules !== "complete" ||
+    (result.analysisStatus.rulesCrashed ?? 0) > 0
+  ) {
     return "re-run with a higher --max-duration to close the truncated surface";
   }
   const risks = topTrustRisks(result.findings, 1);

@@ -109,7 +109,7 @@ describe("degenerate repos", () => {
     // No commits: rev-parse HEAD~1 fails, HEAD is unresolvable, and the
     // tree listing cannot succeed — reported honestly, exit-code neutral.
     expect(report.hasComparison).toBe(false);
-    expect(report.unknownReason).toBe("tree-listing-failed");
+    expect(report.unknownReason).toBe("base-ref-invalid");
   });
 });
 

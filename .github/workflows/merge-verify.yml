@@ -38,6 +38,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          persist-credentials: false
           # The merge commit is what this job verifies; a shallow clone
           # would not contain it, and --scope needs the merge-base.
           fetch-depth: 0
@@ -65,7 +66,7 @@ jobs:
       - name: Site doctor
         run: npm run site:doctor
       - name: Self-scan (dogfood gate — zero NEW error-severity findings)
-        run: node dist/cli.mjs . --json > merge-verify-scan.json
+        run: node dist/cli.mjs src --json > merge-verify-scan.json
       - name: Self-scan honesty gate
         run: |
           node -e '

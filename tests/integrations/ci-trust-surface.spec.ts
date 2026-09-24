@@ -21,6 +21,7 @@ import {
   renderTrustReportMarkdown,
   TRUST_REPORT_MARKER,
 } from "../../src/commands/trust-report.js";
+import { UNIFIED_MARKER } from "../../src/reporter/pr-report-shared.js";
 import type { ScanResult } from "../../src/types.js";
 
 const ROOT = join(import.meta.dirname, "..", "..");
@@ -41,10 +42,11 @@ const ACTION = parse(readFileSync(join(ROOT, "action.yml"), "utf8")) as {
 
 describe("action.yml Trust Report consumption (WI-9, plan §13)", () => {
   it("declares the three consumption inputs with safe defaults", () => {
-    for (const input of ["annotations", "pr-comment", "trust-artifact"]) {
+    for (const input of ["annotations", "pr-comment"]) {
       expect(ACTION.inputs[input], `missing input ${input}`).toBeDefined();
       expect(ACTION.inputs[input]?.default).toBe("true");
     }
+    expect(ACTION.inputs["trust-artifact"]?.default).toBe("false");
   });
 
   it("exposes the trust-report-file output", () => {
@@ -53,9 +55,11 @@ describe("action.yml Trust Report consumption (WI-9, plan §13)", () => {
 
   it("renders from a saved JSON report, never a second gate scan", () => {
     const gen = ACTION.runs.steps.find(
-      (s) => s.name === "Generate Trust Report",
+      (s) => s.name === "Generate unified PR report",
     );
-    expect(gen?.run).toContain("trust-report --from mjolnir.json");
+    expect(gen?.run).toContain("pr-comment --from mjolnir.json");
+    expect(gen?.run).toContain('--commit "$MJ_COMMIT"');
+    expect(gen?.env?.["MJ_COMMIT"]).toBe("${{ github.sha }}");
     expect(gen?.if).toContain(
       "inputs.annotations == 'true' || inputs.pr-comment == 'true' ||",
     );
@@ -78,10 +82,10 @@ describe("action.yml Trust Report consumption (WI-9, plan §13)", () => {
 
   it("PR comment upserts by marker, only on pull_request events", () => {
     const step = ACTION.runs.steps.find((s) =>
-      s.name?.startsWith("Post Trust Report"),
+      s.name?.startsWith("Post unified report"),
     );
     expect(step?.if).toContain("github.event_name == 'pull_request'");
-    expect(step?.run).toContain(TRUST_REPORT_MARKER);
+    expect(step?.run).toContain(UNIFIED_MARKER);
     expect(step?.run).toContain("PATCH");
     expect(step?.env?.GH_TOKEN).toBe("${{ github.token }}");
     // audit S-5: event data through env, never interpolation in run bodies
@@ -90,10 +94,10 @@ describe("action.yml Trust Report consumption (WI-9, plan §13)", () => {
 
   it("uploads the Trust Report as an artifact via a SHA-pinned action", () => {
     const step = ACTION.runs.steps.find((s) =>
-      s.name?.startsWith("Upload Trust Report"),
+      s.name?.startsWith("Upload unified report"),
     );
     expect(step?.uses).toMatch(/^actions\/upload-artifact@[0-9a-f]{40}/);
-    expect(step?.with?.path).toContain("mjolnir-trust-report.md");
+    expect(step?.with?.path).toContain("mjolnir-comment.md");
   });
 
   it("the MD artifact begins with the upsert marker", () => {

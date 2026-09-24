@@ -37,7 +37,7 @@
  * next catalog render (locked by tests/local-rules.spec.ts).
  */
 
-import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { existsSync, lstatSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 
@@ -53,6 +53,32 @@ export interface LoadedExternalRules {
   skipped: string[];
 }
 
+const MAX_EXTERNAL_RULES = 1_000;
+const MAX_RULE_FILE_BYTES = 1 * 1024 * 1024;
+const MAX_PATTERNS_PER_RULE = 100;
+
+function hasNestedQuantifier(pattern: string): boolean {
+  for (let i = 0; i < pattern.length; i++) {
+    if (pattern.charAt(i) !== "(") continue;
+    let bodyHasQuantifier = false;
+    let j = i + 1;
+    for (; j < pattern.length && pattern.charAt(j) !== ")"; j++) {
+      const bodyChar = pattern.charAt(j);
+      if (bodyChar === "+" || bodyChar === "*" || bodyChar === "?") {
+        bodyHasQuantifier = true;
+        break;
+      }
+    }
+    if (bodyHasQuantifier) {
+      while (j < pattern.length && pattern.charAt(j) !== ")") j++;
+      if (j + 1 < pattern.length) {
+        const next = pattern.charAt(j + 1);
+        if (next === "+" || next === "*" || next === "{") return true;
+      }
+    }
+  }
+  return false;
+}
 const ALLOWED_CATEGORIES = new Set(["QA-TEST", "QA-TQUAL", "QA-PW", "QA-CI"]);
 const ALLOWED_APPLIES_TO = new Set([
   "test-files",
@@ -76,11 +102,27 @@ const ALLOWED_QA_IMPACTS = new Set([
  */
 export async function loadLocalRules(
   root: string,
-  gateOpen = true,
+  gateOpen = false,
 ): Promise<LoadedExternalRules> {
   const result: LoadedExternalRules = { rules: [], errors: [], skipped: [] };
   const dir = join(root, LOCAL_RULES_DIR);
   if (!existsSync(dir)) return result;
+
+  try {
+    if (lstatSync(dir).isSymbolicLink()) {
+      result.errors.push(
+        `external rules directory "${LOCAL_RULES_DIR}/" is a symlink — skipped`,
+      );
+      return result;
+    }
+  } catch (err) {
+    result.errors.push(
+      `external rules directory "${LOCAL_RULES_DIR}/" could not be inspected: ${
+        err instanceof Error ? err.message : String(err)
+      }`,
+    );
+    return result;
+  }
 
   let entries: string[];
   try {
@@ -95,7 +137,28 @@ export async function loadLocalRules(
   }
 
   for (const entry of entries.sort()) {
+    if (result.rules.length >= MAX_EXTERNAL_RULES) {
+      result.errors.push(
+        `external rule budget exceeded (${MAX_EXTERNAL_RULES})`,
+      );
+      break;
+    }
     const path = join(dir, entry);
+    try {
+      if (lstatSync(path).isSymbolicLink()) {
+        result.errors.push(
+          `external rule "${LOCAL_RULES_DIR}/${entry}" is a symlink — skipped`,
+        );
+        continue;
+      }
+    } catch (err) {
+      result.errors.push(
+        `external rule "${LOCAL_RULES_DIR}/${entry}" could not be inspected: ${
+          err instanceof Error ? err.message : String(err)
+        }`,
+      );
+      continue;
+    }
     if (entry.endsWith(".json")) {
       loadJsonRule(path, result);
     } else if (entry.endsWith(".mjs") || entry.endsWith(".js")) {
@@ -115,6 +178,12 @@ function loadJsonRule(path: string, result: LoadedExternalRules): void {
   const name = `${LOCAL_RULES_DIR}/${path.split(/[\\/]/).pop()}`;
   let raw: unknown;
   try {
+    if (lstatSync(path).size > MAX_RULE_FILE_BYTES) {
+      result.errors.push(
+        `external rule "${name}" exceeds the file size budget`,
+      );
+      return;
+    }
     raw = JSON.parse(readFileSync(path, "utf8"));
   } catch (err) {
     result.errors.push(
@@ -144,6 +213,7 @@ function loadJsonRule(path: string, result: LoadedExternalRules): void {
   if (
     !Array.isArray(patterns) ||
     patterns.length === 0 ||
+    patterns.length > MAX_PATTERNS_PER_RULE ||
     !patterns.every((p) => typeof p === "string" && p.length > 0)
   ) {
     result.errors.push(
@@ -166,6 +236,12 @@ function loadJsonRule(path: string, result: LoadedExternalRules): void {
     if ((p as string).length > 512) {
       result.errors.push(
         `external rule ${id} has a pattern longer than 512 chars — likely a copy-paste error.`,
+      );
+      return;
+    }
+    if (hasNestedQuantifier(p as string)) {
+      result.errors.push(
+        `external rule ${id} has a nested quantifier that may cause catastrophic backtracking`,
       );
       return;
     }

@@ -435,12 +435,15 @@ export interface ScanResult {
      * truncation actually happened — absence means the scan is whole.
      */
     truncationReasons?: string[];
+    /** Canonical completion reasons, including scope and parser degradation. */
+    reasons?: string[];
     /**
      * Rule executions that threw and were swallowed by crash isolation
      * (audit R-9). 0 means no rule silently failed; absence means the
      * producer predates the counter.
      */
     rulesCrashed?: number;
+    parseFallbacks?: number;
   };
   /**
    * Scoring model version stamped into the result (ENGINE-001). Allows
@@ -488,6 +491,7 @@ export interface ScanResult {
     trustModelVersion?: string;
     scoringModelVersion?: string;
     frameworkSupportMatrixVersion?: string;
+    commit?: string;
   };
   /**
    * Evidence Graph (R4c): the chain-law links (VERDICT ← EVIDENCE ←
