@@ -11,29 +11,88 @@ once shipped, so this file is the record of what changed between versions.
 
 ## [Unreleased]
 
-### Changed
-
-- **Advisory-first CI adoption** — `mjolnir ci install` and the root
-  GitHub Action now default to non-blocking findings and non-blocking partial
-  scans. Blocking remains explicit through `--gate error`, `--gate warning`,
-  or `fail-on`.
-- Suppression counts now report matched findings, not configured entries;
-  `suppression-gate` evaluates all-tier pre-suppression findings and enforces
-  total-count limits.
-- Zero-finding reports no longer claim the suite is clean or that CI is green.
+## [2.1.0] — 2026-09-24
 
 ### Added
 
-- **Zero-touch PR framework** — Conventional Commits enforcement via
-  `commitlint` + `.husky/commit-msg` (scope is mandatory; WIP/fixup/squash
-  commits are rejected before they reach the object store); pinned-seed
-  property tests (`vitest.property.config.ts`, `tests/scope/property-invariants.spec.ts`
-  with a shared `SEED` constant so failures are reproducible); the
-  `merge-verify` CI job that runs the full gate on the **merge result**,
-  not the PR head, so a green PR that merges into a red `main` is visible
-  before it ships; and `scripts/check-ci-local-parity.mjs`, which keeps
-  `ci.yml`, `merge-verify.yml` and the local gate exercising the same
-  command list. All additive — no frozen surface changed.
+- Added seven milestone commands to the public CLI and root help:
+  - `mjolnir ci-integrity` validates GitHub/GitLab/Jenkins scan gates and reports non-blocking or disabled candidates.
+  - `mjolnir framework-maturity` reports bounded F0–F5 maturity while preserving human calibration authority.
+  - `mjolnir suppression-gate` evaluates reasons, expiry, allowlists, total counts, and matched-finding mass suppression.
+  - `mjolnir cross-file` reports duplicate test names, shared imports, circular dependencies, and amplified findings.
+  - `mjolnir contract-verify` validates machine-contract fields and binds persisted contracts to a fresh scan.
+  - `mjolnir trust-trend` persists, deduplicates, and compares trust snapshots.
+  - `mjolnir evidence-graph` builds provenance-bearing evidence graphs and supports file/rule queries.
+- Added a zero-touch PR framework: Conventional Commit enforcement, seeded property tests, merge-result verification, and local/CI command-parity checks.
+- Added dedicated, discoverable property and fuzz suites. Fuzz cases use fixed seeds; property tests remain isolated from default coverage collection.
+- Added CI integrity, suppression, contract, provenance, cross-file, and trust regression suites covering malformed input, partial scans, inactive suppressions, and platform-stable exit behavior.
+- Added stable-only `v1`/`v2` action-tag maintenance. RC tags never move stable consumer tags.
+- Added pinned current corpus revisions and local fixture tree revisions. Baseline counts were not rewritten; corpus drift remains an explicit audit failure.
+
+### Fixed
+
+- Fixed false-green milestone engines:
+  - machine-contract verification now compares every contract projection, including optional provenance and forensic verdicts;
+  - trust snapshots use caller-provided timestamps instead of an embedded wall clock;
+  - suppression mass uses actual matched pre-suppression findings and active suppressions;
+  - evidence provenance is derived from real file contents;
+  - cross-file dependency analysis uses the requested target root;
+  - framework maturity uses the supported F5 ceiling.
+- Fixed persisted contract handling: documents use strict runtime schema validation and are verified against a fresh scan rather than self-attesting.
+- Fixed zero-finding and partial-scan reporting so incomplete or unclassified analysis cannot render as a clean, proven, or merge-ready suite.
+- Fixed CI workflow audit parsing to fail closed for dynamic conditions, `continue-on-error`, negated commands, multi-pipe status masking, inactive GitLab rules, advisory `after_script` commands, and missing blocking scans.
+- Fixed the coverage job/ratchet mismatch: merge verification now generates the coverage summary it enforces.
+- Fixed stress determinism by normalizing both analysis and machine-contract duration fields, running real concurrent scans, and making the 10k workflow validate JSON even when findings are advisory.
+- Fixed property/fuzz discovery and workflow trigger/name so required PR checks are actually produced.
+- Fixed root help, command registry, README, and release documentation drift for the new command surface.
+
+### Security
+
+- The composite Action and generated CI surfaces use exact released versions, immutable action references, least-privilege permissions, and explicit exit semantics.
+- The composite Action defaults to blocking on findings and partial scans; advisory behavior requires an explicit opt-out.
+- Release publication is isolated from `main`, uses audited artifacts, npm OIDC trusted publishing with provenance, npm 11.5.1+, a `next` RC dist-tag, and verified GitHub prerelease assets.
+- Pull-request shell inputs and workflow-derived values are passed through environment variables instead of direct `${{ }}` interpolation.
+- Machine-contract, suppression-policy, roadmap, and persisted-artifact validation now reject malformed and adversarial inputs rather than fabricating or trusting them.
+- Main-branch deletion and the complete required PR check matrix are enforced by repository ruleset `01`. The repository is solo-maintained, so the owner explicitly chose not to require a second approving review.
+
+### Performance
+
+- Centralized deterministic CLI timing normalization and expanded replay, soak, and concurrent stress coverage.
+- Added bounded corpus scans, exact source revisions, and fail-closed baseline provenance checks.
+- Added practical pipeline/command regression tests without changing the frozen 96% branch ratchet.
+
+### Testing
+
+- Full instrumented release gate: 408 test files, 10,351 passing tests, one expected failure documenting the outstanding orphan corpus baseline, and five intentional skips.
+- Coverage ratchet at release: 98.58% statements, 96.00% branches, 99.38% functions, and 98.84% lines.
+- Focused gates green: build, lint, typecheck, certification, property, fuzz, stress/soak/concurrency, release/workflow contract tests, pack audit, brand, site, and local/CI parity.
+- Historical failed runs remain historical evidence; they are not retroactively changed.
+
+### Changed
+
+- `ci-local` now runs one complete instrumented suite plus property/fuzz/ratchet/audit/brand/site/parity gates instead of silently omitting release checks.
+- Release promotion is explicit and branch/tag based; merging the version PR does not itself publish npm.
+- Suppression counts and governance outputs distinguish configured, active, expired, and matched findings.
+- Rule IDs remain immutable across the 2.x line. Existing detector contracts,
+  including `QA-PW-001`, retain their identity while framework maturity and
+  evidence quality improve around them.
+- The CLI command registry is shared by help, dispatch, and CI-integrity classification.
+
+### Breaking changes
+
+- The package now requires Node.js `>=22.18`.
+- Direct composite-Action consumers now get blocking defaults for findings and partial scans unless they explicitly opt out.
+- Generated CI installation remains opt-in/advisory for first adoption; use `mjolnir ci install --gate error` when an enforcing install is required.
+- Stable release publication no longer occurs automatically from `main`; use the protected release branch and release workflow.
+- The historical `v2.0.3` tag is retained unchanged. This release does not move, delete, or republish that tag.
+
+### Migration
+
+1. Install or invoke `mjolnir-qa@2.1.0` with Node.js 22.18 or newer.
+2. Replace floating Action versions with `@v2` or the exact `v2.1.0` tag when reproducible enforcement is required.
+3. Review suppression expiry/allowlist policy before enabling `suppression-gate`; existing entries are policy data, not proof of human validation.
+4. Run the seven new commands in report mode first and review their JSON before making them release gates.
+5. Adjudicate remaining corpus count/orphan drift and human/design-partner validation separately; this release does not claim those are closed.
 
 ## [2.0.2] — 2026-09-22
 

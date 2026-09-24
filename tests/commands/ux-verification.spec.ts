@@ -230,7 +230,7 @@ describe("CI-ADAPTER (SDET-4)", () => {
     expect(workflow).toContain(
       "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
     );
-    expect(workflow).toContain("mjolnir-qa@2.0.2 --blocking error");
+    expect(workflow).toContain("mjolnir-qa@2.1.0 --blocking error");
     expect(workflow).not.toContain("npx mjolnir scan");
     rmSync(dir, { recursive: true, force: true });
   });
@@ -239,7 +239,7 @@ describe("CI-ADAPTER (SDET-4)", () => {
     const code = runCiAdapterCommand(["gitlab", dir], { out, err });
     expect(code).toBe(EXIT_CLEAN);
     const workflow = readFileSync(join(dir, ".gitlab-ci.yml"), "utf8");
-    expect(workflow).toContain("mjolnir-qa@2.0.2 --blocking error");
+    expect(workflow).toContain("mjolnir-qa@2.1.0 --blocking error");
     expect(workflow).not.toContain("npx mjolnir scan");
     rmSync(dir, { recursive: true, force: true });
   });
@@ -248,7 +248,7 @@ describe("CI-ADAPTER (SDET-4)", () => {
     const code = runCiAdapterCommand(["jenkins", dir], { out, err });
     expect(code).toBe(EXIT_CLEAN);
     const workflow = readFileSync(join(dir, "Jenkinsfile"), "utf8");
-    expect(workflow).toContain("mjolnir-qa@2.0.2 --blocking error");
+    expect(workflow).toContain("mjolnir-qa@2.1.0 --blocking error");
     expect(workflow).not.toContain("npx mjolnir scan");
     rmSync(dir, { recursive: true, force: true });
   });

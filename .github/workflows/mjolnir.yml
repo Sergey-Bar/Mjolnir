@@ -25,9 +25,8 @@ jobs:
       # composite action is loaded from this checkout so the PR tests the
       # exact action.yml being reviewed; the
       # scan package is pinned to the same reviewed release. The fail-on input is the gate: it
-      # fails the job on findings at the gate and never on a partial
-      # scan (exit 2 downgrades to a warning — the frozen exit-code
-      # contract). Advisory mode reports, never blocks.
+      # fails the job on findings or an incomplete scan. Advisory mode
+      # remains available through the explicit fail-on/fail-on-partial inputs.
       - name: Mjölnir diff
         if: always()
         continue-on-error: true
@@ -41,6 +40,8 @@ jobs:
           scope: changed
           format: json
           fail-on: error
+          # Bootstrap the release PR with the last published package;
+          # the action default becomes 2.1.0 after npm publication.
           version: 2.0.2
       # Reporting, not gating: runs even when the scan/gate failed, from
       # the same mjolnir.json the action wrote.
@@ -93,8 +94,6 @@ jobs:
               });
             }
       # Gate enforcement: the action step above IS the gate — fail-on
-      # error exits 1 on findings at the gate and the step is
-      # continue-on-error: false, so its failure fails the job. A partial
-      # scan never blocks (the action downgrades exit 2 to a warning per
-      # the frozen exit-code contract). The reporting steps above ran
-      # first (if: always()), so a red gate never suppresses the report.
+      # error exits 1 on findings and exit 2 on an incomplete scan. The
+      # step is continue-on-error: false, so either fails the job. Reporting
+      # steps run first, so a red gate never suppresses the report.
