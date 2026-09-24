@@ -227,7 +227,7 @@ function commandInvocation(command: string): { args: string } | null {
       "--registry",
     ]);
     for (let index = 1; index < tokens.length; index++) {
-      const token = tokens[index];
+      const token = Reflect.get(tokens, index);
       if (token.length === 2 && token[0] === "-" && token[1] === "-") {
         continue;
       }
@@ -242,7 +242,7 @@ function commandInvocation(command: string): { args: string } | null {
   } else if (tokens[0] === "npm" && tokens[1] === "exec") {
     const optionsWithValues = new Set(["--package", "-p"]);
     for (let index = 2; index < tokens.length; index++) {
-      const token = tokens[index];
+      const token = Reflect.get(tokens, index);
       if (token.length === 2 && token[0] === "-" && token[1] === "-") {
         continue;
       }
