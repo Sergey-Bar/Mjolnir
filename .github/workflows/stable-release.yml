@@ -8,6 +8,10 @@ on:
         required: true
         default: true
         type: boolean
+      artifact_run_id:
+        description: Resume publishing from a prior verified run of this workflow.
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -18,6 +22,7 @@ concurrency:
 
 jobs:
   verify:
+    if: inputs.artifact_run_id == ''
     runs-on: ubuntu-latest
     timeout-minutes: 60
     outputs:
@@ -129,7 +134,7 @@ jobs:
 
   tag:
     needs: verify
-    if: needs.verify.outputs.dry-run == 'false' && vars.NPM_PUBLISH == 'true'
+    if: needs.verify.outputs.dry-run == 'false' && vars.NPM_PUBLISH == 'true' && inputs.artifact_run_id == ''
     runs-on: ubuntu-latest
     timeout-minutes: 10
     environment: release-candidate
@@ -225,6 +230,79 @@ jobs:
         run: |
           set -euo pipefail
           test "$(sha256sum "release-artifact/$TARBALL" | cut -d ' ' -f 1)" = "$CHECKSUM"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "release-artifact/$TARBALL#$TARBALL" --clobber
+          else
+            gh release create "$TAG" "release-artifact/$TARBALL#$TARBALL" --verify-tag --title "$TAG" --generate-notes
+          fi
+
+  resume-npm:
+    if: inputs.artifact_run_id != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: npm-publish
+    permissions:
+      actions: read
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22.18.0
+      - run: npm install --global npm@11.5.1
+      - name: Download and publish the prior verified artifact
+        shell: bash
+        env:
+          ARTIFACT_RUN_ID: ${{ inputs.artifact_run_id }}
+          GH_REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          [[ "$ARTIFACT_RUN_ID" =~ ^[0-9]+$ ]]
+          VERSION=$(node -p "require('./package.json').version")
+          PACKAGE_NAME=$(node -p "require('./package.json').name")
+          TARBALL="mjolnir-qa-$VERSION.tgz"
+          TAG="v$VERSION"
+          git checkout --detach "$TAG"
+          gh run download "$ARTIFACT_RUN_ID" --name "stable-release-$VERSION" --dir release-artifact
+          (cd release-artifact && sha256sum --check "$TARBALL.sha256")
+          if ! npm view "$PACKAGE_NAME@$VERSION" version >/dev/null 2>&1; then
+            npm publish "./release-artifact/$TARBALL" --provenance --ignore-scripts --access public
+          fi
+          test "$(npm view "$PACKAGE_NAME@$VERSION" version)" = "$VERSION"
+          test "$(npm view "$PACKAGE_NAME" dist-tags.latest)" = "$VERSION"
+
+  resume-release:
+    needs: resume-npm
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      actions: read
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Create or repair stable GitHub Release
+        shell: bash
+        env:
+          ARTIFACT_RUN_ID: ${{ inputs.artifact_run_id }}
+          GH_REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          [[ "$ARTIFACT_RUN_ID" =~ ^[0-9]+$ ]]
+          VERSION=$(node -p "require('./package.json').version")
+          TARBALL="mjolnir-qa-$VERSION.tgz"
+          TAG="v$VERSION"
+          git checkout --detach "$TAG"
+          gh run download "$ARTIFACT_RUN_ID" --name "stable-release-$VERSION" --dir release-artifact
+          (cd release-artifact && sha256sum --check "$TARBALL.sha256")
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release upload "$TAG" "release-artifact/$TARBALL#$TARBALL" --clobber
           else

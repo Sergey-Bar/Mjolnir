@@ -82,6 +82,15 @@ describe("stable release workflow", () => {
     expect(identityStep?.env?.GIT_COMMITTER_NAME).toBe("github-actions[bot]");
   });
 
+  it("supports publishing a prior verified artifact without rebuilding", () => {
+    expect(source).toContain("artifact_run_id");
+    expect(source).toContain("resume-npm:");
+    expect(source).toContain(
+      'gh run download "$ARTIFACT_RUN_ID" --name "stable-release-$VERSION"',
+    );
+    expect(source).toContain("resume-release:");
+  });
+
   it("materializes an existing immutable tag before packing", () => {
     expect(source).toContain("tag_commit=$TAG_COMMIT");
     expect(source).toContain("Materialize and build existing release tag");
