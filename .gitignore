@@ -10,6 +10,7 @@ coverage/
 # NOT ignored: it is meant to be committed (the mjolnir.yml workflow
 # fetches it from the base branch).
 .mjolnir/stats.json
+.mjolnir/trust-history.json
 # Bench artifacts (plan §20 performance evidence): machine-local timings,
 # regenerated per run; the bench fixture tree is scratch.
 .mjolnir/bench-artifact.json

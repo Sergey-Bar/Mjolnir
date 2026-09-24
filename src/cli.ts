@@ -380,7 +380,8 @@ export function runCiInstall(
     io.err("Unknown gate level. Use: advisory | error | warning");
     return EXIT_USAGE;
   }
-  const result = ciInstall(resolve("."), (gateArg as GateLevel) ?? "error", {
+  const gate = (gateArg as GateLevel | undefined) ?? "advisory";
+  const result = ciInstall(resolve("."), gate, {
     force,
     action: !noAction,
   });
@@ -396,8 +397,13 @@ export function runCiInstall(
   io.out(`${result.existed ? "Updated" : "Created"} ${result.written}`);
   io.out(
     noAction
-      ? "Plain-npx template (—no-action). Default mode: blocking — findings at the gate fail the job."
-      : "Action-based template: uses Sergey-Bar/Mjolnir@4a588bc62d517bc85fc44c0eae64c6587d3bf70b0 (immutable pin).",
+      ? `Plain-npx template (--no-action). Gate: ${gate}.`
+      : `Action-based template: uses Sergey-Bar/Mjolnir@4a588bc62d517bc85fc44c0eae64c6587d3bf70b0 (immutable pin). Gate: ${gate}.`,
+  );
+  io.out(
+    gate === "advisory"
+      ? "Advisory mode reports findings without blocking. Opt in with --gate error or --gate warning."
+      : `Blocking mode fails on ${gate} findings.`,
   );
   io.out("Change with: mjolnir ci install --gate error|warning|advisory");
   if (!noAction) {
@@ -432,42 +438,7 @@ export function runSuppressions(
  * nor an existing path is a TYPO, and a typo must not silently fall
  * through to a scan of whatever the remaining arguments parse to.
  */
-const SUBCOMMANDS: ReadonlySet<string> = new Set([
-  "scan",
-  "ci",
-  "suppressions",
-  "forensics",
-  "triage",
-  "badge",
-  "trust-report",
-  "debt",
-  "impact",
-  "baseline",
-  "report",
-  "policy",
-  "quarantine",
-  "analyze",
-  "ci-adapter",
-  "dashboard",
-  "enterprise",
-  "maturity",
-  "diff",
-  "pr-comment",
-  "stats",
-  "fix",
-  "create-rule",
-  "handover",
-  "init",
-  "pw-report",
-  "doctor",
-  "rules",
-  "explain",
-  "release-trust",
-  "doctor:playwright",
-  "mcp",
-  "business-case",
-  "release-report",
-]);
+const SUBCOMMANDS: ReadonlySet<string> = new Set(CLI_COMMAND_NAMES);
 
 // Handler imports — the bulk of verb implementations live in cli-handlers.ts
 // to keep this entry-point module under 800 lines (Task 8).
@@ -538,6 +509,16 @@ import { runCiAdapterCommand } from "./commands/ci-adapter.js";
 import { runDashboardCommand } from "./commands/dashboard.js";
 import { runEnterpriseCommand } from "./commands/enterprise.js";
 import { runMaturityCommand } from "./commands/maturity.js";
+import { CLI_COMMAND_NAMES } from "./engine/cli-command-names.js";
+import {
+  runCIIntegrityCommand,
+  runContractVerifyCommand,
+  runCrossFileCommand,
+  runEvidenceGraphCommand,
+  runFrameworkMaturityCommand,
+  runSuppressionGateCommand,
+  runTrustTrendCommand,
+} from "./commands/milestone.js";
 
 export {
   runDoctorCommand,
@@ -559,6 +540,13 @@ export {
   runDashboardCommand,
   runEnterpriseCommand,
   runMaturityCommand,
+  runCIIntegrityCommand,
+  runContractVerifyCommand,
+  runCrossFileCommand,
+  runEvidenceGraphCommand,
+  runFrameworkMaturityCommand,
+  runSuppressionGateCommand,
+  runTrustTrendCommand,
 };
 
 export function printUsage(
@@ -636,6 +624,13 @@ export async function main(
     why: (a, o) => runWhyCommand(a, o),
     handoff: (a, o) => runHandoffCommand(a, o),
     install: (a, o) => runInstallCommand(a, o),
+    "ci-integrity": (a, o) => runCIIntegrityCommand(a, o),
+    "framework-maturity": (a, o) => runFrameworkMaturityCommand(a, o),
+    "suppression-gate": (a, o) => runSuppressionGateCommand(a, o),
+    "cross-file": (a, o) => runCrossFileCommand(a, o),
+    "contract-verify": (a, o) => runContractVerifyCommand(a, o),
+    "trust-trend": (a, o) => runTrustTrendCommand(a, o),
+    "evidence-graph": (a, o) => runEvidenceGraphCommand(a, o),
   };
   // Contract: tests/contract/readme-commands.spec.ts reads known subcommands
   // from argv[0] === "..." literals in this source file. Keep in sync with VERBS:

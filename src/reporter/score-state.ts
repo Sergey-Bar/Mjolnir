@@ -42,7 +42,7 @@ const HEADLINES: Record<ScoreBand | "unmeasured", string> = {
   critical: "The hammer is cracked — {n} findings break its edge.",
   warning: "The hammer holds — but {n} findings weigh it down.",
   trusted: "Held in worthy hands — {n} findings remain.",
-  forged: "Forged complete. Zero findings. The suite is clean.",
+  forged: "Static score 100 — no findings on the analyzed surface.",
   unmeasured: "No tests found — the hammer cannot be weighed.",
 };
 

@@ -11,137 +11,103 @@
  */
 
 import { writeFileSync } from "node:fs";
-import { EXIT_CLEAN, EXIT_USAGE } from "../exit-codes.js";
+import { join, resolve } from "node:path";
+
 import type { Output } from "../cli-io.js";
+import { EXIT_CLEAN, EXIT_INTERNAL, EXIT_USAGE } from "../exit-codes.js";
+import { ENGINE_VERSION } from "../engine/version.js";
 
-interface CiFinding {
-  ruleId: string;
-  severity: string;
-  message: string;
-}
+const SCAN_COMMAND = `npx --yes mjolnir-qa@${ENGINE_VERSION} --blocking error`;
 
-function generateGitHubWorkflow(findings: CiFinding[]): string {
-  const hasErrors = findings.some((f) => f.severity === "error");
-  const steps = findings
-    .map(
-      (f) =>
-        `      - name: Report ${f.ruleId}\n        run: echo "${f.message}"`,
-    )
-    .join("\n");
+function generateGitHubWorkflow(): string {
   return `name: QA Check
 on: [push, pull_request]
 jobs:
   qa:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Install dependencies
         run: npm ci
       - name: Run Mjölnir scan
-        run: npx mjolnir scan
-${steps}
-      - name: Report result
-        if: ${hasErrors ? "failure()" : "success()"}
-        run: echo "Quality gate: ${hasErrors ? "FAILED" : "PASSED"}"
+        run: ${SCAN_COMMAND}
 `;
 }
 
-function generateGitLabCi(findings: CiFinding[]): string {
-  const hasErrors = findings.some((f) => f.severity === "error");
+function generateGitLabCi(): string {
   return `stages:
   - test
   - qa
 qa-check:
   stage: qa
   script:
-    - npx mjolnir scan
-    - ${hasErrors ? 'echo "Quality gate FAILED" && exit 1' : 'echo "Quality gate PASSED"'}
+    - ${SCAN_COMMAND}
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
 `;
 }
 
-function generateJenkinsfile(findings: CiFinding[]): string {
-  const hasErrors = findings.some((f) => f.severity === "error");
+function generateJenkinsfile(): string {
   return `pipeline {
     agent any
     stages {
         stage('QA Check') {
             steps {
-                sh 'npx mjolnir scan'
-                sh 'echo "Quality gate: ${hasErrors ? "FAILED" : "PASSED"}"'
+                sh '${SCAN_COMMAND}'
             }
-        }
-    }
-    post {
-        failure {
-            echo 'QA findings detected — review required'
         }
     }
 }
 `;
 }
 
-export async function runCiAdapterCommand(
+export function runCiAdapterCommand(
   argv: string[],
   io: { out: Output; err: Output },
-): Promise<number> {
+): number {
   const adapter = argv[0] ?? "";
-  const target =
-    (argv.length >= 2
-      ? argv.slice(1).find((a) => !a.startsWith("-"))
-      : undefined) ?? ".";
-
   if (!["github", "gitlab", "jenkins"].includes(adapter)) {
     io.err("Usage: mjolnir ci-adapter <github|gitlab|jenkins> [target]");
     return EXIT_USAGE;
   }
-
-  let findings: CiFinding[] = [];
-  try {
-    const { runScan } = await import("../engine/scan-pipeline.js");
-    const result = await runScan({
-      target,
-      json: true,
-      verbose: false,
-      maxDurationMs: Number.POSITIVE_INFINITY,
-      scopeChanged: false,
-      format: "json",
-      strict: false,
-    });
-    findings = result.findings.map((f) => ({
-      ruleId: f.ruleId,
-      severity: f.severity,
-      message: f.message,
-    }));
-  } catch {
-    findings.length = 0;
+  if (argv.length > 2 || argv.slice(1).some((arg) => arg.startsWith("-"))) {
+    io.err("Usage: mjolnir ci-adapter <github|gitlab|jenkins> [target]");
+    return EXIT_USAGE;
   }
+  const target = resolve(argv[1] ?? ".");
 
   let output: string;
   let filename: string;
 
   switch (adapter) {
     case "github":
-      output = generateGitHubWorkflow(findings);
+      output = generateGitHubWorkflow();
       filename = "qa-check.yml";
       break;
     case "gitlab":
-      output = generateGitLabCi(findings);
+      output = generateGitLabCi();
       filename = ".gitlab-ci.yml";
       break;
     case "jenkins":
-      output = generateJenkinsfile(findings);
+      output = generateJenkinsfile();
       filename = "Jenkinsfile";
       break;
     default:
       return EXIT_USAGE;
   }
 
-  writeFileSync(filename, output);
+  try {
+    writeFileSync(join(target, filename), output);
+  } catch (error) {
+    io.err(
+      `Unable to write CI template: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+    );
+    return EXIT_INTERNAL;
+  }
   io.out(`CI ADAPTER: ${adapter.toUpperCase()}`);
-  io.out(`Generated ${filename}`);
-  io.out(`Findings processed: ${findings.length}`);
+  io.out(`Generated ${join(target, filename)}`);
   io.out(output);
 
   return EXIT_CLEAN;

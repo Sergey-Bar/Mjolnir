@@ -335,6 +335,8 @@ export interface ScanHooks {
    * never on the stdout machine contracts.
    */
   onGateNotice?: (notice: string) => void;
+  onTestFilesDiscovered?: (files: readonly string[]) => void;
+  onPreSuppressionFindings?: (findings: readonly Finding[]) => void;
 }
 
 /**
@@ -804,7 +806,8 @@ export function applyPostScanProcessing(
   applySeverityOverrides(findings, config);
   const suppressions = loadSuppressions(workspace.root);
   const active = suppressions.entries.filter((e) => e.status === "active");
-  const suppressionCount = active.length;
+  hooks.onPreSuppressionFindings?.([...findings]);
+  let suppressionCount = 0;
   if (active.length > 0) {
     const ruleOnly = new Set(
       active.filter((e) => !e.files?.length).map((e) => e.ruleId),
@@ -818,6 +821,7 @@ export function applyPostScanProcessing(
           e.files.some((g) => pathMatchesGlob(f.file, g)),
       );
     });
+    suppressionCount = findings.length - kept.length;
     findings.length = 0;
     for (const f of kept) findings.push(f);
   }
@@ -1357,6 +1361,7 @@ export async function runScan(
     scanRoot,
     ctx,
   );
+  hooks.onTestFilesDiscovered?.(testFiles);
 
   const analysis = await runFileAnalysisPhase(
     findings,

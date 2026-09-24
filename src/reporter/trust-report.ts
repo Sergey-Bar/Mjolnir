@@ -156,7 +156,7 @@ export function nextAction(result: ScanResult): string {
   if (risks.length === 0) {
     return result.testDeclarationCount === 0
       ? "add tests — a repo without test declarations has nothing to verify"
-      : "nothing to triage — keep the gate green with `mjolnir ci install`";
+      : "no findings on the analyzed surface — install advisory CI (`mjolnir ci install`) and re-scan the changed scope";
   }
   return `mjolnir explain ${risks[0]?.ruleId ?? ""} — then fix the top risk first`;
 }

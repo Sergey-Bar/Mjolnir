@@ -16,17 +16,20 @@
         "tests/contract-schema.spec.ts",
         "tests/mermaid-format.spec.ts"
       ],
-      "reason": "These tests assert via helper functions that throw on failure (assertScanResultShape, validateFlowchartStructure) — a valid pattern that the regex heuristic cannot recognize."
+      "reason": "These tests assert via helper functions that throw on failure (assertScanResultShape, validateFlowchartStructure) — a valid pattern that the regex heuristic cannot recognize.",
+      "expires": "2026-12-31"
     },
     {
       "ruleId": "QA-TQUAL-002",
       "files": ["tests/reporters.spec.ts"],
-      "reason": "Intentional placeholder guard: the selector-health describe block uses expect(true).toBe(true) to keep vitest from warning about an empty suite."
+      "reason": "Intentional placeholder guard: the selector-health describe block uses expect(true).toBe(true) to keep vitest from warning about an empty suite.",
+      "expires": "2026-12-31"
     },
     {
       "ruleId": "QA-TEST-002",
       "files": ["tests/registry-install.spec.ts"],
-      "reason": "Intentionally skipped: the registry-install smoke test is gated behind RUN_REGISTRY_INSTALL_TEST=1 because it requires network and is slow."
+      "reason": "Intentionally skipped: the registry-install smoke test is gated behind RUN_REGISTRY_INSTALL_TEST=1 because it requires network and is slow.",
+      "expires": "2026-12-31"
     }
   ]
 }

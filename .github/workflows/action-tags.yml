@@ -1,0 +1,31 @@
+name: Stable Action Tags
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+jobs:
+  move-major-tags:
+    if: startsWith(github.ref, 'refs/tags/v') && !contains(github.ref_name, '-rc.')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: stable-action-tags
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Move stable action tags
+        shell: bash
+        run: |
+          set -euo pipefail
+          for major in v1 v2; do
+            git tag -f "$major" "$GITHUB_SHA"
+            git push origin "refs/tags/$major" --force
+          done

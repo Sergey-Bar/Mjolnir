@@ -1,510 +1,353 @@
-name: Release
-
-# Two release paths, one workflow file (the npmjs.com Trusted Publisher
-# matches the workflow FILENAME exactly — a second file would fail OIDC
-# with ENEEDAUTH):
-#
-# 1. Automated (default): merge to `main` → the `version` job computes
-#    the bump from PR labels (no label = patch; release:major / minor /
-#    skip override), collapses CHANGELOG.md's [Unreleased] sections
-#    under the new version, commits + tags v<X> as mjolnir-release-bot,
-#    and the `release` job publishes from that tag. Zero manual
-#    commands.
-# 2. Manual: push a version tag (v*) or `gh workflow run release.yml
-#    -f tag=vX.Y.Z` → the `release` job runs the full gate and
-#    publishes. This is the rc-channel path (docs/PUBLISHING.md).
-#
-# ORDER MATTERS. npm publish runs BEFORE the GitHub Release is created,
-# and the release job refuses to create a Release until the version is
-# actually resolvable on the registry. The reverse order shipped a
-# public "v0.5.0 · Latest" Release for a version that npm never
-# received, because the publish step failed after the Release step had
-# already succeeded. A GitHub Release is a promise that `npm i` works;
-# it must not be made before that is true.
+name: Release Candidate
 
 on:
   push:
-    # Auto-release path: every merge to main produces exactly one
-    # release (major/minor/patch — no gaps, no manual npm version).
-    branches:
-      - main
-    # Manual rc releases (npm version 1.1.0-rc.1 + push --follow-tags).
     tags:
-      - "v*.*.*"
-  # Re-run a release for a tag that already exists. Needed whenever a
-  # release fails for a reason outside the repo — registry auth, a flaky
-  # runner — where the fix is a settings change and the code is fine.
-  # Without this the only retry path is deleting and force-pushing the
-  # tag, which rewrites history anyone who already fetched it has.
+      - "v*-rc.*"
   workflow_dispatch:
     inputs:
-      tag:
-        description: "Existing tag to release (e.g. v0.5.0)"
+      dry_run:
+        description: Validate and package only; publishing still requires repository approval.
         required: true
-        type: string
+        default: true
+        type: boolean
 
-# Least privilege at the top level; each job escalates what it actually
-# needs via job-level `permissions`.
 permissions:
   contents: read
 
-# Serializes simultaneous main-push runs (queued merges release in
-# order, one version each); tag runs group per-tag. The registry
-# duplicate-skip in the release job absorbs any remaining race.
 concurrency:
-  group: release-${{ github.ref }}
+  group: release-candidate-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
-  # ── Job 1: version — the auto-release brain ─────────────────────────
-  # Runs ONLY on branch pushes to main (tag pushes and workflow_dispatch
-  # skip straight to the release job below).
-  version:
-    name: Compute and cut the next version
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/')
+  verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
-    permissions:
-      contents: write # push the bump commit + tag to main
-      pull-requests: read # label lookups for every PR in the range
+    timeout-minutes: 60
     outputs:
-      bump: ${{ steps.compute.outputs.bump }}
-      version: ${{ steps.cut.outputs.version }}
-      tag: ${{ steps.cut.outputs.tag }}
-      # True when any phase decided to skip (bot-commit loop guard, no
-      # commits since last tag, or every commit labeled release:skip).
-      skip: >-
-        ${{
-          steps.guard.outputs.skip == 'true'
-          || steps.commits.outputs.skip == 'true'
-          || steps.compute.outputs.skip == 'true'
-        }}
+      artifact-name: ${{ steps.package.outputs.artifact_name }}
+      checksum: ${{ steps.package.outputs.checksum }}
+      commit: ${{ steps.context.outputs.commit }}
+      dry-run: ${{ steps.context.outputs.dry_run }}
+      package-name: ${{ steps.context.outputs.package_name }}
+      tag: ${{ steps.context.outputs.tag }}
+      tarball: ${{ steps.package.outputs.tarball }}
+      version: ${{ steps.context.outputs.version }}
     steps:
-      # Full history + all tags: the range since the last release tag
-      # and the loop guard both need them.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
-
-      # Loop-breaker / idempotency guard. The bot's own bump commit is
-      # tagged v<its package.json version> AT HEAD; a regular merge
-      # commit never is. (A GITHUB_TOKEN push does not trigger workflow
-      # runs, so this guards re-runs and future PAT-based pushes too.)
-      - name: Loop guard — HEAD already tagged with its own version?
-        id: guard
-        run: |
-          PKG_VERSION="$(node -p "require('./package.json').version")"
-          HEAD_TAG="$(git describe --tags --exact-match HEAD 2>/dev/null || true)"
-          if [ -n "$HEAD_TAG" ] && [ "$HEAD_TAG" = "v$PKG_VERSION" ]; then
-            echo "HEAD is tagged $HEAD_TAG — this push is the release bot's own bump commit. Skipping."
-            echo "skip=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "HEAD is not a release commit (package version $PKG_VERSION). Proceeding."
-            echo "skip=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Collect commits since the last tag
-        id: commits
-        if: steps.guard.outputs.skip != 'true'
-        run: |
-          LAST_TAG="$(git describe --tags --abbrev=0 2>/dev/null || true)"
-          RANGE="${LAST_TAG:+"$LAST_TAG.."}HEAD"
-          COUNT="$(git rev-list --count "$RANGE")"
-          echo "range=$RANGE" >> "$GITHUB_OUTPUT"
-          echo "count=$COUNT" >> "$GITHUB_OUTPUT"
-          if [ "$COUNT" -eq 0 ]; then
-            echo "::notice::No commits since ${LAST_TAG:-the first commit} — nothing to release."
-            echo "skip=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "Commits since ${LAST_TAG:-the beginning}: $COUNT"
-            echo "skip=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      # Thin wrapper: scripts/compute-release.mjs resolves labels via
-      # `gh pr view` and writes bump/skip to $GITHUB_OUTPUT. Label
-      # failures fall back to patch with a ::warning:: — never fatal.
-      - name: Resolve the bump from PR labels
-        id: compute
-        if: steps.commits.outputs.skip != 'true'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          node scripts/compute-release.mjs --github-output --range "${{ steps.commits.outputs.range }}"
-
-      - name: Cut the release commit and tag
-        id: cut
-        if: steps.compute.outputs.skip != 'true'
-        env:
-          BUMP: ${{ steps.compute.outputs.bump }}
-        run: |
-          git config user.name "mjolnir-release-bot"
-          git config user.email "bot@users.noreply.github.com"
-          NEW_VERSION="$(npm version "$BUMP" --no-git-tag-version)"
-          NEW_VERSION="${NEW_VERSION#v}"
-          node scripts/sync-sarif-version.cjs
-          # The Smithery registry must never advertise a version the
-          # package is not (tests/contract/repo-hygiene.spec.ts).
-          node scripts/sync-smithery-version.cjs
-          node scripts/release-changelog.mjs "$NEW_VERSION" "$(date -u +%F)"
-          # The changelog collapse regenerates MD tables/text; format it
-          # BEFORE lint runs (the lint gate includes prettier --check).
-          npx --yes prettier --write CHANGELOG.md
-          git add -A
-          git commit -m "chore(release): v$NEW_VERSION"
-          git tag "v$NEW_VERSION"
-          git push origin "HEAD:refs/heads/main" "refs/tags/v$NEW_VERSION"
-          echo "version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
-          echo "tag=v$NEW_VERSION" >> "$GITHUB_OUTPUT"
-          echo "Cut v$NEW_VERSION (bump: $BUMP) and pushed commit + tag."
-
-  # ── Job 2: release — the publish pipeline (unchanged) ───────────────
-  # For tag pushes and workflow_dispatch the version job above is
-  # skipped and this job releases the tag directly. For main-branch
-  # pushes it runs only when the version job actually cut a tag —
-  # never on skip and never on a failed version job (no half state:
-  # no release commit means no publish).
-  release:
-    needs: version
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    if: >-
-      always() && !cancelled() &&
-      (
-        (needs.version.result == 'skipped' && (github.event_name != 'push' || startsWith(github.ref, 'refs/tags/')))
-        || (needs.version.result == 'success' && needs.version.outputs.skip != 'true')
-      )
-    # id-token: write is required for `npm publish --provenance` (OIDC).
-    permissions:
-      contents: write
-      id-token: write
-    # Exposed to the action-tags job: the tag being released and whether
-    # it is an rc (rc tags must never move the action's major tag).
-    outputs:
-      tag: ${{ env.RELEASE_TAG }}
-      prerelease: ${{ steps.disttag.outputs.tag == 'next' }}
-    env:
-      # One name for "the tag being released", whichever trigger fired.
-      # Read through env rather than interpolated into `run:` bodies so a
-      # tag name can never be parsed as shell.
-      RELEASE_TAG: ${{ inputs.tag || needs.version.outputs.tag || github.ref_name }}
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          ref: ${{ inputs.tag || needs.version.outputs.tag || github.ref }}
-
+          persist-credentials: false
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: 22
+          node-version: 22.18.0
           cache: npm
-          # Required for `npm publish` (including OIDC trusted publishing)
-          # to target the public registry with the right auth setup.
-          registry-url: "https://registry.npmjs.org"
-
-      - name: Verify tag matches package.json version
-        run: |
-          PKG_VERSION="$(node -p "require('./package.json').version")"
-          if [ "v$PKG_VERSION" != "$RELEASE_TAG" ]; then
-            echo "::error::Tag $RELEASE_TAG does not match package.json (v$PKG_VERSION)"
-            exit 1
-          fi
-          echo "VERSION=$PKG_VERSION" >> "$GITHUB_ENV"
-          echo "Releasing $RELEASE_TAG (package version $PKG_VERSION)"
-
-      # WI-12A (plan §31): CHANGELOG integrity gate — RELEASE-BLOCKING.
-      # Runs before publication and before Release creation, never as a
-      # post-release audit. Validates: the released version has a dated
-      # CHANGELOG heading; gate-era (≥0.6.0) headings strictly descend;
-      # no duplicate/undated/empty sections; and when the release diff
-      # touched src/rules/**, at least one rule ID is documented (§32.5).
-      # Historical (pre-gate) entries are validated for shape only and
-      # are never rewritten.
-      - name: CHANGELOG integrity gate
-        run: |
-          PREV_TAG="$(git describe --abbrev=0 --tags "${RELEASE_TAG}^" 2>/dev/null || true)"
-          RULES_TOUCHED=0
-          if [ -n "$PREV_TAG" ]; then
-            RULES_TOUCHED="$(git diff --name-only "${PREV_TAG}..HEAD" -- src/rules/ | wc -l | tr -d ' ')"
-          fi
-          ARGS=(--expect-version "$VERSION")
-          if [ "$RULES_TOUCHED" -gt 0 ]; then ARGS+=(--rules-touched); fi
-          npx tsx scripts/check-changelog.ts "${ARGS[@]}"
-
       - run: npm ci
-
-      # The SARIF reporter hardcodes the tool version (kept honest by
-      # tests/contract/version-consistency.spec.ts). Sync it to the released
-      # package.json version here so a release can never ship with a
-      # stale driver.version — the source of truth is package.json.
-      - name: Sync SARIF driver version to package.json
-        run: node scripts/sync-sarif-version.cjs
-
-      - name: Typecheck, lint, test, coverage
+      - id: context
+        name: Validate release identity
+        shell: bash
+        env:
+          DISPATCH_DRY_RUN: ${{ inputs.dry_run }}
+          EVENT_NAME: ${{ github.event_name }}
+          REF_NAME: ${{ github.ref_name }}
+          REF_TYPE: ${{ github.ref_type }}
         run: |
-          npm run typecheck
-          npm run lint
-          npm test
-          npm run test:coverage
-
-      - run: npm run build
-
-      # R4a (plan §5/§10, plan 1789009691197): the Release Trust Verdict
-      # gate — RELEASE-BLOCKING, pre-publish, before any registry write.
-      # Runs the BUILT binary (the shipped artifact itself carries the
-      # gate) and fails the job on any non-PASS verdict. No waiver path.
+          set -euo pipefail
+          VERSION=$(node -p "require('./package.json').version")
+          PACKAGE_NAME=$(node -p "require('./package.json').name")
+          [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+-rc\.[0-9]+$ ]] || {
+            echo "::error::Release Candidate requires a package version like 2.0.3-rc.1"
+            exit 1
+          }
+          BASE_VERSION=${VERSION%%-rc.*}
+          TAG="v$VERSION"
+          if [[ "$REF_TYPE" == "tag" ]]; then
+            [[ "$REF_NAME" == "$TAG" ]] || {
+              echo "::error::Tag $REF_NAME does not match package version $VERSION"
+              exit 1
+            }
+            [[ "$(git cat-file -t "refs/tags/$TAG")" == "tag" ]] || {
+              echo "::error::$TAG must be an annotated tag"
+              exit 1
+            }
+            [[ "$(git rev-list -n 1 "$TAG")" == "$(git rev-parse HEAD)" ]] || {
+              echo "::error::$TAG does not point at the checked-out commit"
+              exit 1
+            }
+          else
+            [[ "$EVENT_NAME" == "workflow_dispatch" ]] || {
+              echo "::error::Branch releases require workflow_dispatch"
+              exit 1
+            }
+            [[ "$REF_NAME" == "release/v$BASE_VERSION" ]] || {
+              echo "::error::Use release/v$BASE_VERSION for $VERSION"
+              exit 1
+            }
+          fi
+          grep -F "## [$BASE_VERSION]" CHANGELOG.md >/dev/null || grep -F "## [$VERSION]" CHANGELOG.md >/dev/null || {
+            echo "::error::CHANGELOG.md has no $BASE_VERSION or $VERSION release heading"
+            exit 1
+          }
+          git fetch --no-tags origin main
+          git merge-base --is-ancestor origin/main HEAD || {
+            echo "::error::Release candidate is not descended from protected main"
+            exit 1
+          }
+          DRY_RUN=true
+          if [[ "$EVENT_NAME" == "workflow_dispatch" && "$DISPATCH_DRY_RUN" == "false" ]]; then
+            DRY_RUN=false
+          fi
+          {
+            echo "commit=$(git rev-parse HEAD)"
+            echo "dry_run=$DRY_RUN"
+            echo "package_name=$PACKAGE_NAME"
+            echo "tag=$TAG"
+            echo "version=$VERSION"
+          } >> "$GITHUB_OUTPUT"
+      - name: Run release certification
+        run: npm run ci-local
       - name: Release-trust gate (verdict must PASS)
+        shell: bash
         run: |
+          set -euo pipefail
           mkdir -p release-assets
           node dist/cli.mjs release-trust --json > release-assets/release-trust.json
-          node dist/cli.mjs release-trust | tee release-assets/release-trust.txt
-
-      - name: Pack distribution tarball
+          node dist/cli.mjs release-trust > release-assets/release-trust.txt
+      - id: package
+        name: Pack, audit, and fresh-install gate
+        shell: bash
+        env:
+          PACKAGE_NAME: ${{ steps.context.outputs.package_name }}
+          VERSION: ${{ steps.context.outputs.version }}
         run: |
-          mkdir -p release-assets
-          npm pack --pack-destination ./release-assets
-
-      # SC-6 (master plan §6, MR-8.B): the packed tarball is audited
-      # BEFORE any registry write — entry allowlist (shippable product
-      # code + metadata only: no tests, no maps, no machine-local dirs)
-      # and a local-path/secret content scan. This is the same file the
-      # publish step uploads: audit → publish, never pack twice.
-      - name: Pack-audit the exact tarball (SC-6)
-        run: |
-          shopt -s nullglob
-          TGZLIST=(release-assets/mjolnir-qa-*.tgz)
-          if [ "${#TGZLIST[@]}" -ne 1 ]; then
-            echo "expected exactly one packed tarball, found ${#TGZLIST[@]}" >&2
+          set -euo pipefail
+          mkdir -p "$GITHUB_WORKSPACE/release-artifact"
+          TARBALL=$(npm pack --ignore-scripts --pack-destination "$RUNNER_TEMP" | tail -n 1)
+          [[ -f "$RUNNER_TEMP/$TARBALL" ]] || {
+            echo "::error::npm pack did not produce $TARBALL"
             exit 1
-          fi
-          TARBALL="$(realpath "${TGZLIST[0]}")"
-          node scripts/pack-audit.mjs "$TARBALL"
-          echo "TARBALL=$TARBALL" >> "$GITHUB_ENV"
-
-      # Idempotency. A version already on the registry must not be a hard
-      # failure: re-running a release for an existing tag (workflow_dispatch
-      # above), or backfilling a tag for a version published earlier, is a
-      # legitimate thing to do and npm rejects a duplicate publish with
-      # E403. Skip the publish, keep the verification.
-      - name: Check whether this version is already on npm
-        id: registry
-        run: |
-          if npm view "mjolnir-qa@${VERSION}" version >/dev/null 2>&1; then
-            echo "Already on npm — publish will be skipped."
-            echo "published=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "Not on npm yet — publish will run."
-            echo "published=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      # npm publish runs only once the repo variable NPM_PUBLISH is set to
-      # "true" (Settings → Secrets and variables → Actions → Variables, or
-      # `gh variable set NPM_PUBLISH --body true`). That gate exists so a
-      # tag push cannot attempt to publish before the one-time npmjs.com
-      # OIDC trusted-publisher setup is done.
-      #
-      # Trusted publishing (no NODE_AUTH_TOKEN) requires the npmjs.com
-      # package to have a trusted publisher configured for this exact repo
-      # + workflow file. That is account-level and cannot be automated from
-      # inside this repo. Full runbook: docs/PUBLISHING.md.
-      #
-      # Node 22 ships npm 10, which does NOT support OIDC trusted publishing —
-      # it falls back to token auth (empty NODE_AUTH_TOKEN placeholder) and the
-      # publish PUT fails with a misleading "404 Not Found". OIDC needs npm
-      # >= 11.5.1. Done here, after the test gate, so the rest of the job keeps
-      # running on the toolchain-pinned npm.
-      #
-      # Pinned to the npm 11 line deliberately, NOT @latest: npm 12.0
-      # (current latest) changed `npm pack --json` from an array to an
-      # object keyed by package name, which broke the fresh-install gate
-      # below on the very first auto-release (v0.5.1, 2026-09-05 — tag
-      # cut, publish stopped by the gate, nothing shipped). The gate's
-      # parsers now tolerate both shapes, but npm 12's publish/OIDC path
-      # is unproven for this pipeline — move to 12 as a deliberate,
-      # separately-verified change, never via an implicit @latest drift.
-      - name: Upgrade npm for OIDC trusted publishing
-        if: vars.NPM_PUBLISH == 'true' && steps.registry.outputs.published != 'true'
-        run: |
-          NPM_VERSION="11.19.1"
-          NPM_TARBALL="/tmp/npm-${NPM_VERSION}.tgz"
-          export NPM_TARBALL
-          npm pack "npm@${NPM_VERSION}" --pack-destination /tmp
-          # Verify SHA-512 SRI before install (CodeRabbit security fix)
-          EXPECTED_INTEGRITY=$(npm view "npm@${NPM_VERSION}" dist.integrity)
-          export EXPECTED_INTEGRITY
-          node -e "
-            const crypto = require('crypto');
-            const fs = require('fs');
-            const expected = process.env.EXPECTED_INTEGRITY;
-            const hash = crypto.createHash('sha512');
-            hash.update(fs.readFileSync(process.env.NPM_TARBALL));
-            const actual = 'sha512-' + hash.digest('base64');
-            if (expected !== actual) {
-              console.error('Checksum mismatch: expected ' + expected + ', got ' + actual);
-              process.exit(1);
-            }
-            console.log('Checksum verified: ' + actual);
-          "
-          npm install -g "$NPM_TARBALL" --no-fund --no-audit --ignore-scripts
-          hash -r
-          npm --version | grep -Fx 11.19.1
-
-      # setup-node writes an .npmrc containing `always-auth=true` and
-      # `//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}`. With
-      # NODE_AUTH_TOKEN unset, `always-auth` still forces npm to send an
-      # (empty) token on the publish PUT instead of falling back to OIDC —
-      # the registry then answers `404 … or you do not have permission`.
-      # Replace it with a bare registry line so npm 11's OIDC trusted
-      # publishing (id-token: write) takes over.
-      - name: Neutralize token auth so OIDC is used
-        if: vars.NPM_PUBLISH == 'true' && steps.registry.outputs.published != 'true'
-        run: |
-          echo "registry=https://registry.npmjs.org/" > "${NPM_CONFIG_USERCONFIG:-$HOME/.npmrc}"
-          echo "npm $(npm --version)"
-          echo "id-token endpoint present: ${ACTIONS_ID_TOKEN_REQUEST_URL:+yes}"
-          npm config get registry
-
-      # Bare `npm publish`: npm >= 11.5.1 auto-detects the CI OIDC context and,
-      # if a matching trusted publisher is configured on npmjs.com, exchanges
-      # the id-token for a short-lived publish token and attaches provenance
-      # automatically.
-      #
-      # `ENEEDAUTH` / "OIDC token exchange error - package not found" here
-      # means the trusted-publisher config does NOT match this run's OIDC
-      # claims. Check on npmjs.com → mjolnir-qa → Settings → Publishing
-      # access: repository must be Sergey-Bar/Mjolnir, workflow must be
-      # release.yml, and the Environment field must be EMPTY.
-      # Bug-audit G5 (pre-publish install gate): the real-registry install
-      # proof used to run only in the NIGHTLY release-smoke workflow, so a
-      # tag pushed between nightlies published without a fresh-install
-      # gate. This packs the exact tarball about to be published and
-      # installs it into a clean directory (real registry dependency
-      # resolution) — the same proof release-smoke runs, now unskippable
-      # on the publish path.
-      - name: Fresh-install gate (pack → clean install → run bin)
-        if: vars.NPM_PUBLISH == 'true' && steps.registry.outputs.published != 'true'
-        env:
-          RUN_REGISTRY_INSTALL_TEST: "1"
-          REGISTRY_INSTALL_TARBALL: ${{ env.TARBALL }}
-        run: npx vitest run tests/integrations/registry-install.spec.ts
-
-      # M4: rc tags (vX.Y.Z-rc.N) publish under the `next` dist-tag and
-      # never `latest`; promotion to `latest` happens only at the final
-      # (non-prerelease) tag. Stable tags publish with no dist-tag
-      # argument — npm defaults that to `latest`.
-      - name: Determine npm dist-tag
-        id: disttag
-        run: |
-          if echo "$VERSION" | grep -Eq -- '-rc\.[0-9]+$'; then
-            echo "tag=next" >> "$GITHUB_OUTPUT"
-            echo "Prerelease $VERSION — will publish under dist-tag next"
-          else
-            echo "tag=latest" >> "$GITHUB_OUTPUT"
-            echo "Stable $VERSION — will publish under dist-tag latest"
-          fi
-
-      - name: Publish to npm (OIDC trusted publishing)
-        if: vars.NPM_PUBLISH == 'true' && steps.registry.outputs.published != 'true'
-        run: npm publish "$TARBALL" --ignore-scripts --provenance --access public --tag "${{ steps.disttag.outputs.tag }}" --loglevel verbose
-
-      # The gate that makes the GitHub Release below honest. Registry reads
-      # can lag a publish by a few seconds, so this polls rather than
-      # asserting once. If the package is not resolvable, the job fails
-      # here and no Release is created. For an rc, the poll checks the
-      # `next` dist-tag — the version must be installable from the channel
-      # it was published to, or the Release lies.
-      - name: Verify the published version is live on npm
-        if: vars.NPM_PUBLISH == 'true'
-        run: |
-          DIST_TAG="${{ steps.disttag.outputs.tag }}"
-          for attempt in 1 2 3 4 5 6; do
-            FOUND="$(npm view "mjolnir-qa@${DIST_TAG}" version 2>/dev/null || true)"
-            if [ "$FOUND" = "$VERSION" ]; then
-              echo "mjolnir-qa@${VERSION} is live on the registry under dist-tag ${DIST_TAG}."
-              exit 0
-            fi
-            echo "Not resolvable yet (attempt ${attempt}/6) — waiting 10s."
-            sleep 10
-          done
-          echo "::error::mjolnir-qa@${VERSION} is not resolvable on the registry under dist-tag ${DIST_TAG}. Refusing to create a GitHub Release for a version nobody can install."
-          exit 1
-
-      # Last, and only now: everything above proved the package is real.
-      # rc tags create a pre-release marked "Pre-release" on GitHub so it
-      # can never be mistaken for a stable announcement.
-      # Publication honesty (Constitution §6): the verdict block is
-      # appended to the Release body and the machine contract ships as an
-      # asset — a missing proof renders UNPROVEN, never omitted.
-      - name: Generate SBOM (SPDX)
-        run: node scripts/generate-sbom.mjs release-assets/sbom.spdx.json
-
-      - name: Install cosign
-        uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
-
-      - name: Sign release artifacts (keyless, OIDC)
-        env:
-          COSIGN_EXPERIMENTAL: "1"
-        run: |
-          cosign sign-blob --yes --bundle release-assets/release-trust.json.bundle release-assets/release-trust.json
-          cosign sign-blob --yes --bundle release-assets/sbom.spdx.json.bundle release-assets/sbom.spdx.json
-          for tgz in release-assets/*.tgz; do
-            cosign sign-blob --yes --bundle "${tgz}.bundle" "${tgz}"
-          done
-
-      - name: Build the release body with the verdict block
-        run: |
+          }
+          cp "$RUNNER_TEMP/$TARBALL" "$GITHUB_WORKSPACE/release-artifact/$TARBALL"
+          CHECKSUM=$(sha256sum "$GITHUB_WORKSPACE/release-artifact/$TARBALL" | cut -d ' ' -f 1)
+          printf '%s  %s\n' "$CHECKSUM" "$TARBALL" > "$GITHUB_WORKSPACE/release-artifact/$TARBALL.sha256"
+          node scripts/pack-audit.mjs "$GITHUB_WORKSPACE/release-artifact/$TARBALL"
+          SMOKE_DIR=$(mktemp -d)
+          npm install --prefix "$SMOKE_DIR" --ignore-scripts --no-audit --no-fund "$GITHUB_WORKSPACE/release-artifact/$TARBALL"
+          test "$(node "$SMOKE_DIR/node_modules/mjolnir-qa/dist/cli.mjs" --version)" = "$VERSION"
+          rm -rf "$SMOKE_DIR"
           {
-            echo "Install: \`npx mjolnir-qa@${VERSION} .\`"
-            echo "Full changelog is auto-generated below from all commits and PRs since the previous release."
-            echo ""
-            echo '```text'
-            cat release-assets/release-trust.txt
-            echo '```'
-          } > release-body.md
-
-      - name: Create GitHub Release with generated notes
-        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
+            echo "artifact_name=release-candidate-$VERSION"
+            echo "checksum=$CHECKSUM"
+            echo "tarball=$TARBALL"
+          } >> "$GITHUB_OUTPUT"
+          test "$TARBALL" = "mjolnir-qa-$VERSION.tgz"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          tag_name: ${{ env.RELEASE_TAG }}
-          generate_release_notes: true
-          prerelease: ${{ steps.disttag.outputs.tag == 'next' }}
-          files: |
-            release-assets/*.tgz
-            release-assets/release-trust.json
-            release-assets/sbom.spdx.json
-            release-assets/*.bundle
-          body_path: release-body.md
+          name: ${{ steps.package.outputs.artifact_name }}
+          path: |
+            release-artifact/
+            release-assets/
+          if-no-files-found: error
+          retention-days: 14
 
-  # ── Job 3: action-tags — keep the action's major moving tag honest ──
-  # The root action.yml (P1.1) is consumed as `uses: Sergey-Bar/Mjolnir@v1`.
-  # A major moving tag must advance on every STABLE release so consumers
-  # pinned to `v1` receive updates, and must NOT move for rc tags (an rc
-  # must never become what `@v1` resolves to — the same ruling as npm's
-  # `next` dist-tag). rc releases skip this job; the tag stays where the
-  # last stable release put it.
-  action-tags:
-    name: Maintain the v1 major moving tag
-    needs: release
+  tag:
+    needs: verify
+    if: needs.verify.outputs.dry-run == 'false' && vars.NPM_PUBLISH == 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 5
-    if: >-
-      always() && !cancelled() && needs.release.result == 'success' &&
-      needs.release.outputs.prerelease != 'true'
+    timeout-minutes: 10
+    environment: release-candidate
     permissions:
       contents: write
-    env:
-      RELEASE_TAG: ${{ needs.release.outputs.tag }}
+    outputs:
+      commit: ${{ steps.identity.outputs.commit || steps.verify.outputs.commit }}
+      tag: ${{ steps.identity.outputs.tag || steps.verify.outputs.tag }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ env.RELEASE_TAG }}
           fetch-depth: 0
-      - name: Move the v1 tag to this release (never force-push another major)
+          persist-credentials: true
+      - id: verify
+        name: Verify existing tag
+        if: github.ref_type == 'tag'
+        shell: bash
         env:
-          RELEASE_TAG: ${{ env.RELEASE_TAG }}
+          EXPECTED_COMMIT: ${{ needs.verify.outputs.commit }}
+          EXPECTED_TAG: ${{ needs.verify.outputs.tag }}
         run: |
-          MAJOR="$(echo "$RELEASE_TAG" | sed -E 's/^v([0-9]+)\..*/\1/')"
-          MOVING_TAG="v${MAJOR}"
-          echo "Stable release $RELEASE_TAG — moving $MOVING_TAG to it."
-          git tag -f "$MOVING_TAG" "$RELEASE_TAG"
-          git push origin "refs/tags/$MOVING_TAG" --force
-          echo "$MOVING_TAG now resolves to $RELEASE_TAG."
-          echo "::notice::Action consumers pinned to $MOVING_TAG now run $RELEASE_TAG."
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = "$EXPECTED_TAG"
+          test "$(git cat-file -t "refs/tags/$EXPECTED_TAG")" = tag
+          test "$(git rev-list -n 1 "$EXPECTED_TAG")" = "$EXPECTED_COMMIT"
+          {
+            echo "commit=$EXPECTED_COMMIT"
+            echo "tag=$EXPECTED_TAG"
+          } >> "$GITHUB_OUTPUT"
+      - id: identity
+        name: Create immutable candidate tag
+        if: github.ref_type == 'branch'
+        shell: bash
+        env:
+          EXPECTED_COMMIT: ${{ needs.verify.outputs.commit }}
+          TAG: ${{ needs.verify.outputs.tag }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_COMMIT"
+          if git rev-parse "refs/tags/$TAG" >/dev/null 2>&1; then
+            test "$(git rev-list -n 1 "$TAG")" = "$EXPECTED_COMMIT"
+          else
+            git tag -a "$TAG" -m "$TAG" "$EXPECTED_COMMIT"
+            git push origin "refs/tags/$TAG"
+          fi
+          {
+            echo "commit=$EXPECTED_COMMIT"
+            echo "tag=$TAG"
+          } >> "$GITHUB_OUTPUT"
+
+  publish-npm:
+    needs:
+      - verify
+      - tag
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: npm-publish
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      NPM_CONFIG_USERCONFIG: /dev/null
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.tag.outputs.tag }}
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22.18.0
+          registry-url: https://registry.npmjs.org
+      - name: Upgrade npm for OIDC trusted publishing
+        run: npm install --global npm@11.5.1
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: ${{ needs.verify.outputs.artifact-name }}
+          path: .
+      - name: Verify downloaded artifact
+        shell: bash
+        env:
+          CHECKSUM: ${{ needs.verify.outputs.checksum }}
+          EXPECTED_COMMIT: ${{ needs.verify.outputs.commit }}
+          TARBALL: ${{ needs.verify.outputs.tarball }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_COMMIT"
+          test "$(sha256sum "release-artifact/$TARBALL" | cut -d ' ' -f 1)" = "$CHECKSUM"
+      - id: registry
+        name: Check npm registry
+        shell: bash
+        env:
+          PACKAGE_NAME: ${{ needs.verify.outputs.package-name }}
+          VERSION: ${{ needs.verify.outputs.version }}
+        run: |
+          if npm view "$PACKAGE_NAME@$VERSION" version >/dev/null 2>&1; then
+            echo "published=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "published=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Publish with trusted provenance
+        if: steps.registry.outputs.published == 'false'
+        shell: bash
+        env:
+          TARBALL: ${{ needs.verify.outputs.tarball }}
+        run: npm publish "release-artifact/$TARBALL" --tag next --provenance --ignore-scripts --access public
+      - name: Verify the published version is live on npm
+        shell: bash
+        env:
+          PACKAGE_NAME: ${{ needs.verify.outputs.package-name }}
+          VERSION: ${{ needs.verify.outputs.version }}
+        run: |
+          set -euo pipefail
+          for attempt in {1..12}; do
+            if npm view "$PACKAGE_NAME@$VERSION" version; then
+              exit 0
+            fi
+            echo "npm registry read $attempt/12 did not resolve $PACKAGE_NAME@$VERSION"
+            sleep 5
+          done
+          echo "::error::$PACKAGE_NAME@$VERSION did not become visible on npm"
+          exit 1
+      - name: Verify and repair the next dist-tag
+        shell: bash
+        env:
+          PACKAGE_NAME: ${{ needs.verify.outputs.package-name }}
+          VERSION: ${{ needs.verify.outputs.version }}
+        run: |
+          set -euo pipefail
+          NEXT=$(npm view "$PACKAGE_NAME" dist-tags.next || true)
+          if [ "$NEXT" != "$VERSION" ]; then
+            npm dist-tag add "$PACKAGE_NAME@$VERSION" next
+          fi
+          test "$(npm view "$PACKAGE_NAME" dist-tags.next)" = "$VERSION"
+          test "$(npm view "$PACKAGE_NAME" dist-tags.latest || true)" != "$VERSION"
+
+  github-release:
+    needs:
+      - verify
+      - tag
+      - publish-npm
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.tag.outputs.tag }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: ${{ needs.verify.outputs.artifact-name }}
+          path: .
+      - name: Reconcile immutable GitHub Release
+        shell: bash
+        env:
+          CHECKSUM: ${{ needs.verify.outputs.checksum }}
+          EXPECTED_COMMIT: ${{ needs.verify.outputs.commit }}
+          GH_REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.tag.outputs.tag }}
+          TARBALL: ${{ needs.verify.outputs.tarball }}
+        run: |
+          set -euo pipefail
+          test "$(git cat-file -t "refs/tags/$TAG")" = tag
+          test "$(git rev-list -n 1 "$TAG")" = "$EXPECTED_COMMIT"
+          test "$(sha256sum "release-artifact/$TARBALL" | cut -d ' ' -f 1)" = "$CHECKSUM"
+          {
+            echo "## Release verification"
+            echo
+            echo '```json'
+            cat release-assets/release-trust.json
+            echo '```'
+          } > release-notes.md
+          if RELEASE_ASSETS=$(gh release view "$TAG" --json assets --jq '.assets[].name'); then
+            gh release edit "$TAG" \
+              --verify-tag --prerelease --title "$TAG" --notes-file release-notes.md
+            TEMP_DIR=$(mktemp -d)
+            trap 'rm -rf "$TEMP_DIR"' EXIT
+            MISSING_ASSETS=()
+            for ASSET in "release-artifact/$TARBALL" release-assets/release-trust.json; do
+              NAME=${ASSET##*/}
+              if grep -Fxq "$NAME" <<<"$RELEASE_ASSETS"; then
+                gh release download "$TAG" --pattern "$NAME" --dir "$TEMP_DIR"
+                cmp -- "$ASSET" "$TEMP_DIR/$NAME"
+              else
+                MISSING_ASSETS+=("$ASSET")
+              fi
+            done
+            if ((${#MISSING_ASSETS[@]} > 0)); then
+              gh release upload "$TAG" "${MISSING_ASSETS[@]}"
+            fi
+          else
+            gh release create "$TAG" \
+              "release-artifact/$TARBALL#$TARBALL" \
+              "release-assets/release-trust.json#release-trust.json" \
+              --verify-tag --prerelease --title "$TAG" --notes-file release-notes.md
+          fi

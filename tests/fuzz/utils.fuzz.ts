@@ -3,6 +3,8 @@ import * as fc from "fast-check";
 import { parseJsonFile, isRecord } from "../../src/lib/safe-json.js";
 import { pct } from "../../src/lib/format.js";
 
+const FUZZ_SEED = 1789486902;
+
 describe("utility fuzz", () => {
   describe("safe-json — property-based", () => {
     it("parseJsonFile never throws on valid JSON with isRecord predicate", () => {
@@ -20,7 +22,7 @@ describe("utility fuzz", () => {
             );
           }
         }),
-        { numRuns: 500 },
+        { seed: FUZZ_SEED, numRuns: 500 },
       );
     });
 
@@ -38,7 +40,7 @@ describe("utility fuzz", () => {
             expect(isRecord(v)).toBe(false);
           },
         ),
-        { numRuns: 200 },
+        { seed: FUZZ_SEED, numRuns: 200 },
       );
     });
   });
@@ -49,7 +51,7 @@ describe("utility fuzz", () => {
         fc.property(fc.double(), (v) => {
           expect(pct(v)).toMatch(/%$/);
         }),
-        { numRuns: 200 },
+        { seed: FUZZ_SEED, numRuns: 200 },
       );
     });
 
@@ -61,7 +63,7 @@ describe("utility fuzz", () => {
           expect(num).toBeGreaterThanOrEqual(0);
           expect(num).toBeLessThanOrEqual(100);
         }),
-        { numRuns: 200 },
+        { seed: FUZZ_SEED, numRuns: 200 },
       );
     });
   });

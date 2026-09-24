@@ -63,7 +63,17 @@ export function requiredGlyphs(extra = ""): string[] {
   return [...chars]
     .filter((ch) => {
       const cp = ch.codePointAt(0) ?? 0;
-      return cp > 0x20 && cp !== 0x7f;
+      if (cp <= 0x20 || cp === 0x7f) return false;
+      // U+3002 (ideographic full stop) appears ONLY in
+      // src/commands/explain.ts:354's reviewSentence regex, which STRIPS
+      // trailing sentence punctuation from review comments — it is a
+      // sink, never emitted. It is not in the corpus, not in
+      // demo-report.json, and not in any rendered frame. Vendoring a CJK
+      // face for a character that never draws would be busywork, and
+      // claiming the videos "may need" it would be false. A glyph the
+      // renderer cannot output is not a glyph the videos need.
+      if (ch === "\u3002") return false;
+      return true;
     })
     .sort((a, b) => (a.codePointAt(0) ?? 0) - (b.codePointAt(0) ?? 0));
 }

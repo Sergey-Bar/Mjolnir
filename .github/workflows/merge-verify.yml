@@ -15,10 +15,10 @@ name: Merge Verify
 # notices — the two must stay in lockstep or "green" means different
 # things in different places.
 #
-# Branch protection on main requires this job plus CI, Mjölnir,
-# certification and generated-docs-drift to pass before merging, and
-# "Require up-to-date branches" so a PR cannot merge while its base is
-# stale.
+# Repository ruleset 01 requires the complete PR matrix, property/fuzz,
+# site, workflow-lint, self-scan, certification, detector-revision, and
+# generated-docs checks before merge. This post-merge job independently
+# reruns the landed merge result and requires an up-to-date branch.
 
 on:
   push:
@@ -53,11 +53,17 @@ jobs:
       - run: npm run brand:doctor:selftest
       - run: npm run brand:fonts:check
       - name: npm audit (supply-chain gate)
-        run: npm audit --audit-level=moderate
-      - name: Run test suite
-        run: npm test
+        run: npm run audit:ci
+      - name: Run instrumented test coverage
+        run: npm run test:coverage:ci
       - name: Enforce coverage ratchet
         run: npm run coverage:ratchet
+      - name: Property tests
+        run: npm run test:property
+      - name: Fuzz tests
+        run: npm run test:fuzz
+      - name: Site doctor
+        run: npm run site:doctor
       - name: Self-scan (dogfood gate — zero NEW error-severity findings)
         run: node dist/cli.mjs . --json > merge-verify-scan.json
       - name: Self-scan honesty gate

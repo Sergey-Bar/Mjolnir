@@ -7,16 +7,16 @@ contract enforces: **every external import in src/ must belong to the
 allowlist**, and the shipped surface (adapters, rules, flags, formats, exit
 codes) must match this document exactly.
 
-## Inventory: 288 files, 55794 LOC
+## Inventory: 299 files, 59557 LOC
 
 | Area             | Files | LOC   |
 | ---------------- | ----- | ----- |
+| src/commands     | 44    | 12769 |
 | src/rules        | 87    | 11695 |
-| src/commands     | 42    | 11531 |
-| src/engine       | 36    | 8623  |
-| src/reporter     | 15    | 3168  |
+| src/engine       | 45    | 11013 |
+| src/reporter     | 15    | 3308  |
 | src/forensics    | 17    | 3063  |
-| src/(root)       | 6     | 2777  |
+| src/(root)       | 6     | 2772  |
 | src/adapters     | 11    | 1677  |
 | src/discovery    | 10    | 1643  |
 | src/integrations | 11    | 1539  |
@@ -42,19 +42,19 @@ codes) must match this document exactly.
 
 | Module                              | Importers |
 | ----------------------------------- | --------- |
-| src/types                           | 126       |
+| src/types                           | 132       |
 | src/rules/rule                      | 81        |
 | src/rules/shared/positions          | 62        |
 | src/reporter/ui                     | 26        |
-| src/cli-io                          | 19        |
+| src/cli-io                          | 20        |
 | src/forensics/types                 | 19        |
-| src/exit-codes                      | 15        |
+| src/exit-codes                      | 16        |
 | src/engine/adapter                  | 14        |
 | src/rules/index                     | 12        |
-| src/engine/scan-pipeline            | 11        |
+| src/engine/scan-pipeline            | 12        |
+| src/discovery/ignores               | 10        |
 | src/engine/ts-ast                   | 10        |
 | src/rules/measured-fp.generated     | 10        |
-| src/discovery/ignores               | 9         |
 | src/discovery/azure-pipeline-parser | 8         |
 | src/engine/code-text                | 8         |
 
@@ -62,16 +62,17 @@ codes) must match this document exactly.
 
 | Dependency         | Files importing it |
 | ------------------ | ------------------ |
-| node:fs            | 66                 |
-| node:path          | 60                 |
+| node:fs            | 68                 |
+| node:path          | 63                 |
 | node:crypto        | 14                 |
 | ts-morph           | 7                  |
 | node:child_process | 5                  |
 | node:url           | 4                  |
+| node:os            | 3                  |
 | web-tree-sitter    | 3                  |
 | yaml               | 2                  |
-| node:os            | 2                  |
 | node:process       | 2                  |
+| node:util          | 1                  |
 | node:zlib          | 1                  |
 | node:buffer        | 1                  |
 | node:readline      | 1                  |

@@ -122,40 +122,8 @@ jobs:
       # Bug-audit G11: moderate advisories are ignored at `high` — a
       # steady drip of moderate-severity vulns is how a real supply-chain
       # issue goes unnoticed between high ones.
-      # M3: retry-once for registry 503s (infra flake class, commit
-      # e4f4b98: windows npm audit hit a registry 503 with all 5118
-      # tests passing). The first attempt is soft; the retry gates —
-      # two consecutive registry failures still fail the job — and any
-      # retry is recorded in the summary so the flake rate stays
-      # visible.
-      - name: npm audit (first attempt)
-        id: audit
-        run: npm audit --audit-level=moderate
-        continue-on-error: true
-      - name: npm audit (retry once)
-        if: steps.audit.outcome == 'failure'
-        env:
-          AUDIT_FIRST_OUTCOME: ${{ steps.audit.outcome }}
-        run: |
-          set +e
-          npm audit --audit-level=moderate 2>&1 | tee npm-audit-retry.log
-          audit_status=${PIPESTATUS[0]}
-          set -e
-          if [ "$audit_status" -eq 0 ]; then
-            echo "npm audit: first attempt failed, retry passed (registry flake?)" >> "$GITHUB_STEP_SUMMARY"
-          else
-            if grep -Eiq '503 Service Unavailable|currently performing maintenance|audit endpoint returned an error|EAI_AGAIN|ETIMEDOUT|ECONNRESET|ENOTFOUND|fetch failed' npm-audit-retry.log; then
-              echo "::warning::npm audit unavailable after retry; treating registry outage as infrastructure noise, not a vulnerability gate failure"
-              echo "npm audit: retry failed because the npm audit service was unavailable" >> "$GITHUB_STEP_SUMMARY"
-              exit 0
-            fi
-            echo "npm audit: first attempt AND retry failed with an actionable audit result" >> "$GITHUB_STEP_SUMMARY"
-            exit 1
-          fi
-      - name: Record audit result in job summary
-        if: steps.audit.outcome == 'success'
-        run: >
-          echo "npm audit: first attempt ok" >> "$GITHUB_STEP_SUMMARY"
+      - name: npm audit
+        run: npm run audit:ci
       # Bug-audit G6: headroom must be measurable — the four percentages
       # go into the job summary (and coverage/ is uploaded below) so the
       # ratchet floors can be re-raised against measured numbers. Coverage
@@ -172,9 +140,7 @@ jobs:
         # scale-benchmark stays IN: its in-process 3k-file runScan is a
         # major coverage contributor and its own per-test timeouts
         # already give it real headroom.
-        run: >-
-          npx vitest run --coverage --no-file-parallelism
-          --testTimeout=120000 --hookTimeout=120000
+        run: npm run test:coverage:ci
       - name: Enforce coverage ratchet
         if: matrix.os == 'ubuntu-latest' && matrix.node == 22
         run: npm run coverage:ratchet
@@ -202,6 +168,18 @@ jobs:
           if (minutes > budget) line += " — OVER BUDGET (warning; hard gate only after 2 weeks of measured data, M3)";
           fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, line + "\n");
           '
+
+  property-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22.18.0
+          cache: npm
+      - run: npm ci
+      - run: npm run test:property
 
   # Workflow-lint coverage (Beta-to-Stable M4): actionlint, version-pinned
   # so its ruleset is part of the audited supply chain like every other
@@ -238,8 +216,7 @@ jobs:
         working-directory: site
         run: npm run build
       - name: Site doctor
-        working-directory: site
-        run: npm run doctor
+        run: npm run site:doctor
 
   workflow-lint:
     runs-on: ubuntu-latest

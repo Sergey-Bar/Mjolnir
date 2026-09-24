@@ -12,8 +12,8 @@
  *    template tests enforce — audit S-3);
  *  - no `${{ github.event… }}` interpolation inside `run:` bodies
  *    (audit S-5 — event data reaches the shell through env only);
- *  - a partial scan can never block: exit 2 downgrades to a warning
- *    (the frozen exit-code contract, README "Exit codes");
+ *  - partial scans warn by default and can require a complete scan only
+ *    through an explicit opt-in;
  *  - the ci-install action template agrees with the real action: the
  *    inputs it sets exist in action.yml and its gate level maps to a
  *    real fail-on value — the two surfaces ship one contract.
@@ -29,6 +29,7 @@ import {
   ACTION_REF,
 } from "../../src/integrations/ci-install.js";
 import type { GateLevel } from "../../src/integrations/ci-install.js";
+import { ENGINE_VERSION } from "../../src/engine/version.js";
 
 const ROOT = join(import.meta.dirname, "..", "..");
 const ACTION = readFileSync(join(ROOT, "action.yml"), "utf8");
@@ -69,6 +70,24 @@ describe("root action.yml (Marketplace surface) is locked", () => {
     expect(action.branding?.icon).toBeTruthy();
     expect(action.name).toContain("Mjölnir");
     expect(action.description.length).toBeGreaterThan(40);
+  });
+
+  it("defaults to the package's exact supported Node floor", () => {
+    const pkg = JSON.parse(
+      readFileSync(join(ROOT, "package.json"), "utf8"),
+    ) as { engines: { node: string } };
+    expect(action.inputs["node-version"]?.default).toBe(
+      pkg.engines.node.replace(/^>=/, ""),
+    );
+  });
+
+  it("defaults to error findings and non-blocking partial scans", () => {
+    expect(action.inputs["fail-on"]?.default).toBe("error");
+    expect(action.inputs["fail-on-partial"]?.default).toBe("false");
+  });
+
+  it("defaults to the exact released package version", () => {
+    expect(action.inputs["version"]?.default).toBe(ENGINE_VERSION);
   });
 
   it("declares the documented inputs", () => {

@@ -204,7 +204,9 @@ describe("terminal reporter ranking and label arms", () => {
       testDeclarationCount: 5,
       testFileCount: 1,
     });
-    expect(nextAction(withDeclarations)).toContain("nothing to triage");
+    expect(nextAction(withDeclarations)).toContain(
+      "no findings on the analyzed surface",
+    );
     const withRisk = bareResult({
       testDeclarationCount: 5,
       testFileCount: 1,

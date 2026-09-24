@@ -369,7 +369,8 @@ describe("debt register", () => {
     expect(text).toContain("TOTAL ESTIMATED DRAG");
   });
 
-  it("clean suite renders honest clean state", () => {
-    expect(renderDebt(fakeScan())).toContain("the suite is clean");
+  it("empty debt register does not claim the suite is clean", () => {
+    expect(renderDebt(fakeScan())).toContain("No tracked debt classes found");
+    expect(renderDebt(fakeScan())).not.toContain("suite is clean");
   });
 });

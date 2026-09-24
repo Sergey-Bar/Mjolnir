@@ -34,8 +34,8 @@ every stable release (rc tags never move it — the same ruling as npm's
 The scan itself always runs the **published npm package**
 (`npx mjolnir-qa@<version>`), never a build of this repo — the action
 works for consumers, not contributors. Pin the tool exactly in your
-workflow (`with: version: 2.0.2`) when gate reproducibility matters;
-`version: latest` follows the registry.
+workflow (`with: version: 2.0.2`); the Action also defaults to the current
+released version. Do not use `version: latest` in an enforcing gate.
 
 ## GitHub Actions Marketplace (P1.5)
 

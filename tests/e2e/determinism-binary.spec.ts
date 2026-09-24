@@ -9,25 +9,10 @@ import { existsSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
+import { normalizeCliJson } from "../../scripts/lib/normalize-cli-json.mjs";
+
 const ROOT = resolve(import.meta.dirname, "..", "..");
 const DIST = join(ROOT, "dist", "cli.mjs");
-
-function normalize(json: string): string {
-  const r = JSON.parse(json) as Record<string, unknown>;
-  const status = r.analysisStatus as Record<string, unknown> | undefined;
-  if (status) delete status.durationMs;
-  // The machine contract (§12) embeds durationMs in its completeness
-  // projection — same wall-clock exclusion as above.
-  const contract = r.contract as Record<string, unknown> | undefined;
-  if (
-    contract &&
-    typeof contract.completeness === "object" &&
-    contract.completeness !== null
-  ) {
-    delete (contract.completeness as Record<string, unknown>).durationMs;
-  }
-  return JSON.stringify(r);
-}
 
 function scanDemo(): { stdout: string; status: number } {
   if (!existsSync(DIST)) {
@@ -55,7 +40,7 @@ describe("determinism of the built binary (Phase 2 #7)", () => {
       const b = scanDemo();
       expect(a.status).toBe(1);
       expect(b.status).toBe(1);
-      expect(normalize(a.stdout)).toBe(normalize(b.stdout));
+      expect(normalizeCliJson(a.stdout)).toBe(normalizeCliJson(b.stdout));
     },
   );
 
@@ -63,9 +48,9 @@ describe("determinism of the built binary (Phase 2 #7)", () => {
     "three consecutive runs match the first run's signature",
     { timeout: 90_000 },
     () => {
-      const first = normalize(scanDemo().stdout);
+      const first = normalizeCliJson(scanDemo().stdout);
       for (let i = 0; i < 2; i++) {
-        expect(normalize(scanDemo().stdout)).toBe(first);
+        expect(normalizeCliJson(scanDemo().stdout)).toBe(first);
       }
     },
   );

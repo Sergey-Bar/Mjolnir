@@ -83,7 +83,7 @@ export function renderDebt(result: ScanResult): string {
   lines.push(sectionHeader("TEST DEBT REGISTER", ui));
   lines.push("");
   if (classes.length === 0) {
-    lines.push("No tracked debt classes found — the suite is clean.");
+    lines.push("No tracked debt classes found in the current register.");
     return lines.join("\n");
   }
   const rows: string[] = ["DEBT CLASS", ""];

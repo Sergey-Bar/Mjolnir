@@ -1,20 +1,15 @@
 #!/usr/bin/env sh
 
-echo ""
-echo "  CI LOCAL CHECKS — running before push..."
-echo "  (skip with: git push --no-verify)"
-echo ""
-
-npm run ci-local
-
-if [ $? -ne 0 ]; then
-  echo ""
-  echo "  CI LOCAL CHECKS FAILED — fix the issues above before pushing."
-  echo "  Or skip with: git push --no-verify"
-  echo ""
-  exit 1
-fi
+set -e
 
 echo ""
-echo "  CI LOCAL CHECKS PASSED — safe to push."
+echo "  PRE-PUSH CHECKS — typecheck, lint, and CI/local parity..."
+echo ""
+
+npm run typecheck
+npm run lint
+npm run ci-local:parity
+
+echo ""
+echo "  PRE-PUSH CHECKS PASSED — safe to push."
 echo ""

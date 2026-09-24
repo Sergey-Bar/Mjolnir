@@ -5,6 +5,8 @@ import {
   looksLikeStrykerJson,
 } from "../../src/mutation/parse-stryker.js";
 
+const FUZZ_SEED = 1789486903;
+
 describe("parsers fuzz", () => {
   describe("Stryker JSON parser — property-based", () => {
     it("never throws on arbitrary JSON-shaped input", () => {
@@ -12,7 +14,7 @@ describe("parsers fuzz", () => {
         fc.property(fc.jsonValue(), (json) => {
           expect(() => parseStrykerJson(json)).not.toThrow();
         }),
-        { numRuns: 500 },
+        { seed: FUZZ_SEED, numRuns: 500 },
       );
     });
 
@@ -22,7 +24,7 @@ describe("parsers fuzz", () => {
           const result = parseStrykerJson(json);
           expect(result.tool).toBe("stryker");
         }),
-        { numRuns: 200 },
+        { seed: FUZZ_SEED, numRuns: 200 },
       );
     });
 
@@ -89,7 +91,7 @@ describe("parsers fuzz", () => {
             }
           },
         ),
-        { numRuns: 300 },
+        { seed: FUZZ_SEED, numRuns: 300 },
       );
     });
 
@@ -101,7 +103,7 @@ describe("parsers fuzz", () => {
           expect(result.killed).toBeGreaterThanOrEqual(0);
           expect(result.survived.length).toBeGreaterThanOrEqual(0);
         }),
-        { numRuns: 200 },
+        { seed: FUZZ_SEED, numRuns: 200 },
       );
     });
 
@@ -113,7 +115,7 @@ describe("parsers fuzz", () => {
             expect(() => parseStrykerJson(json)).not.toThrow();
           }
         }),
-        { numRuns: 200 },
+        { seed: FUZZ_SEED, numRuns: 200 },
       );
     });
   });

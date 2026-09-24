@@ -219,7 +219,7 @@ describe("renderSuppressions", () => {
   it("renders empty state", () => {
     expect(
       renderSuppressions({ total: 0, active: 0, expired: 0, entries: [] }),
-    ).toMatch(/No suppressed findings/);
+    ).toMatch(/No configured suppression entries/);
   });
 
   it("renders governance header and entries with status glyphs", () => {
@@ -238,7 +238,7 @@ describe("renderSuppressions", () => {
       ],
     });
     expect(out).toContain("QUALITY GOVERNANCE");
-    expect(out).toContain("Suppressed findings: 2");
+    expect(out).toContain("Configured entries:    2");
     expect(out).toContain("● QA-A — why (expires 2027-01-01)");
     expect(out).toContain("○ QA-B — old");
   });

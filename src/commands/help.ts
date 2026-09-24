@@ -26,7 +26,7 @@ export const HELP_ENTRIES: HelpEntry[] = [
   {
     verb: "ci install",
     summary:
-      "generate the PR workflow (action-based by default; scan + annotations + gate)",
+      "generate the PR workflow (advisory by default; action-based; scan + annotations + gate)",
     usage:
       "mjolnir ci install [--gate advisory|error|warning] [--no-action] [--force]",
     examples: [
@@ -200,6 +200,75 @@ export const HELP_ENTRIES: HelpEntry[] = [
     examples: ["mjolnir suppressions"],
   },
   {
+    verb: "ci-integrity",
+    summary: "verify CI workflow integrity and suppression governance",
+    usage: "mjolnir ci-integrity [path] [--policy <file>] [--json]",
+    examples: [
+      "mjolnir ci-integrity",
+      "mjolnir ci-integrity . --policy mjolnir.policy.json --json",
+    ],
+    next: "mjolnir suppressions",
+  },
+  {
+    verb: "framework-maturity",
+    summary: "track framework maturity levels, especially Playwright F4→F5",
+    usage: "mjolnir framework-maturity [--framework <name>] [--json]",
+    examples: [
+      "mjolnir framework-maturity",
+      "mjolnir framework-maturity --framework playwright",
+    ],
+    next: "mjolnir ci-integrity",
+  },
+  {
+    verb: "suppression-gate",
+    summary: "enforce suppression policy governance gate",
+    usage: "mjolnir suppression-gate [path] [--policy <file>] [--json]",
+    examples: [
+      "mjolnir suppression-gate",
+      "mjolnir suppression-gate . --policy mjolnir.policy.json",
+    ],
+    next: "mjolnir framework-maturity",
+  },
+  {
+    verb: "cross-file",
+    summary:
+      "analyze cross-file signals: duplicates, shared imports, circular deps",
+    usage: "mjolnir cross-file [path] [--json]",
+    examples: ["mjolnir cross-file", "mjolnir cross-file . --json"],
+    next: "mjolnir suppression-gate",
+  },
+  {
+    verb: "contract-verify",
+    summary: "verify machine contract integrity against scan results",
+    usage: "mjolnir contract-verify [path] [--contract <scan-json>] [--json]",
+    examples: [
+      "mjolnir contract-verify",
+      "mjolnir contract-verify . --contract scan.json --json",
+    ],
+    next: "mjolnir cross-file",
+  },
+  {
+    verb: "trust-trend",
+    summary: "track historical trust trends and detect regressions",
+    usage:
+      "mjolnir trust-trend [path] [--history <file>] [--recorded-at <iso>] [--json]",
+    examples: [
+      "mjolnir trust-trend",
+      "mjolnir trust-trend . --history .mjolnir/trust-history.json --json",
+    ],
+    next: "mjolnir contract-verify",
+  },
+  {
+    verb: "evidence-graph",
+    summary: "build and query the verification evidence graph",
+    usage: "mjolnir evidence-graph [path] [--file <path>|--rule <id>] [--json]",
+    examples: [
+      "mjolnir evidence-graph",
+      "mjolnir evidence-graph . --rule QA-TEST-001 --json",
+    ],
+    next: "mjolnir trust-trend",
+  },
+  {
     verb: "create-rule",
     summary: "scaffold a new rule + fixtures (must-fire, must-not-fire)",
     usage: 'mjolnir create-rule <QA-XXX-nnn> --title "Rule title"',
@@ -227,7 +296,7 @@ export const HELP_ENTRIES: HelpEntry[] = [
   {
     verb: "mcp",
     summary:
-      "run as an MCP server over stdio (scan / explain / diff / verify tools)",
+      "run as a read-only MCP server over stdio (scan / explain / diff / verify / forensics / triage / pw-report)",
     usage: "mjolnir mcp",
     examples: ["mjolnir mcp"],
   },
@@ -346,6 +415,7 @@ const GROUPS: Array<{ title: string; verbs: string[] }> = [
       "baseline",
       "diff",
       "verify",
+      "ci-integrity",
     ],
   },
   {
@@ -368,6 +438,12 @@ const GROUPS: Array<{ title: string; verbs: string[] }> = [
       "doctor",
       "release-trust",
       "create-rule",
+      "cross-file",
+      "contract-verify",
+      "trust-trend",
+      "evidence-graph",
+      "framework-maturity",
+      "suppression-gate",
     ],
   },
   {

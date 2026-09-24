@@ -1,10 +1,10 @@
 # GitLab CI Integration
 
-Product-gap-remediation master plan P3a (plan 1788853205786 — flag 2,
-decision 2: GitLab is the in-plan second platform; Jenkins/Azure stay on
-the roadmap, explicitly deferred). The Mjölnir contract on GitLab is the
-same as everywhere: **measure, report, gate on findings — never block on
-a scan that did not finish.**
+GitLab is the second supported CI execution and reporting surface. Mjölnir can
+emit Code Quality artifacts, generate a GitLab pipeline, and verify GitLab job
+scripts through `ci-integrity`. The F0 framework-inventory row remains about
+semantic analysis of GitLab workflow content, which is still deferred; this
+document does not claim that analysis support.
 
 ## The report: `--format codequality`
 

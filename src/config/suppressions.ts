@@ -46,13 +46,13 @@ export function loadSuppressions(root: string): SuppressionReport {
 
 export function renderSuppressions(report: SuppressionReport): string {
   if (report.total === 0) {
-    return "\nNo suppressed findings. Full transparency maintained.\n";
+    return "\nNo configured suppression entries.\n";
   }
   const lines = [
     "",
     sectionHeader("QUALITY GOVERNANCE", ui),
     "",
-    `Suppressed findings: ${report.total}`,
+    `Configured entries:    ${report.total}`,
     `Active:              ${report.active}`,
     `Expired:             ${report.expired}`,
     "",

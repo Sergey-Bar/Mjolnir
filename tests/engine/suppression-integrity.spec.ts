@@ -58,8 +58,37 @@ describe("suppressionFingerprint", () => {
 });
 
 describe("detectMassSuppression", () => {
+  it("counts matched findings rather than configured glob entries", () => {
+    const entries = [
+      entry({
+        files: [
+          "tests/**/*.spec.ts",
+          "e2e/**/*.spec.ts",
+          "packages/*/tests/**/*.spec.ts",
+        ],
+      }),
+    ];
+    const findings = [
+      { ruleId: "QA-TEST-001", file: "tests/a.spec.ts" },
+      { ruleId: "QA-TEST-001", file: "tests/nested/b.spec.ts" },
+    ];
+
+    const result = detectMassSuppression(entries, findings);
+
+    expect(result.suppressedCount).toBe(2);
+    expect(result.totalFindings).toBe(2);
+    expect(result.ratio).toBe(1);
+  });
+
   it("returns false when below threshold", () => {
-    const result = detectMassSuppression([entry()], 100);
+    const findings = [
+      { ruleId: "QA-TEST-001", file: "tests/shop.spec.ts" },
+      ...Array.from({ length: 99 }, (_, i) => ({
+        ruleId: "OTHER",
+        file: `tests/other-${i}.spec.ts`,
+      })),
+    ];
+    const result = detectMassSuppression([entry()], findings);
     expect(result.isMassSuppression).toBe(false);
     expect(result.ratio).toBeLessThan(result.threshold);
   });
@@ -68,19 +97,38 @@ describe("detectMassSuppression", () => {
     const entries = Array.from({ length: 50 }, (_, i) =>
       entry({ ruleId: `R-${i}`, files: [`f-${i}.ts`] }),
     );
-    const result = detectMassSuppression(entries, 100);
+    const findings = [
+      ...entries.map((suppression) => ({
+        ruleId: suppression.ruleId,
+        file: suppression.files?.[0] ?? "",
+      })),
+      ...Array.from({ length: 50 }, (_, i) => ({
+        ruleId: "OTHER",
+        file: `other-${i}.ts`,
+      })),
+    ];
+    const result = detectMassSuppression(entries, findings);
     expect(result.isMassSuppression).toBe(true);
     expect(result.ratio).toBeGreaterThanOrEqual(result.threshold);
   });
 
   it("respects custom threshold", () => {
     const entries = [entry({ files: ["a.ts", "b.ts", "c.ts"] })];
-    const result = detectMassSuppression(entries, 10, 0.2);
+    const findings = [
+      { ruleId: "QA-TEST-001", file: "a.ts" },
+      { ruleId: "QA-TEST-001", file: "b.ts" },
+      { ruleId: "QA-TEST-001", file: "c.ts" },
+      ...Array.from({ length: 7 }, (_, i) => ({
+        ruleId: "OTHER",
+        file: `other-${i}.ts`,
+      })),
+    ];
+    const result = detectMassSuppression(entries, findings, 0.2);
     expect(result.isMassSuppression).toBe(true);
   });
 
-  it("handles zero totalFindings (ratio=0)", () => {
-    const result = detectMassSuppression([entry()], 0);
+  it("handles zero findings", () => {
+    const result = detectMassSuppression([entry()], []);
     expect(result.ratio).toBe(0);
     expect(result.isMassSuppression).toBe(false);
   });
@@ -139,6 +187,13 @@ describe("detectExpiredSuppressions", () => {
     expect(result).toEqual([]);
   });
 
+  it("uses the default clock for expired entries", () => {
+    const result = detectExpiredSuppressions([
+      entry({ expires: "2000-01-01T00:00:00Z" }),
+    ]);
+    expect(result).toHaveLength(1);
+  });
+
   it("entries without expires are never expired", () => {
     const result = detectExpiredSuppressions([entry()], new Date());
     expect(result).toEqual([]);
@@ -153,7 +208,10 @@ describe("computeSuppressionIntegrity", () => {
     const known = new Set<string>();
     const report = computeSuppressionIntegrity(
       suppressions,
-      10,
+      Array.from({ length: 10 }, (_, i) => ({
+        ruleId: "KNOWN",
+        file: `known-${i}.ts`,
+      })),
       known,
       new Date("2026-01-01"),
     );
@@ -161,5 +219,11 @@ describe("computeSuppressionIntegrity", () => {
     expect(report.massSuppression.isMassSuppression).toBe(false);
     expect(report.unknownRuleSuppressions).toEqual(["UNKNOWN"]);
     expect(report.expiredSuppressions).toHaveLength(1);
+  });
+
+  it("uses the default clock for an empty report", () => {
+    const report = computeSuppressionIntegrity([], [], new Set());
+    expect(report.fingerprint).toMatch(/^[0-9a-f]{64}$/);
+    expect(report.massSuppression.totalFindings).toBe(0);
   });
 });

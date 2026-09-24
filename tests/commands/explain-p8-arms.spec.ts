@@ -123,7 +123,7 @@ describe("explain verdict — uncovered 0.6.x arms (P8 completion)", () => {
     const out = renderVerdictExplain({ ok: true, scan: s });
     expect(out).toContain("1 fired rule(s) are PROVISIONAL");
     expect(out).toContain("no error-severity findings");
-    expect(out).toContain("keep the gate green");
+    expect(out).toContain("no findings on the analyzed surface");
   });
 
   it("render: no-tests-found annotates the unknown score", () => {

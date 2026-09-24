@@ -31,15 +31,11 @@ import { spawnSync } from "node:child_process";
 import { Buffer } from "node:buffer";
 import { join } from "node:path";
 
+import { CLI_TIMING_PATHS } from "./lib/normalize-cli-json.mjs";
+
 const ROOT = join(import.meta.dirname, "..");
 const target = process.argv[2] ?? ROOT;
 const cli = process.argv[3] ?? join(ROOT, "dist", "cli.mjs");
-
-/** The ONLY fields allowed to differ between two identical scans. */
-const DURATION_MS_ALLOWLIST = [
-  ["analysisStatus", "durationMs"],
-  ["contract", "completeness", "durationMs"],
-];
 
 function scanOnce(label) {
   const r = spawnSync(process.execPath, [cli, target, "--json"], {
@@ -85,7 +81,7 @@ function at(doc, path) {
  * the same PR — silently shrinking the allowlist would hide drift.
  */
 function requireAllowlistedPaths(doc) {
-  for (const path of DURATION_MS_ALLOWLIST) {
+  for (const path of CLI_TIMING_PATHS) {
     if (at(doc, path) === undefined) {
       console.error(
         `scan-determinism: allowlisted field $.${path.join(".")} is MISSING from the report — update the allowlist only if the schema changed deliberately`,
@@ -102,7 +98,7 @@ function requireAllowlistedPaths(doc) {
  * is still caught by the requireAllowlistedPaths shape check above.
  */
 function stripAndCanonicalize(doc) {
-  for (const path of DURATION_MS_ALLOWLIST) {
+  for (const path of CLI_TIMING_PATHS) {
     const parent = at(doc, path.slice(0, -1));
     delete parent[path[path.length - 1]];
   }
@@ -118,7 +114,7 @@ const bytesB = stripAndCanonicalize(second);
 
 if (bytesA.equals(bytesB)) {
   console.log(
-    `scan-determinism: two scans of ${target} are byte-identical after stripping the ${DURATION_MS_ALLOWLIST.length} allowlisted durationMs fields ✓`,
+    `scan-determinism: two scans of ${target} are byte-identical after stripping the ${CLI_TIMING_PATHS.length} allowlisted durationMs fields ✓`,
   );
   process.exit(0);
 }
