@@ -216,7 +216,9 @@ function main() {
       if (!ok) failed++;
       say(
         `  Rule ${seed.rule}: ${ok ? "PROVEN" : "NOT PROVEN"} — ${seed.what}\n` +
-          `           seeded ${seed.file.slice(ROOT.length + 1)} → exit ${r.code}` +
+          `           seeded ${seed.file
+            .slice(ROOT.length + 1)
+            .replaceAll("\\", "/")} → exit ${r.code}` +
           `${named ? ", named the finding" : `, DID NOT report "${seed.expect}"`}`,
       );
     }
