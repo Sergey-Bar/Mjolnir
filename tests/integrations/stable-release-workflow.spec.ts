@@ -29,7 +29,11 @@ const workflow = parse(source) as {
     {
       environment?: string;
       permissions?: Record<string, string>;
-      steps?: Array<{ uses?: string; run?: string }>;
+      steps?: Array<{
+        uses?: string;
+        run?: string;
+        env?: Record<string, string>;
+      }>;
     }
   >;
 };
@@ -71,6 +75,11 @@ describe("stable release workflow", () => {
     expect(run).toContain('git tag -a "$TAG"');
     expect(run).toContain('git push origin "refs/tags/$TAG"');
     expect(run).not.toContain("--force");
+    const identityStep = tag?.steps?.find((step) =>
+      step.run?.includes('git tag -a "$TAG"'),
+    );
+    expect(identityStep?.env?.GIT_AUTHOR_NAME).toBe("github-actions[bot]");
+    expect(identityStep?.env?.GIT_COMMITTER_NAME).toBe("github-actions[bot]");
   });
 
   it("validates the packaged CLI version banner", () => {
