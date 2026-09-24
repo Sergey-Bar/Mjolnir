@@ -263,7 +263,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci && npm run build
-      - run: node dist/cli.mjs . --json > self-scan.json
+      - run: node dist/cli.mjs src --json > self-scan.json
       # Self-scan annotations (plan M4): inline findings on the run page
       # via the same single emitter the generated workflow uses.
       - name: Self-scan annotations
@@ -346,7 +346,7 @@ jobs:
             exit 1
           fi
       - name: F2 scan-artifact determinism (two scans byte-identical minus durationMs allowlist)
-        run: node scripts/scan-determinism-replay.mjs .
+        run: node scripts/scan-determinism-replay.mjs src
       - name: Sanity-check the report contract in the summary
         if: always()
         run: |

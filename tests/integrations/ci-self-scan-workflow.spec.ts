@@ -58,6 +58,8 @@ describe("ci.yml self-scan job", () => {
   it("produces self-scan.json before gating on it", () => {
     const wf = loadCiWorkflow();
     const steps = wf.jobs["self-scan"]?.steps ?? [];
+    const scanStep = steps.find((s) => s.run?.includes("self-scan.json"));
+    expect(scanStep?.run).toContain("dist/cli.mjs src --json");
     const runSteps = steps.map((s) => s.run).filter(Boolean) as string[];
     const scanIdx = runSteps.findIndex((r) => r.includes("self-scan.json"));
     const gateIdx = runSteps.findIndex((r) => r.includes("Self-scan errors"));

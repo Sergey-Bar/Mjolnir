@@ -107,7 +107,7 @@ export function discoverAllTestFiles(
     // R4c Scope Integrity: the walk's exclusion accounting feeds the
     // scope verdict (claimed scope ≡ analyzed scope).
     onIgnored: (path) => {
-      if (isUnrecognizedSourceCandidate(path)) ctx.onIgnored?.(path);
+      if (isScopeRelevantIgnored(path)) ctx.onIgnored?.(path);
     },
     onUnrecognized: (path) => {
       if (typeof path === "string" && isUnrecognizedSourceCandidate(path)) {
@@ -115,6 +115,11 @@ export function discoverAllTestFiles(
       }
     },
   });
+}
+
+function isScopeRelevantIgnored(path: string): boolean {
+  const name = path.replaceAll("\\", "/").split("/").pop() ?? path;
+  return /\.(?:[cm]?[jt]sx?|py|java|cs|ya?ml|min\.js)$/i.test(name);
 }
 
 function isUnrecognizedSourceCandidate(path: string): boolean {
@@ -142,12 +147,10 @@ function isUnrecognizedSourceCandidate(path: string): boolean {
   ) {
     return false;
   }
-  if (!/\.(?:[cm]?[jt]sx?|py|java|cs|ya?ml)$/i.test(name)) return false;
-  const segments = normalized.split("/");
-  if (segments.length === 1) return true;
-  return segments.some((segment) =>
-    ["src", "test", "tests", "e2e", "app", "lib"].includes(segment),
-  );
+  const testLike =
+    /(?:^|\/)__tests__\//i.test(normalized) ||
+    /\.(?:spec|test)\.[cm]?[jt]sx?$/i.test(name);
+  return /\.(?:[cm]?[jt]sx?|py|java|cs|ya?ml)$/i.test(name) && testLike;
 }
 
 /** Whether ANY shipped adapter would discover this path as a test file. */
