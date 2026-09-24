@@ -491,6 +491,18 @@ describe("renderPrComment — utility exports coverage", () => {
     expect(line).not.toContain("🔴");
   });
 
+  it("covers warning observation and code-fix branches", () => {
+    const warning = finding({
+      severity: "warning",
+      evidenceLevel: "E0",
+      fix: "await expect(page).toBeVisible();",
+    });
+    expect(evidenceTag(warning)).toContain("E0 · observation");
+    const line = findingLine(warning);
+    expect(line).toContain("🟡");
+    expect(line).toContain("`await");
+  });
+
   it("renders the repoUrl option when provided", () => {
     const body = renderPrComment(scanResult([]), {
       repoUrl: "https://example.com/repo",

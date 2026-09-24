@@ -255,7 +255,7 @@ for (const variants of buildTestCanonical) {
     failures.push(`merge-verify: missing active gate ${variants.join(" or ")}`);
   }
 }
-if (!hasActiveCommand(ci, "node dist/cli.mjs . --json")) {
+if (!hasActiveCommand(ci, "node dist/cli.mjs src --json")) {
   failures.push("ci.yml: missing active self-scan gate");
 }
 if (!hasActiveCommand(ci, "npm run docs:regen")) {
