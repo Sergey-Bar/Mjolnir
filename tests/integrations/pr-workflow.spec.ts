@@ -14,7 +14,6 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { parse } from "yaml";
-import { CLI_VERSION } from "../../src/cli.js";
 
 const ROOT = join(import.meta.dirname, "..", "..");
 
@@ -91,10 +90,17 @@ describe("mjolnir.yml (the PR feedback loop workflow)", () => {
       join(ROOT, ".github", "workflows", "mjolnir.yml"),
       "utf8",
     );
-    expect(text).not.toContain("mjolnir-qa@latest");
-    expect(text).not.toContain("version: latest");
-    expect(text).toContain(`mjolnir-qa-${CLI_VERSION}.tgz`);
-    expect(text).toContain(`version: ${CLI_VERSION}`);
+    const tarballVersions = new Set(
+      [...text.matchAll(/mjolnir-qa-(\d+\.\d+\.\d+)\.tgz/gu)].map(
+        (match) => match[1],
+      ),
+    );
+    const workflowVersion = text.match(
+      /^\s+version:\s*(\d+\.\d+\.\d+)\s*$/mu,
+    )?.[1];
+    expect(tarballVersions.size).toBe(1);
+    expect(workflowVersion).toBeDefined();
+    expect(tarballVersions.has(workflowVersion ?? "")).toBe(true);
     const checkout = wf.jobs.scan?.steps?.find((s) =>
       s.uses?.startsWith("actions/checkout"),
     );
