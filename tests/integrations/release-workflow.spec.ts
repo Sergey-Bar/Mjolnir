@@ -161,7 +161,7 @@ describe("release candidate workflow", () => {
       "${{ needs.verify.outputs.tarball }}",
     );
     expect(publishStep?.run).toContain(
-      'npm publish "release-artifact/$TARBALL"',
+      'npm publish "./release-artifact/$TARBALL"',
     );
     expect(publishStep?.run).toContain("--tag next");
     expect(publishStep?.run).toContain("--provenance");
