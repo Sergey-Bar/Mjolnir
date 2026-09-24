@@ -10,7 +10,7 @@
     "packageSha256": "60c635ccb268d1411d5208e44d940fa2a1e8c1fd07e0a086fe01aca64b958a0b",
     "lockfileSha256": "ece7e9f48125c6d1e61961ebad1244cb1d9b4494835dc2614c956c1d2066c25c",
     "workingTreeSha256": "cd1b9309a8e714965fd0f3d7d9fd5a8dd18720beb97bcc265062ffcf0b2ab2b2",
-    "changedPathCount": 3,
+    "changedPathCount": 0,
     "supportEnvelope": "self-hosted; hosted services require explicit consent and separate proof"
   },
   "claimRegistry": {
