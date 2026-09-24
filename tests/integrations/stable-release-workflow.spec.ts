@@ -61,7 +61,7 @@ describe("stable release workflow", () => {
     const run = publish?.steps?.map((step) => step.run ?? "").join("\n");
     expect(run).toContain("npm install --global npm@11.5.1");
     expect(run).toContain("sha256sum");
-    expect(run).toContain("npm publish");
+    expect(run).toContain('npm publish "./release-artifact/$TARBALL"');
     expect(run).toContain("--provenance");
     expect(run).not.toContain("--tag next");
     expect(run).toContain("dist-tags.latest");

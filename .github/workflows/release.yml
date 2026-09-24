@@ -260,7 +260,7 @@ jobs:
         shell: bash
         env:
           TARBALL: ${{ needs.verify.outputs.tarball }}
-        run: npm publish "release-artifact/$TARBALL" --tag next --provenance --ignore-scripts --access public
+        run: npm publish "./release-artifact/$TARBALL" --tag next --provenance --ignore-scripts --access public
       - name: Verify the published version is live on npm
         shell: bash
         env:

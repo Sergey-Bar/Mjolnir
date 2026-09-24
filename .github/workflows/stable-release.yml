@@ -175,7 +175,7 @@ jobs:
           test "$(git rev-parse HEAD)" = "$EXPECTED_COMMIT"
           test "$(sha256sum "release-artifact/$TARBALL" | cut -d ' ' -f 1)" = "$CHECKSUM"
           if ! npm view "$PACKAGE_NAME@$VERSION" version >/dev/null 2>&1; then
-            npm publish "release-artifact/$TARBALL" --provenance --ignore-scripts --access public
+            npm publish "./release-artifact/$TARBALL" --provenance --ignore-scripts --access public
           fi
           test "$(npm view "$PACKAGE_NAME@$VERSION" version)" = "$VERSION"
           test "$(npm view "$PACKAGE_NAME" dist-tags.latest)" = "$VERSION"
