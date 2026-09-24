@@ -53,8 +53,14 @@ for (let i = 0; i < args.length; i++) {
   }
 }
 if (expectedVersion === undefined) {
+  const packageJson = JSON.parse(readFileSync("package.json", "utf8")) as {
+    version?: string;
+  };
+  expectedVersion = packageJson.version;
+}
+if (expectedVersion === undefined) {
   console.error(
-    "Usage: tsx scripts/check-changelog.ts --expect-version <X.Y.Z> [--rules-touched]",
+    "Usage: tsx scripts/check-changelog.ts [--expect-version <X.Y.Z>] [--rules-touched]",
   );
   process.exit(2);
 }

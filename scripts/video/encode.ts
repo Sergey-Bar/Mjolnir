@@ -15,7 +15,7 @@ export function resolveFfmpeg(bin: "ffmpeg" | "ffprobe" = "ffmpeg"): string {
     process.env[bin === "ffmpeg" ? "MJOLNIR_FFMPEG" : "MJOLNIR_FFPROBE"];
   if (override) return override;
   const found = spawnSync("which", [bin], { encoding: "utf8" });
-  const path = found.stdout.trim();
+  const path = typeof found.stdout === "string" ? found.stdout.trim() : "";
   if (path) return path;
   throw new Error(
     `${bin} not found. The demo-video renderer needs an ffmpeg build with ` +

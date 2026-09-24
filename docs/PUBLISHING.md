@@ -43,11 +43,11 @@ The RC workflow rejects stable versions, so it cannot silently resolve this deci
    ```bash
    git switch main
    git pull --ff-only origin main
-   git switch -c release/v2.1.0
+   git switch -c release/v3.0.0
    ```
 
 2. Prepare a normal version PR:
-   - set the root `package.json` version to `2.1.0` or the approved next RC;
+   - set the root `package.json` version to `3.0.0` or the approved next RC;
    - the historical `2.0.3-rc.1` path remains subject to the decision gate above; do not recreate it without owner approval;
    - add the matching `CHANGELOG.md` heading;
    - update synchronized version surfaces with the existing version scripts;
@@ -103,8 +103,8 @@ Stable `X.Y.Z` publication is explicit and uses `stable-release.yml` from
 `release/vX.Y.Z`. First run a dry-run dispatch, then rerun with dry-run disabled:
 
 ```bash
-gh workflow run stable-release.yml --ref release/v2.1.0 -f dry_run=true
-gh workflow run stable-release.yml --ref release/v2.1.0 -f dry_run=false
+gh workflow run stable-release.yml --ref release/v3.0.0 -f dry_run=true
+gh workflow run stable-release.yml --ref release/v3.0.0 -f dry_run=false
 ```
 
 The stable workflow creates an annotated tag without force, publishes the exact
@@ -164,7 +164,7 @@ No additional lifecycle hook may be added without an equivalent row explaining w
 
 ## Current state
 
-- npm `latest` is **2.1.0** after this stable promotion.
+- npm `latest` is **3.0.0** after this stable promotion.
 - protected `main`: `3f31ac7e` after PR #538.
 - historical `v2.0.3`: `460c7d71e67d54d667414ff36e6f100d604b6185`, retained unchanged; a tag alone is not an installable release.
 - automatic publishing from `main`: disabled.

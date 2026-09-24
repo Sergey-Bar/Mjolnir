@@ -4,7 +4,7 @@
 # documented amendment to the repo's root contract
 # (tests/contract/repo-hygiene.spec.ts), never a silent one.
 #
-# Consumers pin a major tag (`uses: Sergey-Bar/Mjolnir@v2`); the separate
+# Consumers pin a major tag (`uses: Sergey-Bar/Mjolnir@v3`); the separate
 # action-tags workflow moves that tag only after a stable, non-RC release.
 # Scanning runs through the published npm package (`npx mjolnir-qa@…`),
 # never an `npm ci` of this repo — the action must work for consumers,
@@ -63,7 +63,7 @@ inputs:
       Exact mjolnir-qa npm version to run. Defaults to the current released
       package version; override only with another exact version.
     required: false
-    default: "2.1.0"
+    default: "3.0.0"
   upload-sarif:
     description: >-
       Upload SARIF to GitHub Code Scanning (requires security-events:

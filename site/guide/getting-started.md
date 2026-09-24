@@ -30,13 +30,13 @@ have no such requirement.
 The Marketplace action runs the same scan from any workflow:
 
 ```yaml
-- uses: Sergey-Bar/Mjolnir@v2
+- uses: Sergey-Bar/Mjolnir@v3
   with:
     scope: changed
     fail-on: error
 ```
 
-Pin `@v2` to follow the major line, or an exact tag (`@v2.1.0`) for a
+Pin `@v3` to follow the major line, or an exact tag (`@v3.0.0`) for a
 reproducible gate; `mjolnir ci install` writes a workflow that does
 this for you (plain `npx` instead, with `--no-action`).
 

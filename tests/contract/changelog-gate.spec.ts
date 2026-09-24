@@ -37,6 +37,10 @@ function runGate(
   const dir = mkdtempSync(join(tmpdir(), "mjolnir-changelog-gate-"));
   try {
     writeFileSync(join(dir, "CHANGELOG.md"), changelog);
+    writeFileSync(
+      join(dir, "package.json"),
+      JSON.stringify({ version: "3.0.0" }),
+    );
     const r = spawnSync(process.execPath, [TSX_CLI, GATE, ...args], {
       cwd: dir,
       encoding: "utf8",
@@ -177,8 +181,8 @@ describe("CHANGELOG integrity gate (WI-12A)", () => {
     expect(r.code).toBe(0);
   });
 
-  it("usage error without --expect-version (exit 2)", () => {
+  it("uses the package version when --expect-version is omitted", () => {
     const r = runGate(BASELINE, []);
-    expect(r.code).toBe(2);
+    expect(r.code).toBe(0);
   });
 });

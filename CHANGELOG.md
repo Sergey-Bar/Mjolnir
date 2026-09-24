@@ -35,6 +35,36 @@ once shipped, so this file is the record of what changed between versions.
   `ci.yml`, `merge-verify.yml` and the local gate exercising the same
   command list. All additive — no frozen surface changed.
 
+## [3.0.0] — 2026-09-24
+
+### Breaking changes
+
+- Trust and execution boundaries are now explicit and bounded. JavaScript/local-rule execution requires the plugin trust gate; output writers reject symlink/traversal targets; JSON, file, cache, and runtime inputs have size budgets; CLI/MCP durations are finite.
+- Saved report and machine-contract consumers now receive completion, scope, evidence, and verdict fields. Incomplete, L0/zero-evidence, and partial states cannot be presented as `WORTHY`.
+- Privileged PR publication is split into a read-only scan job and an artifact-only publisher with commit-bound, paginated `mjolnir-report:v2` upserts.
+
+### Added
+
+- Enterprise threat-model and data-flow artifacts with a strict validator, claim registry with implementation/test/authority/expiry evidence, and a candidate trust manifest/readiness gate.
+- Canonical completion derivation, bounded cache/artifact persistence, run-identity tree binding, same-process concurrency evidence, and deterministic source-scoped self-scan/replay gates.
+- Public-output redaction/escaping across trust reports, job summaries, dashboards, triage, and Playwright reports; atomic artifact writes and release-mode retention controls.
+
+### Fixed
+
+- Cross-platform CI matrix coverage for Node 22/24 and Linux/macOS/Windows, including clean-checkout candidate-manifest hashing and deterministic self-scans.
+- Partial/degraded scope accounting now distinguishes intentionally excluded fixtures from missed test-like files and propagates reasons through CLI, reports, and machine contracts.
+- Generated blast-radius, demo/video, site, and release evidence is refreshed from the current tree.
+
+### Migration
+
+- Install `mjolnir-qa@3.0.0` with Node.js `>=22.18`.
+- Use the `@v3` consumer tag after the stable release; use an exact `v3.0.0` tag for reproducible enforcement.
+- Review the new `--enable-plugins` gate, finite `--max-duration` budget, report completion fields, and strict artifact path requirements.
+
+### Certification boundary
+
+This release is software-complete and locally certified for the declared engineering gates. Trust certification remains `NOT_CERTIFIED` until protected holdout, real-world, platform/consumer, and human authority evidence is supplied.
+
 ## [2.1.0] — 2026-09-24
 
 ### Added

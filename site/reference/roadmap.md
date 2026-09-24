@@ -8,7 +8,7 @@ entry condition.
 
 ## Where Mjölnir is now
 
-- **v2.1.0 — current stable.** Published on npm and GitHub Releases, with
+- **v3.0.0 — current stable.** Published on npm and GitHub Releases, with
   <!-- census:total-rules -->79 rules<!-- /census:total-rules -->,
   <!-- census:measured -->74<!-- /census:measured --> of them carrying a
   false-positive rate measured against real OSS code
@@ -19,7 +19,7 @@ entry condition.
 - The scan core is deterministic and zero-network: the same input
   produces the same verdict, and nothing leaves the machine.
 
-## The trust-engineering train — shipped into the 2.x line
+## The trust-engineering train — shipped into the 3.x line
 
 An eleven-increment engineering train hardened the product's release
 trust end-to-end. It is part of the current 2.x public line; the table

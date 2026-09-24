@@ -25,7 +25,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for major in v1 v2; do
+           for major in v1 v2 v3; do
             git tag -f "$major" "$GITHUB_SHA"
             git push origin "refs/tags/$major" --force
           done
