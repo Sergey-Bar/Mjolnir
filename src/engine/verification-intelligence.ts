@@ -363,10 +363,6 @@ function runParts(
   return result;
 }
 
-function hasSinglePipe(run: string): boolean {
-  return runParts(run).filter((part) => part.terminator === "|").length === 1;
-}
-
 function hasPipefail(run: string): boolean {
   const tokens = run.trim().split(/\s+/);
   for (let index = 0; index < tokens.length; index++) {
@@ -406,7 +402,10 @@ function hasDynamicShellCondition(run: string): boolean {
 
 function runHasScanGate(run: string): boolean {
   if (/\bset\s+\+e\b/.test(run)) return false;
-  if (hasSinglePipe(run) && !hasPipefail(run)) return false;
+  const pipeCount = runParts(run).filter(
+    (part) => part.terminator === "|",
+  ).length;
+  if (pipeCount > 0 && !hasPipefail(run)) return false;
   if (hasDynamicShellCondition(run)) return false;
   const parts = runParts(run);
   for (let index = 0; index < parts.length; index++) {

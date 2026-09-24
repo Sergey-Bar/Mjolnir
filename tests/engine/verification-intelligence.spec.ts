@@ -324,6 +324,9 @@ describe("verification intelligence", () => {
       ["npm", "run", "other"].join(" "),
       "mjolnir . --blocking none",
       "mjolnir . --blocking=none",
+      "mjolnir .; true",
+      "mjolnir .; exit 0",
+      "mjolnir . | tee log | cat",
       "if github.ref == 'refs/heads/main'; then mjolnir .; fi",
     ]) {
       expect(checkWorkflowContainsScan(workflow(run), "ci.yml"), run).toBe(
