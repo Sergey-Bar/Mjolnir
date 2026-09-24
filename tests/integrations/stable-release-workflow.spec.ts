@@ -73,6 +73,10 @@ describe("stable release workflow", () => {
     expect(run).not.toContain("--force");
   });
 
+  it("validates the packaged CLI version banner", () => {
+    expect(source).toContain('= "mjolnir-qa $VERSION"');
+  });
+
   it("pins every action reference", () => {
     for (const job of Object.values(workflow.jobs)) {
       for (const step of job.steps ?? []) {

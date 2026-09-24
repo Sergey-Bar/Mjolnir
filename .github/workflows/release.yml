@@ -132,7 +132,7 @@ jobs:
           node scripts/pack-audit.mjs "$GITHUB_WORKSPACE/release-artifact/$TARBALL"
           SMOKE_DIR=$(mktemp -d)
           npm install --prefix "$SMOKE_DIR" --ignore-scripts --no-audit --no-fund "$GITHUB_WORKSPACE/release-artifact/$TARBALL"
-          test "$(node "$SMOKE_DIR/node_modules/mjolnir-qa/dist/cli.mjs" --version)" = "$VERSION"
+          test "$(node "$SMOKE_DIR/node_modules/mjolnir-qa/dist/cli.mjs" --version)" = "mjolnir-qa $VERSION"
           rm -rf "$SMOKE_DIR"
           {
             echo "artifact_name=release-candidate-$VERSION"
