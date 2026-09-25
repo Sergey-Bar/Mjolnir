@@ -7,14 +7,14 @@ contract enforces: **every external import in src/ must belong to the
 allowlist**, and the shipped surface (adapters, rules, flags, formats, exit
 codes) must match this document exactly.
 
-## Inventory: 326 files, 91359 LOC
+## Inventory: 327 files, 91640 LOC
 
 | Area             | Files | LOC   |
 | ---------------- | ----- | ----- |
 | src/engine       | 55    | 24458 |
-| src/commands     | 44    | 13274 |
+| src/commands     | 44    | 13405 |
 | src/rules        | 88    | 11758 |
-| src/(root)       | 7     | 3428  |
+| src/(root)       | 8     | 3515  |
 | src/reporter     | 15    | 3366  |
 | src/forensics    | 17    | 3067  |
 | src/governance   | 1     | 2744  |
@@ -31,7 +31,7 @@ codes) must match this document exactly.
 | src/qa           | 1     | 1285  |
 | src/bench        | 5     | 1065  |
 | src/research     | 1     | 995   |
-| src/release      | 7     | 877   |
+| src/release      | 7     | 940   |
 | src/mutation     | 6     | 836   |
 | src/mcp          | 3     | 816   |
 | src/brand        | 3     | 807   |
@@ -48,17 +48,17 @@ codes) must match this document exactly.
 
 | Module                          | Importers |
 | ------------------------------- | --------- |
-| src/types                       | 134       |
+| src/types                       | 133       |
 | src/rules/rule                  | 82        |
 | src/rules/shared/positions      | 62        |
 | src/reporter/ui                 | 26        |
 | src/cli-io                      | 20        |
 | src/forensics/types             | 20        |
-| src/exit-codes                  | 16        |
+| src/exit-codes                  | 17        |
 | src/engine/adapter              | 14        |
 | src/rules/index                 | 13        |
-| src/engine/scan-pipeline        | 12        |
 | src/discovery/ignores           | 11        |
+| src/engine/scan-pipeline        | 11        |
 | src/lib/fs-atomic               | 11        |
 | src/forensics/evidence-hygiene  | 11        |
 | src/rules/measured-fp.generated | 11        |
@@ -68,8 +68,8 @@ codes) must match this document exactly.
 
 | Dependency         | Files importing it |
 | ------------------ | ------------------ |
-| node:fs            | 69                 |
-| node:path          | 64                 |
+| node:fs            | 70                 |
+| node:path          | 65                 |
 | node:crypto        | 25                 |
 | ts-morph           | 7                  |
 | node:url           | 4                  |
