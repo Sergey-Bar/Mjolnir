@@ -1,4 +1,5 @@
 import { existsSync } from "node:fs";
+import { spawnSync } from "node:child_process";
 import { join } from "node:path";
 import {
   inspectCandidateWorktree,
@@ -56,13 +57,27 @@ if (!Array.isArray(manifest.blockers) || manifest.blockers.length === 0) {
 const worktree = inspectCandidateWorktree(root);
 for (const key of [
   "version",
-  "baseSha",
   "packageSha256",
   "lockfileSha256",
   "workingTreeSha256",
   "changedPathCount",
 ]) {
   if (worktree[key] !== manifest.identity[key]) fail(`${key} drift`);
+}
+if (
+  manifest.identity.baseSha !== worktree.baseSha &&
+  spawnSync(
+    "git",
+    [
+      "merge-base",
+      "--is-ancestor",
+      manifest.identity.baseSha,
+      worktree.baseSha,
+    ],
+    { cwd: root, windowsHide: true },
+  ).status !== 0
+) {
+  fail("candidate base SHA is not the current or an ancestor HEAD");
 }
 if (
   JSON.stringify(worktree.dirtyFiles) !==
