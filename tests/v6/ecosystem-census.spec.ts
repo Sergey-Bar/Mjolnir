@@ -32,7 +32,16 @@ function resolver(
   return { ...BLIND_EVIDENCE_RESOLVER, ...overrides };
 }
 
-function entry(overrides: Partial<CensusEntry> = {}): CensusEntry {
+/**
+ * `CensusEntry` declares `upstream?: string`. Under
+ * `exactOptionalPropertyTypes` a `Partial<CensusEntry>` spread would let a
+ * caller pass `upstream: undefined`, which the type forbids, so the
+ * override type pins the optional field out of the way and the helper owns
+ * it.
+ */
+function entry(
+  overrides: Partial<Omit<CensusEntry, "upstream">> = {},
+): CensusEntry {
   return {
     id: "ec.test-framework.example",
     name: "example",
@@ -49,6 +58,16 @@ function entry(overrides: Partial<CensusEntry> = {}): CensusEntry {
     upstreamPackages: [{ ecosystem: "npm", name: "example" }],
     handledUpstreamMajors: ["1"],
     revisitTrigger: "trigger",
+    // Supplied in the base, not in `overrides`: a spread of a
+    // `Partial<>` would otherwise make these two required fields optional
+    // in the resulting type, and the helper would not satisfy `CensusEntry`.
+    maturity: "M1_DECLARED",
+    nextLevelGap: {
+      target: "M2_IMPLEMENTED",
+      missing: ["an implementation and unit tests"],
+      owner: "test",
+      revisitTrigger: "an implementation lands",
+    },
     ...overrides,
   };
 }

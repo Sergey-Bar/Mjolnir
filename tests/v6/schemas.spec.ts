@@ -19,19 +19,23 @@ function load(relative: string): Record<string, unknown> {
   if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
     throw new Error(`${relative} is not a JSON object`);
   }
-  return parsed;
+  return parsed as Record<string, unknown>;
 }
 
 function validatorFor(relative: string): {
   validate: (data: unknown) => boolean;
   errors: string[];
 } {
-  const ajv = new Ajv({ allErrors: true, strict: false });
+  // Ajv 6 (the version this repository resolves) has no `strict` option and
+  // reports its errors with `dataPath` rather than `instancePath`. Written
+  // against the installed version's types rather than against the version
+  // the docs describe, because a spec that does not compile is not a spec.
+  const ajv = new Ajv({ allErrors: true });
   const validate = ajv.compile(load(relative));
   return {
     validate: (data: unknown) => validate(data) as boolean,
     errors: (validate.errors ?? []).map(
-      (e) => `${e.instancePath || "/"} ${e.message}`,
+      (e) => `${e.dataPath || "/"} ${e.message ?? ""}`,
     ),
   };
 }
@@ -170,8 +174,12 @@ describe("schemas/v6 — the schema and the module agree", () => {
       observedAt: "2026-01-01",
     });
     const { entries, ...rest } = census;
+    // `...rest` carries `schemaVersion`, `censusId` and `observedAt` from
+    // the module, so the envelope fields are spread first and the module's
+    // own identity wins. Spelling `schemaVersion` after the spread would be
+    // silently overwritten — which is exactly the kind of near-miss a test
+    // should not contain.
     const document = {
-      schemaVersion: 1,
       artifact: "ecosystem-census",
       generatedBy: "test",
       baseSha: "x",

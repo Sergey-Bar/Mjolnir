@@ -112,6 +112,7 @@ export function checkClaimBudget(
       errors: [
         "docs/claim-budget.json is missing; run `npm run claim:budget --init` to record the measured baseline honestly",
       ],
+      warnings,
       facts: {
         maxUnbound: 0,
         measuredUnbound: measured ?? 0,
@@ -129,6 +130,7 @@ export function checkClaimBudget(
       errors: [
         "docs/CLAIM-LINT-REPORT.json is missing or unreadable; run `npm run claims:prose` first — a budget with no measurement is a guess",
       ],
+      warnings,
       facts: {
         maxUnbound: loaded.maxUnbound,
         measuredUnbound: 0,
