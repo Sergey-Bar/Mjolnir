@@ -3,7 +3,7 @@
   "artifact": "v6-inventory",
   "generatedBy": "npm run docs:v6-inventory",
   "wave": "0",
-  "baseSha": "1780d08e465986a11703c0dc608f6137b3521c2a",
+  "baseSha": "9c2bff39944c2e27b1f5fa6c6e9dc793dd995f56",
   "version": "4.0.0-rc.1",
   "publishedStable": "3.0.0",
   "counts": {

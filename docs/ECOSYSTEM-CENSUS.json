@@ -4,7 +4,7 @@
   "generatedBy": "npm run docs:ecosystem",
   "censusId": "mjolnir-ecosystem-census",
   "observedAt": "2026-09-26",
-  "baseSha": "1780d08e465986a11703c0dc608f6137b3521c2a",
+  "baseSha": "9c2bff39944c2e27b1f5fa6c6e9dc793dd995f56",
   "counts": {
     "entries": 33,
     "state:TARGET": 19,
