@@ -28,25 +28,19 @@
   "generatedAt": "2026-09-25",
   "identity": {
     "state": "WORKING_CANDIDATE",
-    "baseSha": "cf50411f6dcccc4b3255ca0b38e52d808498323c",
+    "baseSha": "e3d2a445e5408d8a2160aa52384cea30fe858afa",
     "candidateSha": null,
     "version": "4.0.0-rc.1",
     "packageSha256": "8cd17750328505b3f6003a88e1a173b3803eb1b0f10041fdacd9899935bc9376",
     "lockfileSha256": "aeaff5bca556b58283a5c3c074adda7e429f28b2a76cd51b0efeaeaba9b5021c",
     "workingTreeSha256": "4e25d145bfb11ea963c6e3a29a1981897f81ab1a9b9f60c8084beef46bbebf45",
-    "changedPathCount": 2,
+    "changedPathCount": 0,
     "supportEnvelope": "self-hosted; hosted services require explicit consent and separate proof",
     "worktreeInventory": {
-      "changedPaths": [
-        "docs/BLAST-RADIUS-AUDIT.md",
-        "scripts/check-claim-registry.mjs"
-      ],
+      "changedPaths": [],
       "untrackedPaths": []
     },
-    "dirtyFiles": [
-      "docs/BLAST-RADIUS-AUDIT.md",
-      "scripts/check-claim-registry.mjs"
-    ]
+    "dirtyFiles": []
   },
   "claimRegistry": {
     "path": "docs/claim-registry.json",
