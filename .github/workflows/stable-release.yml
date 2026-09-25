@@ -205,7 +205,7 @@ jobs:
           if ! npm view "$PACKAGE_NAME@$VERSION" version >/dev/null 2>&1; then
             npm publish "./release-artifact/$TARBALL" --provenance --ignore-scripts --access public
           fi
-          for attempt in $(seq 1 30); do
+          for _ in $(seq 1 30); do
             if npm view "$PACKAGE_NAME@$VERSION" version >/dev/null 2>&1; then
               break
             fi
@@ -280,7 +280,7 @@ jobs:
           if ! npm view "$PACKAGE_NAME@$VERSION" version >/dev/null 2>&1; then
             npm publish "./release-artifact/$TARBALL" --provenance --ignore-scripts --access public
           fi
-          for attempt in $(seq 1 30); do
+          for _ in $(seq 1 30); do
             if npm view "$PACKAGE_NAME@$VERSION" version >/dev/null 2>&1; then
               break
             fi
