@@ -4,6 +4,9 @@ node_modules/
 package-lock.json
 scratch/
 action.yml
+*.jsonl
+docs/M26-SUPPORT-MATRIX.json
+docs/M26-GITHUB-SNAPSHOT.json
 
 # Fixture corpora are DATA (§08 class-B/C exhibits) — deliberately contain
 # anti-patterns; never reformatted.

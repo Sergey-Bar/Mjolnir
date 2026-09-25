@@ -1,0 +1,192 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "m35-plugin-manifest.schema.json",
+  "title": "M35 safe plugin and rule manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "manifestSchemaVersion",
+    "id",
+    "version",
+    "namespace",
+    "trustMode",
+    "compatibility",
+    "permissions",
+    "capabilities",
+    "revision",
+    "signature",
+    "lifecycle"
+  ],
+  "properties": {
+    "manifestSchemaVersion": { "const": 1 },
+    "id": {
+      "type": "string",
+      "pattern": "^(?:@[a-z0-9][a-z0-9._-]{0,62}/)?[a-z0-9][a-z0-9._-]{0,127}$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,8})\\.(0|[1-9][0-9]{0,8})\\.(0|[1-9][0-9]{0,8})$"
+    },
+    "namespace": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9]{1,15}$",
+      "not": {
+        "enum": [
+          "TEST",
+          "TQUAL",
+          "PW",
+          "CI",
+          "PY",
+          "ENV",
+          "JV",
+          "CS",
+          "CYP",
+          "SE",
+          "WDIO",
+          "PPTR",
+          "APM",
+          "CORE",
+          "PLUGIN"
+        ]
+      }
+    },
+    "trustMode": {
+      "enum": ["manifest-only", "explicit-opt-in"]
+    },
+    "compatibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["engine", "schemaVersions"],
+      "properties": {
+        "engine": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["min", "max"],
+          "properties": {
+            "min": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,8})\\.(0|[1-9][0-9]{0,8})\\.(0|[1-9][0-9]{0,8})$"
+            },
+            "max": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,8})\\.(0|[1-9][0-9]{0,8})\\.(0|[1-9][0-9]{0,8})$"
+            }
+          }
+        },
+        "schemaVersions": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 16,
+          "uniqueItems": true,
+          "items": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          }
+        }
+      }
+    },
+    "permissions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["network", "filesystem", "process", "environment"],
+      "properties": {
+        "network": { "const": "deny" },
+        "filesystem": { "enum": ["none", "scan-root-read-only"] },
+        "process": { "const": "deny" },
+        "environment": { "const": "deny" }
+      }
+    },
+    "capabilities": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 8,
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "rule",
+          "language-adapter",
+          "framework-adapter",
+          "ci-adapter",
+          "report-adapter",
+          "domain-adapter",
+          "policy-pack",
+          "reporter"
+        ]
+      }
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 2147483647
+    },
+    "signature": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["algorithm", "keyId", "value", "artifactDigest"],
+      "properties": {
+        "algorithm": { "const": "ed25519" },
+        "keyId": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "value": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9+/]{86}==$"
+        },
+        "artifactDigest": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        }
+      }
+    },
+    "lifecycle": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["state", "deprecation"],
+          "properties": {
+            "state": { "const": "active" },
+            "deprecation": { "type": "null" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["state", "deprecation"],
+          "properties": {
+            "state": { "enum": ["deprecated", "unsupported"] },
+            "deprecation": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["since", "replacement", "removeIn"],
+              "properties": {
+                "since": {
+                  "type": "string",
+                  "pattern": "^(0|[1-9][0-9]{0,8})\\.(0|[1-9][0-9]{0,8})\\.(0|[1-9][0-9]{0,8})$"
+                },
+                "replacement": {
+                  "type": "string",
+                  "pattern": "^(?:@[a-z0-9][a-z0-9._-]{0,62}/)?[a-z0-9][a-z0-9._-]{0,127}$"
+                },
+                "removeIn": {
+                  "type": "string",
+                  "pattern": "^(0|[1-9][0-9]{0,8})\\.(0|[1-9][0-9]{0,8})\\.(0|[1-9][0-9]{0,8})$"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "allOf": [
+    { "not": { "required": ["verdict"] } },
+    { "not": { "required": ["status"] } },
+    { "not": { "required": ["canonicalTrust"] } },
+    { "not": { "required": ["canonicalVerdict"] } },
+    { "not": { "required": ["trustLevel"] } },
+    { "not": { "required": ["gateOverride"] } }
+  ]
+}

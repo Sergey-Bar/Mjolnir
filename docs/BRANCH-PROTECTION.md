@@ -18,6 +18,11 @@ These settings maximize the OpenSSF Scorecard [Branch-Protection](https://securi
   - `build-test (ubuntu-latest, 22)` — CI matrix
   - `self-scan` — Mjölnir self-scan gate
   - `certification` — Doctor + determinism verify
+  - `analyze (javascript-typescript)` — CodeQL (when enabled for the branch)
+  - `analysis` — OpenSSF Scorecard
+  - `scan-pr` / `scan-scheduled` — OSV scanner
+  - `Socket Audit` / dependency audit — security policy
+  - `merge-verify` — merge-result verification
 - **Require branches to be up to date before merging**: ✅ Enabled
 
 ### Branch Rules

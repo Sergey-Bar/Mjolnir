@@ -1,0 +1,498 @@
+schemaVersion: 1
+program: "M26-M50"
+status: "blocked-pending-live-ledger"
+source: ".kilo/plans/1790280258089-qa-sdet-ten-release-trains.md"
+archive:
+  status: "UNRECONCILED"
+  expectedDesignRecordCount: 108
+  records:
+    - logicalMilestone: "M18"
+      githubRange: [539, 549]
+      designRecords: 11
+      disposition: "HISTORICAL_DESIGN_ONLY"
+      evidence: "NOT_RECONCILED"
+    - logicalMilestone: "M19"
+      githubRange: [550, 560]
+      designRecords: 11
+      disposition: "HISTORICAL_DESIGN_ONLY"
+      evidence: "NOT_RECONCILED"
+    - logicalMilestone: "M20"
+      githubRange: [561, 573]
+      designRecords: 13
+      disposition: "HISTORICAL_DESIGN_ONLY"
+      evidence: "NOT_RECONCILED"
+    - logicalMilestone: "M21"
+      githubRange: [574, 586]
+      designRecords: 13
+      disposition: "HISTORICAL_DESIGN_ONLY"
+      evidence: "NOT_RECONCILED"
+    - logicalMilestone: "M22"
+      githubRange: [587, 600]
+      designRecords: 14
+      disposition: "HISTORICAL_DESIGN_ONLY"
+      evidence: "NOT_RECONCILED"
+    - logicalMilestone: "M23"
+      githubRange: [601, 615]
+      designRecords: 15
+      disposition: "HISTORICAL_DESIGN_ONLY"
+      evidence: "NOT_RECONCILED"
+    - logicalMilestone: "M24"
+      githubRange: [616, 631]
+      designRecords: 16
+      disposition: "HISTORICAL_DESIGN_ONLY"
+      evidence: "NOT_RECONCILED"
+    - logicalMilestone: "M25"
+      githubRange: [632, 646]
+      designRecords: 15
+      disposition: "HISTORICAL_NOT_PLANNED"
+      evidence: "NOT_RECONCILED"
+issueLedger: "docs/M26-GITHUB-SNAPSHOT.json"
+gapLedger: "docs/M26-GAP-LEDGER.jsonl"
+supportMatrix: "docs/M26-SUPPORT-MATRIX.json"
+externalValidation: "docs/M26-EXTERNAL-VALIDATION.json"
+dependencyResolution:
+  status: "APPROVED_STAGED"
+  approvedBy: "Sergey-Bar"
+  approvedAt: "2026-09-25"
+  source: ".kilo/plans/1790280258089-qa-sdet-ten-release-trains.md"
+  cycles:
+    - "M31 -> M34 -> M33 -> M31"
+    - "M31 -> M35 -> M33 -> M31"
+  stages:
+    M31: "M31-BASE may proceed after M27 and M30; M31-EXTENDED waits for M33/M34/M35."
+    M33: "Control-plane pilot proceeds after M31-BASE, M32, and M35; otherwise remains deferred."
+    M45: "M45-A local lifecycle work precedes M47-A; M45-B promotion requires M47-B independent evidence."
+    M47: "M47-A local corpus runs before M45-B; M47-B independent reproduction precedes promotion."
+  note: "Approved staged gates resolve the cycles without weakening any external evidence or human promotion requirement."
+provisionalArtifacts:
+  M26:
+    - "docs/ROADMAP.yaml"
+    - "docs/M26-GITHUB-SNAPSHOT.json"
+    - "docs/M26-ISSUE-DISPOSITIONS.jsonl"
+    - "docs/M26-GAP-LEDGER.jsonl"
+    - "docs/M26-SUPPORT-MATRIX.json"
+    - "docs/M26-EXTERNAL-VALIDATION.json"
+  M27:
+    - "src/rules/registry-census.ts"
+  M29:
+    - "src/engine/runtime-evidence-graph.ts"
+  M30:
+    - "src/frameworks/provider-capability-contract.ts"
+  M31:
+    - "src/qa/domain-model.ts"
+  M32:
+    - "src/agent/decision-receipt.ts"
+  M35:
+    - "src/plugins/sdk-contract.ts"
+  M36:
+    - "src/mutation/failure-sensitivity.ts"
+  M37:
+    - "src/change-intelligence.ts"
+  M38:
+    - "src/engine/m38-challenge-contract.ts"
+  M42:
+    - "src/frameworks/provider-capability-contract.ts"
+  M39:
+    - "src/engine/m39-simulation-contract.ts"
+  M40:
+    - "src/engine/m40-language-expansion-contract.ts"
+  M41:
+    - "src/frameworks/universal-pack-contract.ts"
+  M43:
+    - "src/engine/m43-system-of-systems.ts"
+  M44:
+    - "src/engine/m44-historical-intelligence.ts"
+  M45:
+    - "src/detectors/m45-detector-lifecycle.ts"
+    - "src/engine/m45-detector-lifecycle.ts"
+  M46:
+    - "src/research/m46-reproducible-research-lab-contract.ts"
+  M47:
+    - "src/benchmark/m47-false-green-benchmark.ts"
+  M48:
+    - "src/bench/m48-scale-operating-model.ts"
+  M49:
+    - "src/engine/m49-experience-parity-contract.ts"
+  M50:
+    - "src/engine/m50-release-proof-contract.ts"
+  M33:
+    - "src/governance/m33-m34-contract.ts"
+  M34:
+    - "src/governance/m33-m34-contract.ts"
+trains:
+  - id: "M26"
+    phase: "foundation"
+    status: "in-progress"
+    owner: "Sergey-Bar"
+    outcome: "Truthful baseline, support matrix, release controls, and evidence boundaries"
+    dependsOn: []
+    workstreams:
+      [
+        "M26-01",
+        "M26-02",
+        "M26-03",
+        "M26-04",
+        "M26-05",
+        "M26-06",
+        "M26-07",
+        "M26-08",
+      ]
+    entryGate: "Approved plan and current candidate inventory"
+    exitGate: "All current issues, gaps, claims, matrix cells, and external evidence are reconciled"
+    evidence: []
+  - id: "M27"
+    phase: "foundation"
+    status: "deferred"
+    owner: "UNASSIGNED"
+    outcome: "Practitioner test intelligence for the TypeScript/JavaScript beachhead"
+    dependsOn: ["M26"]
+    workstreams:
+      [
+        "M27-01",
+        "M27-02",
+        "M27-03",
+        "M27-04",
+        "M27-05",
+        "M27-06",
+        "M27-07",
+        "M27-08",
+      ]
+    entryGate: "M26 registry, claims, gaps, and support matrix are reconciled"
+    exitGate: "Measured rules, practitioner journey, and full/incremental equivalence"
+    evidence: []
+  - id: "M28"
+    phase: "foundation"
+    status: "deferred"
+    owner: "UNASSIGNED"
+    outcome: "Polyglot depth and honest language certification"
+    dependsOn: ["M27"]
+    workstreams:
+      [
+        "M28-01",
+        "M28-02",
+        "M28-03",
+        "M28-04",
+        "M28-05",
+        "M28-06",
+        "M28-07",
+        "M28-08",
+      ]
+    entryGate: "M27 practitioner evidence and adapter contract"
+    exitGate: "Each claimed language independently certified or visibly below certified"
+    evidence: []
+  - id: "M29"
+    phase: "foundation"
+    status: "deferred"
+    owner: "UNASSIGNED"
+    outcome: "Runtime evidence and a local-first trust graph"
+    dependsOn: ["M27"]
+    workstreams:
+      [
+        "M29-01",
+        "M29-02",
+        "M29-03",
+        "M29-04",
+        "M29-05",
+        "M29-06",
+        "M29-07",
+        "M29-08",
+      ]
+    entryGate: "M27 test intelligence and M28 runtime/capability contracts"
+    exitGate: "Byte-stable graph, provenance, freshness, and recovery evidence"
+    evidence: []
+  - id: "M30"
+    phase: "foundation"
+    status: "deferred"
+    owner: "UNASSIGNED"
+    outcome: "CI and release control with least privilege and exact artifacts"
+    dependsOn: ["M26"]
+    workstreams:
+      [
+        "M30-01",
+        "M30-02",
+        "M30-03",
+        "M30-04",
+        "M30-05",
+        "M30-06",
+        "M30-07",
+        "M30-08",
+      ]
+    entryGate: "M26 release gates and M27 practitioner CI journey"
+    exitGate: "Candidate, stable, provider, recovery, and supply-chain evidence"
+    evidence: []
+  - id: "M31"
+    phase: "foundation"
+    status: "deferred"
+    owner: "UNASSIGNED"
+    outcome: "Full QA domain intelligence with independent evidence"
+    dependsOn: ["M27", "M30", "M34", "M35"]
+    workstreams:
+      [
+        "M31-01",
+        "M31-02",
+        "M31-03",
+        "M31-04",
+        "M31-05",
+        "M31-06",
+        "M31-07",
+        "M31-08",
+      ]
+    entryGate: "M27 test intelligence and M30 policy/release contracts"
+    exitGate: "Certified domain evidence and practitioner validation"
+    evidence: []
+  - id: "M32"
+    phase: "foundation"
+    status: "deferred"
+    owner: "UNASSIGNED"
+    outcome: "Approval-gated agentic SDET copilot"
+    dependsOn: ["M26", "M27", "M28", "M30", "M31"]
+    workstreams:
+      [
+        "M32-01",
+        "M32-02",
+        "M32-03",
+        "M32-04",
+        "M32-05",
+        "M32-06",
+        "M32-07",
+        "M32-08",
+      ]
+    entryGate: "Evidence graph, CI controls, and domain boundaries"
+    exitGate: "Independent re-scan, approval, receipts, privacy, and red-team evidence"
+    evidence: []
+  - id: "M33"
+    phase: "foundation"
+    status: "deferred"
+    owner: "UNASSIGNED"
+    outcome: "Opt-in team trust control-plane pilot"
+    dependsOn: ["M29", "M30", "M31", "M32", "M35"]
+    workstreams:
+      [
+        "M33-01",
+        "M33-02",
+        "M33-03",
+        "M33-04",
+        "M33-05",
+        "M33-06",
+        "M33-07",
+        "M33-08",
+      ]
+    entryGate: "ADR, tenancy, consent, and offline-first boundaries"
+    exitGate: "Consented pilot, RBAC, deletion, reconciliation, and local parity evidence"
+    evidence: []
+  - id: "M34"
+    phase: "foundation"
+    status: "deferred"
+    owner: "UNASSIGNED"
+    outcome: "Enterprise assurance foundation for sovereign and air-gapped operation"
+    dependsOn: ["M33"]
+    workstreams:
+      [
+        "M34-01",
+        "M34-02",
+        "M34-03",
+        "M34-04",
+        "M34-05",
+        "M34-06",
+        "M34-07",
+        "M34-08",
+      ]
+    entryGate: "Control-plane boundary and independent assurance approval"
+    exitGate: "Signed artifacts, recovery drill, isolation, and pilot evidence"
+    evidence: []
+  - id: "M35"
+    phase: "foundation"
+    status: "deferred"
+    owner: "UNASSIGNED"
+    outcome: "Ecosystem and durable community value"
+    dependsOn: ["M28", "M29", "M31", "M32", "M33", "M34"]
+    workstreams:
+      [
+        "M35-01",
+        "M35-02",
+        "M35-03",
+        "M35-04",
+        "M35-05",
+        "M35-06",
+        "M35-07",
+        "M35-08",
+      ]
+    entryGate: "Certified foundation and explicit ecosystem safety contract"
+    exitGate: "Clean consumer, contributor, integration, documentation, and support evidence"
+    evidence: []
+  - id: "M36"
+    phase: "frontier"
+    status: "deferred"
+    owner: "UNASSIGNED"
+    outcome: "Failure sensitivity and surviving-mutation correlation"
+    dependsOn: ["M29", "M30"]
+    workstreams: ["M36-01", "M36-02", "M36-03", "M36-04", "M36-05"]
+    entryGate: "Trust contracts, runtime evidence, and corpus governance"
+    exitGate: "Mutation, fault, false-negative, cost, and release-correlation evidence"
+    evidence: []
+  - id: "M37"
+    phase: "frontier"
+    status: "deferred"
+    owner: "UNASSIGNED"
+    outcome: "Change intelligence and evidence-complete test selection"
+    dependsOn: ["M29", "M36"]
+    workstreams: ["M37-01", "M37-02", "M37-03", "M37-04", "M37-05"]
+    entryGate: "Evidence graph, historical executions, and sensitivity evidence"
+    exitGate: "Differential selection, invalidation, and equivalence evidence"
+    evidence: []
+  - id: "M38"
+    phase: "frontier"
+    status: "deferred"
+    owner: "UNASSIGNED"
+    outcome: "Adversarial challenges that can disprove green results"
+    dependsOn: ["M29", "M30", "M31", "M37"]
+    workstreams: ["M38-01", "M38-02", "M38-03", "M38-04", "M38-05"]
+    entryGate: "Evidence graph, provider contracts, domains, and change topology"
+    exitGate: "Bounded challenge corpus and trust-downgrade evidence"
+    evidence: []
+  - id: "M39"
+    phase: "frontier"
+    status: "deferred"
+    owner: "UNASSIGNED"
+    outcome: "Side-effect-free what-if simulation"
+    dependsOn: ["M37", "M38"]
+    workstreams: ["M39-01", "M39-02", "M39-03", "M39-04", "M39-05"]
+    entryGate: "Change graph, evidence, policies, and challenge trust contract"
+    exitGate: "Replay, uncertainty, no-mutation, and recovery evidence"
+    evidence: []
+  - id: "M40"
+    phase: "frontier"
+    status: "deferred"
+    owner: "UNASSIGNED"
+    outcome: "Universal language expansion with explicit saturation states"
+    dependsOn: ["M28", "M36", "M37"]
+    workstreams: ["M40-01", "M40-02", "M40-03", "M40-04", "M40-05", "M40-06"]
+    entryGate: "Adapter SDK, certification harness, sensitivity, and change graph"
+    exitGate: "Per-language saturation and honest unsupported states"
+    evidence: []
+  - id: "M41"
+    phase: "frontier"
+    status: "deferred"
+    owner: "UNASSIGNED"
+    outcome: "Universal framework packs and certification factory"
+    dependsOn: ["M28", "M40"]
+    workstreams: ["M41-01", "M41-02", "M41-03", "M41-04", "M41-05"]
+    entryGate: "M28 adapter SDK and M40 language infrastructure"
+    exitGate: "Per-framework semantics, runtime, corpus, consumer, and security evidence"
+    evidence: []
+  - id: "M42"
+    phase: "frontier"
+    status: "deferred"
+    owner: "UNASSIGNED"
+    outcome: "Universal CI provider expansion"
+    dependsOn: ["M30", "M37", "M38"]
+    workstreams: ["M42-01", "M42-02", "M42-03", "M42-04", "M42-05"]
+    entryGate: "Provider CIR, change topology, and false-green challenge evidence"
+    exitGate: "Provider-specific permission, trigger, matrix, artifact, and approval evidence"
+    evidence: []
+  - id: "M43"
+    phase: "frontier"
+    status: "deferred"
+    owner: "UNASSIGNED"
+    outcome: "Cross-repository system-of-systems intelligence"
+    dependsOn: ["M29", "M37", "M41", "M42"]
+    workstreams: ["M43-01", "M43-02", "M43-03", "M43-04", "M43-05"]
+    entryGate: "Graph, change, framework, and provider evidence"
+    exitGate: "Cross-repo identity, dependency, ordering, failure, and local-fallback evidence"
+    evidence: []
+  - id: "M44"
+    phase: "frontier"
+    status: "deferred"
+    owner: "UNASSIGNED"
+    outcome: "Historical intelligence and trust-debt learning"
+    dependsOn: ["M12", "M29", "M36", "M37", "M38", "M30"]
+    workstreams: ["M44-01", "M44-02", "M44-03", "M44-04", "M44-05"]
+    entryGate: "Forensics, graph, sensitivity, change, challenge, and CI evidence"
+    exitGate: "Replay, incident, retention, deletion, and uncertainty evidence"
+    evidence: []
+  - id: "M45"
+    phase: "frontier"
+    status: "deferred"
+    owner: "UNASSIGNED"
+    outcome: "Evidence-bound self-improving detection lifecycle"
+    dependsOn: ["M36", "M44", "M47"]
+    workstreams: ["M45-01", "M45-02", "M45-03", "M45-04", "M45-05"]
+    entryGate: "Rule lifecycle, sensitivity, history, and benchmark evidence"
+    exitGate: "Differential TP/FP/performance/crash review and human promotion"
+    evidence: []
+  - id: "M46"
+    phase: "frontier"
+    status: "deferred"
+    owner: "UNASSIGNED"
+    outcome: "Reproducible verification research lab"
+    dependsOn: ["M26", "M40", "M41", "M42", "M43", "M44", "M45"]
+    workstreams: ["M46-01", "M46-02", "M46-03", "M46-04", "M46-05"]
+    entryGate: "Provenance, breadth, evidence, governance, and consent boundaries"
+    exitGate: "Independent, privacy-safe, reproducible research evidence"
+    evidence: []
+  - id: "M47"
+    phase: "frontier"
+    status: "deferred"
+    owner: "UNASSIGNED"
+    outcome: "False-green deception benchmark"
+    dependsOn: ["M38", "M41", "M42", "M45"]
+    workstreams: ["M47-01", "M47-02", "M47-03", "M47-04", "M47-05"]
+    entryGate: "Challenge, provider, framework, and detector lifecycle evidence"
+    exitGate: "Versioned, licensed, independently reproducible benchmark evidence"
+    evidence: []
+  - id: "M48"
+    phase: "frontier"
+    status: "deferred"
+    owner: "UNASSIGNED"
+    outcome: "Scale and performance operating model"
+    dependsOn: ["M19", "M28", "M29", "M37", "M43"]
+    workstreams: ["M48-01", "M48-02", "M48-03", "M48-04", "M48-05"]
+    entryGate: "Runtime, graph, incremental, and system-of-systems contracts"
+    exitGate: "S-XXL budgets, soak, fault, recovery, and fleet evidence"
+    evidence: []
+  - id: "M49"
+    phase: "frontier"
+    status: "deferred"
+    owner: "UNASSIGNED"
+    outcome: "Consistent full product experience across every surface"
+    dependsOn: ["M27", "M30", "M31", "M35", "M48"]
+    workstreams: ["M49-01", "M49-02", "M49-03", "M49-04", "M49-05"]
+    entryGate: "Practitioner UX, CI, domains, ecosystem, and scale evidence"
+    exitGate: "Canonical-result parity, accessibility, localization, and recovery evidence"
+    evidence: []
+  - id: "M50"
+    phase: "frontier"
+    status: "deferred"
+    owner: "UNASSIGNED"
+    outcome: "Auditable Trust OS operating model"
+    dependsOn:
+      [
+        "M26",
+        "M27",
+        "M28",
+        "M29",
+        "M30",
+        "M31",
+        "M32",
+        "M33",
+        "M34",
+        "M35",
+        "M36",
+        "M37",
+        "M38",
+        "M39",
+        "M40",
+        "M41",
+        "M42",
+        "M43",
+        "M44",
+        "M45",
+        "M46",
+        "M47",
+        "M48",
+        "M49",
+      ]
+    workstreams: ["M50-01", "M50-02", "M50-03", "M50-04", "M50-05"]
+    entryGate: "M26-M49 evidence and no blocking gaps"
+    exitGate: "Full change-to-immutable-release-proof chain and independent assurance"
+    evidence: []

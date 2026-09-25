@@ -18,7 +18,7 @@ Mjölnir 找出不可能失败的测试和不可能变红的流水线，<br />
 [![node](https://img.shields.io/badge/node-%E2%89%A5%2022.18-1F6F7C.svg?style=flat-square&labelColor=0A1119)](https://nodejs.org)
 
 ```bash
-npx mjolnir-qa@latest
+npx mjolnir-qa@3.0.0
 ```
 
 [实际效果](#实际效果) · [快速开始](#快速开始) · [能发现什么](#mjölnir-能发现什么) · [评分](#可信度评分) · [证据](#证据模型) · [运行取证](#运行时取证) · [CI](#ci-完整性) · [智能体](#ai-智能体) · [安全](#信任与安全) · [局限](#mjölnir-无法告诉你的事) · [文档](#文档)
@@ -28,15 +28,29 @@ npx mjolnir-qa@latest
 
 [English](README.md) | 简体中文 | [繁體中文](README.zht.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | [日本語](README.ja.md) | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | [Türkçe](README.tr.md) | [Українська](README.uk.md) | [বাংলা](README.bn.md) | [Ελληνικά](README.gr.md) | [Tiếng Việt](README.vi.md) | [עברית](README.he.md) | [العربية](README.ar.md) | [Bosanski](README.bs.md)
 
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-15.
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-25.
 
-<!-- Source hash: 3541b09e8d04 -->
+<!-- Source hash: `f3d2a07f2d68` -->
 
 </details>
 
 </div>
 
 <br />
+
+## Release status (English canonical)
+
+The published line is `3.0.0`; this working tree is the `4.0.0-rc.1`
+candidate. `3.0.0` must not be republished or retagged. The M26–M50 program is
+tracked in
+[`docs/ROADMAP.yaml`](docs/ROADMAP.yaml); provisional capability contracts
+are not automatically enabled or certified. Repository-owned checks pass, but
+Trust certification remains `NOT_CERTIFIED` until the protected holdout,
+real-world, platform/consumer, remote-workflow, support-matrix, and corpus
+evidence gates pass. Run `npm run m26:readiness` before treating any candidate
+as releasable. This document does not publish a tag or authorize a release.
+
+> Machine-assisted canonical text. Translate this block before treating it as localized copy.
 
 ## 绿色对勾是一种声明，而不是证明
 
@@ -58,7 +72,7 @@ npx mjolnir-qa@latest
 
 <sub>演示扫描为该 workflow 报告的每一条发现，都标在报告的行上。由 `npm run docs:readme-brand` 根据 [`demo-report.json`](assets/readme/demo-report.json) 生成，并在 CI 中锁定以防漂移。</sub>
 
-**严格模式。** 最激进的检测——`.only`、`continue-on-error`、空测试、滥用重试——位于隔离层。它们仅在 `--strict` 下运行，且限定为 `info` 严重级别：只标记，从不拦截。默认扫描（不带 `--strict` 的 `npx mjolnir-qa@latest`）仅覆盖核心和扩展规则。需要咨询层时，加上 `--strict`。
+**严格模式。** 最激进的检测——`.only`、`continue-on-error`、空测试、滥用重试——位于隔离层。它们仅在 `--strict` 下运行，且限定为 `info` 严重级别：只标记，从不拦截。默认扫描（不带 `--strict` 的 `npx mjolnir-qa@3.0.0`）仅覆盖核心和扩展规则。需要咨询层时，加上 `--strict`。
 
 Mjölnir 读取测试套件、CI workflow，以及（如果有的话）一次真实运行的报告。它不会运行你的测试，不会安装你的依赖，也不会执行它扫描的代码。当它没有证据时，它会直说，而不是编造信心：
 
@@ -93,7 +107,7 @@ Mjölnir 读取测试套件、CI workflow，以及（如果有的话）一次真
 
 <p align="center">
   <a href="assets/video/mjolnir-demo.mp4">
-    <img src="assets/video/mjolnir-demo-poster.png" alt="演示录像中的一帧：npx mjolnir-qa@latest 在终端窗口中扫描演示仓库" width="900" />
+    <img src="assets/video/mjolnir-demo-poster.png" alt="演示录像中的一帧：npx mjolnir-qa@3.0.0 在终端窗口中扫描演示仓库" width="900" />
   </a>
 </p>
 
@@ -162,7 +176,7 @@ Docs: mjolnir rules --md   (full catalog, this rule included)
 ## 快速开始
 
 ```bash
-npx mjolnir-qa@latest
+npx mjolnir-qa@3.0.0
 ```
 
 它扫描当前目录并打印 Trust Report：发现了什么、你能在多大程度上信任它、原因，以及下一步该做什么。当门禁及以上级别没有任何发现时，它以 `0` 退出。
@@ -170,24 +184,39 @@ npx mjolnir-qa@latest
 在 CI 中，只扫描分支引入的内容，这样遗留的测试套件就不会淹没你的第一个 pull request：
 
 ```bash
-npx mjolnir-qa@latest --scope changed
+npx mjolnir-qa@3.0.0 --scope changed
 ```
 
-`mjolnir ci install` 会把它写成一个 GitHub Actions workflow，使用固定在 `v1` 主版本标签上的 [action](https://github.com/Sergey-Bar/Mjolnir#readme)（或使用 `--no-action` 改用普通 `npx`）。在你决定让它拦截之前，它始终只是建议性的。
+`mjolnir ci install` 会把它写成一个 GitHub Actions workflow，使用固定在 `v3` 主版本标签上的 [action](https://github.com/Sergey-Bar/Mjolnir#readme)（或使用 `--no-action` 改用普通 `npx`）。在你决定让它拦截之前，它始终只是建议性的。
 
-| 命令                                | 作用                                          |
-| ----------------------------------- | --------------------------------------------- |
-| `mjolnir`                           | Trust Report：结论、置信度、下一步行动        |
-| `mjolnir --scope changed`           | 只检查你的分支引入的内容（CI 用法）           |
-| `mjolnir ci install`                | 生成建议性的 PR workflow（基于 action）       |
-| `mjolnir explain QA-CI-001`         | 是什么、为什么、怎么修，外加实测 FP 率        |
-| `mjolnir why src/a.spec.ts:42`      | 解释这一行为什么被标记。从不拦截。            |
-| `mjolnir forensics ./test-results/` | 来自真实运行的运行时证据                      |
-| `mjolnir trust-report`              | 自包含的 Trust Artifact（md + json）          |
-| `mjolnir handoff`                   | 给编码智能体的修复计划                        |
-| `mjolnir --json` / `--format sarif` | 机器可读输出，GitHub Code Scanning            |
-| `mjolnir --format codequality`      | GitLab Code Quality 报告（MR 组件所用的产物） |
-| `mjolnir --strict`                  | 同时运行 quarantine 级别的规则（FP 风险更高） |
+| 命令                                          | 作用                                            |
+| --------------------------------------------- | ----------------------------------------------- |
+| `mjolnir`                                     | Trust Report：结论、置信度、下一步行动          |
+| `mjolnir --scope changed`                     | 只检查你的分支引入的内容（CI 用法）             |
+| `mjolnir ci install`                          | 生成建议性的 PR workflow（基于 action）         |
+| `mjolnir business-case`                       | ROI estimate: projected savings per finding     |
+| `mjolnir release-report`                      | Release readiness: GO, CONDITIONAL GO, or NO-GO |
+| `mjolnir release-trust`                       | 12-dimension release assurance verdict          |
+| `mjolnir report`                              | Generate a Playwright-compatible report         |
+| `mjolnir trend`                               | Record, show, or diff local quality snapshots   |
+| `mjolnir policy`                              | Initialize, validate, or check policy gates     |
+| `mjolnir quarantine`                          | Review deterministic proposals (prototype)      |
+| `mjolnir analyze --cross-file`                | Bounded cross-file analysis                     |
+| `mjolnir ci-adapter github .`                 | Generate CI templates for supported providers   |
+| `mjolnir dashboard`                           | Generate a self-contained quality dashboard     |
+| `mjolnir exec-report`                         | Executive KPIs and recommendations (advisory)   |
+| `mjolnir enterprise`                          | Self-hosted templates (prototype)               |
+| `mjolnir maturity`                            | Assess maturity or display maturity levels      |
+| `mjolnir mutation tests/mutation-report.json` | Analyze mutation reports; never promotes trust  |
+| `mjolnir mcp`                                 | Read-only MCP tools over stdio                  |
+| `mjolnir explain QA-CI-001`                   | 是什么、为什么、怎么修，外加实测 FP 率          |
+| `mjolnir why src/a.spec.ts:42`                | 解释这一行为什么被标记。从不拦截。              |
+| `mjolnir forensics ./test-results/`           | 来自真实运行的运行时证据                        |
+| `mjolnir trust-report`                        | 自包含的 Trust Artifact（md + json）            |
+| `mjolnir handoff`                             | 给编码智能体的修复计划                          |
+| `mjolnir --json` / `--format sarif`           | 机器可读输出，GitHub Code Scanning              |
+| `mjolnir --format codequality`                | GitLab Code Quality 报告（MR 组件所用的产物）   |
+| `mjolnir --strict`                            | 同时运行 quarantine 级别的规则（FP 风险更高）   |
 
 <details>
 <summary><strong>其他所有命令</strong> — 不稳定测试分诊、报告、治理</summary>
@@ -452,18 +481,18 @@ mjolnir ci install
 或者把 Marketplace 上的 action 加到你现有的 workflow 中：
 
 ```yaml
-- uses: Sergey-Bar/Mjolnir@v1
+- uses: Sergey-Bar/Mjolnir@v3
   with:
     scope: changed
     fail-on: error
 ```
 
-固定 `@v1` 以跟随主版本线，或固定一个确切的标签（`@v0.5.32`）以获得可复现的门禁。[docs/DISTRIBUTION-KIT.md](docs/DISTRIBUTION-KIT.md) 介绍了 Marketplace、Smithery 和各个 MCP 注册表。
+固定 `@v3` 以跟随主版本线，或固定一个确切的标签（`@v0.5.32`）以获得可复现的门禁。[docs/DISTRIBUTION-KIT.md](docs/DISTRIBUTION-KIT.md) 介绍了 Marketplace、Smithery 和各个 MCP 注册表。
 
 要把发现推送到 GitHub Code Scanning，上传 SARIF（需要在 workflow 或 job 范围内设置 `security-events: write`）：
 
 ```yaml
-- run: npx mjolnir-qa@latest --format sarif > mjolnir.sarif
+- run: npx mjolnir-qa@3.0.0 --format sarif > mjolnir.sarif
   continue-on-error: true
 - uses: github/codeql-action/upload-sarif@v3
   if: ${{ !cancelled() }}
@@ -476,7 +505,7 @@ mjolnir ci install
 ### 变更范围归因
 
 ```bash
-npx mjolnir-qa@latest --scope changed
+npx mjolnir-qa@3.0.0 --scope changed
 ```
 
 发现会归因到你的分支新增的行，以 **merge-base** 为基准计算。范围与完整扫描发现的文件集合相同（TS/JS spec 和适配器配置、`test_*.py`、`*Test.java`、`*Tests.cs`、`.github/workflows/*.yml`），再加上未提交和未跟踪的改动，所以在你提交之前就能使用。基准按 `main → master → origin/main → origin/master → origin/HEAD` 的顺序解析；可以用 `--base <ref>` 覆盖。
@@ -504,7 +533,7 @@ SCAN → EVIDENCE → HANDOFF → AGENT → RE-SCAN → PROOF
 添加到自带 CLI 的客户端：
 
 ```bash
-claude mcp add mjolnir -- npx -y mjolnir-qa@latest mcp
+claude mcp add mjolnir -- npx -y mjolnir-qa@3.0.0 mcp
 ```
 
 或者添加到任何接受 `mcpServers` 配置块的客户端：
@@ -512,7 +541,7 @@ claude mcp add mjolnir -- npx -y mjolnir-qa@latest mcp
 ```json
 {
   "mcpServers": {
-    "mjolnir": { "command": "npx", "args": ["-y", "mjolnir-qa@latest", "mcp"] }
+    "mjolnir": { "command": "npx", "args": ["-y", "mjolnir-qa@3.0.0", "mcp"] }
   }
 }
 ```
@@ -603,7 +632,7 @@ mjolnir create-rule QA-PW-140 --title "Screenshot without diff bound"
 <img src="assets/readme/closing.svg" alt="在你的仓库上运行它。" width="100%" />
 
 ```bash
-npx mjolnir-qa@latest
+npx mjolnir-qa@3.0.0
 ```
 
 [阅读指南](https://sergey-bar.github.io/Mjolnir/guide/getting-started) · [文档站点](https://sergey-bar.github.io/Mjolnir/) · [npm](https://www.npmjs.com/package/mjolnir-qa)

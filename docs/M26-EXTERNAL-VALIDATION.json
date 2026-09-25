@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "record_id": "EXT-M26-001",
+  "protocol": "docs/EXTERNAL-EVIDENCE-REQUEST.md; consent and observation not started.",
+  "owner": "UNASSIGNED",
+  "status": "BLOCKED",
+  "execution_status": "NOT_RUN",
+  "candidate": null,
+  "observed_at": null,
+  "consent": {
+    "state": "NOT_REQUESTED",
+    "evidence": []
+  },
+  "evidence": [],
+  "retention": {
+    "policy": "NOT_DEFINED",
+    "deletion_status": "BLOCKED"
+  },
+  "support_requests": [],
+  "claim_review": {
+    "status": "NOT_RUN",
+    "evidence": []
+  },
+  "limitations": [
+    "No design partner, task record, consent, holdout, platform, or consumer-install evidence exists."
+  ],
+  "result": null
+}

@@ -434,6 +434,12 @@ interface CorpusScanEntry extends BaselineEntry {
     analysisStatus: ScanResult["analysisStatus"];
     scopeIntegrity?: ScanResult["scopeIntegrity"];
     rulesDigest?: string;
+    ruleCrashes?: Array<{
+      ruleId: string;
+      file: string;
+      message: string;
+      stack?: string;
+    }>;
   };
 }
 
@@ -533,18 +539,35 @@ function cloneRepo(repo: CorpusRepo): string {
 }
 
 async function scanRepo(dir: string): Promise<CorpusScanEntry> {
-  const result = await runScan({
-    target: dir,
-    json: true,
-    verbose: true,
-    maxDurationMs: 120_000,
-    scopeChanged: false,
-    format: "json",
-    // Include quarantine-tier rules — they are exactly the ones whose
-    // real-world FP rate matters most, and the count-lock should notice
-    // if one starts firing even harder.
-    strict: true,
-  });
+  const ruleCrashes: NonNullable<
+    CorpusScanEntry["diagnostics"]["ruleCrashes"]
+  > = [];
+  const result = await runScan(
+    {
+      target: dir,
+      json: true,
+      verbose: true,
+      maxDurationMs: 120_000,
+      scopeChanged: false,
+      format: "json",
+      // Include quarantine-tier rules — they are exactly the ones whose
+      // real-world FP rate matters most, and the count-lock should notice
+      // if one starts firing even harder.
+      strict: true,
+    },
+    {
+      onRuleCrash: (ruleId, file, error) => {
+        const normalized =
+          error instanceof Error ? error : new Error(String(error));
+        ruleCrashes.push({
+          ruleId,
+          file,
+          message: normalized.message,
+          ...(normalized.stack ? { stack: normalized.stack } : {}),
+        });
+      },
+    },
+  );
   const countsByRule: Record<string, number> = {};
   for (const f of result.findings) {
     countsByRule[f.ruleId] = (countsByRule[f.ruleId] ?? 0) + 1;
@@ -574,6 +597,7 @@ async function scanRepo(dir: string): Promise<CorpusScanEntry> {
       ...(result.runIdentity?.rulesDigest
         ? { rulesDigest: result.runIdentity.rulesDigest }
         : {}),
+      ...(ruleCrashes.length > 0 ? { ruleCrashes } : {}),
     },
   };
 }
@@ -643,6 +667,11 @@ function writeBaseline(name: string, entry: BaselineEntry): void {
 
 async function main(): Promise<number> {
   const update = process.argv.includes("--update");
+  const refreshProvenance = process.argv.includes("--refresh-provenance");
+  if (update && refreshProvenance) {
+    console.error("--update and --refresh-provenance are mutually exclusive");
+    return 1;
+  }
   // --only <name>[,<name>]: re-check or re-record a subset (used to
   // re-verify a repo after a transient truncation without re-scanning
   // the whole corpus). Never narrows the failure threshold: a filtered
@@ -699,7 +728,9 @@ async function main(): Promise<number> {
     } catch (error) {
       console.error(
         `  FAIL: scan of ${repo.name} crashed — ${
-          error instanceof Error ? error.message : String(error)
+          error instanceof Error
+            ? (error.stack ?? error.message)
+            : String(error)
         }`,
       );
       failedScans.push(repo.name);
@@ -712,6 +743,20 @@ async function main(): Promise<number> {
       ...scan,
     };
     const baseline = loadBaseline(repo.name);
+
+    for (const crash of scan.diagnostics.ruleCrashes ?? []) {
+      console.error(
+        `  FAIL: ${repo.name} rule crash: ${crash.ruleId} at ${crash.file}: ${crash.message}`,
+      );
+      if (crash.stack) console.error(crash.stack);
+      regressed = true;
+    }
+    if ((scan.diagnostics.analysisStatus.parseFallbacks ?? 0) > 0) {
+      console.error(
+        `  FAIL: ${repo.name} used ${scan.diagnostics.analysisStatus.parseFallbacks} parser fallback(s)`,
+      );
+      regressed = true;
+    }
 
     if (current.partial) {
       console.error(
@@ -754,8 +799,10 @@ async function main(): Promise<number> {
     const review = reviewCorpusMeasurement(baseline, current);
     if (review.provenanceFailure) {
       console.error(`  FAIL: ${repo.name} ${review.provenanceFailure}`);
-      invalidBaselines.push(repo.name);
-      if (!update) regressed = true;
+      if (!update && !refreshProvenance) {
+        invalidBaselines.push(repo.name);
+        regressed = true;
+      }
     }
 
     let repoRegressed = false;
@@ -793,7 +840,14 @@ async function main(): Promise<number> {
     }
     regressed ||= repoRegressed;
 
-    if (update) {
+    if (refreshProvenance) {
+      if (review.provenanceFailure && review.countDrifts.length === 0) {
+        pendingUpdates.push({
+          name: repo.name,
+          entry: toBaselineEntry(current),
+        });
+      }
+    } else if (update) {
       pendingUpdates.push({ name: repo.name, entry: toBaselineEntry(current) });
     }
   }
@@ -847,7 +901,7 @@ async function main(): Promise<number> {
   }
 
   if (regressed) {
-    if (update) {
+    if (update || refreshProvenance) {
       console.error("Baseline update rejected; no files were written.");
     } else {
       console.error(
@@ -857,12 +911,12 @@ async function main(): Promise<number> {
     return 1;
   }
 
-  if (update) {
+  if (update || refreshProvenance) {
     for (const pending of pendingUpdates) {
       writeBaseline(pending.name, pending.entry);
     }
     console.log(
-      `Baseline updated after review (${pendingUpdates.length} files).`,
+      `Baseline updated after review (${pendingUpdates.length} files${refreshProvenance ? "; provenance-only mode" : ""}).`,
     );
     return 0;
   }

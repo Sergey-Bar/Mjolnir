@@ -65,6 +65,13 @@ describe("stable release workflow", () => {
     expect(run).toContain("--provenance");
     expect(run).not.toContain("--tag next");
     expect(run).toContain("dist-tags.latest");
+    expect(run).toContain("dist.integrity");
+    expect(run).toContain("LOCAL_INTEGRITY");
+    const verifyRun = workflow.jobs.verify?.steps
+      ?.map((step) => step.run ?? "")
+      .join("\n");
+    expect(verifyRun).toContain("scripts/generate-sbom.mjs");
+    expect(verifyRun).toContain(".sbom.spdx.json");
   });
 
   it("creates immutable stable tags only after approval", () => {
@@ -74,12 +81,30 @@ describe("stable release workflow", () => {
     const run = tag?.steps?.map((step) => step.run ?? "").join("\n");
     expect(run).toContain('git tag -a "$TAG"');
     expect(run).toContain('git push origin "refs/tags/$TAG"');
-    expect(run).not.toContain("--force");
     const identityStep = tag?.steps?.find((step) =>
       step.run?.includes('git tag -a "$TAG"'),
     );
+    expect(identityStep?.run).not.toContain("--force");
     expect(identityStep?.env?.GIT_AUTHOR_NAME).toBe("github-actions[bot]");
     expect(identityStep?.env?.GIT_COMMITTER_NAME).toBe("github-actions[bot]");
+  });
+
+  it("moves only the current v3 Action major after a stable release", () => {
+    const run = workflow.jobs.tag?.steps
+      ?.map((step) => step.run ?? "")
+      .join("\n");
+    expect(run).toContain('if [[ "$MAJOR" != "3" ]]');
+    expect(run).toContain('git tag -f "v$MAJOR" "$TAG_COMMIT"');
+    expect(run).toContain('git push origin "refs/tags/v$MAJOR" --force');
+  });
+
+  it("attaches SBOM and never clobbers release assets", () => {
+    const run = workflow.jobs["github-release"]?.steps
+      ?.map((step) => step.run ?? "")
+      .join("\n");
+    expect(run).toContain('sha256sum --check "$SBOM.sha256"');
+    expect(run).toContain("release-artifact/$SBOM#$SBOM");
+    expect(run).not.toContain("--clobber");
   });
 
   it("supports publishing a prior verified artifact without rebuilding", () => {
@@ -100,6 +125,33 @@ describe("stable release workflow", () => {
     expect(source).toContain(
       "EXPECTED_COMMIT: ${{ needs.verify.outputs.tag-commit }}",
     );
+  });
+
+  it("runs the exact stable changelog gate before certification", () => {
+    const run = workflow.jobs.verify?.steps
+      ?.map((step) => step.run ?? "")
+      .join("\n");
+    expect(run).toContain(
+      'npm run changelog:check -- --expect-version "$VERSION"',
+    );
+    expect(run).toContain('git diff --quiet "$BASE_REF" HEAD -- src/rules');
+    expect(run).toContain("--rules-touched");
+  });
+
+  it("requires authorized candidate evidence before certification", () => {
+    const run = workflow.jobs.verify?.steps
+      ?.map((step) => step.run ?? "")
+      .join("\n");
+    expect(run).toContain("npm run m26:audit");
+    expect(run).toContain("npm run candidate:readiness");
+    const readiness = workflow.jobs.verify?.steps?.findIndex(
+      (step) => step.run?.includes("npm run m26:audit") === true,
+    );
+    const certification = workflow.jobs.verify?.steps?.findIndex(
+      (step) => step.run === "npm run ci-local",
+    );
+    expect(readiness).toBeGreaterThanOrEqual(0);
+    expect(readiness).toBeLessThan(certification ?? -1);
   });
 
   it("validates the packaged CLI version banner", () => {

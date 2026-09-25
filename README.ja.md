@@ -18,7 +18,7 @@ Mjölnir は、失敗しようがないテストと赤くなりようがない�
 [![node](https://img.shields.io/badge/node-%E2%89%A5%2022.18-1F6F7C.svg?style=flat-square&labelColor=0A1119)](https://nodejs.org)
 
 ```bash
-npx mjolnir-qa@latest
+npx mjolnir-qa@3.0.0
 ```
 
 [動作を見る](#動作を見る) · [クイックスタート](#クイックスタート) · [検出できるもの](#mjölnir-が検出するもの) · [スコア](#信頼度スコア) · [証拠](#証拠モデル) · [実行フォレンジック](#実行時フォレンジック) · [CI](#ci-の整合性) · [エージェント](#ai-エージェント) · [セキュリティ](#信頼とセキュリティ) · [限界](#mjölnir-が教えてくれないこと) · [ドキュメント](#ドキュメント)
@@ -28,15 +28,29 @@ npx mjolnir-qa@latest
 
 [English](README.md) | [简体中文](README.zh.md) | [繁體中文](README.zht.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | 日本語 | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | [Türkçe](README.tr.md) | [Українська](README.uk.md) | [বাংলা](README.bn.md) | [Ελληνικά](README.gr.md) | [Tiếng Việt](README.vi.md) | [עברית](README.he.md) | [العربية](README.ar.md) | [Bosanski](README.bs.md)
 
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-15.
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-25.
 
-<!-- Source hash: 3541b09e8d04 -->
+<!-- Source hash: `f3d2a07f2d68` -->
 
 </details>
 
 </div>
 
 <br />
+
+## Release status (English canonical)
+
+The published line is `3.0.0`; this working tree is the `4.0.0-rc.1`
+candidate. `3.0.0` must not be republished or retagged. The M26–M50 program is
+tracked in
+[`docs/ROADMAP.yaml`](docs/ROADMAP.yaml); provisional capability contracts
+are not automatically enabled or certified. Repository-owned checks pass, but
+Trust certification remains `NOT_CERTIFIED` until the protected holdout,
+real-world, platform/consumer, remote-workflow, support-matrix, and corpus
+evidence gates pass. Run `npm run m26:readiness` before treating any candidate
+as releasable. This document does not publish a tag or authorize a release.
+
+> Machine-assisted canonical text. Translate this block before treating it as localized copy.
 
 ## 緑のチェックは主張であって、証明ではない
 
@@ -58,7 +72,7 @@ npx mjolnir-qa@latest
 
 <sub>この workflow についてデモスキャンが報告したすべての検出結果を、報告された行に示しています。`npm run docs:readme-brand` により [`demo-report.json`](assets/readme/demo-report.json) から生成され、CI でずれがないよう固定されています。</sub>
 
-**厳格モード。** 最も攻撃的な検出 — `.only`、`continue-on-error`、空のテスト、リトライの悪用 — は検疫ティアに属します。`--strict` の下でのみ実行され、`info` 重要度に制限されます：フラグを立てますが、決してゲートを閉じません。デフォルトのスキャン（`--strict` なしの `npx mjolnir-qa@latest`）はコアおよび拡張ルールのみをカバーします。アドバイザリレイヤーも欲しい場合は `--strict` を追加してください。
+**厳格モード。** 最も攻撃的な検出 — `.only`、`continue-on-error`、空のテスト、リトライの悪用 — は検疫ティアに属します。`--strict` の下でのみ実行され、`info` 重要度に制限されます：フラグを立てますが、決してゲートを閉じません。デフォルトのスキャン（`--strict` なしの `npx mjolnir-qa@3.0.0`）はコアおよび拡張ルールのみをカバーします。アドバイザリレイヤーも欲しい場合は `--strict` を追加してください。
 
 Mjölnir は、テストスイート、CI workflow、そして手元にあれば実際の実行レポートを読みます。テストを実行することも、依存関係をインストールすることも、スキャン対象のコードを実行することもありません。そして証拠がないときは、確信をでっち上げずにそう伝えます。
 
@@ -93,7 +107,7 @@ CI workflow を持つ小さな Playwright スイート、[`examples/demo-repo`](
 
 <p align="center">
   <a href="assets/video/mjolnir-demo.mp4">
-    <img src="assets/video/mjolnir-demo-poster.png" alt="デモ録画の 1 フレーム：ターミナルウィンドウで npx mjolnir-qa@latest がデモリポジトリをスキャンしている様子" width="900" />
+    <img src="assets/video/mjolnir-demo-poster.png" alt="デモ録画の 1 フレーム：ターミナルウィンドウで npx mjolnir-qa@3.0.0 がデモリポジトリをスキャンしている様子" width="900" />
   </a>
 </p>
 
@@ -162,7 +176,7 @@ Docs: mjolnir rules --md   (full catalog, this rule included)
 ## クイックスタート
 
 ```bash
-npx mjolnir-qa@latest
+npx mjolnir-qa@3.0.0
 ```
 
 カレントディレクトリをスキャンし、Trust Report を出力します。何が見つかったか、どこまで信頼できるか、その理由、次に何をすべきか。ゲート以上のものが何も見つからなければ `0` で終了します。
@@ -170,24 +184,39 @@ npx mjolnir-qa@latest
 CI では、ブランチが持ち込んだものだけをスキャンしましょう。そうすれば、レガシーなスイートが最初の pull request を埋もれさせることはありません。
 
 ```bash
-npx mjolnir-qa@latest --scope changed
+npx mjolnir-qa@3.0.0 --scope changed
 ```
 
-`mjolnir ci install` はこれを GitHub Actions の workflow として書き出します。メジャータグ `v1` に固定した [action](https://github.com/Sergey-Bar/Mjolnir#readme) を使います（`--no-action` を付ければ素の `npx`）。ブロックすべきだとあなたが決めるまで、助言的な扱いのままです。
+`mjolnir ci install` はこれを GitHub Actions の workflow として書き出します。メジャータグ `v3` に固定した [action](https://github.com/Sergey-Bar/Mjolnir#readme) を使います（`--no-action` を付ければ素の `npx`）。ブロックすべきだとあなたが決めるまで、助言的な扱いのままです。
 
-| コマンド                            | 内容                                                              |
-| ----------------------------------- | ----------------------------------------------------------------- |
-| `mjolnir`                           | Trust Report：判定、確信度、次のアクション                        |
-| `mjolnir --scope changed`           | ブランチが持ち込んだものだけ（CI 向けの形）                       |
-| `mjolnir ci install`                | 助言的な PR workflow を生成（action ベース）                      |
-| `mjolnir explain QA-CI-001`         | 何が、なぜ、どう直すか、そして実測 FP 率                          |
-| `mjolnir why src/a.spec.ts:42`      | この行がなぜ検出されたのか。ゲートにはなりません。                |
-| `mjolnir forensics ./test-results/` | 実際の実行から得た実行時の証拠                                    |
-| `mjolnir trust-report`              | 自己完結型の Trust Artifact（md + json）                          |
-| `mjolnir handoff`                   | コーディングエージェント向けの修正計画                            |
-| `mjolnir --json` / `--format sarif` | 機械可読な出力、GitHub Code Scanning                              |
-| `mjolnir --format codequality`      | GitLab Code Quality レポート（MR ウィジェット用アーティファクト） |
-| `mjolnir --strict`                  | quarantine ティアのルールも実行（FP リスクは高め）                |
+| コマンド                                      | 内容                                                              |
+| --------------------------------------------- | ----------------------------------------------------------------- |
+| `mjolnir`                                     | Trust Report：判定、確信度、次のアクション                        |
+| `mjolnir --scope changed`                     | ブランチが持ち込んだものだけ（CI 向けの形）                       |
+| `mjolnir ci install`                          | 助言的な PR workflow を生成（action ベース）                      |
+| `mjolnir business-case`                       | ROI estimate: projected savings per finding                       |
+| `mjolnir release-report`                      | Release readiness: GO, CONDITIONAL GO, or NO-GO                   |
+| `mjolnir release-trust`                       | 12-dimension release assurance verdict                            |
+| `mjolnir report`                              | Generate a Playwright-compatible report                           |
+| `mjolnir trend`                               | Record, show, or diff local quality snapshots                     |
+| `mjolnir policy`                              | Initialize, validate, or check policy gates                       |
+| `mjolnir quarantine`                          | Review deterministic proposals (prototype)                        |
+| `mjolnir analyze --cross-file`                | Bounded cross-file analysis                                       |
+| `mjolnir ci-adapter github .`                 | Generate CI templates for supported providers                     |
+| `mjolnir dashboard`                           | Generate a self-contained quality dashboard                       |
+| `mjolnir exec-report`                         | Executive KPIs and recommendations (advisory)                     |
+| `mjolnir enterprise`                          | Self-hosted templates (prototype)                                 |
+| `mjolnir maturity`                            | Assess maturity or display maturity levels                        |
+| `mjolnir mutation tests/mutation-report.json` | Analyze mutation reports; never promotes trust                    |
+| `mjolnir mcp`                                 | Read-only MCP tools over stdio                                    |
+| `mjolnir explain QA-CI-001`                   | 何が、なぜ、どう直すか、そして実測 FP 率                          |
+| `mjolnir why src/a.spec.ts:42`                | この行がなぜ検出されたのか。ゲートにはなりません。                |
+| `mjolnir forensics ./test-results/`           | 実際の実行から得た実行時の証拠                                    |
+| `mjolnir trust-report`                        | 自己完結型の Trust Artifact（md + json）                          |
+| `mjolnir handoff`                             | コーディングエージェント向けの修正計画                            |
+| `mjolnir --json` / `--format sarif`           | 機械可読な出力、GitHub Code Scanning                              |
+| `mjolnir --format codequality`                | GitLab Code Quality レポート（MR ウィジェット用アーティファクト） |
+| `mjolnir --strict`                            | quarantine ティアのルールも実行（FP リスクは高め）                |
 
 <details>
 <summary><strong>その他すべてのコマンド</strong> — 不安定なテストのトリアージ、レポート、ガバナンス</summary>
@@ -452,18 +481,18 @@ mjolnir ci install
 または、既存の workflow に Marketplace の action を追加します：
 
 ```yaml
-- uses: Sergey-Bar/Mjolnir@v1
+- uses: Sergey-Bar/Mjolnir@v3
   with:
     scope: changed
     fail-on: error
 ```
 
-メジャーラインに追従するなら `@v1` を、再現可能なゲートにするなら正確なタグ（`@v0.5.32`）を固定してください。[docs/DISTRIBUTION-KIT.md](docs/DISTRIBUTION-KIT.md) では Marketplace、Smithery、MCP レジストリについて説明しています。
+メジャーラインに追従するなら `@v3` を、再現可能なゲートにするなら正確なタグ（`@v0.5.32`）を固定してください。[docs/DISTRIBUTION-KIT.md](docs/DISTRIBUTION-KIT.md) では Marketplace、Smithery、MCP レジストリについて説明しています。
 
 検出結果を GitHub Code Scanning に送るには、SARIF をアップロードします（workflow または job スコープで `security-events: write` が必要）：
 
 ```yaml
-- run: npx mjolnir-qa@latest --format sarif > mjolnir.sarif
+- run: npx mjolnir-qa@3.0.0 --format sarif > mjolnir.sarif
   continue-on-error: true
 - uses: github/codeql-action/upload-sarif@v3
   if: ${{ !cancelled() }}
@@ -476,7 +505,7 @@ GitLab では、`--format codequality` が MR ウィジェットと diff のア�
 ### 変更範囲への帰属
 
 ```bash
-npx mjolnir-qa@latest --scope changed
+npx mjolnir-qa@3.0.0 --scope changed
 ```
 
 検出結果は、ブランチが追加した行に、**merge-base** を基準として帰属されます。範囲は完全スキャンが見つけるのと同じファイル集合（TS/JS の spec とアダプターの設定、`test_*.py`、`*Test.java`、`*Tests.cs`、`.github/workflows/*.yml`）に、未コミットおよび未追跡の変更を加えたものなので、コミット前でも使えます。ベースは `main → master → origin/main → origin/master → origin/HEAD` の順で解決され、`--base <ref>` で上書きできます。
@@ -504,7 +533,7 @@ SCAN → EVIDENCE → HANDOFF → AGENT → RE-SCAN → PROOF
 独自の CLI を持つクライアントに追加する場合：
 
 ```bash
-claude mcp add mjolnir -- npx -y mjolnir-qa@latest mcp
+claude mcp add mjolnir -- npx -y mjolnir-qa@3.0.0 mcp
 ```
 
 または、`mcpServers` ブロックを受け付ける任意のクライアントに：
@@ -512,7 +541,7 @@ claude mcp add mjolnir -- npx -y mjolnir-qa@latest mcp
 ```json
 {
   "mcpServers": {
-    "mjolnir": { "command": "npx", "args": ["-y", "mjolnir-qa@latest", "mcp"] }
+    "mjolnir": { "command": "npx", "args": ["-y", "mjolnir-qa@3.0.0", "mcp"] }
   }
 }
 ```
@@ -603,7 +632,7 @@ mjolnir create-rule QA-PW-140 --title "Screenshot without diff bound"
 <img src="assets/readme/closing.svg" alt="あなたのリポジトリで試してみてください。" width="100%" />
 
 ```bash
-npx mjolnir-qa@latest
+npx mjolnir-qa@3.0.0
 ```
 
 [ガイドを読む](https://sergey-bar.github.io/Mjolnir/guide/getting-started) · [ドキュメントサイト](https://sergey-bar.github.io/Mjolnir/) · [npm](https://www.npmjs.com/package/mjolnir-qa)

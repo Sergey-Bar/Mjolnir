@@ -35,6 +35,7 @@ import { parseNpmPackJson } from "../helpers/npm-pack-json.js";
 
 const ROOT = resolve(import.meta.dirname, "..", "..");
 const RUN = process.env["RUN_REGISTRY_INSTALL_TEST"] === "1";
+const REGISTRY_VERSION = process.env["REGISTRY_INSTALL_VERSION"];
 
 let workDir: string;
 let installDir: string;
@@ -48,27 +49,33 @@ let entryPath: string;
 
 beforeAll(() => {
   if (!RUN) return;
-  let tarball = process.env["REGISTRY_INSTALL_TARBALL"];
-  if (tarball) {
-    tarball = resolve(ROOT, tarball);
-    if (!existsSync(tarball))
-      throw new Error(`Tarball does not exist: ${tarball}`);
-  } else {
-    execSync("npm run build", { cwd: ROOT, stdio: "pipe" });
-    workDir = mkdtempSync(join(tmpdir(), "mjolnir-registry-pack-"));
-    const packOut = execSync(
-      `npm pack --pack-destination "${workDir}" --json`,
-      {
-        cwd: ROOT,
-      },
-    ).toString();
-    const packResult = parseNpmPackJson(packOut);
-    if (!packResult) {
-      throw new Error(
-        `npm pack --json produced no entry with a filename. Raw output:\n${packOut}`,
-      );
+  let installTarget: string;
+  if (!REGISTRY_VERSION) {
+    let tarball = process.env["REGISTRY_INSTALL_TARBALL"];
+    if (tarball) {
+      tarball = resolve(ROOT, tarball);
+      if (!existsSync(tarball))
+        throw new Error(`Tarball does not exist: ${tarball}`);
+      installTarget = tarball;
+    } else {
+      execSync("npm run build", { cwd: ROOT, stdio: "pipe" });
+      workDir = mkdtempSync(join(tmpdir(), "mjolnir-registry-pack-"));
+      const packOut = execSync(
+        `npm pack --pack-destination "${workDir}" --json`,
+        {
+          cwd: ROOT,
+        },
+      ).toString();
+      const packResult = parseNpmPackJson(packOut);
+      if (!packResult) {
+        throw new Error(
+          `npm pack --json produced no entry with a filename. Raw output:\n${packOut}`,
+        );
+      }
+      installTarget = join(workDir, packResult.filename);
     }
-    tarball = join(workDir, packResult.filename);
+  } else {
+    installTarget = `mjolnir-qa@${REGISTRY_VERSION}`;
   }
 
   installDir = mkdtempSync(join(tmpdir(), "mjolnir-registry-install-"));
@@ -76,12 +83,18 @@ beforeAll(() => {
 
   // The real thing: let npm resolve `dependencies` from the registry
   // into a directory that never had this repo's node_modules in it.
-  execSync(`npm install "${tarball}"`, { cwd: installDir, stdio: "pipe" });
+  execSync(`npm install "${installTarget}"`, {
+    cwd: installDir,
+    stdio: "pipe",
+  });
 
   const installedPkgDir = join(installDir, "node_modules", "mjolnir-qa");
   const installedPkgJson = JSON.parse(
     readFileSync(join(installedPkgDir, "package.json"), "utf8"),
-  ) as { bin?: string | Record<string, string | undefined> };
+  ) as { version?: string; bin?: string | Record<string, string | undefined> };
+  if (REGISTRY_VERSION) {
+    expect(installedPkgJson.version).toBe(REGISTRY_VERSION);
+  }
   const binField = installedPkgJson.bin;
   const binRel =
     typeof binField === "string" ? binField : (binField?.["mjolnir"] ?? "");
@@ -97,7 +110,7 @@ afterAll(() => {
 });
 
 describe.runIf(RUN)(
-  "real `npm install` from a tarball, no symlink shortcuts",
+  "real clean install from the exact registry version or release tarball",
   () => {
     it("resolves a real bin entry file from the installed package", () => {
       expect(existsSync(entryPath)).toBe(true);

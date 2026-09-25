@@ -74,6 +74,7 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm run lint
+      - run: npm run version:check
       # The brand gate. Every colour, typeface and badge in the tree is
       # checked against src/brand/tokens.ts, and every declared
       # foreground/background pairing has its WCAG contrast computed.

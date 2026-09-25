@@ -11,12 +11,22 @@ once shipped, so this file is the record of what changed between versions.
 
 ## [Unreleased]
 
+## [4.0.0-rc.1] — 2026-09-25
+
+### Breaking changes
+
+- The next published version must be a new major line. Generated CI is now
+  advisory-first while the direct composite Action remains blocking by default;
+  suppression metrics changed from configured to matched findings, and
+  zero-finding output no longer implies a clean or green suite. Publishing
+  these changes as another `3.0.0` is prohibited.
+
 ### Changed
 
-- **Advisory-first CI adoption** — `mjolnir ci install` and the root
-  GitHub Action now default to non-blocking findings and non-blocking partial
-  scans. Blocking remains explicit through `--gate error`, `--gate warning`,
-  or `fail-on`.
+- **Advisory-first generated CI adoption** — `mjolnir ci install` now
+  defaults to non-blocking findings and non-blocking partial scans. The direct
+  composite Action remains blocking by default. Blocking behavior is explicit
+  through `--gate error`, `--gate warning`, or `fail-on`.
 - Suppression counts now report matched findings, not configured entries;
   `suppression-gate` evaluates all-tier pre-suppression findings and enforces
   total-count limits.
@@ -34,6 +44,44 @@ once shipped, so this file is the record of what changed between versions.
   before it ships; and `scripts/check-ci-local-parity.mjs`, which keeps
   `ci.yml`, `merge-verify.yml` and the local gate exercising the same
   command list. All additive — no frozen surface changed.
+- **M26–M50 execution ledger** — added `docs/ROADMAP.yaml`, dated GitHub
+  issue/milestone/PR reconciliation, explicit issue dispositions, an
+  append-only gap ledger, a finite support matrix, and an external-validation
+  record. Approval authority and staged dependency resolution are recorded;
+  external evidence remains `BLOCKED`/`NOT_RUN` and cannot be synthesized.
+- **Provisional capability contracts** — added bounded, non-promoting
+  contracts for runtime evidence, provider capabilities, QA domain records,
+  agent decision receipts, plugin packs, change intelligence, mutation
+  sensitivity, adversarial challenges, simulation, language/framework packs,
+  cross-repository systems, history, detector lifecycle, research, benchmark,
+  scale, UX parity, and Trust OS release proofs. Each has focused hostile,
+  stale, foreign, malformed, and recovery coverage.
+- **Release control surfaces** — added exact version-surface synchronization,
+  RC-aware changelog validation, candidate manifest refresh/readiness,
+  reporter ramp policy, fail-closed M26 audit gates, and current-major-only
+  Action tag maintenance.
+- **README release preparation** — canonical and translated README install
+  references, release-status blocks, and new command rows are synchronized to
+  `3.0.0`; English fallback blocks are explicitly marked for human translation
+  review, and the canonical README states the certification boundary.
+- **Release proof hardening** — stable publication now generates and attaches
+  an SPDX SBOM, rejects same-version registry artifacts with a different
+  integrity digest, updates only the current `v3` Action major, and never
+  clobbers release assets.
+- **Support matrix reconciliation** — 136 cells are classified as 90 tested,
+  44 explicitly blocked, and 2 not applicable, with evidence paths and revisit
+  triggers checked locally.
+
+### Fixed
+
+- Corpus runs now record complete rule-crash provenance, reject parser
+  fallbacks, and support a provenance-only refresh that cannot update counts.
+- QA-PY-004 sanitizes assertion roots before constructing a pattern, removing
+  corpus crashes caused by nested call-like targets.
+- Pathological stress runs no longer mask crashes with `|| true`; soak evidence
+  no longer claims parent-process RSS as child memory.
+- Exact registry-install smoke can install and verify a published version
+  instead of substituting the checkout tarball.
 
 ## [3.0.0] — 2026-09-24
 
@@ -285,8 +333,6 @@ Complete implementation of the Mjolnir Master Engineering Roadmap & Product Spec
 - `src/config/config.ts` `validate()` now calls `validateConfigSchema()` first.
 - `src/commands/doctor.ts` gains check 11 (rule metadata contract validation).
 - 4 fingerprint implementations consolidated into `src/engine/finding-identity.ts`.
-
-## [Unreleased] — Nordic brand pass
 
 ### Changed
 

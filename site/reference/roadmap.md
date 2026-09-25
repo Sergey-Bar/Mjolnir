@@ -6,9 +6,14 @@ works from; when planning changes, this page changes with it. Nothing on
 this page is a promise with a deadline; each item is a direction with an
 entry condition.
 
+> **Release status:** package 3.0.0 is published, but the current working
+> tree is a post-3.0 candidate that is not certified or authorized. Do not
+> retag or republish `v3.0.0`; the next publication requires a new SemVer.
+
 ## Where Mjölnir is now
 
-- **v3.0.0 — current stable.** Published on npm and GitHub Releases, with
+- **v4.0.0-rc.1 — current release candidate.** Published 3.0.0 remains the
+  stable line; the candidate is gated by the release-readiness record.
   <!-- census:total-rules -->79 rules<!-- /census:total-rules -->,
   <!-- census:measured -->74<!-- /census:measured --> of them carrying a
   false-positive rate measured against real OSS code
@@ -22,9 +27,8 @@ entry condition.
 ## The trust-engineering train — shipped into the 3.x line
 
 An eleven-increment engineering train hardened the product's release
-trust end-to-end. It is part of the current 2.x public line; the table
-below remains as the historical release train that led into the 2.0
-cutover.
+trust end-to-end. It is part of the 3.x line; the table below remains as
+the historical release train that led into the 3.0 cutover.
 
 | Release | Content                                                                                                                                                                                                                                                      |
 | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -42,7 +46,7 @@ cutover.
 
 ## Next
 
-- **Keep the 2.x line honest** through the standing gates — the
+- **Keep the 3.x line honest** through the standing gates — the
   release-trust verdict (not a date) decides when each increment ships.
 - **Publish only registry-backed claims**: a git tag is not public
   install guidance until the matching npm version and GitHub Release are

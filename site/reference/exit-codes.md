@@ -10,6 +10,9 @@ Frozen — safe to build CI logic on:
 | `10`      | Usage error (bad flag, missing target)                          |
 | `20`      | Internal error                                                  |
 
+These are scan/CI exits. `release-report` and `release-trust` use their
+command-specific verdicts and exit contracts.
+
 The JSON/SARIF report is `schemaVersion: 1`. Rule IDs (`QA-<FAMILY>-NNN`)
 are immutable once shipped and never reused.
 
@@ -19,7 +22,7 @@ are immutable once shipped and never reused.
 - **No false proof** — an empty repo gets `score: null`, never a fake 100.
 - **Partial honesty** — if analysis was cut short, the output says so.
 - **FP firewall** — detection runs on a comment/string-free view of the code.
-- **Measured, not asserted** — only rules with a false-positive rate from
-  real OSS code ship in the headline tiers.
+- **Measured, not asserted** — 74 of 79 active rules carry a real OSS
+  false-positive rate; the other 5 are explicitly unmeasured.
 - **Plugin trust** — plugins are npm packages with no sandbox; they run with
   full Node privileges, the same trust model as ESLint or Vitest plugins.

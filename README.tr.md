@@ -18,7 +18,7 @@ ardından sonuca ne kadar güvenilebileceğini, her puanın kanıtıyla birlikte
 [![node](https://img.shields.io/badge/node-%E2%89%A5%2022.18-1F6F7C.svg?style=flat-square&labelColor=0A1119)](https://nodejs.org)
 
 ```bash
-npx mjolnir-qa@latest
+npx mjolnir-qa@3.0.0
 ```
 
 [Çalışırken görün](#çalışırken-görün) · [Hızlı başlangıç](#hızlı-başlangıç) · [Neler bulur](#mjölnir-neler-bulur) · [Puan](#güvenilirlik-puanı) · [Kanıt](#kanıt-modeli) · [Çalıştırma analizi](#test-çalıştırma-analizi) · [CI](#ci-bütünlüğü) · [Ajanlar](#yapay-zekâ-ajanları) · [Güvenlik](#güven-ve-güvenlik) · [Sınırlar](#mjölnirin-size-söyleyemedikleri) · [Belgeler](#belgeler)
@@ -28,15 +28,29 @@ npx mjolnir-qa@latest
 
 [English](README.md) | [简体中文](README.zh.md) | [繁體中文](README.zht.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | [日本語](README.ja.md) | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | Türkçe | [Українська](README.uk.md) | [বাংলা](README.bn.md) | [Ελληνικά](README.gr.md) | [Tiếng Việt](README.vi.md) | [עברית](README.he.md) | [العربية](README.ar.md) | [Bosanski](README.bs.md)
 
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-15.
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-25.
 
-<!-- Source hash: 3541b09e8d04 -->
+<!-- Source hash: `f3d2a07f2d68` -->
 
 </details>
 
 </div>
 
 <br />
+
+## Release status (English canonical)
+
+The published line is `3.0.0`; this working tree is the `4.0.0-rc.1`
+candidate. `3.0.0` must not be republished or retagged. The M26–M50 program is
+tracked in
+[`docs/ROADMAP.yaml`](docs/ROADMAP.yaml); provisional capability contracts
+are not automatically enabled or certified. Repository-owned checks pass, but
+Trust certification remains `NOT_CERTIFIED` until the protected holdout,
+real-world, platform/consumer, remote-workflow, support-matrix, and corpus
+evidence gates pass. Run `npm run m26:readiness` before treating any candidate
+as releasable. This document does not publish a tag or authorize a release.
+
+> Machine-assisted canonical text. Translate this block before treating it as localized copy.
 
 ## Yeşil onay işareti bir iddiadır, kanıt değil
 
@@ -58,7 +72,7 @@ Hiçbiri pipeline'ı kırmızıya çevirmez ve her biri incelemede kasıtlı gö
 
 <sub>Demo taramasının bu workflow için raporladığı her bulgu, raporlandığı satırda. `npm run docs:readme-brand` ile [`demo-report.json`](assets/readme/demo-report.json) kaynağından üretilir ve CI'da sapmaya karşı kilitlenir.</sub>
 
-**Katı mod.** En agresif tespitler — `.only`, `continue-on-error`, boş testler, tekrar kötüye kullanımı — karantina katında yaşar. Yalnızca `--strict` altında çalışır ve `info` şiddetindedir: işaretlerler, asla engellemezler. Varsayılan tarama (`--strict` olmayan `npx mjolnir-qa@latest`) yalnızca çekirdek ve genişletilmiş kuralları kapsar. Danışmanlık katmanını da istediğinizde `--strict` ekleyin.
+**Katı mod.** En agresif tespitler — `.only`, `continue-on-error`, boş testler, tekrar kötüye kullanımı — karantina katında yaşar. Yalnızca `--strict` altında çalışır ve `info` şiddetindedir: işaretlerler, asla engellemezler. Varsayılan tarama (`--strict` olmayan `npx mjolnir-qa@3.0.0`) yalnızca çekirdek ve genişletilmiş kuralları kapsar. Danışmanlık katmanını da istediğinizde `--strict` ekleyin.
 
 Mjölnir test paketini, CI workflow'larını ve varsa gerçek bir çalıştırmanın raporunu okur. Testlerinizi çalıştırmaz, bağımlılıklarınızı kurmaz ve taradığı kodu yürütmez. Kanıtı olmadığında da güven uydurmak yerine bunu açıkça söyler:
 
@@ -93,7 +107,7 @@ CI workflow'u olan küçük bir Playwright paketi olan [`examples/demo-repo`](ex
 
 <p align="center">
   <a href="assets/video/mjolnir-demo.mp4">
-    <img src="assets/video/mjolnir-demo-poster.png" alt="Demo kaydından bir kare: npx mjolnir-qa@latest bir terminal penceresinde demo deposunu tarıyor" width="900" />
+    <img src="assets/video/mjolnir-demo-poster.png" alt="Demo kaydından bir kare: npx mjolnir-qa@3.0.0 bir terminal penceresinde demo deposunu tarıyor" width="900" />
   </a>
 </p>
 
@@ -162,7 +176,7 @@ Değer birimi budur: CI'ın hak etmediği bir geçişi raporladığı tek bir ye
 ## Hızlı başlangıç
 
 ```bash
-npx mjolnir-qa@latest
+npx mjolnir-qa@3.0.0
 ```
 
 Geçerli dizini tarar ve Trust Report'u yazdırır: ne bulduğunu, ne kadar güvenebileceğinizi, nedenini ve sırada ne yapmanız gerektiğini. Kapı düzeyinde ya da üstünde hiçbir şey bulunmazsa `0` ile çıkar.
@@ -170,24 +184,39 @@ Geçerli dizini tarar ve Trust Report'u yazdırır: ne bulduğunu, ne kadar güv
 CI'da yalnızca dalın getirdiklerini tarayın; böylece eski bir test paketi ilk pull request'inizi boğmaz:
 
 ```bash
-npx mjolnir-qa@latest --scope changed
+npx mjolnir-qa@3.0.0 --scope changed
 ```
 
-`mjolnir ci install` bunu, ana `v1` etiketine sabitlenmiş [action](https://github.com/Sergey-Bar/Mjolnir#readme) ile bir GitHub Actions workflow'u olarak yazar (ya da `--no-action` ile düz `npx`). Siz engellemesi gerektiğine karar verene kadar tavsiye niteliğinde kalır.
+`mjolnir ci install` bunu, ana `v3` etiketine sabitlenmiş [action](https://github.com/Sergey-Bar/Mjolnir#readme) ile bir GitHub Actions workflow'u olarak yazar (ya da `--no-action` ile düz `npx`). Siz engellemesi gerektiğine karar verene kadar tavsiye niteliğinde kalır.
 
-| Komut                               | Ne yapar                                                              |
-| ----------------------------------- | --------------------------------------------------------------------- |
-| `mjolnir`                           | Trust Report: karar, güven düzeyi, sonraki adım                       |
-| `mjolnir --scope changed`           | Yalnızca dalınızın getirdikleri (CI biçimi)                           |
-| `mjolnir ci install`                | Tavsiye niteliğindeki PR workflow'unu üretir (action tabanlı)         |
-| `mjolnir explain QA-CI-001`         | Ne, neden ve düzeltme; ayrıca ölçülmüş FP oranı                       |
-| `mjolnir why src/a.spec.ts:42`      | Tam olarak bu satırın neden işaretlendiği. Asla engellemez.           |
-| `mjolnir forensics ./test-results/` | Gerçek bir çalıştırmadan çalışma zamanı kanıtı                        |
-| `mjolnir trust-report`              | Kendi içinde bütün Trust Artifact (md + json)                         |
-| `mjolnir handoff`                   | Kodlama ajanı için iyileştirme planı                                  |
-| `mjolnir --json` / `--format sarif` | Makine tarafından okunabilir çıktı, GitHub Code Scanning              |
-| `mjolnir --format codequality`      | GitLab Code Quality raporu (MR widget'ı artefaktı)                    |
-| `mjolnir --strict`                  | quarantine düzeyindeki kuralları da çalıştırır (daha yüksek FP riski) |
+| Komut                                         | Ne yapar                                                              |
+| --------------------------------------------- | --------------------------------------------------------------------- |
+| `mjolnir`                                     | Trust Report: karar, güven düzeyi, sonraki adım                       |
+| `mjolnir --scope changed`                     | Yalnızca dalınızın getirdikleri (CI biçimi)                           |
+| `mjolnir ci install`                          | Tavsiye niteliğindeki PR workflow'unu üretir (action tabanlı)         |
+| `mjolnir business-case`                       | ROI estimate: projected savings per finding                           |
+| `mjolnir release-report`                      | Release readiness: GO, CONDITIONAL GO, or NO-GO                       |
+| `mjolnir release-trust`                       | 12-dimension release assurance verdict                                |
+| `mjolnir report`                              | Generate a Playwright-compatible report                               |
+| `mjolnir trend`                               | Record, show, or diff local quality snapshots                         |
+| `mjolnir policy`                              | Initialize, validate, or check policy gates                           |
+| `mjolnir quarantine`                          | Review deterministic proposals (prototype)                            |
+| `mjolnir analyze --cross-file`                | Bounded cross-file analysis                                           |
+| `mjolnir ci-adapter github .`                 | Generate CI templates for supported providers                         |
+| `mjolnir dashboard`                           | Generate a self-contained quality dashboard                           |
+| `mjolnir exec-report`                         | Executive KPIs and recommendations (advisory)                         |
+| `mjolnir enterprise`                          | Self-hosted templates (prototype)                                     |
+| `mjolnir maturity`                            | Assess maturity or display maturity levels                            |
+| `mjolnir mutation tests/mutation-report.json` | Analyze mutation reports; never promotes trust                        |
+| `mjolnir mcp`                                 | Read-only MCP tools over stdio                                        |
+| `mjolnir explain QA-CI-001`                   | Ne, neden ve düzeltme; ayrıca ölçülmüş FP oranı                       |
+| `mjolnir why src/a.spec.ts:42`                | Tam olarak bu satırın neden işaretlendiği. Asla engellemez.           |
+| `mjolnir forensics ./test-results/`           | Gerçek bir çalıştırmadan çalışma zamanı kanıtı                        |
+| `mjolnir trust-report`                        | Kendi içinde bütün Trust Artifact (md + json)                         |
+| `mjolnir handoff`                             | Kodlama ajanı için iyileştirme planı                                  |
+| `mjolnir --json` / `--format sarif`           | Makine tarafından okunabilir çıktı, GitHub Code Scanning              |
+| `mjolnir --format codequality`                | GitLab Code Quality raporu (MR widget'ı artefaktı)                    |
+| `mjolnir --strict`                            | quarantine düzeyindeki kuralları da çalıştırır (daha yüksek FP riski) |
 
 <details>
 <summary><strong>Diğer tüm komutlar</strong> — kararsız test triyajı, raporlama, yönetişim</summary>
@@ -452,18 +481,18 @@ mjolnir ci install
 Ya da Marketplace action'ını mevcut bir workflow'a ekleyin:
 
 ```yaml
-- uses: Sergey-Bar/Mjolnir@v1
+- uses: Sergey-Bar/Mjolnir@v3
   with:
     scope: changed
     fail-on: error
 ```
 
-Ana sürüm hattını izlemek için `@v1`'i, tekrarlanabilir bir kapı için ise tam bir etiketi (`@v0.5.32`) sabitleyin. [docs/DISTRIBUTION-KIT.md](docs/DISTRIBUTION-KIT.md) Marketplace'i, Smithery'yi ve MCP kayıtlarını kapsar.
+Ana sürüm hattını izlemek için `@v3`'i, tekrarlanabilir bir kapı için ise tam bir etiketi (`@v0.5.32`) sabitleyin. [docs/DISTRIBUTION-KIT.md](docs/DISTRIBUTION-KIT.md) Marketplace'i, Smithery'yi ve MCP kayıtlarını kapsar.
 
 Bulguları GitHub Code Scanning'e aktarmak için SARIF yükleyin (workflow veya job kapsamında `security-events: write` gerekir):
 
 ```yaml
-- run: npx mjolnir-qa@latest --format sarif > mjolnir.sarif
+- run: npx mjolnir-qa@3.0.0 --format sarif > mjolnir.sarif
   continue-on-error: true
 - uses: github/codeql-action/upload-sarif@v3
   if: ${{ !cancelled() }}
@@ -476,7 +505,7 @@ GitLab'de `--format codequality`, MR widget'ının ve diff açıklamalarının o
 ### Değişen kapsamda atıf
 
 ```bash
-npx mjolnir-qa@latest --scope changed
+npx mjolnir-qa@3.0.0 --scope changed
 ```
 
 Bulgular, dalınızın eklediği satırlara **merge-base**'e göre ölçülerek atfedilir. Kapsam, tam bir taramanın keşfettiği dosya kümesinin aynısıdır (TS/JS spec'leri ve adaptör yapılandırmaları, `test_*.py`, `*Test.java`, `*Tests.cs`, `.github/workflows/*.yml`); buna commit edilmemiş ve izlenmeyen değişiklikler de eklenir, böylece commit etmeden önce de çalışır. Taban `main → master → origin/main → origin/master → origin/HEAD` sırasıyla çözülür; `--base <ref>` ile geçersiz kılabilirsiniz.
@@ -504,7 +533,7 @@ SCAN → EVIDENCE → HANDOFF → AGENT → RE-SCAN → PROOF
 Kendi CLI'ı olan bir istemciye ekleyin:
 
 ```bash
-claude mcp add mjolnir -- npx -y mjolnir-qa@latest mcp
+claude mcp add mjolnir -- npx -y mjolnir-qa@3.0.0 mcp
 ```
 
 Ya da `mcpServers` bloğu kabul eden herhangi bir istemciye:
@@ -512,7 +541,7 @@ Ya da `mcpServers` bloğu kabul eden herhangi bir istemciye:
 ```json
 {
   "mcpServers": {
-    "mjolnir": { "command": "npx", "args": ["-y", "mjolnir-qa@latest", "mcp"] }
+    "mjolnir": { "command": "npx", "args": ["-y", "mjolnir-qa@3.0.0", "mcp"] }
   }
 }
 ```
@@ -603,7 +632,7 @@ Geliştirme ortamı, kalıcı kapı komutları ve anti-creep ile fixture güvenl
 <img src="assets/readme/closing.svg" alt="Deponuzda çalıştırın." width="100%" />
 
 ```bash
-npx mjolnir-qa@latest
+npx mjolnir-qa@3.0.0
 ```
 
 [Rehberi okuyun](https://sergey-bar.github.io/Mjolnir/guide/getting-started) · [Belge sitesi](https://sergey-bar.github.io/Mjolnir/) · [npm](https://www.npmjs.com/package/mjolnir-qa)

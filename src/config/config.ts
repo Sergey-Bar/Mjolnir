@@ -16,7 +16,7 @@ export interface IgnoreEntry {
   ruleId: string;
   files?: string[];
   reason: string;
-  /** ISO date; defaults to 90 days from creation (S11). */
+  /** ISO date; omitted means the suppression has no expiry. */
   expires?: string;
 }
 
@@ -222,25 +222,10 @@ function validate(
   return warnings;
 }
 
-/** Default expiry: 90 days when unspecified (score-gaming counter, S11). */
-/** Default expiry window when no `expires` is set (S11, README §Configuration). */
-export const SUPPRESSION_DEFAULT_DAYS = 90;
-
 /**
- * Bug-audit QA-2026-08-30 QA-6: the 90-day policy in the README was only
- * applied at WRITE time by the `ignore` command — a hand-written entry
- * without `expires` stayed active forever, silently bypassing the
- * documented window.
- *
- * Audit S4 (remediation plan): the config-file MTIME is no longer an
- * expiry anchor. Anchoring the 90-day default at mtime meant ANY edit to
- * mjolnir.config.json — a reformat, an unrelated key, a `touch` — reset
- * the 90-day window for EVERY hand-authored entry: suppressions could be
- * extended indefinitely without touching their own fields. The expiry is
- * now the entry's explicit `expires` date alone; an entry without one
- * stays active and is honestly labeled "(no expiry set)" in the
- * suppressions report. Hand-authored entries should declare `expires` at
- * creation (README §Configuration documents the shape).
+ * Expiry is evaluated only from an explicit ISO `expires` date. A missing
+ * date remains active and is reported as having no expiry. Config-file mtime
+ * is never an expiry anchor.
  */
 export function isSuppressionActive(
   ign: IgnoreEntry,

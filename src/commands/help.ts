@@ -300,6 +300,88 @@ export const HELP_ENTRIES: HelpEntry[] = [
     usage: "mjolnir mcp",
     examples: ["mjolnir mcp"],
   },
+  {
+    verb: "business-case",
+    summary:
+      "estimate measured false-positive risk and projected savings (advisory)",
+    usage:
+      "mjolnir business-case [path] [--industry <profile>] [--history <months>] [--projected <months>] [--strict]",
+    examples: [
+      "mjolnir business-case . --industry fintech",
+      "mjolnir business-case . --projected 12",
+    ],
+  },
+  {
+    verb: "release-report",
+    summary: "release readiness verdict: GO, CONDITIONAL GO, or NO-GO",
+    usage: "mjolnir release-report [path] [--since <ref>] [--history <json>]",
+    examples: ["mjolnir release-report . --since HEAD~1"],
+  },
+  {
+    verb: "report",
+    summary: "generate a Playwright-compatible report from scan results",
+    usage: "mjolnir report [path] [--output <file>]",
+    examples: ["mjolnir report . --output playwright-report.json"],
+  },
+  {
+    verb: "trend",
+    summary: "record, show, or diff local quality trend snapshots",
+    usage: "mjolnir trend <record|show|diff> [path] [--limit <N>]",
+    examples: ["mjolnir trend record .", "mjolnir trend show ."],
+  },
+  {
+    verb: "exec-report",
+    summary:
+      "generate executive quality KPIs, risk, and recommendations (advisory)",
+    usage: "mjolnir exec-report [path]",
+    examples: ["mjolnir exec-report ."],
+  },
+  {
+    verb: "policy",
+    summary: "initialize, validate, or check team quality policy gates",
+    usage: "mjolnir policy <init|validate|check> [path] [--policy <file>]",
+    examples: [
+      "mjolnir policy init .",
+      "mjolnir policy check . --policy mjolnir.policy.json",
+    ],
+  },
+  {
+    verb: "quarantine",
+    summary: "review deterministic quarantine proposals (read-only prototype)",
+    usage: "mjolnir quarantine <list|review|stats> [path]",
+    examples: ["mjolnir quarantine list .", "mjolnir quarantine stats"],
+  },
+  {
+    verb: "analyze",
+    summary: "run bounded cross-file analysis with explicit findings",
+    usage: "mjolnir analyze [path] --cross-file",
+    examples: ["mjolnir analyze . --cross-file"],
+  },
+  {
+    verb: "ci-adapter",
+    summary: "generate GitHub Actions, GitLab CI, or Jenkins templates",
+    usage: "mjolnir ci-adapter <github|gitlab|jenkins> [target]",
+    examples: ["mjolnir ci-adapter github ."],
+  },
+  {
+    verb: "dashboard",
+    summary: "generate a self-contained quality dashboard HTML artifact",
+    usage: "mjolnir dashboard [path] [--output <file>]",
+    examples: ["mjolnir dashboard . --output dashboard.html"],
+  },
+  {
+    verb: "enterprise",
+    summary:
+      "generate self-hosted deployment and compliance templates (prototype)",
+    usage: "mjolnir enterprise <config|sso|compliance> [output-dir]",
+    examples: ["mjolnir enterprise config ./enterprise-output"],
+  },
+  {
+    verb: "maturity",
+    summary: "assess quality maturity or display maturity levels",
+    usage: "mjolnir maturity <assess|levels> [path]",
+    examples: ["mjolnir maturity assess .", "mjolnir maturity levels"],
+  },
 ];
 
 /** Scan-flag entries documented per-flag via the overview. */
@@ -416,6 +498,8 @@ const GROUPS: Array<{ title: string; verbs: string[] }> = [
       "diff",
       "verify",
       "ci-integrity",
+      "ci-adapter",
+      "policy",
     ],
   },
   {
@@ -444,6 +528,16 @@ const GROUPS: Array<{ title: string; verbs: string[] }> = [
       "evidence-graph",
       "framework-maturity",
       "suppression-gate",
+      "business-case",
+      "release-report",
+      "report",
+      "trend",
+      "exec-report",
+      "quarantine",
+      "analyze",
+      "dashboard",
+      "enterprise",
+      "maturity",
     ],
   },
   {

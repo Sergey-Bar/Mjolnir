@@ -221,10 +221,9 @@ const GATES: readonly GateLevel[] = ["advisory", "error", "warning"];
 
 /**
  * The action-ref the action-based template pins (P1: distribution).
- * `v1` is the major moving tag release.yml's action-tags job maintains on
- * every stable release — Marketplace convention. The generated workflow
- * pins the major, never @latest: a new release must not change gate
- * semantics without a commit of the consumer's.
+ * The current `v3` major is maintained on every stable release by the
+ * dedicated Action tag workflow. The generated workflow pins an immutable
+ * Action SHA, never @latest.
  */
 export const ACTION_REF =
   "Sergey-Bar/Mjolnir@4a588bc62d517bc85fc44c0eae64c6587d3bf70b";

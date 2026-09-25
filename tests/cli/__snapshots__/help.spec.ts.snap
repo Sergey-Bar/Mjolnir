@@ -64,6 +64,10 @@ Subcommands — CI & PRs:
                                                   score delta
   ci-integrity [path] [--policy <file>] [--json]  verify CI workflow integrity and
                                                   suppression governance
+  ci-adapter <github|gitlab|jenkins> [target]     generate GitHub Actions, GitLab CI, or
+                                                  Jenkins templates
+  policy <init|validate|check> [path] [--policy <file>]
+    initialize, validate, or check team quality policy gates
 
 Subcommands — Forensics:
   forensics <test-results-dir-or-report-file> [--no-flaky-md]
@@ -112,6 +116,27 @@ Subcommands — Maintenance:
     track framework maturity levels, especially Playwright F4→F5
   suppression-gate [path] [--policy <file>] [--json]
     enforce suppression policy governance gate
+  business-case [path] [--industry <profile>] [--history <months>] [--projected
+  <months>] [--strict]
+    estimate measured false-positive risk and projected savings (advisory)
+  release-report [path] [--since <ref>] [--history <json>]
+    release readiness verdict: GO, CONDITIONAL GO, or NO-GO
+  report [path] [--output <file>]                 generate a Playwright-compatible
+                                                  report from scan results
+  trend <record|show|diff> [path] [--limit <N>]   record, show, or diff local quality
+                                                  trend snapshots
+  exec-report [path]                              generate executive quality KPIs, risk,
+                                                  and recommendations (advisory)
+  quarantine <list|review|stats> [path]           review deterministic quarantine
+                                                  proposals (read-only prototype)
+  analyze [path] --cross-file                     run bounded cross-file analysis with
+                                                  explicit findings
+  dashboard [path] [--output <file>]              generate a self-contained quality
+                                                  dashboard HTML artifact
+  enterprise <config|sso|compliance> [output-dir]
+    generate self-hosted deployment and compliance templates (prototype)
+  maturity <assess|levels> [path]                 assess quality maturity or display
+                                                  maturity levels
 
 Subcommands — Meta:
   rules [--md] [--unmeasured|--measured] [--external] | [--stats] | [--health]
@@ -235,6 +260,12 @@ Subcommands — CI & PRs:
                                                   integrity and
                                                   suppression
                                                   governance
+  ci-adapter <github|gitlab|jenkins> [target]     generate GitHub
+                                                  Actions, GitLab
+                                                  CI, or Jenkins
+                                                  templates
+  policy <init|validate|check> [path] [--policy <file>]
+    initialize, validate, or check team quality policy gates
 
 Subcommands — Forensics:
   forensics <test-results-dir-or-report-file>
@@ -314,6 +345,49 @@ Subcommands — Maintenance:
     F4→F5
   suppression-gate [path] [--policy <file>] [--json]
     enforce suppression policy governance gate
+  business-case [path] [--industry <profile>] [--history
+  <months>] [--projected <months>] [--strict]
+    estimate measured false-positive risk and projected
+    savings (advisory)
+  release-report [path] [--since <ref>] [--history <json>]
+    release readiness verdict: GO, CONDITIONAL GO, or NO-GO
+  report [path] [--output <file>]                 generate a
+                                                  Playwright-compatible
+                                                  report from scan
+                                                  results
+  trend <record|show|diff> [path] [--limit <N>]   record, show, or
+                                                  diff local
+                                                  quality trend
+                                                  snapshots
+  exec-report [path]                              generate
+                                                  executive
+                                                  quality KPIs,
+                                                  risk, and
+                                                  recommendations
+                                                  (advisory)
+  quarantine <list|review|stats> [path]           review
+                                                  deterministic
+                                                  quarantine
+                                                  proposals
+                                                  (read-only
+                                                  prototype)
+  analyze [path] --cross-file                     run bounded
+                                                  cross-file
+                                                  analysis with
+                                                  explicit
+                                                  findings
+  dashboard [path] [--output <file>]              generate a
+                                                  self-contained
+                                                  quality
+                                                  dashboard HTML
+                                                  artifact
+  enterprise <config|sso|compliance> [output-dir]
+    generate self-hosted deployment and compliance templates
+    (prototype)
+  maturity <assess|levels> [path]                 assess quality
+                                                  maturity or
+                                                  display maturity
+                                                  levels
 
 Subcommands — Meta:
   rules [--md] [--unmeasured|--measured] [--external] |

@@ -8,21 +8,34 @@
       "relatedSources": [
         "action.yml",
         ".github/workflows/mjolnir.yml",
-        "docs/DISTRIBUTION-KIT.md"
+        "docs/DISTRIBUTION-KIT.md",
+        "docs/VERSIONING.md",
+        "smithery.yaml",
+        "site/.vitepress/theme/Home.vue"
       ],
       "scope": "current",
       "implementation": [
         "package.json",
         "action.yml",
-        ".github/workflows/mjolnir.yml"
+        ".github/workflows/mjolnir.yml",
+        "src/release/version-surface.ts",
+        "scripts/sync-version-surface.ts"
       ],
       "tests": [
         "tests/integrations/action-surface.spec.ts",
-        "tests/contract/version-consistency.spec.ts"
+        "tests/contract/version-consistency.spec.ts",
+        "tests/contract/version-surface.spec.ts"
       ],
       "corpus": ["tests/e2e/journey-2-ci-flow.spec.ts"],
       "benchmark": "N/A",
-      "candidateProof": "npm run claims:check",
+      "candidateProof": "npm run version:surface:check",
+      "proof": {
+        "status": "BLOCKED",
+        "artifact": null,
+        "digest": null,
+        "observedAt": null,
+        "authority": "NONE"
+      },
       "authority": "release-owner",
       "expiry": "on version or support-envelope change",
       "state": "CURRENT"
@@ -49,6 +62,13 @@
       ],
       "benchmark": "docs/RULE-CAPABILITY-MATRIX.json",
       "candidateProof": "npm run docs:capability",
+      "proof": {
+        "status": "BLOCKED",
+        "artifact": null,
+        "digest": null,
+        "observedAt": null,
+        "authority": "NONE"
+      },
       "authority": "rule-owner",
       "expiry": "on rule or detector revision change",
       "state": "GENERATED"
@@ -73,6 +93,13 @@
       ],
       "benchmark": "N/A",
       "candidateProof": "npm run ci-local",
+      "proof": {
+        "status": "BLOCKED",
+        "artifact": null,
+        "digest": null,
+        "observedAt": null,
+        "authority": "NONE"
+      },
       "authority": "release-owner",
       "expiry": "on reporter or workflow change",
       "state": "CURRENT"
@@ -94,6 +121,13 @@
       "corpus": ["N/A"],
       "benchmark": "N/A",
       "candidateProof": "npm run enterprise:threat-model",
+      "proof": {
+        "status": "BLOCKED",
+        "artifact": null,
+        "digest": null,
+        "observedAt": null,
+        "authority": "NONE"
+      },
       "authority": "security-owner",
       "expiry": "on model, data-flow, or boundary change",
       "state": "LOCAL_PROVEN"

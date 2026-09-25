@@ -29,11 +29,10 @@ byte-stability.
 | 11  | Agent Safety            | `agent-safety`            | 1.3.0            | `check:agent-safety`                                                                                                                                            | agent claims carry rescan evidence (wired with R8; behavioral proof: tests/mcp/parity.spec.ts + tests/contract/agent-skill-surface.spec.ts) |
 | 12  | Artifact Integrity      | `artifact-integrity`      | 1.4.0            | `check:artifact-integrity`                                                                                                                                      | artifact bound to the claimed execution (wired with R9; behavioral proof: tests/commands/artifact-integrity.spec.ts)                        |
 
-**Applicability:** the surface IS the check machinery. A dimension is
-applicable when its evidence bindings resolve; unresolved bindings = the
-surface has not shipped yet → **UNSUPPORTED** (recorded, non-blocking,
-Constitution §5). The bindings above are drift-locked, so an unresolved
-binding can only mean "genuinely unwired surface", never a typo.
+**Applicability:** the surface IS the check machinery. `UNSUPPORTED` is
+non-blocking only when the dimension is genuinely not applicable to this
+release. A required dimension with a missing or unresolved binding is
+`BLOCKED` or `INCONCLUSIVE` and fails closed.
 
 **Dimension governance:** no dimension may be added, removed, or renamed in
 the implementation or this document without a policy amendment touching BOTH
@@ -75,13 +74,13 @@ names — zero absolute paths.
 
 ## Exit contract (frozen set — docs/VERSIONING.md)
 
-| Code | Meaning                                                                       |
-| ---- | ----------------------------------------------------------------------------- |
-| `0`  | verdict PASS                                                                  |
-| `1`  | verdict non-PASS (FAILED / UNPROVEN / PARTIAL — the verdict block says which) |
-| `2`  | no fixtures root at the target (not an mjolnir checkout — BLOCKED context)    |
-| `10` | usage error                                                                   |
-| `20` | internal error                                                                |
+| Code | Meaning                                                                                                     |
+| ---- | ----------------------------------------------------------------------------------------------------------- |
+| `0`  | verdict PASS                                                                                                |
+| `1`  | verdict non-PASS; strictest state may be FAILED / BLOCKED / INCONCLUSIVE / UNPROVEN / PARTIAL / UNSUPPORTED |
+| `2`  | no fixtures root at the target (not an mjolnir checkout — BLOCKED context)                                  |
+| `10` | usage error                                                                                                 |
+| `20` | internal error                                                                                              |
 
 ## Release wiring
 

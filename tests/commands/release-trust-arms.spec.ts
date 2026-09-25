@@ -360,6 +360,50 @@ describe("structural check arms against degraded contexts", () => {
     expect(checkReleaseVersionConsistency(pass).determination).toBe("PASS");
   });
 
+  it("release-version-consistency accepts an exact RC heading only", () => {
+    const rc = tmpRepo();
+    writeFileSync(join(rc, "package.json"), '{"version":"1.2.0-rc.1"}');
+    writeFileSync(join(rc, "CHANGELOG.md"), "## [1.2.0-rc.1] — current\n");
+    expect(checkReleaseVersionConsistency(rc)).toEqual({
+      evidence: "PROVEN",
+      determination: "PASS",
+      details: ["package.json and CHANGELOG agree on 1.2.0-rc.1"],
+    });
+
+    const stableMismatch = tmpRepo();
+    writeFileSync(
+      join(stableMismatch, "package.json"),
+      '{"version":"1.2.0-rc.1"}',
+    );
+    writeFileSync(
+      join(stableMismatch, "CHANGELOG.md"),
+      "## [1.2.0] — current\n",
+    );
+    expect(checkReleaseVersionConsistency(stableMismatch).determination).toBe(
+      "FAILED",
+    );
+
+    const unsupportedPrerelease = tmpRepo();
+    writeFileSync(
+      join(unsupportedPrerelease, "package.json"),
+      '{"version":"1.2.0-beta.1"}',
+    );
+    writeFileSync(
+      join(unsupportedPrerelease, "CHANGELOG.md"),
+      "## [1.2.0-beta.1] — current\n",
+    );
+    expect(
+      checkReleaseVersionConsistency(unsupportedPrerelease).determination,
+    ).toBe("INCONCLUSIVE");
+
+    const malformed = tmpRepo();
+    writeFileSync(join(malformed, "package.json"), '{"version":"1.02.0"}');
+    writeFileSync(join(malformed, "CHANGELOG.md"), "## [1.02.0] — current\n");
+    expect(checkReleaseVersionConsistency(malformed).determination).toBe(
+      "INCONCLUSIVE",
+    );
+  });
+
   it("non-deterministic-fields PASS on the shipped doctor state", () => {
     expect(checkNonDeterministicFields().determination).toBe("PASS");
   });

@@ -375,23 +375,31 @@ describe("public version and install docs match the current package line", () =>
     "utf8",
   );
 
-  it("docs/PUBLISHING.md current-state latest claim names package.json's version", () => {
-    expect(publishing).toMatch(
-      new RegExp("`?latest`?\\s+is\\s+\\*\\*" + pkg.version + "\\*\\*"),
-    );
+  it("docs/PUBLISHING.md names the published stable and current prerelease", () => {
+    if (pkg.version.includes("-")) {
+      expect(publishing).toMatch(/npm `latest` is \*\*3\.0\.0\*\*/);
+      expect(publishing).toContain(
+        `current working candidate: \`${pkg.version}\``,
+      );
+    } else {
+      expect(publishing).toMatch(
+        new RegExp("`?latest`?\\s+is\\s+\\*\\*" + pkg.version + "\\*\\*"),
+      );
+    }
     expect(publishing).not.toMatch(/`?latest`?\s+is\s+\*\*(?:0|1)\./);
   });
 
-  it("public action examples use the current major tag and exact package version", () => {
+  it("public action examples use the published major and exact package version", () => {
+    const actionMajor = pkg.version.includes("-") ? "3" : major;
     for (const [name, text] of [
       ["docs/DISTRIBUTION-KIT.md", distribution],
       ["site/guide/getting-started.md", gettingStarted],
     ] as const) {
-      expect(text, `${name} should use the current action major`).toContain(
-        `Sergey-Bar/Mjolnir@v${major}`,
+      expect(text, `${name} should use the published action major`).toContain(
+        `Sergey-Bar/Mjolnir@v${actionMajor}`,
       );
-      expect(text, `${name} should show the current exact pin`).toContain(
-        `@v${pkg.version}`,
+      expect(text, `${name} should show the exact package pin`).toContain(
+        `mjolnir-qa@${pkg.version}`,
       );
       expect(
         text,
@@ -402,7 +410,10 @@ describe("public version and install docs match the current package line", () =>
   });
 
   it("roadmap and publishing docs do not present pre-2.0 lines as current public state", () => {
-    expect(roadmap).toContain(`v${pkg.version} — current stable`);
+    const currentLabel = pkg.version.includes("-")
+      ? `v${pkg.version} — current release candidate`
+      : `v${pkg.version} — current stable`;
+    expect(roadmap).toContain(currentLabel);
     expect(roadmap).not.toMatch(/v1\.0\.x\s+—\s+stable/);
     expect(publishing).toContain("a tag alone is not an installable release");
   });

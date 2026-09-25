@@ -18,7 +18,7 @@ Mjölnir এমন টেস্ট খুঁজে বের করে যেগ
 [![node](https://img.shields.io/badge/node-%E2%89%A5%2022.18-1F6F7C.svg?style=flat-square&labelColor=0A1119)](https://nodejs.org)
 
 ```bash
-npx mjolnir-qa@latest
+npx mjolnir-qa@3.0.0
 ```
 
 [এটি কাজ করতে দেখুন](#এটি-কাজ-করতে-দেখুন) · [দ্রুত শুরু](#দ্রুত-শুরু) · [এটি কী খুঁজে পায়](#mjölnir-কী-খুঁজে-পায়) · [স্কোর](#বিশ্বাসযোগ্যতা-স্কোর) · [প্রমাণ](#প্রমাণ-মডেল) · [রানটাইম ফরেনসিক্স](#রানটাইম-ফরেনসিক্স) · [CI](#ci-সততা) · [এজেন্ট](#ai-এজেন্ট) · [নিরাপত্তা](#বিশ্বাস-এবং-নিরাপত্তা) · [সীমাবদ্ধতা](#mjölnir-আপনাকে-যা-বলতে-পারে-না) · [নথি](#নথি)
@@ -28,15 +28,29 @@ npx mjolnir-qa@latest
 
 [English](README.md) | [简体中文](README.zh.md) | [繁體中文](README.zht.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | [日本語](README.ja.md) | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | [Türkçe](README.tr.md) | [Українська](README.uk.md) | বাংলা | [Ελληνικά](README.gr.md) | [Tiếng Việt](README.vi.md) | [עברית](README.he.md) | [العربية](README.ar.md) | [Bosanski](README.bs.md)
 
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-15.
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-25.
 
-<!-- Source hash: 3541b09e8d04 -->
+<!-- Source hash: `f3d2a07f2d68` -->
 
 </details>
 
 </div>
 
 <br />
+
+## Release status (English canonical)
+
+The published line is `3.0.0`; this working tree is the `4.0.0-rc.1`
+candidate. `3.0.0` must not be republished or retagged. The M26–M50 program is
+tracked in
+[`docs/ROADMAP.yaml`](docs/ROADMAP.yaml); provisional capability contracts
+are not automatically enabled or certified. Repository-owned checks pass, but
+Trust certification remains `NOT_CERTIFIED` until the protected holdout,
+real-world, platform/consumer, remote-workflow, support-matrix, and corpus
+evidence gates pass. Run `npm run m26:readiness` before treating any candidate
+as releasable. This document does not publish a tag or authorize a release.
+
+> Machine-assisted canonical text. Translate this block before treating it as localized copy.
 
 ## সবুজ চেক একটি দাবি, প্রমাণ নয়
 
@@ -58,7 +72,7 @@ npx mjolnir-qa@latest
 
 <sub>এই workflow-এর জন্য ডেমো স্ক্যান যত সন্ধান রিপোর্ট করেছে, সেগুলো যে লাইনে রিপোর্ট করা হয়েছে সেখানেই। `npm run docs:readme-brand` দ্বারা [`demo-report.json`](assets/readme/demo-report.json) থেকে তৈরি এবং CI-তে বিচ্যুতির বিরুদ্ধে লক করা।</sub>
 
-**কঠোর মোড।** সবচেয়ে আক্রমণাত্মক সনাক্তকরণ — `.only`, `continue-on-error`, ফাঁকা পরীক্ষা, পুনরায় চেষ্টার অপব্যবহার — কোয়ারেন্টাইন স্তরে থাকে। এগুলো শুধু `--strict`-এ চলে এবং `info` তীব্রতায় সীমিত: এগুলো চিহ্নিত করে, কিন্তু কখনো গেট করে না। ডিফল্ট স্ক্যান (`npx mjolnir-qa@latest` ছাড়া `--strict`) শুধু কোর এবং বর্ধিত নিয়ম কভার করে। পরামর্শমূলক স্তরও চাইলে `--strict` যোগ করুন।
+**কঠোর মোড।** সবচেয়ে আক্রমণাত্মক সনাক্তকরণ — `.only`, `continue-on-error`, ফাঁকা পরীক্ষা, পুনরায় চেষ্টার অপব্যবহার — কোয়ারেন্টাইন স্তরে থাকে। এগুলো শুধু `--strict`-এ চলে এবং `info` তীব্রতায় সীমিত: এগুলো চিহ্নিত করে, কিন্তু কখনো গেট করে না। ডিফল্ট স্ক্যান (`npx mjolnir-qa@3.0.0` ছাড়া `--strict`) শুধু কোর এবং বর্ধিত নিয়ম কভার করে। পরামর্শমূলক স্তরও চাইলে `--strict` যোগ করুন।
 
 Mjölnir স্যুট, CI workflow, এবং আপনার কাছে থাকলে একটি প্রকৃত রানের রিপোর্ট পড়ে। এটি আপনার টেস্ট চালায় না, আপনার dependency ইনস্টল করে না, বা এটি যে কোড স্ক্যান করে তা চালায় না। আর যখন এর কাছে প্রমাণ নেই, তখন এটি আস্থা বানিয়ে না নিয়ে সেটাই বলে দেয়:
 
@@ -93,7 +107,7 @@ Mjölnir স্যুট, CI workflow, এবং আপনার কাছে �
 
 <p align="center">
   <a href="assets/video/mjolnir-demo.mp4">
-    <img src="assets/video/mjolnir-demo-poster.png" alt="ডেমো রেকর্ডিংয়ের একটি ফ্রেম: একটি টার্মিনাল উইন্ডোতে ডেমো রিপোজিটরি স্ক্যান করছে npx mjolnir-qa@latest" width="900" />
+    <img src="assets/video/mjolnir-demo-poster.png" alt="ডেমো রেকর্ডিংয়ের একটি ফ্রেম: একটি টার্মিনাল উইন্ডোতে ডেমো রিপোজিটরি স্ক্যান করছে npx mjolnir-qa@3.0.0" width="900" />
   </a>
 </p>
 
@@ -162,7 +176,7 @@ Docs: mjolnir rules --md   (full catalog, this rule included)
 ## দ্রুত শুরু
 
 ```bash
-npx mjolnir-qa@latest
+npx mjolnir-qa@3.0.0
 ```
 
 এটি বর্তমান ডিরেক্টরি স্ক্যান করে এবং Trust Report প্রিন্ট করে: এটি কী পেয়েছে, আপনি কতটা বিশ্বাস করতে পারেন, কেন, এবং পরবর্তীতে কী করতে হবে। গেট বা তার উপরে কিছু না পাওয়া গেলে এটি `0` দিয়ে exit করে।
@@ -170,24 +184,39 @@ npx mjolnir-qa@latest
 CI-তে, শুধু ব্রাঞ্চ যা এনেছে তা স্ক্যান করুন, যাতে একটি পুরনো স্যুট আপনার প্রথম pull request-কে ডুবিয়ে না দেয়:
 
 ```bash
-npx mjolnir-qa@latest --scope changed
+npx mjolnir-qa@3.0.0 --scope changed
 ```
 
-`mjolnir ci install` এটিকে একটি GitHub Actions workflow হিসেবে লেখে, `v1` মেজর ট্যাগে পিন করা [action](https://github.com/Sergey-Bar/Mjolnir#readme) ব্যবহার করে (অথবা `--no-action` সহ সাধারণ `npx`)। এটি ততক্ষণ পরামর্শমূলক থাকে যতক্ষণ না আপনি সিদ্ধান্ত নেন এটি ব্লক করা উচিত।
+`mjolnir ci install` এটিকে একটি GitHub Actions workflow হিসেবে লেখে, `v3` মেজর ট্যাগে পিন করা [action](https://github.com/Sergey-Bar/Mjolnir#readme) ব্যবহার করে (অথবা `--no-action` সহ সাধারণ `npx`)। এটি ততক্ষণ পরামর্শমূলক থাকে যতক্ষণ না আপনি সিদ্ধান্ত নেন এটি ব্লক করা উচিত।
 
-| কমান্ড                              | এটি কী করে                                             |
-| ----------------------------------- | ------------------------------------------------------ |
-| `mjolnir`                           | Trust Report: রায়, আস্থা, পরবর্তী পদক্ষেপ             |
-| `mjolnir --scope changed`           | শুধু আপনার ব্রাঞ্চ যা এনেছে (CI ফর্ম)                  |
-| `mjolnir ci install`                | পরামর্শমূলক PR workflow তৈরি করে (action-ভিত্তিক)      |
-| `mjolnir explain QA-CI-001`         | কী, কেন, এবং ফিক্স, প্লাস পরিমাপ করা FP হার            |
-| `mjolnir why src/a.spec.ts:42`      | ঠিক এই লাইনটি কেন ফ্ল্যাগ করা হয়েছে। কখনো গেট করে না। |
-| `mjolnir forensics ./test-results/` | একটি প্রকৃত রান থেকে রানটাইম প্রমাণ                    |
-| `mjolnir trust-report`              | স্বয়ংসম্পূর্ণ Trust Artifact (md + json)              |
-| `mjolnir handoff`                   | একটি কোডিং এজেন্টের জন্য প্রতিকার পরিকল্পনা            |
-| `mjolnir --json` / `--format sarif` | মেশিন-পাঠযোগ্য আউটপুট, GitHub Code Scanning            |
-| `mjolnir --format codequality`      | GitLab Code Quality রিপোর্ট (MR widget artifact)       |
-| `mjolnir --strict`                  | quarantine-tier নিয়মও চালায় (উচ্চতর FP ঝুঁকি)        |
+| কমান্ড                                        | এটি কী করে                                             |
+| --------------------------------------------- | ------------------------------------------------------ |
+| `mjolnir`                                     | Trust Report: রায়, আস্থা, পরবর্তী পদক্ষেপ             |
+| `mjolnir --scope changed`                     | শুধু আপনার ব্রাঞ্চ যা এনেছে (CI ফর্ম)                  |
+| `mjolnir ci install`                          | পরামর্শমূলক PR workflow তৈরি করে (action-ভিত্তিক)      |
+| `mjolnir business-case`                       | ROI estimate: projected savings per finding            |
+| `mjolnir release-report`                      | Release readiness: GO, CONDITIONAL GO, or NO-GO        |
+| `mjolnir release-trust`                       | 12-dimension release assurance verdict                 |
+| `mjolnir report`                              | Generate a Playwright-compatible report                |
+| `mjolnir trend`                               | Record, show, or diff local quality snapshots          |
+| `mjolnir policy`                              | Initialize, validate, or check policy gates            |
+| `mjolnir quarantine`                          | Review deterministic proposals (prototype)             |
+| `mjolnir analyze --cross-file`                | Bounded cross-file analysis                            |
+| `mjolnir ci-adapter github .`                 | Generate CI templates for supported providers          |
+| `mjolnir dashboard`                           | Generate a self-contained quality dashboard            |
+| `mjolnir exec-report`                         | Executive KPIs and recommendations (advisory)          |
+| `mjolnir enterprise`                          | Self-hosted templates (prototype)                      |
+| `mjolnir maturity`                            | Assess maturity or display maturity levels             |
+| `mjolnir mutation tests/mutation-report.json` | Analyze mutation reports; never promotes trust         |
+| `mjolnir mcp`                                 | Read-only MCP tools over stdio                         |
+| `mjolnir explain QA-CI-001`                   | কী, কেন, এবং ফিক্স, প্লাস পরিমাপ করা FP হার            |
+| `mjolnir why src/a.spec.ts:42`                | ঠিক এই লাইনটি কেন ফ্ল্যাগ করা হয়েছে। কখনো গেট করে না। |
+| `mjolnir forensics ./test-results/`           | একটি প্রকৃত রান থেকে রানটাইম প্রমাণ                    |
+| `mjolnir trust-report`                        | স্বয়ংসম্পূর্ণ Trust Artifact (md + json)              |
+| `mjolnir handoff`                             | একটি কোডিং এজেন্টের জন্য প্রতিকার পরিকল্পনা            |
+| `mjolnir --json` / `--format sarif`           | মেশিন-পাঠযোগ্য আউটপুট, GitHub Code Scanning            |
+| `mjolnir --format codequality`                | GitLab Code Quality রিপোর্ট (MR widget artifact)       |
+| `mjolnir --strict`                            | quarantine-tier নিয়মও চালায় (উচ্চতর FP ঝুঁকি)        |
 
 <details>
 <summary><strong>অন্য সব কমান্ড</strong> — flake triage, রিপোর্টিং, গভর্নেন্স</summary>
@@ -452,18 +481,18 @@ mjolnir ci install
 অথবা Marketplace action যোগ করুন একটি workflow-তে যা আপনার ইতিমধ্যে আছে:
 
 ```yaml
-- uses: Sergey-Bar/Mjolnir@v1
+- uses: Sergey-Bar/Mjolnir@v3
   with:
     scope: changed
     fail-on: error
 ```
 
-মেজর লাইন অনুসরণ করতে `@v1` পিন করুন, অথবা একটি reproducible gate-এর জন্য একটি সঠিক ট্যাগ (`@v0.5.32`)। [docs/DISTRIBUTION-KIT.md](docs/DISTRIBUTION-KIT.md) Marketplace, Smithery, এবং MCP রেজিস্ট্রি কভার করে।
+মেজর লাইন অনুসরণ করতে `@v3` পিন করুন, অথবা একটি reproducible gate-এর জন্য একটি সঠিক ট্যাগ (`@v0.5.32`)। [docs/DISTRIBUTION-KIT.md](docs/DISTRIBUTION-KIT.md) Marketplace, Smithery, এবং MCP রেজিস্ট্রি কভার করে।
 
 GitHub Code Scanning-এ সন্ধান রাখতে, SARIF আপলোড করুন (workflow বা job scope-এ `security-events: write` প্রয়োজন):
 
 ```yaml
-- run: npx mjolnir-qa@latest --format sarif > mjolnir.sarif
+- run: npx mjolnir-qa@3.0.0 --format sarif > mjolnir.sarif
   continue-on-error: true
 - uses: github/codeql-action/upload-sarif@v3
   if: ${{ !cancelled() }}
@@ -476,7 +505,7 @@ GitLab-এ, `--format codequality` সেই Code Quality রিপোর্ট 
 ### Changed-scope attribution
 
 ```bash
-npx mjolnir-qa@latest --scope changed
+npx mjolnir-qa@3.0.0 --scope changed
 ```
 
 সন্ধানগুলো আপনার ব্রাঞ্চ যোগ করা লাইনগুলোতে attribute করা হয়, **merge-base**-এর বিরুদ্ধে পরিমাপ করা। Scope-টি একই ফাইল সেট যা একটি full scan আবিষ্কার করে (TS/JS spec এবং adapter config, `test_*.py`, `*Test.java`, `*Tests.cs`, `.github/workflows/*.yml`), সাথে uncommitted এবং untracked পরিবর্তন, তাই এটি আপনি কমিট করার আগেই কাজ করে। Base resolve হয় `main → master → origin/main → origin/master → origin/HEAD`; `--base <ref>` দিয়ে override করুন।
@@ -504,7 +533,7 @@ SCAN → EVIDENCE → HANDOFF → AGENT → RE-SCAN → PROOF
 নিজস্ব CLI সহ একটি ক্লায়েন্টে যোগ করুন:
 
 ```bash
-claude mcp add mjolnir -- npx -y mjolnir-qa@latest mcp
+claude mcp add mjolnir -- npx -y mjolnir-qa@3.0.0 mcp
 ```
 
 অথবা একটি `mcpServers` ব্লক নেয় এমন যেকোনো ক্লায়েন্টে:
@@ -512,7 +541,7 @@ claude mcp add mjolnir -- npx -y mjolnir-qa@latest mcp
 ```json
 {
   "mcpServers": {
-    "mjolnir": { "command": "npx", "args": ["-y", "mjolnir-qa@latest", "mcp"] }
+    "mjolnir": { "command": "npx", "args": ["-y", "mjolnir-qa@3.0.0", "mcp"] }
   }
 }
 ```
@@ -603,7 +632,7 @@ Dev সেটআপ, standing-gate কমান্ড, এবং anti-creep এ�
 <img src="assets/readme/closing.svg" alt="আপনার রিপোতে এটি চালান।" width="100%" />
 
 ```bash
-npx mjolnir-qa@latest
+npx mjolnir-qa@3.0.0
 ```
 
 [গাইড পড়ুন](https://sergey-bar.github.io/Mjolnir/guide/getting-started) · [ডকস সাইট](https://sergey-bar.github.io/Mjolnir/) · [npm](https://www.npmjs.com/package/mjolnir-qa)

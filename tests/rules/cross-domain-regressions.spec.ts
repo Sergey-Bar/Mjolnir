@@ -267,7 +267,7 @@ describe("QA-5: unparseable suppression `expires` is a usage error, not NaN sile
   });
 });
 
-describe("QA-6: the documented 90-day suppression default is enforced", () => {
+describe("QA-6: suppression expiry uses only the explicit date", () => {
   it("a no-expiry entry is active regardless of config mtime (audit S4: mtime anchor dropped)", () => {
     mkdirSync(dir, { recursive: true });
     const configPath = join(dir, "mjolnir.config.json");
@@ -275,10 +275,6 @@ describe("QA-6: the documented 90-day suppression default is enforced", () => {
       configPath,
       JSON.stringify({ ignore: [{ ruleId: "QA-TEST-004", reason: "r" }] }),
     );
-    // Even a config untouched for 91 days no longer expires the entry —
-    // the mtime anchor let ANY edit (or `touch`) extend suppressions
-    // forever. Expiry is the explicit `expires` date alone; the report
-    // labels the no-expiry state honestly.
     const old = new Date(Date.now() - 91 * 86_400_000);
     utimesSync(configPath, old, old);
     const report = loadSuppressions(dir);

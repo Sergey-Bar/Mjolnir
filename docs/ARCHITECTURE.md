@@ -1,10 +1,9 @@
 # Architecture — canonical reference
 
-> This document is the **canonical map of the implemented system** as of
-> the 0.6.x line (Mega MVP Master Plan v3.1, workstream A). Every claim
-> here names its source-of-truth module; where a capability is _planned_
-> rather than implemented, the doc says so explicitly (docs must follow
-> reality — never the reverse).
+> This document is the **canonical map of the implemented system** for the
+> 3.0.0 line and its post-3.0 working candidate. Every claim names its
+> source-of-truth module; provisional frontier contracts are labeled as
+> non-promoting rather than presented as shipped certification.
 
 ## The spine
 
@@ -38,7 +37,7 @@ they never re-derive semantics (plan §18 parity law).
 | `src/engine/runtime-corroboration.ts`                   | stamps `RuntimeCorroboration` + `trustLevel` (L0–L5) on findings from the evidence core                                                                                    | trust ladder derivation                                 |
 | `src/engine/trust-summary.ts`                           | scan-level `trustSummary` metrics with hard incompleteness ceilings                                                                                                        | trust measurement (WI-3; formulas in `docs/SCORING.md`) |
 | `src/engine/machine-contract.ts`                        | `MachineContract` v1 — summary digest, annotations, completeness, trustSummary, provenance, reserved forensicVerdicts slot                                                 | the machine representation (WI-4)                       |
-| `src/rules/index.ts`                                    | the registry: 78 active rules + `RETIRED_RULE_IDS` (canonical retirement record)                                                                                           | registry census, ID-immutability                        |
+| `src/rules/index.ts`                                    | the registry: 79 active rules + 22 retired historical IDs                                                                                                                  | registry census, ID immutability                        |
 | `src/rules/measurement.ts` + `measured-fp.generated.ts` | measurement status per rule (MEASURED-*/PROVISIONAL/UNMEASURED), tier from the measured envelope                                                                           | measurement honesty (plan §11)                          |
 | `src/discovery/*`                                       | framework detection (honest `unknown`), ignores, zero-config evidence discovery (depth ≤ 2)                                                                                | discovery (WI-11)                                       |
 | `src/forensics/*`                                       | run-report ingestion (Playwright JSON, JUnit XML), TRUE-FLAKE/FAILING analysis, guided triage workflow                                                                     | runtime forensics                                       |
@@ -57,8 +56,9 @@ they never re-derive semantics (plan §18 parity law).
 - **Trust ladder** L0–L5 — L3–L5 structurally require runtime
   corroboration; static-only scans cap at L2 — `src/types.ts`,
   `engine/runtime-corroboration.ts`.
-- **Exit codes** 0 clean · 1 findings-at-gate · 2 partial (never blocks)
-  · 10 usage · 20 internal — `src/cli.ts`, `src/commands/help.ts`.
+- **Exit codes** scan/CI: 0 clean · 1 findings-at-gate · 2 partial
+  · 10 usage · 20 internal. Release commands have command-specific exits —
+  see `docs/RELEASE-TRUST-CONTRACT.md`.
 - **`schemaVersion: 1`** additive-only JSON; machine contract
   `contractVersion: 1` additive-only — `src/types.ts`,
   `engine/machine-contract.ts`.
@@ -68,20 +68,18 @@ they never re-derive semantics (plan §18 parity law).
 - **Zero network** inside a scan; provenance is metadata, never trust —
   `src/plugins/*`, `docs/CERTIFICATION-POLICY.md`.
 
-## Planned, not implemented (honesty ledger)
+## Provisional and external-only work
 
-- `trust.zip` forensics, forensic verdict taxonomy
-  (REAL/ENVIRONMENTAL/…), runtime network/console correlation,
-  Selector-Health runtime correlation, per-capability product matrix —
-  **1.1.x** (WI-17–20).
-- MCP forensics/triage/pw-report/verify tools, Agent Skill — **1.2.x**
-  (WI-21–22).
-- Complete Trust Artifact (HTML), share loops, canonical demo —
-  **1.3.x** (WI-23–24).
-- `RETIRED_RULE_IDS` contains 21 retired IDs; the active census is
-  **78 rules (57 measured / 21 PROVISIONAL)** — the measurement
-  closeout to 78/78 is the 1.0.0 gate (WI-14) and will not be
-  simulated.
+- Hosted team/enterprise control-plane, enterprise recovery, and marketplace
+  surfaces remain local, non-promoting contracts until external evidence and
+  human authority exist — `src/governance/`, `docs/M26-EXTERNAL-VALIDATION.json`.
+- M36–M50 evidence contracts (mutation sensitivity, simulation, research,
+  benchmark, scale, UX parity, and Trust OS) are not enabled by the default
+  scan/release path; they are tracked in `docs/ROADMAP.yaml`.
+- The current registry contains 79 active rules: 74 measured and 5 explicitly
+  unmeasured. Five active unmeasured rules do not enter effective core.
+- External Trust certification, protected-holdout, real-world, platform,
+  consumer, and remote-workflow evidence is not synthesized by local tests.
 
 ## Where the docs live
 

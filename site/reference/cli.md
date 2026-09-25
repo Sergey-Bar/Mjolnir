@@ -1,8 +1,9 @@
 # CLI reference
 
-Every surface below is additive to the frozen 1.0 contract: JSON
-`schemaVersion: 1`, exit codes `0 · 1 · 2 · 10 · 20`, and the verdict
-vocabulary (`WORTHY` / `NEEDS WORK` / `UNWORTHY`) are unchanged.
+JSON `schemaVersion: 1` remains additive. The 3.0 line changes trust,
+plugin, artifact, CI, and release-gate behavior; see the migration guide.
+Scan exits remain `0 · 1 · 2 · 10 · 20`, while verdict vocabulary includes
+`WORTHY`, `NEEDS WORK`, `FORGED`, `UNKNOWN`, and `UNWORTHY`.
 
 ## Help
 
@@ -86,7 +87,7 @@ file+line match over the report; renders the finding's severity,
 message/why/fix, evidence level (E0–E2), trust level (L0–L5 runtime
 corroboration), measured FP rate (or "ships on assumption"), and the
 suppression contract (`ignore` entries in `mjolnir.config.json`: reason
-required, 90-day expiry). Saved-report mode (`--json
+required; only an explicit ISO `expires` date is bounded). Saved-report mode (`--json
 <mjolnir.json>`) is authoritative; live scan runs otherwise. Exit 0
 match, 1 no match, 10 usage, 2 invalid report.
 

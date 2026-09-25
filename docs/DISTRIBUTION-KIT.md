@@ -32,9 +32,9 @@ every stable release (rc tags never move it — the same ruling as npm's
 ```
 
 The scan itself always runs the **published npm package**
-(`npx mjolnir-qa@<version>`), never a build of this repo — the action
+(`npx mjolnir-qa@4.0.0-rc.1 never a build of this repo — the action
 works for consumers, not contributors. Pin the tool exactly in your
-workflow (`with: version: 3.0.0`); the Action also defaults to the current
+workflow (`with: version: 4.0.0-rc.1`); the Action also defaults to the current
 released version. Do not use `version: latest` in an enforcing gate.
 
 ## GitHub Actions Marketplace (P1.5)
@@ -52,8 +52,9 @@ Listing content (paste verbatim into the marketplace draft):
 - **Description (short):** Mjölnir audits the verification _system_ —
   tests, Playwright configs, CI workflows — for gates that cannot fail:
   skipped tests, swallowed exit codes, always-success steps, retries
-  that mask flakiness. 99 rules over TS/JS, Python, Java, C#, GitHub
-  Actions YAML, with a measured false-positive rate published per rule.
+  that mask flakiness. 79 active rules over TS/JS, Python, Java, C#, GitHub
+  Actions YAML; 74 have corpus-measured false-positive rates and 5 are
+  explicitly unmeasured.
 - **Categories:** `Continuous integration`, `Code quality`
 - **Screenshots:** `assets/readme/terminal-hero.svg` (hero),
   `assets/readme/score-gauge.svg`, `assets/readme/demo.svg` —
@@ -79,8 +80,8 @@ Checklist (tick with dates, states in the table header):
 All three lists are curated; read their CONTRIBUTING before opening.
 Draft PR body (shared): "Adds Mjölnir (mjolnir-qa on npm) — a CI tool
 that audits the verification system itself: test suites, Playwright
-configs and CI workflows, for gates that cannot go red. 99 rules;
-per-rule measured FP rates against real OSS code; GitHub Action
+configs and CI workflows, for gates that cannot go red. 79 active rules;
+74 corpus-measured FP rates and 5 explicitly unmeasured rules; GitHub Action
 (`Sergey-Bar/Mjolnir@v3`), MCP server, SARIF. MIT."
 
 | Channel            | Where it belongs                                                    | State   |
@@ -104,7 +105,7 @@ since v0.5.37).
 | ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
 | modelcontextprotocol/servers | PR adding Mjölnir to the community servers README (line: `- [mjolnir-qa](…) — verification trust scanning: fails CI on tests that cannot fail; stdio MCP server with scan/explain/diff/verify/forensics/triage/pw-report tools`) | pending |
 | Smithery                     | `/smithery.yaml` ships with the repo; submit via smithery.ai "Add server" pointing at the repo                                                                                                                                   | pending |
-| PulseMCP                     | Directory entry form (owner: requires Sergey-Bar identity): name, description from smithery.yaml, stdio transport, install `npx -y mjolnir-qa@latest mcp`                                                                        | pending |
+| PulseMCP                     | Directory entry form (owner: requires Sergey-Bar identity): name, description from smithery.yaml, stdio transport, install `npx -y mjolnir-qa@4.0.0-rc.1 mcp`                                                                    | pending |
 | mcp.so                       | Entry form with the same payload as PulseMCP                                                                                                                                                                                     | pending |
 
 ## Ministry of Testing (P1.6)
@@ -125,8 +126,9 @@ Body (HN/Reddit/LinkedIn variants — same facts, different tone):
 > configs and CI workflows for the patterns that make a green gate
 > meaningless: focused tests committed, assertions removed, exit codes
 > swallowed (`|| true`, `continue-on-error`), retries hiding flakiness,
-> always-success steps masking failures. 99 rules over TypeScript/JS,
-> Python, Java, C# and GitHub Actions YAML.
+> always-success steps masking failures. 79 active rules over TypeScript/JS,
+> Python, Java, C# and GitHub Actions YAML; 74 have measured FP rates and
+> 5 remain explicitly unmeasured.
 >
 > Two things it does differently from a linter: every rule ships a
 > must-fire AND a must-not-fire fixture, and every rule publishes a
@@ -136,8 +138,8 @@ Body (HN/Reddit/LinkedIn variants — same facts, different tone):
 > capped to info, never gating. It scores what it finds, publishes the
 > score's full deduction table, and refuses to score an empty repo as a 100.
 >
-> Try it: `npx mjolnir-qa@latest` (or in CI, `mjolnir ci install`).
-> GitHub Action: `Sergey-Bar/Mjolnir@v3`. MIT.
+> Try it: `npx mjolnir-qa@4.0.0-rc.1 (or in CI, `mjolnir ci install`).
+GitHub Action: `Sergey-Bar/Mjolnir@v3`. MIT.
 
 Comment-strategy note: lead with the FP-rate honesty angle on HN
 (technical audience), the Action pinning story on r/devops, and the

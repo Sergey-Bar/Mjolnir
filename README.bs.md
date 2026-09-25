@@ -18,7 +18,7 @@ a zatim ocjenjuje koliko se rezultatu može vjerovati, uz dokaz za svaki bod.
 [![node](https://img.shields.io/badge/node-%E2%89%A5%2022.18-1F6F7C.svg?style=flat-square&labelColor=0A1119)](https://nodejs.org)
 
 ```bash
-npx mjolnir-qa@latest
+npx mjolnir-qa@3.0.0
 ```
 
 [Pogledajte kako radi](#pogledajte-kako-radi) · [Brzi početak](#brzi-početak) · [Šta pronalazi](#šta-mjölnir-pronalazi) · [Ocjena](#ocjena-vrijednosti) · [Dokazi](#model-dokaza) · [Analiza pokretanja](#analiza-pokretanja-testova) · [CI](#integritet-ci-ja) · [Agenti](#ai-agenti) · [Sigurnost](#povjerenje-i-sigurnost) · [Ograničenja](#šta-vam-mjölnir-ne-može-reći) · [Dokumentacija](#dokumentacija)
@@ -28,15 +28,29 @@ npx mjolnir-qa@latest
 
 [English](README.md) | [简体中文](README.zh.md) | [繁體中文](README.zht.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | [日本語](README.ja.md) | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | [Türkçe](README.tr.md) | [Українська](README.uk.md) | [বাংলা](README.bn.md) | [Ελληνικά](README.gr.md) | [Tiếng Việt](README.vi.md) | [עברית](README.he.md) | [العربية](README.ar.md) | Bosanski
 
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-15.
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-25.
 
-<!-- Source hash: 3541b09e8d04 -->
+<!-- Source hash: `f3d2a07f2d68` -->
 
 </details>
 
 </div>
 
 <br />
+
+## Release status (English canonical)
+
+The published line is `3.0.0`; this working tree is the `4.0.0-rc.1`
+candidate. `3.0.0` must not be republished or retagged. The M26–M50 program is
+tracked in
+[`docs/ROADMAP.yaml`](docs/ROADMAP.yaml); provisional capability contracts
+are not automatically enabled or certified. Repository-owned checks pass, but
+Trust certification remains `NOT_CERTIFIED` until the protected holdout,
+real-world, platform/consumer, remote-workflow, support-matrix, and corpus
+evidence gates pass. Run `npm run m26:readiness` before treating any candidate
+as releasable. This document does not publish a tag or authorize a release.
+
+> Machine-assisted canonical text. Translate this block before treating it as localized copy.
 
 ## Zelena kvačica je tvrdnja, a ne dokaz
 
@@ -58,7 +72,7 @@ Nijedan od njih ne boji pipeline u crveno, a svaki na reviewu izgleda namjerno. 
 
 <sub>Svaki nalaz koji je demo skeniranje prijavilo za ovaj workflow, u redu u kojem je prijavljen. Generisano naredbom `npm run docs:readme-brand` iz [`demo-report.json`](assets/readme/demo-report.json) i zaključano protiv odstupanja u CI-ju.</sub>
 
-**Strogi režim.** Najagresivnija otkrivanja — `.only`, `continue-on-error`, prazni testovi, zloupotreba ponavljanja — žive u karantinskom nivou. Rade samo pod `--strict` i ograničena su na `info` ozbiljnost: označavaju, ali nikada ne blokiraju. Podrazumijevano skeniranje (`npx mjolnir-qa@latest` bez `--strict`) pokriva samo osnovna i proširena pravila. Dodajte `--strict` kada želite i savjetodavni sloj.
+**Strogi režim.** Najagresivnija otkrivanja — `.only`, `continue-on-error`, prazni testovi, zloupotreba ponavljanja — žive u karantinskom nivou. Rade samo pod `--strict` i ograničena su na `info` ozbiljnost: označavaju, ali nikada ne blokiraju. Podrazumijevano skeniranje (`npx mjolnir-qa@3.0.0` bez `--strict`) pokriva samo osnovna i proširena pravila. Dodajte `--strict` kada želite i savjetodavni sloj.
 
 Mjölnir čita skup testova, CI workflowe i, ako ga imate, izvještaj stvarnog pokretanja. Ne pokreće vaše testove, ne instalira vaše zavisnosti i ne izvršava kod koji skenira. A kada nema dokaza, to i kaže umjesto da izmišlja pouzdanost:
 
@@ -93,7 +107,7 @@ Stvarno skeniranje [`examples/demo-repo`](examples/demo-repo), malog Playwright 
 
 <p align="center">
   <a href="assets/video/mjolnir-demo.mp4">
-    <img src="assets/video/mjolnir-demo-poster.png" alt="Kadar demo snimka: npx mjolnir-qa@latest skenira demo repozitorij u prozoru terminala" width="900" />
+    <img src="assets/video/mjolnir-demo-poster.png" alt="Kadar demo snimka: npx mjolnir-qa@3.0.0 skenira demo repozitorij u prozoru terminala" width="900" />
   </a>
 </p>
 
@@ -162,7 +176,7 @@ To je jedinica vrijednosti: jedno mjesto na kojem CI prijavljuje prolaz koji nij
 ## Brzi početak
 
 ```bash
-npx mjolnir-qa@latest
+npx mjolnir-qa@3.0.0
 ```
 
 Skenira trenutni direktorij i ispisuje Trust Report: šta je pronašao, koliko mu možete vjerovati, zašto i šta dalje uraditi. Završava s `0` kada ništa na nivou kapije ili iznad nije pronađeno.
@@ -170,24 +184,39 @@ Skenira trenutni direktorij i ispisuje Trust Report: šta je pronašao, koliko m
 U CI-ju skenirajte samo ono što je grana uvela, kako stari skup testova ne bi potopio vaš prvi pull request:
 
 ```bash
-npx mjolnir-qa@latest --scope changed
+npx mjolnir-qa@3.0.0 --scope changed
 ```
 
-`mjolnir ci install` to zapisuje kao GitHub Actions workflow, koristeći [action](https://github.com/Sergey-Bar/Mjolnir#readme) prikovan za glavni tag `v1` (ili obični `npx` s `--no-action`). Ostaje savjetodavan dok ne odlučite da treba blokirati.
+`mjolnir ci install` to zapisuje kao GitHub Actions workflow, koristeći [action](https://github.com/Sergey-Bar/Mjolnir#readme) prikovan za glavni tag `v3` (ili obični `npx` s `--no-action`). Ostaje savjetodavan dok ne odlučite da treba blokirati.
 
-| Naredba                             | Šta radi                                                |
-| ----------------------------------- | ------------------------------------------------------- |
-| `mjolnir`                           | Trust Report: presuda, pouzdanost, sljedeći korak       |
-| `mjolnir --scope changed`           | Samo ono što je vaša grana uvela (CI oblik)             |
-| `mjolnir ci install`                | Generiše savjetodavni PR workflow (zasnovan na actionu) |
-| `mjolnir explain QA-CI-001`         | Šta, zašto i ispravka, plus izmjerena FP stopa          |
-| `mjolnir why src/a.spec.ts:42`      | Zašto je baš ovaj red označen. Nikad ne blokira.        |
-| `mjolnir forensics ./test-results/` | Dokazi iz stvarnog pokretanja                           |
-| `mjolnir trust-report`              | Samostalni Trust Artifact (md + json)                   |
-| `mjolnir handoff`                   | Plan sanacije za agenta za kodiranje                    |
-| `mjolnir --json` / `--format sarif` | Mašinski čitljiv izlaz, GitHub Code Scanning            |
-| `mjolnir --format codequality`      | GitLab Code Quality izvještaj (artefakt MR widgeta)     |
-| `mjolnir --strict`                  | Pokreće i pravila nivoa quarantine (veći FP rizik)      |
+| Naredba                                       | Šta radi                                                |
+| --------------------------------------------- | ------------------------------------------------------- |
+| `mjolnir`                                     | Trust Report: presuda, pouzdanost, sljedeći korak       |
+| `mjolnir --scope changed`                     | Samo ono što je vaša grana uvela (CI oblik)             |
+| `mjolnir ci install`                          | Generiše savjetodavni PR workflow (zasnovan na actionu) |
+| `mjolnir business-case`                       | ROI estimate: projected savings per finding             |
+| `mjolnir release-report`                      | Release readiness: GO, CONDITIONAL GO, or NO-GO         |
+| `mjolnir release-trust`                       | 12-dimension release assurance verdict                  |
+| `mjolnir report`                              | Generate a Playwright-compatible report                 |
+| `mjolnir trend`                               | Record, show, or diff local quality snapshots           |
+| `mjolnir policy`                              | Initialize, validate, or check policy gates             |
+| `mjolnir quarantine`                          | Review deterministic proposals (prototype)              |
+| `mjolnir analyze --cross-file`                | Bounded cross-file analysis                             |
+| `mjolnir ci-adapter github .`                 | Generate CI templates for supported providers           |
+| `mjolnir dashboard`                           | Generate a self-contained quality dashboard             |
+| `mjolnir exec-report`                         | Executive KPIs and recommendations (advisory)           |
+| `mjolnir enterprise`                          | Self-hosted templates (prototype)                       |
+| `mjolnir maturity`                            | Assess maturity or display maturity levels              |
+| `mjolnir mutation tests/mutation-report.json` | Analyze mutation reports; never promotes trust          |
+| `mjolnir mcp`                                 | Read-only MCP tools over stdio                          |
+| `mjolnir explain QA-CI-001`                   | Šta, zašto i ispravka, plus izmjerena FP stopa          |
+| `mjolnir why src/a.spec.ts:42`                | Zašto je baš ovaj red označen. Nikad ne blokira.        |
+| `mjolnir forensics ./test-results/`           | Dokazi iz stvarnog pokretanja                           |
+| `mjolnir trust-report`                        | Samostalni Trust Artifact (md + json)                   |
+| `mjolnir handoff`                             | Plan sanacije za agenta za kodiranje                    |
+| `mjolnir --json` / `--format sarif`           | Mašinski čitljiv izlaz, GitHub Code Scanning            |
+| `mjolnir --format codequality`                | GitLab Code Quality izvještaj (artefakt MR widgeta)     |
+| `mjolnir --strict`                            | Pokreće i pravila nivoa quarantine (veći FP rizik)      |
 
 <details>
 <summary><strong>Sve ostale naredbe</strong> — trijaža nestabilnih testova, izvještavanje, upravljanje</summary>
@@ -452,18 +481,18 @@ mjolnir ci install
 Ili dodajte Marketplace action u workflow koji već imate:
 
 ```yaml
-- uses: Sergey-Bar/Mjolnir@v1
+- uses: Sergey-Bar/Mjolnir@v3
   with:
     scope: changed
     fail-on: error
 ```
 
-Prikujte `@v1` da pratite glavnu liniju, ili tačan tag (`@v0.5.32`) za ponovljivu kapiju. [docs/DISTRIBUTION-KIT.md](docs/DISTRIBUTION-KIT.md) pokriva Marketplace, Smithery i MCP registre.
+Prikujte `@v3` da pratite glavnu liniju, ili tačan tag (`@v0.5.32`) za ponovljivu kapiju. [docs/DISTRIBUTION-KIT.md](docs/DISTRIBUTION-KIT.md) pokriva Marketplace, Smithery i MCP registre.
 
 Da nalaze stavite u GitHub Code Scanning, otpremite SARIF (potrebno `security-events: write` na nivou workflowa ili joba):
 
 ```yaml
-- run: npx mjolnir-qa@latest --format sarif > mjolnir.sarif
+- run: npx mjolnir-qa@3.0.0 --format sarif > mjolnir.sarif
   continue-on-error: true
 - uses: github/codeql-action/upload-sarif@v3
   if: ${{ !cancelled() }}
@@ -476,7 +505,7 @@ Na GitLabu, `--format codequality` zapisuje Code Quality izvještaj koji čitaju
 ### Pripisivanje u opsegu promjena
 
 ```bash
-npx mjolnir-qa@latest --scope changed
+npx mjolnir-qa@3.0.0 --scope changed
 ```
 
 Nalazi se pripisuju redovima koje je vaša grana dodala, mjereno u odnosu na **merge-base**. Opseg je isti skup datoteka koji otkriva puno skeniranje (TS/JS specifikacije i konfiguracije adaptera, `test_*.py`, `*Test.java`, `*Tests.cs`, `.github/workflows/*.yml`), plus necommitovane i nepraćene promjene, pa radi i prije commita. Baza se razrješava redom `main → master → origin/main → origin/master → origin/HEAD`; zamijenite je s `--base <ref>`.
@@ -504,7 +533,7 @@ SCAN → EVIDENCE → HANDOFF → AGENT → RE-SCAN → PROOF
 Dodajte ga klijentu koji ima vlastiti CLI:
 
 ```bash
-claude mcp add mjolnir -- npx -y mjolnir-qa@latest mcp
+claude mcp add mjolnir -- npx -y mjolnir-qa@3.0.0 mcp
 ```
 
 Ili bilo kojem klijentu koji prima `mcpServers` blok:
@@ -512,7 +541,7 @@ Ili bilo kojem klijentu koji prima `mcpServers` blok:
 ```json
 {
   "mcpServers": {
-    "mjolnir": { "command": "npx", "args": ["-y", "mjolnir-qa@latest", "mcp"] }
+    "mjolnir": { "command": "npx", "args": ["-y", "mjolnir-qa@3.0.0", "mcp"] }
   }
 }
 ```
@@ -603,7 +632,7 @@ Razvojno okruženje, naredbe stalnih kapija te zakoni anti-creep i zaštitnog zi
 <img src="assets/readme/closing.svg" alt="Pokrenite ga na svom repozitoriju." width="100%" />
 
 ```bash
-npx mjolnir-qa@latest
+npx mjolnir-qa@3.0.0
 ```
 
 [Pročitajte vodič](https://sergey-bar.github.io/Mjolnir/guide/getting-started) · [Stranica dokumentacije](https://sergey-bar.github.io/Mjolnir/) · [npm](https://www.npmjs.com/package/mjolnir-qa)

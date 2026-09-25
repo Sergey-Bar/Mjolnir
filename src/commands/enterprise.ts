@@ -17,6 +17,7 @@ import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { sectionHeader, plainContext } from "../reporter/ui.js";
+import { ENGINE_VERSION } from "../engine/version.js";
 import type { Output } from "../cli-io.js";
 import { EXIT_CLEAN, EXIT_USAGE } from "../exit-codes.js";
 
@@ -37,7 +38,7 @@ export function runEnterpriseCommand(
   if (subcommand === "config") {
     const config = {
       service: "mjolnir-qa",
-      version: "2.0.0",
+      version: ENGINE_VERSION,
       deployment: {
         type: "self-hosted",
         protocol: "https",

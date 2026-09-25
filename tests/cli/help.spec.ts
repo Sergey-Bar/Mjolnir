@@ -25,6 +25,7 @@ import {
   renderRootHelp,
   renderVerbHelp,
 } from "../../src/commands/help.js";
+import { CLI_COMMAND_NAMES } from "../../src/engine/cli-command-names.js";
 
 function capture() {
   let out = "";
@@ -40,6 +41,14 @@ function capture() {
 }
 
 describe("root help", () => {
+  it("has a detailed page for every registered command", () => {
+    const rootHelp = new Set(["scan", "ci", "help"]);
+    const missing = CLI_COMMAND_NAMES.filter(
+      (command) => !rootHelp.has(command) && !hasVerbHelp(command),
+    );
+    expect(missing).toEqual([]);
+  });
+
   it("groups every registered verb under its section", () => {
     const text = renderRootHelp();
     const normalized = text.replace(/\s+/g, " ");

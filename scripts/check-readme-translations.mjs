@@ -111,6 +111,7 @@ const sourceSections = (() => {
   }
 })();
 const rows = [];
+let issues = 0;
 
 for (const [code, label] of LANGS) {
   const file = `README.${code}.md`;
@@ -161,6 +162,7 @@ for (const [code, label] of LANGS) {
   } catch {
     status = "FILE MISSING";
   }
+  if (status !== "fresh") issues += 1;
   rows.push({ label, file, synced, status });
 }
 
@@ -191,4 +193,5 @@ console.log(
   "README.md change into README.<code>.md, translate it, and bump its",
   '"Last synced" date to the README.md change date.',
 );
-process.exitCode = 0;
+const strict = process.argv.includes("--strict");
+process.exitCode = strict && issues > 0 ? 1 : 0;

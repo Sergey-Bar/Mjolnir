@@ -1,4 +1,4 @@
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import { existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -87,6 +87,23 @@ describe("corpus audit completeness", () => {
 
     expect(review.provenanceFailure).toContain("legacy baseline provenance");
     expect(review.countDrifts).toEqual([]);
+  });
+
+  it("rejects overlapping reviewed-update and provenance-refresh modes", () => {
+    const result = spawnSync(
+      process.execPath,
+      [
+        join(ROOT, "node_modules", "tsx", "dist", "cli.mjs"),
+        join(ROOT, "tests", "corpus", "audit.ts"),
+        "--update",
+        "--refresh-provenance",
+      ],
+      { encoding: "utf8" },
+    );
+    expect(result.status).toBe(1);
+    expect(`${result.stdout}\n${result.stderr}`).toContain(
+      "mutually exclusive",
+    );
   });
 
   it("pins every corpus entry to a full 40-character SHA", () => {

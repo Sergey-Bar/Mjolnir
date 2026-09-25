@@ -125,6 +125,8 @@ describe("certification artifact claims vs live files", () => {
 
   it("docs/ARCHITECTURE.md census agrees with the live registry", () => {
     const arch = readFileSync(join(ROOT, "docs", "ARCHITECTURE.md"), "utf8");
-    expect(arch).toContain("78 rules (57 measured / 21 PROVISIONAL)");
+    expect(arch).toContain("79 active rules");
+    expect(arch).toContain("74 measured");
+    expect(arch).toContain("5 explicitly");
   });
 });

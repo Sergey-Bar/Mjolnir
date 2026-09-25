@@ -63,10 +63,6 @@ jobs:
             echo "::error::Use release/v$VERSION for stable publication"
             exit 1
           }
-          grep -F "## [$VERSION]" CHANGELOG.md >/dev/null || {
-            echo "::error::CHANGELOG.md has no $VERSION release heading"
-            exit 1
-          }
           git fetch --no-tags origin main
           git merge-base --is-ancestor origin/main HEAD || {
             echo "::error::Release branch is not descended from protected main"
@@ -100,6 +96,24 @@ jobs:
           test "$(git rev-parse HEAD)" = "$TAG_COMMIT"
           npm ci
           npm run build
+      - id: changelog
+        name: Validate exact stable changelog section
+        shell: bash
+        env:
+          EXPECTED_VERSION: ${{ steps.context.outputs.version }}
+        run: |
+          set -euo pipefail
+          VERSION="$EXPECTED_VERSION"
+          BASE_REF=$(git describe --tags --abbrev=0 --match 'v[0-9]*' HEAD^ 2>/dev/null || true)
+          EXTRA=()
+          if [[ -n "$BASE_REF" ]] && ! git diff --quiet "$BASE_REF" HEAD -- src/rules; then
+            EXTRA+=(--rules-touched)
+          fi
+          npm run changelog:check -- --expect-version "$VERSION" "${EXTRA[@]}"
+      - name: Require authorized candidate evidence
+        run: |
+          npm run m26:audit
+          npm run candidate:readiness
       - name: Run release certification
         run: npm run ci-local
       - id: package
@@ -116,6 +130,9 @@ jobs:
           CHECKSUM=$(sha256sum "$GITHUB_WORKSPACE/release-artifact/$TARBALL" | cut -d ' ' -f 1)
           printf '%s  %s\n' "$CHECKSUM" "$TARBALL" > "$GITHUB_WORKSPACE/release-artifact/$TARBALL.sha256"
           node scripts/pack-audit.mjs "$GITHUB_WORKSPACE/release-artifact/$TARBALL"
+          SBOM="mjolnir-qa-$VERSION.sbom.spdx.json"
+          node scripts/generate-sbom.mjs "$GITHUB_WORKSPACE/release-artifact/$SBOM"
+          sha256sum "$GITHUB_WORKSPACE/release-artifact/$SBOM" > "$GITHUB_WORKSPACE/release-artifact/$SBOM.sha256"
           SMOKE_DIR=$(mktemp -d)
           npm install --prefix "$SMOKE_DIR" --ignore-scripts --no-audit --no-fund "$GITHUB_WORKSPACE/release-artifact/$TARBALL"
           test "$(node "$SMOKE_DIR/node_modules/mjolnir-qa/dist/cli.mjs" --version)" = "mjolnir-qa $VERSION"
@@ -124,6 +141,7 @@ jobs:
             echo "artifact_name=stable-release-$VERSION"
             echo "checksum=$CHECKSUM"
             echo "tarball=$TARBALL"
+            echo "sbom=$SBOM"
           } >> "$GITHUB_OUTPUT"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -168,6 +186,23 @@ jobs:
           fi
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
 
+      - name: Move current Action major tag
+        if: ${{ !contains(steps.identity.outputs.tag, '-rc.') }}
+        shell: bash
+        env:
+          TAG: ${{ steps.identity.outputs.tag }}
+          TAG_COMMIT: ${{ steps.identity.outputs.tag-commit }}
+        run: |
+          set -euo pipefail
+          VERSION="${TAG#v}"
+          MAJOR="${VERSION%%.*}"
+          if [[ "$MAJOR" != "3" ]]; then
+            echo "No current Action tag update for v$MAJOR; the current Action major is v3."
+            exit 0
+          fi
+          git tag -f "v$MAJOR" "$TAG_COMMIT"
+          git push origin "refs/tags/v$MAJOR" --force
+
   publish-npm:
     needs: [verify, tag]
     runs-on: ubuntu-latest
@@ -202,8 +237,11 @@ jobs:
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "$EXPECTED_COMMIT"
           test "$(sha256sum "release-artifact/$TARBALL" | cut -d ' ' -f 1)" = "$CHECKSUM"
+          LOCAL_INTEGRITY=$(node -e "const fs=require('fs'),c=require('crypto'); const h=c.createHash('sha512').update(fs.readFileSync(process.argv[1])).digest('base64'); process.stdout.write('sha512-'+h)" "release-artifact/$TARBALL")
           if ! npm view "$PACKAGE_NAME@$VERSION" version >/dev/null 2>&1; then
             npm publish "./release-artifact/$TARBALL" --provenance --ignore-scripts --access public
+          else
+            test "$(npm view "$PACKAGE_NAME@$VERSION" dist.integrity)" = "$LOCAL_INTEGRITY"
           fi
           for _ in $(seq 1 30); do
             if npm view "$PACKAGE_NAME@$VERSION" version >/dev/null 2>&1; then
@@ -233,13 +271,16 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ needs.tag.outputs.tag }}
           TARBALL: ${{ needs.verify.outputs.tarball }}
+          SBOM: mjolnir-qa-${{ needs.verify.outputs.version }}.sbom.spdx.json
         run: |
           set -euo pipefail
           test "$(sha256sum "release-artifact/$TARBALL" | cut -d ' ' -f 1)" = "$CHECKSUM"
+          (cd release-artifact && sha256sum --check "$SBOM.sha256")
           if gh release view "$TAG" >/dev/null 2>&1; then
-            gh release upload "$TAG" "release-artifact/$TARBALL#$TARBALL" --clobber
+            gh release upload "$TAG" "release-artifact/$TARBALL#$TARBALL"
+            gh release upload "$TAG" "release-artifact/$SBOM#$SBOM"
           else
-            gh release create "$TAG" "release-artifact/$TARBALL#$TARBALL" --verify-tag --title "$TAG" --generate-notes
+            gh release create "$TAG" "release-artifact/$TARBALL#$TARBALL" "release-artifact/$SBOM#$SBOM" --verify-tag --title "$TAG" --generate-notes
           fi
 
   resume-npm:
@@ -277,8 +318,11 @@ jobs:
           git checkout --detach "$TAG"
           gh run download "$ARTIFACT_RUN_ID" --name "stable-release-$VERSION" --dir release-artifact
           (cd release-artifact && sha256sum --check "$TARBALL.sha256")
+          LOCAL_INTEGRITY=$(node -e "const fs=require('fs'),c=require('crypto'); const h=c.createHash('sha512').update(fs.readFileSync(process.argv[1])).digest('base64'); process.stdout.write('sha512-'+h)" "release-artifact/$TARBALL")
           if ! npm view "$PACKAGE_NAME@$VERSION" version >/dev/null 2>&1; then
             npm publish "./release-artifact/$TARBALL" --provenance --ignore-scripts --access public
+          else
+            test "$(npm view "$PACKAGE_NAME@$VERSION" dist.integrity)" = "$LOCAL_INTEGRITY"
           fi
           for _ in $(seq 1 30); do
             if npm view "$PACKAGE_NAME@$VERSION" version >/dev/null 2>&1; then
@@ -312,12 +356,15 @@ jobs:
           [[ "$ARTIFACT_RUN_ID" =~ ^[0-9]+$ ]]
           VERSION=$(node -p "require('./package.json').version")
           TARBALL="mjolnir-qa-$VERSION.tgz"
+          SBOM="mjolnir-qa-$VERSION.sbom.spdx.json"
           TAG="v$VERSION"
           git checkout --detach "$TAG"
           gh run download "$ARTIFACT_RUN_ID" --name "stable-release-$VERSION" --dir release-artifact
           (cd release-artifact && sha256sum --check "$TARBALL.sha256")
+          (cd release-artifact && sha256sum --check "$SBOM.sha256")
           if gh release view "$TAG" >/dev/null 2>&1; then
-            gh release upload "$TAG" "release-artifact/$TARBALL#$TARBALL" --clobber
+            gh release upload "$TAG" "release-artifact/$TARBALL#$TARBALL"
+            gh release upload "$TAG" "release-artifact/$SBOM#$SBOM"
           else
-            gh release create "$TAG" "release-artifact/$TARBALL#$TARBALL" --verify-tag --title "$TAG" --generate-notes
+            gh release create "$TAG" "release-artifact/$TARBALL#$TARBALL" "release-artifact/$SBOM#$SBOM" --verify-tag --title "$TAG" --generate-notes
           fi

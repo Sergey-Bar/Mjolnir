@@ -43,11 +43,11 @@ hide it.
 
 ## Security & trust
 
-| Operation                           | Status         | Notes                                                                                           |
-| ----------------------------------- | -------------- | ----------------------------------------------------------------------------------------------- |
-| SECURITY.md private-key responses   | identity-bound | Security reporter trust; see SUPPORT.md routing — triage may acknowledge, only owner may assess |
-| Suppression overrides (owner tiers) | identity-bound | mjolnir.config.json's 90-day expiry is the guardrail; owner override is a deliberate act        |
-| Signing keys / provenance           | identity-bound | npm OIDC + GitHub release signing bind to the owner account                                     |
+| Operation                           | Status         | Notes                                                                                             |
+| ----------------------------------- | -------------- | ------------------------------------------------------------------------------------------------- |
+| SECURITY.md private-key responses   | identity-bound | Security reporter trust; see SUPPORT.md routing — triage may acknowledge, only owner may assess   |
+| Suppression overrides (owner tiers) | identity-bound | explicit ISO `expires` dates are the bounded-expiry guardrail; owner override is a deliberate act |
+| Signing keys / provenance           | identity-bound | npm OIDC + GitHub release signing bind to the owner account                                       |
 
 ## Handover section (for the eventual co-maintainer)
 
