@@ -28,31 +28,19 @@
   "generatedAt": "2026-09-25",
   "identity": {
     "state": "WORKING_CANDIDATE",
-    "baseSha": "9c2bff39944c2e27b1f5fa6c6e9dc793dd995f56",
+    "baseSha": "904fa39d41e51c37f4af6135e48ca3e623e91a7c",
     "candidateSha": null,
     "version": "4.0.0-rc.1",
     "packageSha256": "12d2adefe15243eccb79fa8d0c8231b45e7eac6f99d82b18aafe81c777a48c3b",
     "lockfileSha256": "aeaff5bca556b58283a5c3c074adda7e429f28b2a76cd51b0efeaeaba9b5021c",
     "workingTreeSha256": "b34a59af6c643519bda66919d536c7daaf98764aa9a52a3b74608e40f5e7688d",
-    "changedPathCount": 5,
+    "changedPathCount": 0,
     "supportEnvelope": "self-hosted; hosted services require explicit consent and separate proof",
     "worktreeInventory": {
-      "changedPaths": [
-        "docs/ECOSYSTEM-CENSUS.json",
-        "docs/ECOSYSTEM-DISPOSITIONS.json",
-        "docs/V6-CURRENT-STATE.md",
-        "docs/V6-GAP-MATRIX.md",
-        "docs/v6-inventory.json"
-      ],
+      "changedPaths": [],
       "untrackedPaths": []
     },
-    "dirtyFiles": [
-      "docs/ECOSYSTEM-CENSUS.json",
-      "docs/ECOSYSTEM-DISPOSITIONS.json",
-      "docs/V6-CURRENT-STATE.md",
-      "docs/V6-GAP-MATRIX.md",
-      "docs/v6-inventory.json"
-    ]
+    "dirtyFiles": []
   },
   "claimRegistry": {
     "path": "docs/claim-registry.json",
