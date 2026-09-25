@@ -396,6 +396,12 @@ interface ManifestRead {
   scripts: string[];
 }
 
+/** Which package ecosystem a build/requirements file speaks. */
+function ecosystemForBuildFile(file: string): string {
+  if (file.endsWith(".toml") || file.startsWith("requirements")) return "pypi";
+  return file === "pom.xml" ? "maven" : "gradle";
+}
+
 function readJsonManifest(path: string): ManifestRead | null {
   if (!existsSync(path)) return null;
   try {
@@ -504,25 +510,50 @@ export function probeRepository(
     const path = join(repoPath, file);
     if (!existsSync(path)) continue;
     const source = readFileSync(path, "utf8");
-    // A quoted coordinate in a build/requirements file: one character class
-    // and an optional bracket suffix, so the run is linear. The rule is a
-    // heuristic that flags the `(?:\[\w+\])?` shape.
+    // A quoted coordinate: one character class and an optional bracket run.
     // eslint-disable-next-line security/detect-unsafe-regex
     for (const match of source.matchAll(/["']([\w.-]+(?:\[\w+\])?)["']/g)) {
       const name = match[1];
       if (!name) continue;
-      const ecosystem =
-        file.endsWith(".toml") || file.startsWith("requirements")
-          ? "pypi"
-          : file === "pom.xml"
-            ? "maven"
-            : "gradle";
       observations.push({
         censusId: null,
         name,
         category: "UNCLASSIFIED",
-        via: `dep:${ecosystem}:${name}`,
+        via: `dep:${ecosystemForBuildFile(file)}:${name}`,
       });
+    }
+    // A `requirements.txt` names its dependency **unquoted** —
+    // `pytest==8.0.0` — which the quoted-coordinate regex above cannot see,
+    // and unquoted requirements are the normal format, not the exception. A
+    // probe that only reads quoted coordinates misses every Python project
+    // written the conventional way, which is a discovery miss that reads as
+    // "nothing is out there".
+    if (file.startsWith("requirements")) {
+      for (const line of source.split("\n")) {
+        const trimmed = line.trim();
+        if (
+          trimmed === "" ||
+          trimmed.startsWith("#") ||
+          trimmed.startsWith("-") ||
+          (trimmed.includes("#") === true && trimmed.startsWith("git+"))
+        ) {
+          continue;
+        }
+        // `name`, `name==1.0`, `name[extra]>=1`, `name ; python_version<"3"`
+        // One leading class, one optional bracket run, one optional tail —
+        // linear, and the rule is a heuristic.
+        // eslint-disable-next-line security/detect-unsafe-regex
+        const name = /^(\w[\w.-]*)(?:\[[^\]]*\])?\s*(?:[<>=!~;].*)?$/.exec(
+          trimmed,
+        )?.[1];
+        if (!name) continue;
+        observations.push({
+          censusId: null,
+          name,
+          category: "UNCLASSIFIED",
+          via: `dep:pypi:${name}`,
+        });
+      }
     }
   }
 
