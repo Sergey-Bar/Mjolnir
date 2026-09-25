@@ -400,10 +400,8 @@ export interface UnclassifiedCeiling {
  * Reads the committed ceiling (absence = 0 — a repo with no committed
  * ceiling must have no unclassified rows at all).
  */
-export function loadUnclassifiedCeiling(
-  path: string = UNCLASSIFIED_CEILING_PATH,
-): UnclassifiedCeiling {
-  if (!existsSync(path)) {
+export function loadUnclassifiedCeiling(): UnclassifiedCeiling {
+  if (!existsSync(UNCLASSIFIED_CEILING_PATH)) {
     return {
       total: 0,
       byFile: {},
@@ -411,7 +409,9 @@ export function loadUnclassifiedCeiling(
       note: "no committed ceiling — any unclassified row fails",
     };
   }
-  return JSON.parse(readFileSync(path, "utf8")) as UnclassifiedCeiling;
+  return JSON.parse(
+    readFileSync(UNCLASSIFIED_CEILING_PATH, "utf8"),
+  ) as UnclassifiedCeiling;
 }
 
 /**
@@ -426,21 +426,6 @@ export function loadUnclassifiedCeiling(
 export function checkUnclassifiedCompleteness(
   report: UnclassifiedReport,
   update: boolean,
-  /**
-   * Where the ceiling lives. Defaults to the committed path; a test that
-   * exercises the `--update` branch must pass a temporary path instead.
-   *
-   * `--update` writes a *phantom* ceiling — a number the real corpus does
-   * not have — so pointing it at the committed file is a mutation of
-   * shared state, and any parallel reader (another vitest worker, or the
-   * generator in a coverage run) sees the phantom for as long as it
-   * stands. That is not hypothetical: it is why all four CI matrix
-   * entries reported "34 unclassified rows exceed the committed ceiling of
-   * 31" — the test's own grown value leaking into a concurrent run. A test
-   * that corrupts a committed artifact to prove a gate works is testing
-   * the wrong thing.
-   */
-  path: string = UNCLASSIFIED_CEILING_PATH,
 ): void {
   // --update is the explicit "re-record after review" path: it never
   // fails on the backlog itself, it records the reviewed ceiling (the
@@ -452,14 +437,17 @@ export function checkUnclassifiedCompleteness(
       recordedAt: new Date().toISOString(),
       note: "Committed ratchet ceiling (bug-audit B4.29/L13): the generator fails when unclassified verdict rows exceed these counts. Classification work lowers them; --update re-records.",
     };
-    writeFileSync(path, JSON.stringify(next, null, 2) + "\n");
+    writeFileSync(
+      UNCLASSIFIED_CEILING_PATH,
+      JSON.stringify(next, null, 2) + "\n",
+    );
     console.log(
       `Unclassified-verdict ceiling recorded: ${next.total} row(s) across ${Object.keys(next.byFile).length} file(s).`,
     );
     return;
   }
 
-  const ceiling = loadUnclassifiedCeiling(path);
+  const ceiling = loadUnclassifiedCeiling();
   const regressions: string[] = [];
   for (const [file, count] of Object.entries(report.byFile)) {
     const allowed = ceiling.byFile[file] ?? 0;
@@ -537,10 +525,8 @@ export interface UnsureCeiling {
 }
 
 /** Reads the committed UNSURE ceiling (absence = 0 — fail on any UNSURE row). */
-export function loadUnsureCeiling(
-  path: string = UNSURE_CEILING_PATH,
-): UnsureCeiling {
-  if (!existsSync(path)) {
+export function loadUnsureCeiling(): UnsureCeiling {
+  if (!existsSync(UNSURE_CEILING_PATH)) {
     return {
       total: 0,
       byRule: {},
@@ -548,7 +534,7 @@ export function loadUnsureCeiling(
       note: "no committed ceiling — any UNSURE row fails",
     };
   }
-  return JSON.parse(readFileSync(path, "utf8")) as UnsureCeiling;
+  return JSON.parse(readFileSync(UNSURE_CEILING_PATH, "utf8")) as UnsureCeiling;
 }
 
 /**
@@ -564,13 +550,6 @@ export function loadUnsureCeiling(
 export function checkUnsureAdjudication(
   report: UnsureReport,
   update: boolean,
-  /**
-   * Where the ceiling lives. Defaults to the committed path; a test that
-   * exercises the `--update` branch must pass a temporary path instead.
-   * See `checkUnclassifiedCompleteness` for why writing the committed file
-   * from a test is a shared-state mutation rather than a test.
-   */
-  path: string = UNSURE_CEILING_PATH,
 ): void {
   if (update) {
     const next: UnsureCeiling = {
@@ -579,14 +558,14 @@ export function checkUnsureAdjudication(
       recordedAt: new Date().toISOString(),
       note: "Committed ratchet ceiling (plan §11.5): the generator fails when UNSURE verdict rows exceed these counts. Documented adjudication (tests/corpus/verdicts/README.md) lowers them; --update re-records after review.",
     };
-    writeFileSync(path, JSON.stringify(next, null, 2) + "\n");
+    writeFileSync(UNSURE_CEILING_PATH, JSON.stringify(next, null, 2) + "\n");
     console.log(
       `UNSURE ceiling recorded: ${next.total} row(s) across ${Object.keys(next.byRule).length} rule(s).`,
     );
     return;
   }
 
-  const ceiling = loadUnsureCeiling(path);
+  const ceiling = loadUnsureCeiling();
   const regressions: string[] = [];
   for (const [ruleId, count] of Object.entries(report.byRule)) {
     const allowed = ceiling.byRule[ruleId] ?? 0;

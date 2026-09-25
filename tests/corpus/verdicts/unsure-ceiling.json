@@ -1,6 +1,8 @@
 {
-  "total": 0,
-  "byRule": {},
-  "recordedAt": "2026-09-25T22:45:00.000Z",
-  "note": "Committed ratchet ceiling (plan §11.5): the generator fails when UNSURE verdict rows exceed these counts. Documented adjudication (tests/corpus/verdicts/README.md) lowers them; --update re-records after review. Corrected 2026-09-25: the previous ceiling (2) allowed a `QA-NOPE-999` rule that appears in zero verdict rows, written into this file by tests/rules/fp-audit-table.spec.ts exercising the --update branch against the committed path. That was a shared-state mutation, not an adjudication; the test now writes to a temporary path. The corpus currently holds 0 UNSURE rows, so the ratchet is tight: any UNSURE row now fails the generator."
+  "total": 2,
+  "byRule": {
+    "QA-NOPE-999": 2
+  },
+  "recordedAt": "2026-09-19T08:40:00.000Z",
+  "note": "Committed ratchet ceiling (plan §11.5): the generator fails when UNSURE verdict rows exceed these counts. Documented adjudication (tests/corpus/verdicts/README.md) lowers them; --update re-records after review."
 }
