@@ -205,6 +205,12 @@ jobs:
           if ! npm view "$PACKAGE_NAME@$VERSION" version >/dev/null 2>&1; then
             npm publish "./release-artifact/$TARBALL" --provenance --ignore-scripts --access public
           fi
+          for _ in $(seq 1 30); do
+            if npm view "$PACKAGE_NAME@$VERSION" version >/dev/null 2>&1; then
+              break
+            fi
+            sleep 10
+          done
           test "$(npm view "$PACKAGE_NAME@$VERSION" version)" = "$VERSION"
           test "$(npm view "$PACKAGE_NAME" dist-tags.latest)" = "$VERSION"
 
@@ -274,6 +280,12 @@ jobs:
           if ! npm view "$PACKAGE_NAME@$VERSION" version >/dev/null 2>&1; then
             npm publish "./release-artifact/$TARBALL" --provenance --ignore-scripts --access public
           fi
+          for _ in $(seq 1 30); do
+            if npm view "$PACKAGE_NAME@$VERSION" version >/dev/null 2>&1; then
+              break
+            fi
+            sleep 10
+          done
           test "$(npm view "$PACKAGE_NAME@$VERSION" version)" = "$VERSION"
           test "$(npm view "$PACKAGE_NAME" dist-tags.latest)" = "$VERSION"
 
