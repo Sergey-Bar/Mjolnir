@@ -50,6 +50,8 @@ jobs:
       - run: npm run build
       - run: npm run typecheck
       - run: npm run lint
+      - run: npm run ci-local:parity
+      - run: npm run ci:standard
       - run: npm run version:check
       - run: npm run brand:doctor
       - run: npm run brand:doctor:selftest
