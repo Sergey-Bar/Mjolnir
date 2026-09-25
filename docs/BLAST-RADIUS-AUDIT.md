@@ -7,7 +7,7 @@ contract enforces: **every external import in src/ must belong to the
 allowlist**, and the shipped surface (adapters, rules, flags, formats, exit
 codes) must match this document exactly.
 
-## Inventory: 327 files, 91828 LOC
+## Inventory: 332 files, 95321 LOC
 
 | Area             | Files | LOC   |
 | ---------------- | ----- | ----- |
@@ -15,6 +15,7 @@ codes) must match this document exactly.
 | src/commands     | 44    | 13415 |
 | src/rules        | 88    | 11758 |
 | src/(root)       | 8     | 3608  |
+| src/v6           | 5     | 3422  |
 | src/reporter     | 15    | 3366  |
 | src/forensics    | 17    | 3065  |
 | src/governance   | 1     | 2744  |
@@ -25,7 +26,7 @@ codes) must match this document exactly.
 | src/agent        | 1     | 1726  |
 | src/discovery    | 10    | 1689  |
 | src/adapters     | 11    | 1677  |
-| src/integrations | 11    | 1548  |
+| src/integrations | 11    | 1619  |
 | src/benchmark    | 3     | 1433  |
 | src/gaps         | 2     | 1390  |
 | src/qa           | 1     | 1285  |
@@ -57,19 +58,19 @@ codes) must match this document exactly.
 | src/forensics/types             | 20        |
 | src/exit-codes                  | 17        |
 | src/engine/adapter              | 14        |
-| src/rules/index                 | 13        |
+| src/rules/index                 | 14        |
+| src/rules/measured-fp.generated | 12        |
 | src/discovery/ignores           | 11        |
 | src/engine/scan-pipeline        | 11        |
 | src/forensics/evidence-hygiene  | 11        |
-| src/rules/measured-fp.generated | 11        |
 | src/engine/ts-ast               | 10        |
 
 ## External dependency allowlist (containment)
 
 | Dependency         | Files importing it |
 | ------------------ | ------------------ |
-| node:fs            | 69                 |
-| node:path          | 65                 |
+| node:fs            | 71                 |
+| node:path          | 67                 |
 | node:crypto        | 25                 |
 | ts-morph           | 7                  |
 | node:url           | 4                  |

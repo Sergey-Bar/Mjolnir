@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "artifact": "claim-budget",
+  "maxUnbound": 8,
+  "lastReducedAt": "2026-09-25",
+  "target": 0,
+  "exceptions": [],
+  "history": [
+    {
+      "at": "2026-09-25",
+      "maxUnbound": 8,
+      "unbound": 8,
+      "note": "Baseline: the unbound public claims that exist today. This is a debt statement, not a target. `npm run claims:prose` names every one of them; each reduction lowers maxUnbound."
+    }
+  ]
+}

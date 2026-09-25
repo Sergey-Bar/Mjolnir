@@ -93,7 +93,10 @@ export function publishedVersionForInstall(
           publishedStable?: string;
         };
         if (parsed.name === "mjolnir-qa") {
-          if (typeof parsed.publishedStable === "string" && parsed.publishedStable) {
+          if (
+            typeof parsed.publishedStable === "string" &&
+            parsed.publishedStable
+          ) {
             return parsed.publishedStable;
           }
           if (typeof parsed.version === "string" && parsed.version) {

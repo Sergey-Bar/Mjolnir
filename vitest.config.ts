@@ -91,7 +91,6 @@ export default defineConfig({
         "src/engine/m49-experience-parity-contract.ts",
         "src/engine/m50-release-proof-contract.ts",
         "src/engine/runtime-evidence-graph.ts",
-        "src/frameworks/provider-capability-contract.ts",
         "src/frameworks/universal-pack-contract.ts",
         "src/governance/m33-m34-contract.ts",
         "src/mutation/failure-sensitivity.ts",

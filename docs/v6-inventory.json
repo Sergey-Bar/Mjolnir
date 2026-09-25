@@ -1,0 +1,1444 @@
+{
+  "schemaVersion": 1,
+  "artifact": "v6-inventory",
+  "generatedBy": "npm run docs:v6-inventory",
+  "wave": "0",
+  "baseSha": "200bf34e760c46fe27d5aab309467a290e7f8f41",
+  "version": "4.0.0-rc.1",
+  "publishedStable": "3.0.0",
+  "counts": {
+    "srcFiles": 324,
+    "testSpecs": 638,
+    "rulesLive": 79,
+    "rulesRetired": 22,
+    "rulesMeasured": 74,
+    "adapters": 11,
+    "commands": 44,
+    "frameworks": 14,
+    "ciProviders": 6,
+    "qaDomains": 13,
+    "gapLedgerRecords": 17,
+    "supportMatrixCells": 136,
+    "issueDispositions": 429,
+    "openIssues": 229,
+    "censusEntries": 33
+  },
+  "maturity": {
+    "axis": [
+      "M0_UNKNOWN",
+      "M1_DECLARED",
+      "M2_IMPLEMENTED",
+      "M3_FIXTURE_VERIFIED",
+      "M4_CORPUS_VERIFIED",
+      "M5_FIELD_PROVEN"
+    ],
+    "census": {
+      "M1": 24,
+      "M2": 9
+    },
+    "frameworkInventoryLadder": {
+      "F4": 1,
+      "F3": 5,
+      "F2": 5,
+      "F1": 2,
+      "F0": 1
+    },
+    "qaDomainCoverage": {
+      "BLOCKED": 9,
+      "TESTED": 4
+    }
+  },
+  "ruleRegistry": {
+    "live": 79,
+    "retired": 22,
+    "measured": 74,
+    "byTier": {
+      "quarantine": 34,
+      "extended": 21,
+      "core": 24
+    }
+  },
+  "ledgers": {
+    "gapLedger": {
+      "total": 17,
+      "byStatus": {
+        "open": 15,
+        "fixed": 2
+      },
+      "bySeverity": {
+        "high": 6,
+        "release-blocker": 11
+      },
+      "openReleaseBlockers": [
+        "GAP-M26-003",
+        "GAP-M26-004",
+        "GAP-M26-008",
+        "GAP-M26-009",
+        "GAP-M26-010",
+        "GAP-M26-012",
+        "GAP-M26-013",
+        "GAP-M26-015",
+        "GAP-M26-016"
+      ]
+    },
+    "supportMatrix": {
+      "total": 136,
+      "byDisposition": {
+        "TESTED": 90,
+        "BLOCKED": 44,
+        "NOT_APPLICABLE": 2
+      }
+    },
+    "issueDispositions": {
+      "total": 429,
+      "byDisposition": {
+        "CLOSED_NOT_PLANNED": 121,
+        "CARRY_FORWARD": 229,
+        "CLOSED_UNVERIFIED": 79
+      },
+      "openIssues": 229
+    },
+    "externalValidation": "BLOCKED"
+  },
+  "surfaces": {
+    "cli": "PRESENT",
+    "githubAction": "PRESENT",
+    "mcp": "PRESENT",
+    "vscode": "ABSENT",
+    "githubApp": "ABSENT",
+    "dashboard": "PROVISIONAL"
+  },
+  "exitCodes": {
+    "frozen": [0, 1, 2, 10, 20],
+    "usage": 10,
+    "internal": 20
+  },
+  "deploymentModes": ["LOCAL_ONLY", "SELF_HOSTED", "CLOUD", "AIR_GAPPED"],
+  "requirementClassification": {
+    "vocabulary": [
+      "ALREADY_COMPLETE",
+      "PARTIALLY_COMPLETE",
+      "MISSING",
+      "INCORRECT",
+      "DUPLICATED",
+      "OBSOLETE",
+      "BLOCKED"
+    ],
+    "byState": "none",
+    "entries": [
+      {
+        "specSection": "§1",
+        "area": "Maturity model",
+        "state": "INCORRECT",
+        "wave": "1",
+        "evidence": ["src/types.ts"],
+        "unverifiedEvidence": [],
+        "note": "L0–L5 is the finding trust level; the spec reuses it for capability maturity. Amendment A1 / ADR 0001."
+      },
+      {
+        "specSection": "§2",
+        "area": "Capability registry",
+        "state": "MISSING",
+        "wave": "1",
+        "evidence": [
+          "src/frameworks/framework-inventory.ts",
+          "src/rules/registry-census.ts"
+        ],
+        "unverifiedEvidence": [],
+        "note": "Parallel primitives exist; Amendment A7 / ADR 0007 forbids a second inventory."
+      },
+      {
+        "specSection": "§3",
+        "area": "Domain coverage model",
+        "state": "PARTIALLY_COMPLETE",
+        "wave": "1",
+        "evidence": ["src/qa/domain-model.ts"],
+        "unverifiedEvidence": [],
+        "note": "11 provisional domain records; the security domain is BLOCKED."
+      },
+      {
+        "specSection": "§4",
+        "area": "QA-IR",
+        "state": "PARTIALLY_COMPLETE",
+        "wave": "2",
+        "evidence": ["src/adapters"],
+        "unverifiedEvidence": [],
+        "note": "11 adapter modules, no neutral IR."
+      },
+      {
+        "specSection": "§5",
+        "area": "CI-IR",
+        "state": "PARTIALLY_COMPLETE",
+        "wave": "3",
+        "evidence": [
+          "src/frameworks/provider-capability-contract.ts",
+          "src/adapters/github-actions.ts"
+        ],
+        "unverifiedEvidence": [],
+        "note": "CI adapters exist; no normalized CI model."
+      },
+      {
+        "specSection": "§6",
+        "area": "Rule certification factory",
+        "state": "PARTIALLY_COMPLETE",
+        "wave": "4",
+        "evidence": [
+          "docs/FP-AUDIT.md",
+          "src/rules/measurement.ts",
+          "src/rules/measured-fp.generated.ts"
+        ],
+        "unverifiedEvidence": [],
+        "note": "Corpus + FP audit exist; no precision/recall gate."
+      },
+      {
+        "specSection": "§7",
+        "area": "Anti-pattern encyclopedia",
+        "state": "ALREADY_COMPLETE",
+        "wave": "4",
+        "evidence": ["docs/rules"],
+        "unverifiedEvidence": [],
+        "note": "101 rule pages across 12 families."
+      },
+      {
+        "specSection": "§8",
+        "area": "Proof of absence",
+        "state": "ALREADY_COMPLETE",
+        "wave": "4",
+        "evidence": ["tests/blast-radius/scope-and-exit.spec.ts"],
+        "unverifiedEvidence": [],
+        "note": "Completeness accounting exists."
+      },
+      {
+        "specSection": "§9",
+        "area": "Evidence graph",
+        "state": "ALREADY_COMPLETE",
+        "wave": "5",
+        "evidence": ["src/engine/runtime-evidence-graph.ts"],
+        "unverifiedEvidence": [],
+        "note": "Provisional but present."
+      },
+      {
+        "specSection": "§10",
+        "area": "Evidence freshness",
+        "state": "ALREADY_COMPLETE",
+        "wave": "5",
+        "evidence": ["src/engine/runtime-evidence-graph.ts"],
+        "unverifiedEvidence": [],
+        "note": "Freshness binding exists."
+      },
+      {
+        "specSection": "§11",
+        "area": "Contradiction engine",
+        "state": "PARTIALLY_COMPLETE",
+        "wave": "5",
+        "evidence": ["tests/commands/artifact-integrity.spec.ts"],
+        "unverifiedEvidence": [],
+        "note": "Input-conflict detection exists; no cross-source engine."
+      },
+      {
+        "specSection": "§12",
+        "area": "Mutation engine",
+        "state": "MISSING",
+        "wave": "6",
+        "evidence": ["src/mutation/failure-sensitivity.ts"],
+        "unverifiedEvidence": [],
+        "note": "Contract only, non-gating."
+      },
+      {
+        "specSection": "§13",
+        "area": "Failure sensitivity",
+        "state": "PARTIALLY_COMPLETE",
+        "wave": "6",
+        "evidence": ["src/mutation/failure-sensitivity.ts"],
+        "unverifiedEvidence": [],
+        "note": "False-green rules exist; no explicit 5-stage model."
+      },
+      {
+        "specSection": "§14",
+        "area": "Test strength",
+        "state": "PARTIALLY_COMPLETE",
+        "wave": "7",
+        "evidence": ["src/rules/rule-metadata-schema.ts"],
+        "unverifiedEvidence": [],
+        "note": "No 22-dimension exposure."
+      },
+      {
+        "specSection": "§15",
+        "area": "False-green engine",
+        "state": "ALREADY_COMPLETE",
+        "wave": "6",
+        "evidence": ["tests/false-green"],
+        "unverifiedEvidence": [],
+        "note": "Flagship; 4 families already shipping."
+      },
+      {
+        "specSection": "§16",
+        "area": "Trust diff",
+        "state": "ALREADY_COMPLETE",
+        "wave": "7",
+        "evidence": ["src/change-intelligence.ts"],
+        "unverifiedEvidence": [],
+        "note": "verify/diff/trend exist."
+      },
+      {
+        "specSection": "§17",
+        "area": "Impact analysis",
+        "state": "ALREADY_COMPLETE",
+        "wave": "7",
+        "evidence": ["src/commands/impact.ts", "docs/BLAST-RADIUS-AUDIT.md"],
+        "unverifiedEvidence": [],
+        "note": "Blast radius is computed and audited; the residual gap is that it is per-rule, not per-capability."
+      },
+      {
+        "specSection": "§18",
+        "area": "Gap detection",
+        "state": "PARTIALLY_COMPLETE",
+        "wave": "7",
+        "evidence": ["src/gaps/gap-registry.ts"],
+        "unverifiedEvidence": [],
+        "note": "Graph-based; anti-1:1 principle already held."
+      },
+      {
+        "specSection": "§19",
+        "area": "Quality graph",
+        "state": "MISSING",
+        "wave": "8",
+        "evidence": ["src/traceability"],
+        "unverifiedEvidence": [],
+        "note": "Thin: 2 modules."
+      },
+      {
+        "specSection": "§20",
+        "area": "Requirements traceability",
+        "state": "MISSING",
+        "wave": "8",
+        "evidence": ["src/traceability"],
+        "unverifiedEvidence": [],
+        "note": "No opt-in connectors."
+      },
+      {
+        "specSection": "§21",
+        "area": "Database QA",
+        "state": "MISSING",
+        "wave": "8",
+        "evidence": [],
+        "unverifiedEvidence": [],
+        "note": "No pack."
+      },
+      {
+        "specSection": "§22",
+        "area": "API / Contract QA",
+        "state": "MISSING",
+        "wave": "8",
+        "evidence": [],
+        "unverifiedEvidence": [],
+        "note": "No pack."
+      },
+      {
+        "specSection": "§23",
+        "area": "Mobile QA",
+        "state": "MISSING",
+        "wave": "8",
+        "evidence": [],
+        "unverifiedEvidence": [],
+        "note": "No pack."
+      },
+      {
+        "specSection": "§24",
+        "area": "Desktop QA",
+        "state": "MISSING",
+        "wave": "8",
+        "evidence": [],
+        "unverifiedEvidence": [],
+        "note": "No pack."
+      },
+      {
+        "specSection": "§25",
+        "area": "Embedded / IoT",
+        "state": "MISSING",
+        "wave": "8",
+        "evidence": [],
+        "unverifiedEvidence": [],
+        "note": "Extension domain by design."
+      },
+      {
+        "specSection": "§26",
+        "area": "Accessibility QA",
+        "state": "PARTIALLY_COMPLETE",
+        "wave": "8",
+        "evidence": ["src/qa/domain-model.ts"],
+        "unverifiedEvidence": [],
+        "note": "Automation coverage only; human-required axis absent."
+      },
+      {
+        "specSection": "§27",
+        "area": "Visual regression",
+        "state": "PARTIALLY_COMPLETE",
+        "wave": "8",
+        "evidence": ["docs/PLAYWRIGHT-CAPABILITIES.md"],
+        "unverifiedEvidence": [],
+        "note": "Snapshot rules exist; no baseline-freshness model."
+      },
+      {
+        "specSection": "§28",
+        "area": "Cross-browser / device",
+        "state": "PARTIALLY_COMPLETE",
+        "wave": "8",
+        "evidence": ["src/rules/index.ts"],
+        "unverifiedEvidence": [],
+        "note": "Some rules retired for a false premise."
+      },
+      {
+        "specSection": "§29",
+        "area": "i18n / RTL",
+        "state": "MISSING",
+        "wave": "8",
+        "evidence": [],
+        "unverifiedEvidence": [],
+        "note": "No pack."
+      },
+      {
+        "specSection": "§30",
+        "area": "Performance QA",
+        "state": "MISSING",
+        "wave": "8",
+        "evidence": ["src/bench"],
+        "unverifiedEvidence": [],
+        "note": "src/bench measures the tool, not load tests."
+      },
+      {
+        "specSection": "§31",
+        "area": "Security verification QA",
+        "state": "BLOCKED",
+        "wave": "8",
+        "evidence": ["docs/M26-SUPPORT-MATRIX.json"],
+        "unverifiedEvidence": [],
+        "note": "Requires external scanners; zero-network default."
+      },
+      {
+        "specSection": "§32",
+        "area": "AI / LLM QA",
+        "state": "MISSING",
+        "wave": "8",
+        "evidence": ["src/agent"],
+        "unverifiedEvidence": [],
+        "note": "src/agent is the agent surface, not LLM-app QA."
+      },
+      {
+        "specSection": "§33",
+        "area": "Data / ETL QA",
+        "state": "MISSING",
+        "wave": "8",
+        "evidence": [],
+        "unverifiedEvidence": [],
+        "note": "No pack."
+      },
+      {
+        "specSection": "§34",
+        "area": "Chaos / resilience QA",
+        "state": "MISSING",
+        "wave": "8",
+        "evidence": [],
+        "unverifiedEvidence": [],
+        "note": "No pack."
+      },
+      {
+        "specSection": "§35",
+        "area": "Network / protocol QA",
+        "state": "MISSING",
+        "wave": "8",
+        "evidence": [],
+        "unverifiedEvidence": [],
+        "note": "No pack."
+      },
+      {
+        "specSection": "§36",
+        "area": "Test data management",
+        "state": "PARTIALLY_COMPLETE",
+        "wave": "9",
+        "evidence": ["src/forensics/evidence-hygiene.ts"],
+        "unverifiedEvidence": [],
+        "note": "Hygiene checks exist; no data-lifecycle model."
+      },
+      {
+        "specSection": "§37",
+        "area": "Environment integrity",
+        "state": "PARTIALLY_COMPLETE",
+        "wave": "9",
+        "evidence": ["src/config"],
+        "unverifiedEvidence": [],
+        "note": "No cross-environment comparison."
+      },
+      {
+        "specSection": "§38",
+        "area": "Flake intelligence",
+        "state": "ALREADY_COMPLETE",
+        "wave": "9",
+        "evidence": ["src/forensics"],
+        "unverifiedEvidence": [],
+        "note": "17 modules incl. pw-report and trend."
+      },
+      {
+        "specSection": "§39",
+        "area": "Quarantine governance",
+        "state": "ALREADY_COMPLETE",
+        "wave": "9",
+        "evidence": ["src/commands/quarantine.ts"],
+        "unverifiedEvidence": [],
+        "note": "Quarantine is a first-class governance surface with its own command."
+      },
+      {
+        "specSection": "§40",
+        "area": "Artifact intelligence",
+        "state": "ALREADY_COMPLETE",
+        "wave": "9",
+        "evidence": ["src/forensics", "src/reporter/sarif.ts"],
+        "unverifiedEvidence": [],
+        "note": "Artifact parsing and SARIF emission exist; the residual gap is report-format coverage, not artifact handling."
+      },
+      {
+        "specSection": "§41",
+        "area": "Configuration intelligence",
+        "state": "ALREADY_COMPLETE",
+        "wave": "9",
+        "evidence": ["src/config", "tests/config/config.spec.ts"],
+        "unverifiedEvidence": [],
+        "note": "Config rules and a config spec suite exist."
+      },
+      {
+        "specSection": "§42",
+        "area": "Coverage integrity",
+        "state": "ALREADY_COMPLETE",
+        "wave": "9",
+        "evidence": [
+          "src/engine/coverage-ingestion.ts",
+          "src/rules/ci/qa-ci-005-report-never-generated.ts"
+        ],
+        "unverifiedEvidence": [],
+        "note": "Coverage is evidence, not truth."
+      },
+      {
+        "specSection": "§43",
+        "area": "Test selection integrity",
+        "state": "PARTIALLY_COMPLETE",
+        "wave": "9",
+        "evidence": ["src/scope"],
+        "unverifiedEvidence": [],
+        "note": "Scope and selection logic exist, but selection completeness has no oracle to be verified against."
+      },
+      {
+        "specSection": "§44",
+        "area": "Health scorecards",
+        "state": "ALREADY_COMPLETE",
+        "wave": "7",
+        "evidence": ["src/scorer"],
+        "unverifiedEvidence": [],
+        "note": "Aggregate conflicts with §94; Amendment A4 / ADR 0004."
+      },
+      {
+        "specSection": "§45",
+        "area": "Risk-based model",
+        "state": "PARTIALLY_COMPLETE",
+        "wave": "7",
+        "evidence": ["src/commands/impact.ts", "src/traceability"],
+        "unverifiedEvidence": [],
+        "note": "Impact-driven ordering exists; the risk model itself is not derived from corpus frequency."
+      },
+      {
+        "specSection": "§46",
+        "area": "Policy-as-code",
+        "state": "ALREADY_COMPLETE",
+        "wave": "9",
+        "evidence": ["src/commands/policy.ts"],
+        "unverifiedEvidence": [],
+        "note": "Policy evaluation ships as a command."
+      },
+      {
+        "specSection": "§47",
+        "area": "Baseline governance",
+        "state": "ALREADY_COMPLETE",
+        "wave": "9",
+        "evidence": ["src/commands/baseline.ts"],
+        "unverifiedEvidence": [],
+        "note": "Baseline store, compare and gate exist."
+      },
+      {
+        "specSection": "§48",
+        "area": "Suppression governance",
+        "state": "ALREADY_COMPLETE",
+        "wave": "9",
+        "evidence": [
+          "src/engine/suppression-governance.ts",
+          "src/engine/suppression-integrity.ts"
+        ],
+        "unverifiedEvidence": [],
+        "note": "Suppression governance and suppression integrity are separate modules and both are gate-covered."
+      },
+      {
+        "specSection": "§49",
+        "area": "Rule conflict engine",
+        "state": "PARTIALLY_COMPLETE",
+        "wave": "4",
+        "evidence": ["src/rules/index.ts"],
+        "unverifiedEvidence": [],
+        "note": "overlapWith survivor logic only."
+      },
+      {
+        "specSection": "§50",
+        "area": "Autofix safety",
+        "state": "PARTIALLY_COMPLETE",
+        "wave": "9",
+        "evidence": ["src/commands/fix.ts"],
+        "unverifiedEvidence": [],
+        "note": "3-tier safety undeclared."
+      },
+      {
+        "specSection": "§51",
+        "area": "Packs",
+        "state": "ALREADY_COMPLETE",
+        "wave": "4",
+        "evidence": ["src/frameworks/universal-pack-contract.ts"],
+        "unverifiedEvidence": [],
+        "note": "Contracts exist; packs are the Wave 8 work."
+      },
+      {
+        "specSection": "§52",
+        "area": "Monorepo intelligence",
+        "state": "PARTIALLY_COMPLETE",
+        "wave": "4",
+        "evidence": ["src/discovery/ecosystem-detection.ts"],
+        "unverifiedEvidence": [],
+        "note": "Ecosystem and workspace detection exist; the map from workspace to capability coverage is not modelled."
+      },
+      {
+        "specSection": "§53",
+        "area": "Incremental engine",
+        "state": "PARTIALLY_COMPLETE",
+        "wave": "4",
+        "evidence": ["src/engine/scan-cache.ts"],
+        "unverifiedEvidence": [],
+        "note": "Equivalence unproven."
+      },
+      {
+        "specSection": "§54",
+        "area": "AI challenger",
+        "state": "MISSING",
+        "wave": "7",
+        "evidence": [],
+        "unverifiedEvidence": [],
+        "note": "Advisory only, never a verdict override."
+      },
+      {
+        "specSection": "§55",
+        "area": "MCP",
+        "state": "ALREADY_COMPLETE",
+        "wave": "10",
+        "evidence": ["src/mcp/server.ts"],
+        "unverifiedEvidence": [],
+        "note": "1:1 rule + catalog digest; Amendment A5 / ADR 0005."
+      },
+      {
+        "specSection": "§56",
+        "area": "VS Code / LSP",
+        "state": "MISSING",
+        "wave": "10",
+        "evidence": [],
+        "unverifiedEvidence": [],
+        "note": "New surface."
+      },
+      {
+        "specSection": "§57",
+        "area": "GitHub Action",
+        "state": "ALREADY_COMPLETE",
+        "wave": "10",
+        "evidence": ["action.yml"],
+        "unverifiedEvidence": [],
+        "note": "Advisory-first default."
+      },
+      {
+        "specSection": "§58",
+        "area": "GitHub App",
+        "state": "MISSING",
+        "wave": "10",
+        "evidence": [],
+        "unverifiedEvidence": [],
+        "note": "New surface."
+      },
+      {
+        "specSection": "§59",
+        "area": "Dashboard",
+        "state": "PARTIALLY_COMPLETE",
+        "wave": "10",
+        "evidence": ["src/commands/dashboard.ts"],
+        "unverifiedEvidence": [],
+        "note": "Local HTML only."
+      },
+      {
+        "specSection": "§60",
+        "area": "Release readiness",
+        "state": "ALREADY_COMPLETE",
+        "wave": "14",
+        "evidence": [
+          "src/commands/release-report.ts",
+          "src/commands/release-trust.ts"
+        ],
+        "unverifiedEvidence": [],
+        "note": "Release report and release-trust both exist as commands."
+      },
+      {
+        "specSection": "§61",
+        "area": "Release evidence bundle",
+        "state": "ALREADY_COMPLETE",
+        "wave": "14",
+        "evidence": ["candidate-trust-manifest.json"],
+        "unverifiedEvidence": [],
+        "note": "Not signed / not consumer-verifiable (P3)."
+      },
+      {
+        "specSection": "§62",
+        "area": "Defect learning loop",
+        "state": "MISSING",
+        "wave": "12",
+        "evidence": [],
+        "unverifiedEvidence": [],
+        "note": "Nothing converts an adjudicated verdict into a rule change; the verdict corpus is curated by hand."
+      },
+      {
+        "specSection": "§63",
+        "area": "Production feedback",
+        "state": "MISSING",
+        "wave": "12",
+        "evidence": [],
+        "unverifiedEvidence": [],
+        "note": "Opt-in evidence, never proof."
+      },
+      {
+        "specSection": "§64",
+        "area": "Test economics",
+        "state": "MISSING",
+        "wave": "11",
+        "evidence": ["src/bench"],
+        "unverifiedEvidence": [],
+        "note": "src/bench measures the tool's own runtime, not the economics of a test suite."
+      },
+      {
+        "specSection": "§65",
+        "area": "Historical forensics",
+        "state": "ALREADY_COMPLETE",
+        "wave": "11",
+        "evidence": ["src/forensics"],
+        "unverifiedEvidence": [],
+        "note": "17 modules, including pw-report and trend."
+      },
+      {
+        "specSection": "§66",
+        "area": "Quality debt",
+        "state": "ALREADY_COMPLETE",
+        "wave": "9",
+        "evidence": ["src/commands/debt.ts"],
+        "unverifiedEvidence": [],
+        "note": "The debt register ships as a command."
+      },
+      {
+        "specSection": "§67",
+        "area": "Ownership",
+        "state": "PARTIALLY_COMPLETE",
+        "wave": "9",
+        "evidence": [".github/CODEOWNERS"],
+        "unverifiedEvidence": [],
+        "note": "Routing only, not blame."
+      },
+      {
+        "specSection": "§68",
+        "area": "Dedup / root cause",
+        "state": "ALREADY_COMPLETE",
+        "wave": "7",
+        "evidence": [
+          "src/engine/overlap-dedup.ts",
+          "src/engine/cross-file-analysis.ts"
+        ],
+        "unverifiedEvidence": [],
+        "note": "Overlap dedup and cross-file analysis both exist, so a duplicated finding is reduced to a root cause."
+      },
+      {
+        "specSection": "§69",
+        "area": "Graph query layer",
+        "state": "ALREADY_COMPLETE",
+        "wave": "5",
+        "evidence": ["src/engine/evidence-graph.ts"],
+        "unverifiedEvidence": [],
+        "note": "The evidence graph and its query path exist; the Wave-8 quality graph is a different graph over different nodes."
+      },
+      {
+        "specSection": "§70",
+        "area": "Cross-repo enterprise",
+        "state": "BLOCKED",
+        "wave": "10",
+        "evidence": ["docs/RELEASE-TRAINS.md"],
+        "unverifiedEvidence": [],
+        "note": "Previously deferred past 5.0."
+      },
+      {
+        "specSection": "§71",
+        "area": "Custom rule SDK",
+        "state": "ALREADY_COMPLETE",
+        "wave": "11",
+        "evidence": ["src/plugins/sdk-contract.ts"],
+        "unverifiedEvidence": [],
+        "note": "Custom rules start unproven."
+      },
+      {
+        "specSection": "§72",
+        "area": "Signed packs",
+        "state": "MISSING",
+        "wave": "11",
+        "evidence": [],
+        "unverifiedEvidence": [],
+        "note": "No pack signature or verification path exists, so a pack cannot be proven unaltered."
+      },
+      {
+        "specSection": "§73",
+        "area": "Plugin security",
+        "state": "MISSING",
+        "wave": "11",
+        "evidence": ["docs/VERSIONING.md"],
+        "unverifiedEvidence": [],
+        "note": "Full Node privileges, documented only (residual R4)."
+      },
+      {
+        "specSection": "§74",
+        "area": "Privacy / deployment modes",
+        "state": "PARTIALLY_COMPLETE",
+        "wave": "10",
+        "evidence": ["tests/adversarial"],
+        "unverifiedEvidence": [],
+        "note": "Zero-network default exists; mode undeclared (A8 / ADR 0008)."
+      },
+      {
+        "specSection": "§75",
+        "area": "Hosted governance",
+        "state": "MISSING",
+        "wave": "10",
+        "evidence": [],
+        "unverifiedEvidence": [],
+        "note": "No hosted governance surface exists, so no hosted control can be proven."
+      },
+      {
+        "specSection": "§76",
+        "area": "Security review",
+        "state": "PARTIALLY_COMPLETE",
+        "wave": "11",
+        "evidence": [
+          "tests/adversarial",
+          "tests/forensics/hostile-repo.spec.ts"
+        ],
+        "unverifiedEvidence": [],
+        "note": "Local covered; hosted/VS Code/App not."
+      },
+      {
+        "specSection": "§77",
+        "area": "Versioned contracts",
+        "state": "ALREADY_COMPLETE",
+        "wave": "13",
+        "evidence": ["docs/VERSIONING.md"],
+        "unverifiedEvidence": [],
+        "note": "Additive-only."
+      },
+      {
+        "specSection": "§78",
+        "area": "Exit codes",
+        "state": "INCORRECT",
+        "wave": "13",
+        "evidence": ["src/exit-codes.ts"],
+        "unverifiedEvidence": [],
+        "note": "Frozen {0,1,2,10,20}; no UNSUPPORTED_ENVIRONMENT / INTERNAL_ERROR (A2 / ADR 0002)."
+      },
+      {
+        "specSection": "§79",
+        "area": "doctor",
+        "state": "ALREADY_COMPLETE",
+        "wave": "10",
+        "evidence": ["src/commands/doctor.ts"],
+        "unverifiedEvidence": [],
+        "note": "doctor ships as a command with eight self-checks."
+      },
+      {
+        "specSection": "§80",
+        "area": "report",
+        "state": "ALREADY_COMPLETE",
+        "wave": "10",
+        "evidence": [
+          "src/engine/command-registry.ts",
+          "src/commands/report-io.ts",
+          "src/reporter/terminal.ts"
+        ],
+        "unverifiedEvidence": [],
+        "note": "The command registry, the report I/O layer and the terminal reporter all exist."
+      },
+      {
+        "specSection": "§81",
+        "area": "trust-report",
+        "state": "ALREADY_COMPLETE",
+        "wave": "10",
+        "evidence": ["src/commands/trust-report.ts"],
+        "unverifiedEvidence": [],
+        "note": "trust-report ships as a command."
+      },
+      {
+        "specSection": "§82",
+        "area": "policy",
+        "state": "ALREADY_COMPLETE",
+        "wave": "10",
+        "evidence": ["src/commands/policy.ts"],
+        "unverifiedEvidence": [],
+        "note": "policy ships as a command."
+      },
+      {
+        "specSection": "§83",
+        "area": "Surface parity",
+        "state": "PARTIALLY_COMPLETE",
+        "wave": "10",
+        "evidence": ["scripts/check-ci-local-parity.mjs"],
+        "unverifiedEvidence": [],
+        "note": "CI↔local only."
+      },
+      {
+        "specSection": "§84",
+        "area": "Framework matrix",
+        "state": "PARTIALLY_COMPLETE",
+        "wave": "1",
+        "evidence": ["docs/RULE-CAPABILITY-MATRIX.md"],
+        "unverifiedEvidence": [],
+        "note": "Generated; not a census projection yet."
+      },
+      {
+        "specSection": "§85",
+        "area": "Language matrix",
+        "state": "PARTIALLY_COMPLETE",
+        "wave": "1",
+        "evidence": ["docs/M26-SUPPORT-MATRIX.json"],
+        "unverifiedEvidence": [],
+        "note": "2 cells only."
+      },
+      {
+        "specSection": "§86",
+        "area": "CI matrix",
+        "state": "PARTIALLY_COMPLETE",
+        "wave": "1",
+        "evidence": ["docs/M26-SUPPORT-MATRIX.json"],
+        "unverifiedEvidence": [],
+        "note": "4 cells only."
+      },
+      {
+        "specSection": "§87",
+        "area": "Performance / scale proof",
+        "state": "ALREADY_COMPLETE",
+        "wave": "11",
+        "evidence": ["src/bench", "tests/stress"],
+        "unverifiedEvidence": [],
+        "note": "src/bench and tests/stress both cover scale; the gap is scale *proof*, not scale coverage."
+      },
+      {
+        "specSection": "§88",
+        "area": "Reliability SLOs",
+        "state": "MISSING",
+        "wave": "11",
+        "evidence": [],
+        "unverifiedEvidence": [],
+        "note": "Not a shipped artifact."
+      },
+      {
+        "specSection": "§89",
+        "area": "Reproducibility",
+        "state": "PARTIALLY_COMPLETE",
+        "wave": "11",
+        "evidence": ["src/engine/scan-cache.ts"],
+        "unverifiedEvidence": [],
+        "note": "Digest proven; byte-replay gate absent."
+      },
+      {
+        "specSection": "§90",
+        "area": "Self-trust",
+        "state": "PARTIALLY_COMPLETE",
+        "wave": "14",
+        "evidence": ["src/commands/doctor.ts"],
+        "unverifiedEvidence": [],
+        "note": "8 checks + release-trust."
+      },
+      {
+        "specSection": "§91",
+        "area": "Documentation architecture",
+        "state": "ALREADY_COMPLETE",
+        "wave": "13",
+        "evidence": ["docs/rules"],
+        "unverifiedEvidence": [],
+        "note": "Large and drift-prone."
+      },
+      {
+        "specSection": "§92",
+        "area": "Migration",
+        "state": "MISSING",
+        "wave": "13",
+        "evidence": ["docs/MIGRATION-3.0.0.md"],
+        "unverifiedEvidence": [],
+        "note": "No 6.0 path; A6 / ADR 0006 fixes the baseline."
+      },
+      {
+        "specSection": "§93",
+        "area": "Backward compatibility",
+        "state": "ALREADY_COMPLETE",
+        "wave": "13",
+        "evidence": ["docs/VERSIONING.md"],
+        "unverifiedEvidence": [],
+        "note": "docs/VERSIONING.md publishes the additive-only contract."
+      },
+      {
+        "specSection": "§94",
+        "area": "No vanity metrics",
+        "state": "PARTIALLY_COMPLETE",
+        "wave": "13",
+        "evidence": ["docs/claim-registry.json"],
+        "unverifiedEvidence": [],
+        "note": "Registry covers 4 claims; prose is unlinted (P4)."
+      },
+      {
+        "specSection": "§95",
+        "area": "Persona UX",
+        "state": "PARTIALLY_COMPLETE",
+        "wave": "10",
+        "evidence": ["src/reporter"],
+        "unverifiedEvidence": [],
+        "note": "No view layer."
+      },
+      {
+        "specSection": "§96",
+        "area": "Onboarding",
+        "state": "ALREADY_COMPLETE",
+        "wave": "10",
+        "evidence": ["tests/e2e/journey-1-first-run.spec.ts"],
+        "unverifiedEvidence": [],
+        "note": "A first-run journey test exists."
+      },
+      {
+        "specSection": "§97",
+        "area": "Severity model",
+        "state": "ALREADY_COMPLETE",
+        "wave": "4",
+        "evidence": ["src/rules/rule.ts"],
+        "unverifiedEvidence": [],
+        "note": "severity × tier × evidence × qaImpact."
+      },
+      {
+        "specSection": "§98",
+        "area": "Release proof gate",
+        "state": "ALREADY_COMPLETE",
+        "wave": "14",
+        "evidence": ["package.json"],
+        "unverifiedEvidence": [],
+        "note": "Most gates exist."
+      },
+      {
+        "specSection": "§99",
+        "area": "Architecture freeze",
+        "state": "MISSING",
+        "wave": "14",
+        "evidence": [],
+        "unverifiedEvidence": [],
+        "note": "Definition only."
+      },
+      {
+        "specSection": "§2.4.1",
+        "area": "QA Ecosystem Census",
+        "state": "MISSING",
+        "wave": "0",
+        "evidence": [],
+        "unverifiedEvidence": [],
+        "note": "Shipped in this wave: src/v6/ecosystem-census.ts + docs/ECOSYSTEM-CENSUS.json."
+      },
+      {
+        "specSection": "Law 7",
+        "area": "E-HUMAN evidence class",
+        "state": "MISSING",
+        "wave": "8",
+        "evidence": ["src/v6/capability-types.ts"],
+        "unverifiedEvidence": [],
+        "note": "Class + ceiling declared; the contract is Wave 8/9."
+      },
+      {
+        "specSection": "P1",
+        "area": "Independent verifier",
+        "state": "MISSING",
+        "wave": "11",
+        "evidence": [],
+        "unverifiedEvidence": [],
+        "note": "Sampled-subset re-derivation."
+      },
+      {
+        "specSection": "P2",
+        "area": "Nondeterminism manifest",
+        "state": "MISSING",
+        "wave": "11",
+        "evidence": [],
+        "unverifiedEvidence": [],
+        "note": "No manifest exists, so the tool cannot state which of its own outputs are deterministic."
+      },
+      {
+        "specSection": "P3",
+        "area": "Proof-carrying artifacts",
+        "state": "PARTIALLY_COMPLETE",
+        "wave": "11",
+        "evidence": ["candidate-trust-manifest.json"],
+        "unverifiedEvidence": [],
+        "note": "Unsigned."
+      },
+      {
+        "specSection": "P4",
+        "area": "Claim budget / prose lint",
+        "state": "MISSING",
+        "wave": "0",
+        "evidence": [],
+        "unverifiedEvidence": [],
+        "note": "Shipped in this wave: scripts/v6/check-claims-prose.mjs + check-claim-budget.mjs."
+      },
+      {
+        "specSection": "P5",
+        "area": "FP/FN delta gate",
+        "state": "MISSING",
+        "wave": "4",
+        "evidence": ["docs/FP-AUDIT.md"],
+        "unverifiedEvidence": [],
+        "note": "A document, not a release signal."
+      },
+      {
+        "specSection": "P6",
+        "area": "Degradation ledger",
+        "state": "MISSING",
+        "wave": "4",
+        "evidence": [],
+        "unverifiedEvidence": [],
+        "note": "No ledger records what degrades, so a degraded run is indistinguishable from a clean one."
+      },
+      {
+        "specSection": "U1",
+        "area": "Single Presentation Model",
+        "state": "PARTIALLY_COMPLETE",
+        "wave": "10",
+        "evidence": [
+          "src/reporter/score-state.ts",
+          "src/reporter/evidence-tag.ts"
+        ],
+        "unverifiedEvidence": [],
+        "note": "Two decision sites exist; the model does not."
+      },
+      {
+        "specSection": "U4",
+        "area": "No naked numbers",
+        "state": "MISSING",
+        "wave": "5",
+        "evidence": ["src/reporter/evidence-tag.ts"],
+        "unverifiedEvidence": [],
+        "note": "4 coarse values, no maturity/n/interval."
+      },
+      {
+        "specSection": "E6",
+        "area": "Parse-once fact store",
+        "state": "MISSING",
+        "wave": "11",
+        "evidence": ["src/types.ts"],
+        "unverifiedEvidence": [],
+        "note": "Rules re-parse."
+      },
+      {
+        "specSection": "L4",
+        "area": "Threshold registry",
+        "state": "MISSING",
+        "wave": "4",
+        "evidence": ["src/reporter/score-state.ts"],
+        "unverifiedEvidence": [],
+        "note": "Documented 3× cross-surface drift, class not closed."
+      },
+      {
+        "specSection": "R1",
+        "area": "Self-falsification suite",
+        "state": "MISSING",
+        "wave": "11",
+        "evidence": ["tests/fuzz", "tests/stress"],
+        "unverifiedEvidence": [],
+        "note": "Fuzz/stress exist; targeted self-harm does not."
+      },
+      {
+        "specSection": "R2",
+        "area": "Golden-output corpus",
+        "state": "PARTIALLY_COMPLETE",
+        "wave": "14",
+        "evidence": ["tests/golden"],
+        "unverifiedEvidence": [],
+        "note": "Does not lock render + exit code + digest per scenario."
+      }
+    ]
+  },
+  "archiveReconciliation": {
+    "status": "UNRECONCILED",
+    "expectedDesignRecordCount": 108,
+    "observedDesignRecordCount": 108,
+    "openIssuesInArchive": [
+      539, 546, 547, 551, 553, 556, 561, 565, 575, 588, 589, 590, 593, 594, 595,
+      597, 602, 617
+    ],
+    "records": [
+      {
+        "logicalMilestone": "M18",
+        "githubRange": [539, 549],
+        "designRecords": 11,
+        "disposition": "HISTORICAL_DESIGN_ONLY",
+        "openIssues": [539, 546, 547],
+        "state": "PARTIALLY_RECONCILED"
+      },
+      {
+        "logicalMilestone": "M19",
+        "githubRange": [550, 560],
+        "designRecords": 11,
+        "disposition": "HISTORICAL_DESIGN_ONLY",
+        "openIssues": [551, 553, 556],
+        "state": "PARTIALLY_RECONCILED"
+      },
+      {
+        "logicalMilestone": "M20",
+        "githubRange": [561, 573],
+        "designRecords": 13,
+        "disposition": "HISTORICAL_DESIGN_ONLY",
+        "openIssues": [561, 565],
+        "state": "PARTIALLY_RECONCILED"
+      },
+      {
+        "logicalMilestone": "M21",
+        "githubRange": [574, 586],
+        "designRecords": 13,
+        "disposition": "HISTORICAL_DESIGN_ONLY",
+        "openIssues": [575],
+        "state": "PARTIALLY_RECONCILED"
+      },
+      {
+        "logicalMilestone": "M22",
+        "githubRange": [587, 600],
+        "designRecords": 14,
+        "disposition": "HISTORICAL_DESIGN_ONLY",
+        "openIssues": [588, 589, 590, 593, 594, 595, 597],
+        "state": "PARTIALLY_RECONCILED"
+      },
+      {
+        "logicalMilestone": "M23",
+        "githubRange": [601, 615],
+        "designRecords": 15,
+        "disposition": "HISTORICAL_DESIGN_ONLY",
+        "openIssues": [602],
+        "state": "PARTIALLY_RECONCILED"
+      },
+      {
+        "logicalMilestone": "M24",
+        "githubRange": [616, 631],
+        "designRecords": 16,
+        "disposition": "HISTORICAL_DESIGN_ONLY",
+        "openIssues": [617],
+        "state": "PARTIALLY_RECONCILED"
+      },
+      {
+        "logicalMilestone": "M25",
+        "githubRange": [632, 646],
+        "designRecords": 15,
+        "disposition": "HISTORICAL_NOT_PLANNED",
+        "openIssues": [],
+        "state": "RECONCILED"
+      }
+    ],
+    "closureCommand": "npm run m26:github:sync"
+  },
+  "v6Wave0Gaps": [
+    {
+      "gap_id": "GAP-V6-001",
+      "severity": "high",
+      "status": "open",
+      "category": "vocabulary-collision",
+      "summary": "A third maturity ladder exists: FRAMEWORK_INVENTORY declares F0–F5 alongside the finding trust level L0–L5, and the v6 ladder is M0–M5. Three ladders for two axes is the collision Amendment A1 was written to prevent, and the blueprint only knew about L.",
+      "owner": "framework-inventory",
+      "targetWave": "1",
+      "maturityImpact": [
+        "M3 for every framework capability is unstateable until F is mapped or migrated"
+      ],
+      "revalidationCommand": "npx tsx scripts/v6/check-ecosystem.ts census",
+      "revisitTrigger": "ADR 0001 amendment: F0–F5 is mapped to M0–M5 or removed",
+      "closureEvidence": null
+    },
+    {
+      "gap_id": "GAP-V6-002",
+      "severity": "high",
+      "status": "open",
+      "category": "vocabulary-collision",
+      "summary": "Three overlapping 'how well do we support this' vocabularies coexist: census states (SUPPORTED/TARGET/DEPRECATED/NOT_APPLICABLE/UNRECOGNIZED), framework supportStatus (OFFICIAL_FULL/OFFICIAL_PARTIAL/EXPERIMENTAL/DISCOVERED/UNSUPPORTED/DEGRADED/DEPRECATED), and rule status (MEASURED-CORE/MEASURED-EXTENDED/MEASURED-QUARANTINE/UNMEASURED).",
+      "owner": "ecosystem-census",
+      "targetWave": "1",
+      "maturityImpact": [
+        "no capability can advertise a single support level until one vocabulary is authoritative"
+      ],
+      "revalidationCommand": "npx tsx scripts/v6/check-ecosystem.ts census",
+      "revisitTrigger": "ADR 0007 names the census state as the single support vocabulary",
+      "closureEvidence": null
+    },
+    {
+      "gap_id": "GAP-V6-003",
+      "severity": "high",
+      "status": "open",
+      "category": "ecosystem-staleness",
+      "summary": "The framework inventory's validated versions no longer cover what the corpus uses: the cypress adapter is validated against 13 while a corpus repository uses 16, and the vitest adapter against 1.6/2.0/2.1 while corpus repositories use 3.2.4, 3.2.6, 4.x and 5.0.0. Found by the census staleness trigger on its first run.",
+      "owner": "ecosystem-census",
+      "targetWave": "4",
+      "maturityImpact": [
+        "cypress and vitest are demoted SUPPORTED → TARGET by the census"
+      ],
+      "revalidationCommand": "npx tsx scripts/v6/ecosystem-census.ts",
+      "revisitTrigger": "both entries re-validated against the observed majors with a fixture quad",
+      "closureEvidence": null
+    },
+    {
+      "gap_id": "GAP-V6-004",
+      "severity": "medium",
+      "status": "open",
+      "category": "proof-infrastructure",
+      "summary": "No machine gate verifies a positive/negative/boundary/adversarial fixture quad per capability, so no framework or adapter can be promoted past M2. M3 is currently unreachable for every ecosystem entry.",
+      "owner": "rules-quality",
+      "targetWave": "4",
+      "maturityImpact": [
+        "census: 0 entries above M2",
+        "capability: M3 unattainable for all frameworks and adapters"
+      ],
+      "revalidationCommand": "npx tsx scripts/v6/check-ecosystem.ts census",
+      "revisitTrigger": "rules:quality:check ships a per-capability fixture-quad gate",
+      "closureEvidence": null
+    },
+    {
+      "gap_id": "GAP-V6-005",
+      "severity": "medium",
+      "status": "open",
+      "category": "roadmap-reconciliation",
+      "summary": "The ROADMAP.yaml archive block cannot honestly reconcile: 14 of the 108 historical design-record issues (539–646) are still open, so 7 of 8 records are only partially reconciled and the block status must stay UNRECONCILED.",
+      "owner": "roadmap",
+      "targetWave": "0",
+      "maturityImpact": [
+        "migration model proof (§1.4) cannot claim the archive is reconciled"
+      ],
+      "revalidationCommand": "npx tsx scripts/v6/reconcile-archive.ts --check",
+      "revisitTrigger": "all 108 archive-range issues are closed in the GitHub snapshot",
+      "closureEvidence": null
+    },
+    {
+      "gap_id": "GAP-V6-006",
+      "severity": "medium",
+      "status": "open",
+      "category": "claim-integrity",
+      "summary": "Four claims are registered in docs/claim-registry.json and all four are proof.status BLOCKED because candidate-trust-manifest.json carries candidateSha: null. No public claim currently has bound proof, so §94's de-metrics is enforced by nothing.",
+      "owner": "claim-registry",
+      "targetWave": "1",
+      "maturityImpact": ["P4 claim:budget: every public claim is unbound"],
+      "revalidationCommand": "node scripts/check-claim-registry.mjs && node scripts/v6/check-claim-budget.mjs",
+      "revisitTrigger": "a candidate SHA is bound in the trust manifest",
+      "closureEvidence": null
+    },
+    {
+      "gap_id": "GAP-V6-007",
+      "severity": "low",
+      "status": "open",
+      "category": "documentation-drift",
+      "summary": "PRODUCT-ENHANCEMENT-ANALYSIS.md (637 lines, repo root) self-reports all Wave 1/2/3 features as shipped and is referenced by no ledger, schema, script or CI gate, while the analysis that would verify it is itself deferred. A second, ungated source of truth.",
+      "owner": "docs",
+      "targetWave": "0",
+      "maturityImpact": [
+        "claims:prose scope; a reader cannot tell it from an authority"
+      ],
+      "revalidationCommand": "node scripts/v6/check-claims-prose.mjs",
+      "revisitTrigger": "the file is marked DEFERRED in its own header and excluded from claim lint",
+      "closureEvidence": null
+    },
+    {
+      "gap_id": "GAP-V6-008",
+      "severity": "low",
+      "status": "open",
+      "category": "stale-audit",
+      "summary": "QA/FINAL-RELEASE/ is a 10-file Cycle-0 audit pinned to RC 151186b (tag v0.5.18, 2026-09-07) and gated by nothing. Its verdict is NOT RELEASE READY for a 1.0.0 cut that no longer exists, and its findings F1–F4 are still open.",
+      "owner": "docs",
+      "targetWave": "0",
+      "maturityImpact": ["nothing; it is history, but an ungated one"],
+      "revalidationCommand": "npx tsx scripts/v6/reconcile-archive.ts --check",
+      "revisitTrigger": "the directory carries a SUPERSEDED marker naming the current release line",
+      "closureEvidence": null
+    }
+  ],
+  "orthogonalAxes": [
+    {
+      "id": "trustLevel",
+      "fields": ["trustLevel"],
+      "vocabulary": ["L0", "L1", "L2", "L3", "L4", "L5"],
+      "question": "How much do we trust this finding? (src/types.ts:106-117)"
+    },
+    {
+      "id": "maturity",
+      "fields": ["maturity"],
+      "vocabulary": [
+        "M0_UNKNOWN",
+        "M1_DECLARED",
+        "M2_IMPLEMENTED",
+        "M3_FIXTURE_VERIFIED",
+        "M4_CORPUS_VERIFIED",
+        "M5_FIELD_PROVEN"
+      ],
+      "question": "How much has this capability been proven? (ADR 0001)"
+    },
+    {
+      "id": "evidenceState",
+      "fields": ["evidenceState", "state"],
+      "vocabulary": [
+        "FRESH",
+        "STALE",
+        "FOREIGN",
+        "NOT_RUN",
+        "PARTIAL",
+        "CONTRADICTORY",
+        "INVALID",
+        "UNKNOWN"
+      ],
+      "question": "Is this evidence current and admissible?"
+    },
+    {
+      "id": "determination",
+      "fields": ["determination", "verdict"],
+      "vocabulary": [
+        "PASS",
+        "FAILED",
+        "BLOCKED",
+        "INCONCLUSIVE",
+        "UNPROVEN",
+        "PARTIAL"
+      ],
+      "question": "What is the verdict? (closed set, TRUST-CONSTITUTION §2)"
+    },
+    {
+      "id": "lifecycle",
+      "fields": ["lifecycle", "ruleStatus"],
+      "vocabulary": [
+        "PROPOSED",
+        "EXPERIMENTAL",
+        "PROVISIONAL",
+        "VERIFIED",
+        "PROVEN",
+        "DEPRECATED",
+        "RETIRED"
+      ],
+      "question": "Where is this rule in its career?"
+    },
+    {
+      "id": "severity",
+      "fields": ["severity", "trustImpact", "policySeverity"],
+      "vocabulary": ["CRITICAL", "HIGH", "MEDIUM", "LOW", "INFO", "NONE"],
+      "question": "How much does it matter? (technical severity stays separate)"
+    }
+  ]
+}
