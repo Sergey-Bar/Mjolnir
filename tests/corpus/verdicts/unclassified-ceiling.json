@@ -1,10 +1,9 @@
 {
-  "total": 31,
+  "total": 28,
   "byFile": {
     "pallets-click.jsonl": 1,
-    "pytest-dev-pytest.jsonl": 27,
-    "new-repo.jsonl": 3
+    "pytest-dev-pytest.jsonl": 27
   },
-  "recordedAt": "2026-09-19T08:40:00.000Z",
-  "note": "Committed ratchet ceiling (bug-audit B4.29/L13): the generator fails when unclassified verdict rows exceed these counts. Classification work lowers them; --update re-records after review."
+  "recordedAt": "2026-09-25T22:45:00.000Z",
+  "note": "Committed ratchet ceiling (bug-audit B4.29/L13): the generator fails when unclassified verdict rows exceed these counts. Classification work lowers them; --update re-records after review. Corrected 2026-09-25: the previous ceiling (31) counted a `new-repo.jsonl` row group that does not exist in the corpus, written into this file by tests/rules/fp-audit-table.spec.ts exercising the --update branch against the committed path. That was a shared-state mutation, not a measurement; the test now writes to a temporary path. Real backlog is 28 rows across 2 files."
 }

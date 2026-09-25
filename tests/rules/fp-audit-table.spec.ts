@@ -10,7 +10,8 @@
  * currently contains.
  */
 
-import { readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readdirSync, readFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
@@ -190,32 +191,41 @@ describe("unclassified-verdict completeness ratchet (bug-audit B4.29, L13)", () 
 
   it("any growth beyond the committed ceiling throws with the offending file named", () => {
     const ceiling = loadUnclassifiedCeiling();
-    // The --update branch below rewrites the COMMITTED ceiling file —
-    // snapshot and restore it so the test leaves the ratchet untouched.
-    const committed = readFileSync(
-      join(ROOT, "tests", "corpus", "verdicts", "unclassified-ceiling.json"),
-      "utf8",
+    // `--update` writes the ceiling file, so this test points it at a
+    // TEMPORARY path instead of the committed one.
+    //
+    // It used to snapshot and restore the committed file, which read as
+    // safe and was not: between the write and the restore the committed
+    // ceiling holds a number the real corpus does not have, and any
+    // concurrent reader sees it. Vitest runs spec files in parallel
+    // workers, and a coverage run also invokes the generator — so the
+    // phantom leaked and all four CI matrix entries failed with "34
+    // unclassified rows exceed the committed ceiling of 31", which is this
+    // test's own grown value (31 + 3). A test that corrupts a committed
+    // artifact to prove a gate works is testing the wrong thing.
+    const scratch = join(
+      mkdtempSync(join(tmpdir(), "mjolnir-ceiling-")),
+      "unclassified-ceiling.json",
     );
+    const grown = {
+      total: ceiling.total + 3,
+      byFile: { ...ceiling.byFile, "new-repo.jsonl": 3 },
+    };
+    let message = "";
     try {
-      const grown = {
-        total: ceiling.total + 3,
-        byFile: { ...ceiling.byFile, "new-repo.jsonl": 3 },
-      };
-      let message = "";
-      try {
-        checkUnclassifiedCompleteness(grown, false);
-      } catch (e) {
-        message = e instanceof Error ? e.message : String(e);
-      }
-      expect(message).toContain("completeness gate failed");
-      // --update records instead of failing (the review escape hatch).
-      expect(() => checkUnclassifiedCompleteness(grown, true)).not.toThrow();
-    } finally {
-      writeFileSync(
-        join(ROOT, "tests", "corpus", "verdicts", "unclassified-ceiling.json"),
-        committed,
-      );
+      checkUnclassifiedCompleteness(grown, false, scratch);
+    } catch (e) {
+      message = e instanceof Error ? e.message : String(e);
     }
+    expect(message).toContain("completeness gate failed");
+    // --update records instead of failing (the review escape hatch), and
+    // it records to the path it was given, not to the committed file.
+    expect(() =>
+      checkUnclassifiedCompleteness(grown, true, scratch),
+    ).not.toThrow();
+    expect(loadUnclassifiedCeiling(scratch).total).toBe(grown.total);
+    // The committed ceiling is untouched, byte for byte.
+    expect(loadUnclassifiedCeiling().total).toBe(ceiling.total);
   });
 });
 
@@ -245,30 +255,29 @@ describe("UNSURE adjudication ratchet (plan §11.5)", () => {
 
   it("any growth beyond the committed ceiling throws with the offending rule named; --update records instead", () => {
     const ceiling = loadUnsureCeiling();
-    const committed = readFileSync(
-      join(ROOT, "tests", "corpus", "verdicts", "unsure-ceiling.json"),
-      "utf8",
+    // Temporary path, not the committed file — see the unclassified test
+    // above for why writing the committed ceiling from a test is a
+    // shared-state mutation rather than a test.
+    const scratch = join(
+      mkdtempSync(join(tmpdir(), "mjolnir-unsure-")),
+      "unsure-ceiling.json",
     );
+    const grown = {
+      total: ceiling.total + 2,
+      byRule: { ...ceiling.byRule, "QA-NOPE-999": 2 },
+    };
+    let message = "";
     try {
-      const grown = {
-        total: ceiling.total + 2,
-        byRule: { ...ceiling.byRule, "QA-NOPE-999": 2 },
-      };
-      let message = "";
-      try {
-        checkUnsureAdjudication(grown, false);
-      } catch (e) {
-        message = e instanceof Error ? e.message : String(e);
-      }
-      expect(message).toContain("UNSURE adjudication gate failed");
-      // --update records instead of failing (the review escape hatch).
-      expect(() => checkUnsureAdjudication(grown, true)).not.toThrow();
-    } finally {
-      writeFileSync(
-        join(ROOT, "tests", "corpus", "verdicts", "unsure-ceiling.json"),
-        committed,
-      );
+      checkUnsureAdjudication(grown, false, scratch);
+    } catch (e) {
+      message = e instanceof Error ? e.message : String(e);
     }
+    expect(message).toContain("UNSURE adjudication gate failed");
+    // --update records instead of failing (the review escape hatch).
+    expect(() => checkUnsureAdjudication(grown, true, scratch)).not.toThrow();
+    expect(loadUnsureCeiling(scratch).total).toBe(grown.total);
+    // The committed ceiling is untouched.
+    expect(loadUnsureCeiling().total).toBe(ceiling.total);
   });
 
   it("a shrinking backlog never fails — adjudication lowers the ceiling", () => {
