@@ -192,7 +192,8 @@ describe("mjolnir.yml (the PR feedback loop workflow)", () => {
     // Each verdict the exit-code contract can produce must have a verdict.
     expect(script).toMatch(/0\)/);
     expect(script).toMatch(/1\)/);
-    expect(script).toMatch(/2\)/);
+    expect(script).toContain('2) echo "::warning::');
+    expect(script).toContain('echo "outcome=partial"');
     expect(script).toMatch(/""\)/);
     expect(script).toMatch(/\*\)/);
   });
