@@ -17,7 +17,7 @@
     {
       "path": "src/mcp/stdio.ts",
       "classification": "PERMANENT_STRUCTURAL",
-      "structuralReason": "Spawned-process entry point. A child process's istanbul report cannot merge into the parent run, so in-process instrumentation is unmeasurable. All transport logic lives in src/mcp/transport.ts and IS ratchet-covered.",
+      "structuralReason": "Spawned-process entry point. A child process\u0027s istanbul report cannot merge into the parent run, so in-process instrumentation is unmeasurable. All transport logic lives in src/mcp/transport.ts and IS ratchet-covered.",
       "shippedSurface": true,
       "owner": "maintainers",
       "justification": "bug-audit G6 precedent: the same structural class as dist/**. Coverage moves to tests/contract/mcp-transport.spec.ts, which spawns the real binary."
@@ -297,15 +297,6 @@
       "reviewBy": "2026-12-31",
       "removalPlan": "V5-044 — become the single evidence graph, replacing the empty M13/run-identity skeleton.",
       "justification": "Richest freshness/contradiction model in the repo, with no importer."
-    },
-    {
-      "path": "src/frameworks/provider-capability-contract.ts",
-      "classification": "CONTRACT_ONLY",
-      "shippedSurface": false,
-      "owner": "maintainers",
-      "reviewBy": "2026-12-31",
-      "removalPlan": "V5-030 — integrate into the normalized CI-IR capability model.",
-      "justification": "Provider capability contract with no production consumer."
     },
     {
       "path": "src/frameworks/universal-pack-contract.ts",

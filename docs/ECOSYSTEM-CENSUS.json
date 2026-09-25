@@ -1,0 +1,2888 @@
+{
+  "schemaVersion": 1,
+  "artifact": "ecosystem-census",
+  "generatedBy": "npm run docs:ecosystem",
+  "censusId": "mjolnir-ecosystem-census",
+  "observedAt": "2026-09-26",
+  "baseSha": "fc1fa4788766edabb3d771dacb195f9870d7409b",
+  "counts": {
+    "entries": 33,
+    "state:TARGET": 19,
+    "maturity:M1": 24,
+    "state:SUPPORTED": 14,
+    "maturity:M2": 9
+  },
+  "entries": [
+    {
+      "id": "ec.api-contract-testing.bruno",
+      "name": "Bruno",
+      "category": "api-contract-testing",
+      "state": "TARGET",
+      "owner": "ecosystem-census",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "manifest-file",
+          "path": "bruno.json"
+        }
+      ],
+      "adapter": null,
+      "blocksAxes": ["API QA", "Discovery"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": [],
+      "upstreamPackages": [
+        {
+          "ecosystem": "any",
+          "name": "Bruno"
+        }
+      ],
+      "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
+      "maturity": "M1_DECLARED",
+      "nextLevelGap": {
+        "target": "M2_IMPLEMENTED",
+        "missing": [
+          "implementation exists",
+          "unit tests for the implementation"
+        ],
+        "owner": "ecosystem-census",
+        "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
+      }
+    },
+    {
+      "id": "ec.api-contract-testing.karate",
+      "name": "Karate",
+      "category": "api-contract-testing",
+      "state": "TARGET",
+      "owner": "ecosystem-census",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "dependency",
+          "ecosystem": "maven",
+          "name": "com.intuit.karate"
+        }
+      ],
+      "adapter": null,
+      "blocksAxes": ["API QA", "Contract Coverage"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": [],
+      "upstreamPackages": [
+        {
+          "ecosystem": "any",
+          "name": "Karate"
+        }
+      ],
+      "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
+      "maturity": "M1_DECLARED",
+      "nextLevelGap": {
+        "target": "M2_IMPLEMENTED",
+        "missing": [
+          "implementation exists",
+          "unit tests for the implementation"
+        ],
+        "owner": "ecosystem-census",
+        "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
+      }
+    },
+    {
+      "id": "ec.api-contract-testing.pact",
+      "name": "Pact",
+      "category": "api-contract-testing",
+      "state": "TARGET",
+      "owner": "ecosystem-census",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "dependency",
+          "ecosystem": "npm",
+          "name": "@pact-foundation/pact"
+        }
+      ],
+      "adapter": null,
+      "blocksAxes": ["API QA", "Contract Quality"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": [],
+      "upstreamPackages": [
+        {
+          "ecosystem": "any",
+          "name": "Pact"
+        }
+      ],
+      "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
+      "maturity": "M1_DECLARED",
+      "nextLevelGap": {
+        "target": "M2_IMPLEMENTED",
+        "missing": [
+          "implementation exists",
+          "unit tests for the implementation"
+        ],
+        "owner": "ecosystem-census",
+        "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
+      }
+    },
+    {
+      "id": "ec.api-contract-testing.postman-newman",
+      "name": "Postman / Newman",
+      "category": "api-contract-testing",
+      "state": "TARGET",
+      "owner": "ecosystem-census",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "dependency",
+          "ecosystem": "npm",
+          "name": "newman"
+        }
+      ],
+      "adapter": null,
+      "blocksAxes": ["API QA", "Artifact Analysis"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": [],
+      "upstreamPackages": [
+        {
+          "ecosystem": "any",
+          "name": "Postman / Newman"
+        }
+      ],
+      "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
+      "maturity": "M1_DECLARED",
+      "nextLevelGap": {
+        "target": "M2_IMPLEMENTED",
+        "missing": [
+          "implementation exists",
+          "unit tests for the implementation"
+        ],
+        "owner": "ecosystem-census",
+        "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
+      }
+    },
+    {
+      "id": "ec.api-contract-testing.rest-assured",
+      "name": "REST Assured",
+      "category": "api-contract-testing",
+      "state": "TARGET",
+      "owner": "ecosystem-census",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "dependency",
+          "ecosystem": "maven",
+          "name": "io.rest-assured"
+        }
+      ],
+      "adapter": null,
+      "blocksAxes": ["API QA", "Contract Coverage"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": [],
+      "upstreamPackages": [
+        {
+          "ecosystem": "any",
+          "name": "REST Assured"
+        }
+      ],
+      "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
+      "maturity": "M1_DECLARED",
+      "nextLevelGap": {
+        "target": "M2_IMPLEMENTED",
+        "missing": [
+          "implementation exists",
+          "unit tests for the implementation"
+        ],
+        "owner": "ecosystem-census",
+        "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
+      }
+    },
+    {
+      "id": "ec.bdd-spec-dsl.cucumber",
+      "name": "Cucumber",
+      "category": "bdd-spec-dsl",
+      "state": "TARGET",
+      "owner": "ecosystem-census",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "dependency",
+          "ecosystem": "npm",
+          "name": "@cucumber/cucumber"
+        }
+      ],
+      "adapter": null,
+      "blocksAxes": ["Discovery", "Static Analysis"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": [],
+      "upstreamPackages": [
+        {
+          "ecosystem": "any",
+          "name": "Cucumber"
+        }
+      ],
+      "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
+      "maturity": "M1_DECLARED",
+      "nextLevelGap": {
+        "target": "M2_IMPLEMENTED",
+        "missing": [
+          "implementation exists",
+          "unit tests for the implementation"
+        ],
+        "owner": "ecosystem-census",
+        "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
+      }
+    },
+    {
+      "id": "ec.bdd-spec-dsl.specflow",
+      "name": "SpecFlow",
+      "category": "bdd-spec-dsl",
+      "state": "TARGET",
+      "owner": "ecosystem-census",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "dependency",
+          "ecosystem": "nuget",
+          "name": "SpecFlow"
+        }
+      ],
+      "adapter": null,
+      "blocksAxes": ["Discovery", "Static Analysis"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": [],
+      "upstreamPackages": [
+        {
+          "ecosystem": "any",
+          "name": "SpecFlow"
+        }
+      ],
+      "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
+      "maturity": "M1_DECLARED",
+      "nextLevelGap": {
+        "target": "M2_IMPLEMENTED",
+        "missing": [
+          "implementation exists",
+          "unit tests for the implementation"
+        ],
+        "owner": "ecosystem-census",
+        "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
+      }
+    },
+    {
+      "id": "ec.ci-cd-provider.azure-pipelines",
+      "name": "azure-pipelines",
+      "category": "ci-cd-provider",
+      "state": "SUPPORTED",
+      "owner": "provider-capability-contract",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "manifest-file",
+          "path": "azure-pipelines.yml"
+        }
+      ],
+      "adapter": "azure-pipelines,src/adapters/azure-pipelines.ts",
+      "blocksAxes": ["CI Integrity", "False-Green Detection"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": ["2024"],
+      "upstreamPackages": [],
+      "revisitTrigger": "CI-IR adapter no longer normalizes a azure-pipelines pipeline construct; census staleness trigger demotes SUPPORTED",
+      "maturity": "M2_IMPLEMENTED",
+      "nextLevelGap": {
+        "target": "M3_FIXTURE_VERIFIED",
+        "missing": [
+          "positive + negative + boundary + adversarial fixtures pass deterministically in CI"
+        ],
+        "owner": "provider-capability-contract",
+        "revisitTrigger": "CI-IR adapter no longer normalizes a azure-pipelines pipeline construct; census staleness trigger demotes SUPPORTED"
+      }
+    },
+    {
+      "id": "ec.ci-cd-provider.github-actions",
+      "name": "github-actions",
+      "category": "ci-cd-provider",
+      "state": "SUPPORTED",
+      "owner": "provider-capability-contract",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "workflow-dir",
+          "path": ".github/workflows"
+        }
+      ],
+      "adapter": "github-actions,src/adapters/github-actions.ts",
+      "blocksAxes": ["CI Integrity", "False-Green Detection"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": ["4"],
+      "upstreamPackages": [
+        {
+          "ecosystem": "npm",
+          "name": "@actions/core"
+        }
+      ],
+      "revisitTrigger": "CI-IR adapter no longer normalizes a github-actions pipeline construct; census staleness trigger demotes SUPPORTED",
+      "maturity": "M2_IMPLEMENTED",
+      "nextLevelGap": {
+        "target": "M3_FIXTURE_VERIFIED",
+        "missing": [
+          "positive + negative + boundary + adversarial fixtures pass deterministically in CI"
+        ],
+        "owner": "provider-capability-contract",
+        "revisitTrigger": "CI-IR adapter no longer normalizes a github-actions pipeline construct; census staleness trigger demotes SUPPORTED"
+      }
+    },
+    {
+      "id": "ec.ci-cd-provider.gitlab-ci",
+      "name": "gitlab-ci",
+      "category": "ci-cd-provider",
+      "state": "SUPPORTED",
+      "owner": "provider-capability-contract",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "manifest-file",
+          "path": ".gitlab-ci.yml"
+        }
+      ],
+      "adapter": "src/adapters/gitlab-ci.ts",
+      "blocksAxes": ["CI Integrity", "False-Green Detection"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": [],
+      "upstreamPackages": [],
+      "revisitTrigger": "CI-IR adapter no longer normalizes a gitlab-ci pipeline construct; census staleness trigger demotes SUPPORTED",
+      "maturity": "M2_IMPLEMENTED",
+      "nextLevelGap": {
+        "target": "M3_FIXTURE_VERIFIED",
+        "missing": [
+          "positive + negative + boundary + adversarial fixtures pass deterministically in CI"
+        ],
+        "owner": "provider-capability-contract",
+        "revisitTrigger": "CI-IR adapter no longer normalizes a gitlab-ci pipeline construct; census staleness trigger demotes SUPPORTED"
+      }
+    },
+    {
+      "id": "ec.ci-cd-provider.jenkins",
+      "name": "jenkins",
+      "category": "ci-cd-provider",
+      "state": "SUPPORTED",
+      "owner": "provider-capability-contract",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "manifest-file",
+          "path": "Jenkinsfile"
+        }
+      ],
+      "adapter": "jenkins,src/adapters/jenkins.ts",
+      "blocksAxes": ["CI Integrity", "False-Green Detection"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": ["2"],
+      "upstreamPackages": [],
+      "revisitTrigger": "CI-IR adapter no longer normalizes a jenkins pipeline construct; census staleness trigger demotes SUPPORTED",
+      "maturity": "M2_IMPLEMENTED",
+      "nextLevelGap": {
+        "target": "M3_FIXTURE_VERIFIED",
+        "missing": [
+          "positive + negative + boundary + adversarial fixtures pass deterministically in CI"
+        ],
+        "owner": "provider-capability-contract",
+        "revisitTrigger": "CI-IR adapter no longer normalizes a jenkins pipeline construct; census staleness trigger demotes SUPPORTED"
+      }
+    },
+    {
+      "id": "ec.component-e2e.cypress",
+      "name": "cypress",
+      "category": "component-e2e",
+      "state": "SUPPORTED",
+      "owner": "framework-inventory",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "dependency",
+          "ecosystem": "npm",
+          "name": "cypress"
+        },
+        {
+          "kind": "config-file",
+          "path": "cypress.config.js"
+        },
+        {
+          "kind": "config-file",
+          "path": "cypress.config.ts"
+        }
+      ],
+      "adapter": "typescript",
+      "blocksAxes": ["Discovery"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": ["13"],
+      "upstreamPackages": [
+        {
+          "ecosystem": "npm",
+          "name": "cypress"
+        }
+      ],
+      "revisitTrigger": "adapter no longer handles a major version in cypress; census staleness trigger demotes SUPPORTED",
+      "maturity": "M2_IMPLEMENTED",
+      "nextLevelGap": {
+        "target": "M3_FIXTURE_VERIFIED",
+        "missing": [
+          "positive + negative + boundary + adversarial fixtures pass deterministically in CI"
+        ],
+        "owner": "framework-inventory",
+        "revisitTrigger": "adapter no longer handles a major version in cypress; census staleness trigger demotes SUPPORTED"
+      }
+    },
+    {
+      "id": "ec.component-e2e.playwright",
+      "name": "playwright",
+      "category": "component-e2e",
+      "state": "SUPPORTED",
+      "owner": "framework-inventory",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "dependency",
+          "ecosystem": "npm",
+          "name": "@playwright/test"
+        },
+        {
+          "kind": "dependency",
+          "ecosystem": "npm",
+          "name": "playwright"
+        },
+        {
+          "kind": "dependency",
+          "ecosystem": "npm",
+          "name": "playwright-core"
+        },
+        {
+          "kind": "dependency",
+          "ecosystem": "any",
+          "name": "playwright"
+        },
+        {
+          "kind": "config-file",
+          "path": "playwright.config.js"
+        },
+        {
+          "kind": "config-file",
+          "path": "playwright.config.ts"
+        }
+      ],
+      "adapter": "typescript",
+      "blocksAxes": ["Discovery"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": ["1"],
+      "upstreamPackages": [
+        {
+          "ecosystem": "npm",
+          "name": "@playwright/test"
+        },
+        {
+          "ecosystem": "npm",
+          "name": "playwright"
+        },
+        {
+          "ecosystem": "npm",
+          "name": "playwright-core"
+        },
+        {
+          "ecosystem": "any",
+          "name": "playwright"
+        }
+      ],
+      "revisitTrigger": "adapter no longer handles a major version in playwright; census staleness trigger demotes SUPPORTED",
+      "maturity": "M2_IMPLEMENTED",
+      "nextLevelGap": {
+        "target": "M3_FIXTURE_VERIFIED",
+        "missing": [
+          "positive + negative + boundary + adversarial fixtures pass deterministically in CI"
+        ],
+        "owner": "framework-inventory",
+        "revisitTrigger": "adapter no longer handles a major version in playwright; census staleness trigger demotes SUPPORTED"
+      }
+    },
+    {
+      "id": "ec.component-e2e.playwright-components",
+      "name": "Playwright Components",
+      "category": "component-e2e",
+      "state": "TARGET",
+      "owner": "ecosystem-census",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "dependency",
+          "ecosystem": "npm",
+          "name": "@playwright/experimental-ct"
+        }
+      ],
+      "adapter": null,
+      "blocksAxes": ["Component E2E"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": [],
+      "upstreamPackages": [
+        {
+          "ecosystem": "any",
+          "name": "Playwright Components"
+        }
+      ],
+      "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
+      "maturity": "M1_DECLARED",
+      "nextLevelGap": {
+        "target": "M2_IMPLEMENTED",
+        "missing": [
+          "implementation exists",
+          "unit tests for the implementation"
+        ],
+        "owner": "ecosystem-census",
+        "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
+      }
+    },
+    {
+      "id": "ec.iac-container.kubernetes-manifests",
+      "name": "Kubernetes manifests",
+      "category": "iac-container",
+      "state": "TARGET",
+      "owner": "ecosystem-census",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "extension",
+          "glob": "**/k8s-*.yaml"
+        }
+      ],
+      "adapter": null,
+      "blocksAxes": ["Infrastructure / Cloud / IaC"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": [],
+      "upstreamPackages": [
+        {
+          "ecosystem": "any",
+          "name": "Kubernetes manifests"
+        }
+      ],
+      "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
+      "maturity": "M1_DECLARED",
+      "nextLevelGap": {
+        "target": "M2_IMPLEMENTED",
+        "missing": [
+          "implementation exists",
+          "unit tests for the implementation"
+        ],
+        "owner": "ecosystem-census",
+        "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
+      }
+    },
+    {
+      "id": "ec.iac-container.terraform",
+      "name": "Terraform",
+      "category": "iac-container",
+      "state": "TARGET",
+      "owner": "ecosystem-census",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "extension",
+          "glob": "**/*.tf"
+        }
+      ],
+      "adapter": null,
+      "blocksAxes": ["Infrastructure / Cloud / IaC"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": [],
+      "upstreamPackages": [
+        {
+          "ecosystem": "any",
+          "name": "Terraform"
+        }
+      ],
+      "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
+      "maturity": "M1_DECLARED",
+      "nextLevelGap": {
+        "target": "M2_IMPLEMENTED",
+        "missing": [
+          "implementation exists",
+          "unit tests for the implementation"
+        ],
+        "owner": "ecosystem-census",
+        "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
+      }
+    },
+    {
+      "id": "ec.load-performance.gatling",
+      "name": "Gatling",
+      "category": "load-performance",
+      "state": "TARGET",
+      "owner": "ecosystem-census",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "dependency",
+          "ecosystem": "sbt",
+          "name": "io.gatling"
+        }
+      ],
+      "adapter": null,
+      "blocksAxes": ["Performance QA"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": [],
+      "upstreamPackages": [
+        {
+          "ecosystem": "any",
+          "name": "Gatling"
+        }
+      ],
+      "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
+      "maturity": "M1_DECLARED",
+      "nextLevelGap": {
+        "target": "M2_IMPLEMENTED",
+        "missing": [
+          "implementation exists",
+          "unit tests for the implementation"
+        ],
+        "owner": "ecosystem-census",
+        "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
+      }
+    },
+    {
+      "id": "ec.load-performance.k6",
+      "name": "k6",
+      "category": "load-performance",
+      "state": "TARGET",
+      "owner": "ecosystem-census",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "manifest-file",
+          "path": "k6.config.js"
+        }
+      ],
+      "adapter": null,
+      "blocksAxes": ["Performance QA"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": [],
+      "upstreamPackages": [
+        {
+          "ecosystem": "any",
+          "name": "k6"
+        }
+      ],
+      "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
+      "maturity": "M1_DECLARED",
+      "nextLevelGap": {
+        "target": "M2_IMPLEMENTED",
+        "missing": [
+          "implementation exists",
+          "unit tests for the implementation"
+        ],
+        "owner": "ecosystem-census",
+        "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
+      }
+    },
+    {
+      "id": "ec.load-performance.locust",
+      "name": "Locust",
+      "category": "load-performance",
+      "state": "TARGET",
+      "owner": "ecosystem-census",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "dependency",
+          "ecosystem": "pypi",
+          "name": "locust"
+        }
+      ],
+      "adapter": null,
+      "blocksAxes": ["Performance QA"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": [],
+      "upstreamPackages": [
+        {
+          "ecosystem": "any",
+          "name": "Locust"
+        }
+      ],
+      "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
+      "maturity": "M1_DECLARED",
+      "nextLevelGap": {
+        "target": "M2_IMPLEMENTED",
+        "missing": [
+          "implementation exists",
+          "unit tests for the implementation"
+        ],
+        "owner": "ecosystem-census",
+        "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
+      }
+    },
+    {
+      "id": "ec.test-framework.jest",
+      "name": "jest",
+      "category": "test-framework",
+      "state": "SUPPORTED",
+      "owner": "framework-inventory",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "dependency",
+          "ecosystem": "npm",
+          "name": "jest"
+        },
+        {
+          "kind": "dependency",
+          "ecosystem": "npm",
+          "name": "jest-cli"
+        },
+        {
+          "kind": "config-file",
+          "path": "jest.config.js"
+        },
+        {
+          "kind": "config-file",
+          "path": "jest.config.ts"
+        }
+      ],
+      "adapter": "typescript",
+      "blocksAxes": ["Discovery"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": ["29", "30"],
+      "upstreamPackages": [
+        {
+          "ecosystem": "npm",
+          "name": "jest"
+        },
+        {
+          "ecosystem": "npm",
+          "name": "jest-cli"
+        }
+      ],
+      "revisitTrigger": "adapter no longer handles a major version in jest; census staleness trigger demotes SUPPORTED",
+      "maturity": "M2_IMPLEMENTED",
+      "nextLevelGap": {
+        "target": "M3_FIXTURE_VERIFIED",
+        "missing": [
+          "positive + negative + boundary + adversarial fixtures pass deterministically in CI"
+        ],
+        "owner": "framework-inventory",
+        "revisitTrigger": "adapter no longer handles a major version in jest; census staleness trigger demotes SUPPORTED"
+      }
+    },
+    {
+      "id": "ec.test-framework.junit",
+      "name": "junit",
+      "category": "test-framework",
+      "state": "SUPPORTED",
+      "owner": "framework-inventory",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "dependency",
+          "ecosystem": "maven",
+          "name": "junit"
+        },
+        {
+          "kind": "dependency",
+          "ecosystem": "maven",
+          "name": "junit-jupiter"
+        },
+        {
+          "kind": "dependency",
+          "ecosystem": "gradle",
+          "name": "junit"
+        },
+        {
+          "kind": "dependency",
+          "ecosystem": "gradle",
+          "name": "junit-jupiter"
+        },
+        {
+          "kind": "config-file",
+          "path": "junit.config.js"
+        },
+        {
+          "kind": "config-file",
+          "path": "junit.config.ts"
+        }
+      ],
+      "adapter": "java",
+      "blocksAxes": ["Discovery"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": ["5"],
+      "upstreamPackages": [
+        {
+          "ecosystem": "maven",
+          "name": "junit"
+        },
+        {
+          "ecosystem": "maven",
+          "name": "junit-jupiter"
+        },
+        {
+          "ecosystem": "gradle",
+          "name": "junit"
+        },
+        {
+          "ecosystem": "gradle",
+          "name": "junit-jupiter"
+        }
+      ],
+      "revisitTrigger": "adapter no longer handles a major version in junit; census staleness trigger demotes SUPPORTED",
+      "maturity": "M1_DECLARED",
+      "nextLevelGap": {
+        "target": "M2_IMPLEMENTED",
+        "missing": [
+          "implementation exists",
+          "unit tests for the implementation"
+        ],
+        "owner": "framework-inventory",
+        "revisitTrigger": "adapter no longer handles a major version in junit; census staleness trigger demotes SUPPORTED"
+      }
+    },
+    {
+      "id": "ec.test-framework.nunit",
+      "name": "nunit",
+      "category": "test-framework",
+      "state": "SUPPORTED",
+      "owner": "framework-inventory",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "dependency",
+          "ecosystem": "nuget",
+          "name": "NUnit"
+        },
+        {
+          "kind": "dependency",
+          "ecosystem": "nuget",
+          "name": "NUnit3TestAdapter"
+        },
+        {
+          "kind": "config-file",
+          "path": "nunit.config.js"
+        },
+        {
+          "kind": "config-file",
+          "path": "nunit.config.ts"
+        }
+      ],
+      "adapter": "csharp",
+      "blocksAxes": ["Discovery"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": ["3", "4"],
+      "upstreamPackages": [
+        {
+          "ecosystem": "nuget",
+          "name": "NUnit"
+        },
+        {
+          "ecosystem": "nuget",
+          "name": "NUnit3TestAdapter"
+        }
+      ],
+      "revisitTrigger": "adapter no longer handles a major version in nunit; census staleness trigger demotes SUPPORTED",
+      "maturity": "M1_DECLARED",
+      "nextLevelGap": {
+        "target": "M2_IMPLEMENTED",
+        "missing": [
+          "implementation exists",
+          "unit tests for the implementation"
+        ],
+        "owner": "framework-inventory",
+        "revisitTrigger": "adapter no longer handles a major version in nunit; census staleness trigger demotes SUPPORTED"
+      }
+    },
+    {
+      "id": "ec.test-framework.pytest",
+      "name": "pytest",
+      "category": "test-framework",
+      "state": "SUPPORTED",
+      "owner": "framework-inventory",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "dependency",
+          "ecosystem": "pypi",
+          "name": "pytest"
+        },
+        {
+          "kind": "dependency",
+          "ecosystem": "pypi",
+          "name": "_pytest"
+        },
+        {
+          "kind": "config-file",
+          "path": "pytest.config.js"
+        },
+        {
+          "kind": "config-file",
+          "path": "pytest.config.ts"
+        }
+      ],
+      "adapter": "python",
+      "blocksAxes": ["Discovery"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": ["7", "8"],
+      "upstreamPackages": [
+        {
+          "ecosystem": "pypi",
+          "name": "pytest"
+        },
+        {
+          "ecosystem": "pypi",
+          "name": "_pytest"
+        }
+      ],
+      "revisitTrigger": "adapter no longer handles a major version in pytest; census staleness trigger demotes SUPPORTED",
+      "maturity": "M2_IMPLEMENTED",
+      "nextLevelGap": {
+        "target": "M3_FIXTURE_VERIFIED",
+        "missing": [
+          "positive + negative + boundary + adversarial fixtures pass deterministically in CI"
+        ],
+        "owner": "framework-inventory",
+        "revisitTrigger": "adapter no longer handles a major version in pytest; census staleness trigger demotes SUPPORTED"
+      }
+    },
+    {
+      "id": "ec.test-framework.testcontainers",
+      "name": "Testcontainers",
+      "category": "test-framework",
+      "state": "TARGET",
+      "owner": "ecosystem-census",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "dependency",
+          "ecosystem": "java",
+          "name": "org.testcontainers"
+        }
+      ],
+      "adapter": null,
+      "blocksAxes": ["Database QA", "Isolation"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": [],
+      "upstreamPackages": [
+        {
+          "ecosystem": "any",
+          "name": "Testcontainers"
+        }
+      ],
+      "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
+      "maturity": "M1_DECLARED",
+      "nextLevelGap": {
+        "target": "M2_IMPLEMENTED",
+        "missing": [
+          "implementation exists",
+          "unit tests for the implementation"
+        ],
+        "owner": "ecosystem-census",
+        "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
+      }
+    },
+    {
+      "id": "ec.test-framework.testng",
+      "name": "testng",
+      "category": "test-framework",
+      "state": "SUPPORTED",
+      "owner": "framework-inventory",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "dependency",
+          "ecosystem": "maven",
+          "name": "org.testng"
+        },
+        {
+          "kind": "dependency",
+          "ecosystem": "gradle",
+          "name": "testng"
+        },
+        {
+          "kind": "config-file",
+          "path": "testng.config.js"
+        },
+        {
+          "kind": "config-file",
+          "path": "testng.config.ts"
+        }
+      ],
+      "adapter": "java",
+      "blocksAxes": ["Discovery"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": ["7"],
+      "upstreamPackages": [
+        {
+          "ecosystem": "maven",
+          "name": "org.testng"
+        },
+        {
+          "ecosystem": "gradle",
+          "name": "testng"
+        }
+      ],
+      "revisitTrigger": "adapter no longer handles a major version in testng; census staleness trigger demotes SUPPORTED",
+      "maturity": "M1_DECLARED",
+      "nextLevelGap": {
+        "target": "M2_IMPLEMENTED",
+        "missing": [
+          "implementation exists",
+          "unit tests for the implementation"
+        ],
+        "owner": "framework-inventory",
+        "revisitTrigger": "adapter no longer handles a major version in testng; census staleness trigger demotes SUPPORTED"
+      }
+    },
+    {
+      "id": "ec.test-framework.vitest",
+      "name": "vitest",
+      "category": "test-framework",
+      "state": "SUPPORTED",
+      "owner": "framework-inventory",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "dependency",
+          "ecosystem": "npm",
+          "name": "vitest"
+        },
+        {
+          "kind": "config-file",
+          "path": "vitest.config.js"
+        },
+        {
+          "kind": "config-file",
+          "path": "vitest.config.ts"
+        }
+      ],
+      "adapter": "typescript",
+      "blocksAxes": ["Discovery"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": ["1", "2"],
+      "upstreamPackages": [
+        {
+          "ecosystem": "npm",
+          "name": "vitest"
+        }
+      ],
+      "revisitTrigger": "adapter no longer handles a major version in vitest; census staleness trigger demotes SUPPORTED",
+      "maturity": "M2_IMPLEMENTED",
+      "nextLevelGap": {
+        "target": "M3_FIXTURE_VERIFIED",
+        "missing": [
+          "positive + negative + boundary + adversarial fixtures pass deterministically in CI"
+        ],
+        "owner": "framework-inventory",
+        "revisitTrigger": "adapter no longer handles a major version in vitest; census staleness trigger demotes SUPPORTED"
+      }
+    },
+    {
+      "id": "ec.test-framework.xunit",
+      "name": "xunit",
+      "category": "test-framework",
+      "state": "SUPPORTED",
+      "owner": "framework-inventory",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "dependency",
+          "ecosystem": "nuget",
+          "name": "xunit"
+        },
+        {
+          "kind": "config-file",
+          "path": "xunit.config.js"
+        },
+        {
+          "kind": "config-file",
+          "path": "xunit.config.ts"
+        }
+      ],
+      "adapter": "csharp",
+      "blocksAxes": ["Discovery"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": ["2"],
+      "upstreamPackages": [
+        {
+          "ecosystem": "nuget",
+          "name": "xunit"
+        }
+      ],
+      "revisitTrigger": "adapter no longer handles a major version in xunit; census staleness trigger demotes SUPPORTED",
+      "maturity": "M1_DECLARED",
+      "nextLevelGap": {
+        "target": "M2_IMPLEMENTED",
+        "missing": [
+          "implementation exists",
+          "unit tests for the implementation"
+        ],
+        "owner": "framework-inventory",
+        "revisitTrigger": "adapter no longer handles a major version in xunit; census staleness trigger demotes SUPPORTED"
+      }
+    },
+    {
+      "id": "ec.test-management.azure-test-plans",
+      "name": "Azure Test Plans",
+      "category": "test-management",
+      "state": "TARGET",
+      "owner": "ecosystem-census",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "workflow-dir",
+          "path": ".azure-test-plans"
+        }
+      ],
+      "adapter": null,
+      "blocksAxes": ["Human / Manual Verification"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": [],
+      "upstreamPackages": [
+        {
+          "ecosystem": "any",
+          "name": "Azure Test Plans"
+        }
+      ],
+      "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
+      "maturity": "M1_DECLARED",
+      "nextLevelGap": {
+        "target": "M2_IMPLEMENTED",
+        "missing": [
+          "implementation exists",
+          "unit tests for the implementation"
+        ],
+        "owner": "ecosystem-census",
+        "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
+      }
+    },
+    {
+      "id": "ec.test-management.testrail",
+      "name": "TestRail",
+      "category": "test-management",
+      "state": "TARGET",
+      "owner": "ecosystem-census",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "extension",
+          "glob": "**/testrail*.yml"
+        }
+      ],
+      "adapter": null,
+      "blocksAxes": ["Human / Manual Verification"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": [],
+      "upstreamPackages": [
+        {
+          "ecosystem": "any",
+          "name": "TestRail"
+        }
+      ],
+      "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
+      "maturity": "M1_DECLARED",
+      "nextLevelGap": {
+        "target": "M2_IMPLEMENTED",
+        "missing": [
+          "implementation exists",
+          "unit tests for the implementation"
+        ],
+        "owner": "ecosystem-census",
+        "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
+      }
+    },
+    {
+      "id": "ec.test-management.xray",
+      "name": "Xray",
+      "category": "test-management",
+      "state": "TARGET",
+      "owner": "ecosystem-census",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "dependency",
+          "ecosystem": "maven",
+          "name": "xray"
+        }
+      ],
+      "adapter": null,
+      "blocksAxes": ["Human / Manual Verification"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": [],
+      "upstreamPackages": [
+        {
+          "ecosystem": "any",
+          "name": "Xray"
+        }
+      ],
+      "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
+      "maturity": "M1_DECLARED",
+      "nextLevelGap": {
+        "target": "M2_IMPLEMENTED",
+        "missing": [
+          "implementation exists",
+          "unit tests for the implementation"
+        ],
+        "owner": "ecosystem-census",
+        "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
+      }
+    },
+    {
+      "id": "ec.test-management.zephyr",
+      "name": "Zephyr",
+      "category": "test-management",
+      "state": "TARGET",
+      "owner": "ecosystem-census",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "manifest-file",
+          "path": "zephyr.properties"
+        }
+      ],
+      "adapter": null,
+      "blocksAxes": ["Human / Manual Verification"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": [],
+      "upstreamPackages": [
+        {
+          "ecosystem": "any",
+          "name": "Zephyr"
+        }
+      ],
+      "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
+      "maturity": "M1_DECLARED",
+      "nextLevelGap": {
+        "target": "M2_IMPLEMENTED",
+        "missing": [
+          "implementation exists",
+          "unit tests for the implementation"
+        ],
+        "owner": "ecosystem-census",
+        "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
+      }
+    },
+    {
+      "id": "ec.test-runner.robot-framework",
+      "name": "Robot Framework",
+      "category": "test-runner",
+      "state": "TARGET",
+      "owner": "ecosystem-census",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "dependency",
+          "ecosystem": "pypi",
+          "name": "robotframework"
+        }
+      ],
+      "adapter": null,
+      "blocksAxes": ["Discovery", "Human / Manual Verification"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": [],
+      "upstreamPackages": [
+        {
+          "ecosystem": "any",
+          "name": "Robot Framework"
+        }
+      ],
+      "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
+      "maturity": "M1_DECLARED",
+      "nextLevelGap": {
+        "target": "M2_IMPLEMENTED",
+        "missing": [
+          "implementation exists",
+          "unit tests for the implementation"
+        ],
+        "owner": "ecosystem-census",
+        "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
+      }
+    },
+    {
+      "id": "ec.test-runner.selenium",
+      "name": "selenium",
+      "category": "test-runner",
+      "state": "SUPPORTED",
+      "owner": "framework-inventory",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "dependency",
+          "ecosystem": "npm",
+          "name": "selenium-webdriver"
+        },
+        {
+          "kind": "dependency",
+          "ecosystem": "pypi",
+          "name": "selenium"
+        },
+        {
+          "kind": "dependency",
+          "ecosystem": "maven",
+          "name": "org.seleniumhq.selenium"
+        },
+        {
+          "kind": "dependency",
+          "ecosystem": "java",
+          "name": "selenium-java"
+        },
+        {
+          "kind": "dependency",
+          "ecosystem": "nuget",
+          "name": "Selenium.WebDriver"
+        },
+        {
+          "kind": "dependency",
+          "ecosystem": "go",
+          "name": "github.com/tebeka/selenium"
+        },
+        {
+          "kind": "config-file",
+          "path": "selenium.config.js"
+        },
+        {
+          "kind": "config-file",
+          "path": "selenium.config.ts"
+        }
+      ],
+      "adapter": "typescript,python,java",
+      "blocksAxes": ["Discovery"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": ["4"],
+      "upstreamPackages": [
+        {
+          "ecosystem": "npm",
+          "name": "selenium-webdriver"
+        },
+        {
+          "ecosystem": "pypi",
+          "name": "selenium"
+        },
+        {
+          "ecosystem": "maven",
+          "name": "org.seleniumhq.selenium"
+        },
+        {
+          "ecosystem": "java",
+          "name": "selenium-java"
+        },
+        {
+          "ecosystem": "nuget",
+          "name": "Selenium.WebDriver"
+        },
+        {
+          "ecosystem": "go",
+          "name": "github.com/tebeka/selenium"
+        }
+      ],
+      "revisitTrigger": "adapter no longer handles a major version in selenium; census staleness trigger demotes SUPPORTED",
+      "maturity": "M1_DECLARED",
+      "nextLevelGap": {
+        "target": "M2_IMPLEMENTED",
+        "missing": [
+          "implementation exists",
+          "unit tests for the implementation"
+        ],
+        "owner": "framework-inventory",
+        "revisitTrigger": "adapter no longer handles a major version in selenium; census staleness trigger demotes SUPPORTED"
+      }
+    }
+  ],
+  "stalenessDemotions": [],
+  "effectiveEntries": [
+    {
+      "id": "ec.api-contract-testing.bruno",
+      "name": "Bruno",
+      "category": "api-contract-testing",
+      "state": "TARGET",
+      "owner": "ecosystem-census",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "manifest-file",
+          "path": "bruno.json"
+        }
+      ],
+      "adapter": null,
+      "blocksAxes": ["API QA", "Discovery"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": [],
+      "upstreamPackages": [
+        {
+          "ecosystem": "any",
+          "name": "Bruno"
+        }
+      ],
+      "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
+      "maturity": "M1_DECLARED",
+      "nextLevelGap": {
+        "target": "M2_IMPLEMENTED",
+        "missing": [
+          "implementation exists",
+          "unit tests for the implementation"
+        ],
+        "owner": "ecosystem-census",
+        "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
+      }
+    },
+    {
+      "id": "ec.api-contract-testing.karate",
+      "name": "Karate",
+      "category": "api-contract-testing",
+      "state": "TARGET",
+      "owner": "ecosystem-census",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "dependency",
+          "ecosystem": "maven",
+          "name": "com.intuit.karate"
+        }
+      ],
+      "adapter": null,
+      "blocksAxes": ["API QA", "Contract Coverage"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": [],
+      "upstreamPackages": [
+        {
+          "ecosystem": "any",
+          "name": "Karate"
+        }
+      ],
+      "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
+      "maturity": "M1_DECLARED",
+      "nextLevelGap": {
+        "target": "M2_IMPLEMENTED",
+        "missing": [
+          "implementation exists",
+          "unit tests for the implementation"
+        ],
+        "owner": "ecosystem-census",
+        "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
+      }
+    },
+    {
+      "id": "ec.api-contract-testing.pact",
+      "name": "Pact",
+      "category": "api-contract-testing",
+      "state": "TARGET",
+      "owner": "ecosystem-census",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "dependency",
+          "ecosystem": "npm",
+          "name": "@pact-foundation/pact"
+        }
+      ],
+      "adapter": null,
+      "blocksAxes": ["API QA", "Contract Quality"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": [],
+      "upstreamPackages": [
+        {
+          "ecosystem": "any",
+          "name": "Pact"
+        }
+      ],
+      "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
+      "maturity": "M1_DECLARED",
+      "nextLevelGap": {
+        "target": "M2_IMPLEMENTED",
+        "missing": [
+          "implementation exists",
+          "unit tests for the implementation"
+        ],
+        "owner": "ecosystem-census",
+        "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
+      }
+    },
+    {
+      "id": "ec.api-contract-testing.postman-newman",
+      "name": "Postman / Newman",
+      "category": "api-contract-testing",
+      "state": "TARGET",
+      "owner": "ecosystem-census",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "dependency",
+          "ecosystem": "npm",
+          "name": "newman"
+        }
+      ],
+      "adapter": null,
+      "blocksAxes": ["API QA", "Artifact Analysis"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": [],
+      "upstreamPackages": [
+        {
+          "ecosystem": "any",
+          "name": "Postman / Newman"
+        }
+      ],
+      "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
+      "maturity": "M1_DECLARED",
+      "nextLevelGap": {
+        "target": "M2_IMPLEMENTED",
+        "missing": [
+          "implementation exists",
+          "unit tests for the implementation"
+        ],
+        "owner": "ecosystem-census",
+        "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
+      }
+    },
+    {
+      "id": "ec.api-contract-testing.rest-assured",
+      "name": "REST Assured",
+      "category": "api-contract-testing",
+      "state": "TARGET",
+      "owner": "ecosystem-census",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "dependency",
+          "ecosystem": "maven",
+          "name": "io.rest-assured"
+        }
+      ],
+      "adapter": null,
+      "blocksAxes": ["API QA", "Contract Coverage"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": [],
+      "upstreamPackages": [
+        {
+          "ecosystem": "any",
+          "name": "REST Assured"
+        }
+      ],
+      "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
+      "maturity": "M1_DECLARED",
+      "nextLevelGap": {
+        "target": "M2_IMPLEMENTED",
+        "missing": [
+          "implementation exists",
+          "unit tests for the implementation"
+        ],
+        "owner": "ecosystem-census",
+        "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
+      }
+    },
+    {
+      "id": "ec.bdd-spec-dsl.cucumber",
+      "name": "Cucumber",
+      "category": "bdd-spec-dsl",
+      "state": "TARGET",
+      "owner": "ecosystem-census",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "dependency",
+          "ecosystem": "npm",
+          "name": "@cucumber/cucumber"
+        }
+      ],
+      "adapter": null,
+      "blocksAxes": ["Discovery", "Static Analysis"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": [],
+      "upstreamPackages": [
+        {
+          "ecosystem": "any",
+          "name": "Cucumber"
+        }
+      ],
+      "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
+      "maturity": "M1_DECLARED",
+      "nextLevelGap": {
+        "target": "M2_IMPLEMENTED",
+        "missing": [
+          "implementation exists",
+          "unit tests for the implementation"
+        ],
+        "owner": "ecosystem-census",
+        "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
+      }
+    },
+    {
+      "id": "ec.bdd-spec-dsl.specflow",
+      "name": "SpecFlow",
+      "category": "bdd-spec-dsl",
+      "state": "TARGET",
+      "owner": "ecosystem-census",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "dependency",
+          "ecosystem": "nuget",
+          "name": "SpecFlow"
+        }
+      ],
+      "adapter": null,
+      "blocksAxes": ["Discovery", "Static Analysis"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": [],
+      "upstreamPackages": [
+        {
+          "ecosystem": "any",
+          "name": "SpecFlow"
+        }
+      ],
+      "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
+      "maturity": "M1_DECLARED",
+      "nextLevelGap": {
+        "target": "M2_IMPLEMENTED",
+        "missing": [
+          "implementation exists",
+          "unit tests for the implementation"
+        ],
+        "owner": "ecosystem-census",
+        "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
+      }
+    },
+    {
+      "id": "ec.ci-cd-provider.azure-pipelines",
+      "name": "azure-pipelines",
+      "category": "ci-cd-provider",
+      "state": "SUPPORTED",
+      "owner": "provider-capability-contract",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "manifest-file",
+          "path": "azure-pipelines.yml"
+        }
+      ],
+      "adapter": "azure-pipelines,src/adapters/azure-pipelines.ts",
+      "blocksAxes": ["CI Integrity", "False-Green Detection"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": ["2024"],
+      "upstreamPackages": [],
+      "revisitTrigger": "CI-IR adapter no longer normalizes a azure-pipelines pipeline construct; census staleness trigger demotes SUPPORTED",
+      "maturity": "M2_IMPLEMENTED",
+      "nextLevelGap": {
+        "target": "M3_FIXTURE_VERIFIED",
+        "missing": [
+          "positive + negative + boundary + adversarial fixtures pass deterministically in CI"
+        ],
+        "owner": "provider-capability-contract",
+        "revisitTrigger": "CI-IR adapter no longer normalizes a azure-pipelines pipeline construct; census staleness trigger demotes SUPPORTED"
+      }
+    },
+    {
+      "id": "ec.ci-cd-provider.github-actions",
+      "name": "github-actions",
+      "category": "ci-cd-provider",
+      "state": "SUPPORTED",
+      "owner": "provider-capability-contract",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "workflow-dir",
+          "path": ".github/workflows"
+        }
+      ],
+      "adapter": "github-actions,src/adapters/github-actions.ts",
+      "blocksAxes": ["CI Integrity", "False-Green Detection"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": ["4"],
+      "upstreamPackages": [
+        {
+          "ecosystem": "npm",
+          "name": "@actions/core"
+        }
+      ],
+      "revisitTrigger": "CI-IR adapter no longer normalizes a github-actions pipeline construct; census staleness trigger demotes SUPPORTED",
+      "maturity": "M2_IMPLEMENTED",
+      "nextLevelGap": {
+        "target": "M3_FIXTURE_VERIFIED",
+        "missing": [
+          "positive + negative + boundary + adversarial fixtures pass deterministically in CI"
+        ],
+        "owner": "provider-capability-contract",
+        "revisitTrigger": "CI-IR adapter no longer normalizes a github-actions pipeline construct; census staleness trigger demotes SUPPORTED"
+      }
+    },
+    {
+      "id": "ec.ci-cd-provider.gitlab-ci",
+      "name": "gitlab-ci",
+      "category": "ci-cd-provider",
+      "state": "SUPPORTED",
+      "owner": "provider-capability-contract",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "manifest-file",
+          "path": ".gitlab-ci.yml"
+        }
+      ],
+      "adapter": "src/adapters/gitlab-ci.ts",
+      "blocksAxes": ["CI Integrity", "False-Green Detection"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": [],
+      "upstreamPackages": [],
+      "revisitTrigger": "CI-IR adapter no longer normalizes a gitlab-ci pipeline construct; census staleness trigger demotes SUPPORTED",
+      "maturity": "M2_IMPLEMENTED",
+      "nextLevelGap": {
+        "target": "M3_FIXTURE_VERIFIED",
+        "missing": [
+          "positive + negative + boundary + adversarial fixtures pass deterministically in CI"
+        ],
+        "owner": "provider-capability-contract",
+        "revisitTrigger": "CI-IR adapter no longer normalizes a gitlab-ci pipeline construct; census staleness trigger demotes SUPPORTED"
+      }
+    },
+    {
+      "id": "ec.ci-cd-provider.jenkins",
+      "name": "jenkins",
+      "category": "ci-cd-provider",
+      "state": "SUPPORTED",
+      "owner": "provider-capability-contract",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "manifest-file",
+          "path": "Jenkinsfile"
+        }
+      ],
+      "adapter": "jenkins,src/adapters/jenkins.ts",
+      "blocksAxes": ["CI Integrity", "False-Green Detection"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": ["2"],
+      "upstreamPackages": [],
+      "revisitTrigger": "CI-IR adapter no longer normalizes a jenkins pipeline construct; census staleness trigger demotes SUPPORTED",
+      "maturity": "M2_IMPLEMENTED",
+      "nextLevelGap": {
+        "target": "M3_FIXTURE_VERIFIED",
+        "missing": [
+          "positive + negative + boundary + adversarial fixtures pass deterministically in CI"
+        ],
+        "owner": "provider-capability-contract",
+        "revisitTrigger": "CI-IR adapter no longer normalizes a jenkins pipeline construct; census staleness trigger demotes SUPPORTED"
+      }
+    },
+    {
+      "id": "ec.component-e2e.cypress",
+      "name": "cypress",
+      "category": "component-e2e",
+      "state": "SUPPORTED",
+      "owner": "framework-inventory",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "dependency",
+          "ecosystem": "npm",
+          "name": "cypress"
+        },
+        {
+          "kind": "config-file",
+          "path": "cypress.config.js"
+        },
+        {
+          "kind": "config-file",
+          "path": "cypress.config.ts"
+        }
+      ],
+      "adapter": "typescript",
+      "blocksAxes": ["Discovery"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": ["13"],
+      "upstreamPackages": [
+        {
+          "ecosystem": "npm",
+          "name": "cypress"
+        }
+      ],
+      "revisitTrigger": "adapter no longer handles a major version in cypress; census staleness trigger demotes SUPPORTED",
+      "maturity": "M2_IMPLEMENTED",
+      "nextLevelGap": {
+        "target": "M3_FIXTURE_VERIFIED",
+        "missing": [
+          "positive + negative + boundary + adversarial fixtures pass deterministically in CI"
+        ],
+        "owner": "framework-inventory",
+        "revisitTrigger": "adapter no longer handles a major version in cypress; census staleness trigger demotes SUPPORTED"
+      }
+    },
+    {
+      "id": "ec.component-e2e.playwright",
+      "name": "playwright",
+      "category": "component-e2e",
+      "state": "SUPPORTED",
+      "owner": "framework-inventory",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "dependency",
+          "ecosystem": "npm",
+          "name": "@playwright/test"
+        },
+        {
+          "kind": "dependency",
+          "ecosystem": "npm",
+          "name": "playwright"
+        },
+        {
+          "kind": "dependency",
+          "ecosystem": "npm",
+          "name": "playwright-core"
+        },
+        {
+          "kind": "dependency",
+          "ecosystem": "any",
+          "name": "playwright"
+        },
+        {
+          "kind": "config-file",
+          "path": "playwright.config.js"
+        },
+        {
+          "kind": "config-file",
+          "path": "playwright.config.ts"
+        }
+      ],
+      "adapter": "typescript",
+      "blocksAxes": ["Discovery"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": ["1"],
+      "upstreamPackages": [
+        {
+          "ecosystem": "npm",
+          "name": "@playwright/test"
+        },
+        {
+          "ecosystem": "npm",
+          "name": "playwright"
+        },
+        {
+          "ecosystem": "npm",
+          "name": "playwright-core"
+        },
+        {
+          "ecosystem": "any",
+          "name": "playwright"
+        }
+      ],
+      "revisitTrigger": "adapter no longer handles a major version in playwright; census staleness trigger demotes SUPPORTED",
+      "maturity": "M2_IMPLEMENTED",
+      "nextLevelGap": {
+        "target": "M3_FIXTURE_VERIFIED",
+        "missing": [
+          "positive + negative + boundary + adversarial fixtures pass deterministically in CI"
+        ],
+        "owner": "framework-inventory",
+        "revisitTrigger": "adapter no longer handles a major version in playwright; census staleness trigger demotes SUPPORTED"
+      }
+    },
+    {
+      "id": "ec.component-e2e.playwright-components",
+      "name": "Playwright Components",
+      "category": "component-e2e",
+      "state": "TARGET",
+      "owner": "ecosystem-census",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "dependency",
+          "ecosystem": "npm",
+          "name": "@playwright/experimental-ct"
+        }
+      ],
+      "adapter": null,
+      "blocksAxes": ["Component E2E"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": [],
+      "upstreamPackages": [
+        {
+          "ecosystem": "any",
+          "name": "Playwright Components"
+        }
+      ],
+      "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
+      "maturity": "M1_DECLARED",
+      "nextLevelGap": {
+        "target": "M2_IMPLEMENTED",
+        "missing": [
+          "implementation exists",
+          "unit tests for the implementation"
+        ],
+        "owner": "ecosystem-census",
+        "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
+      }
+    },
+    {
+      "id": "ec.iac-container.kubernetes-manifests",
+      "name": "Kubernetes manifests",
+      "category": "iac-container",
+      "state": "TARGET",
+      "owner": "ecosystem-census",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "extension",
+          "glob": "**/k8s-*.yaml"
+        }
+      ],
+      "adapter": null,
+      "blocksAxes": ["Infrastructure / Cloud / IaC"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": [],
+      "upstreamPackages": [
+        {
+          "ecosystem": "any",
+          "name": "Kubernetes manifests"
+        }
+      ],
+      "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
+      "maturity": "M1_DECLARED",
+      "nextLevelGap": {
+        "target": "M2_IMPLEMENTED",
+        "missing": [
+          "implementation exists",
+          "unit tests for the implementation"
+        ],
+        "owner": "ecosystem-census",
+        "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
+      }
+    },
+    {
+      "id": "ec.iac-container.terraform",
+      "name": "Terraform",
+      "category": "iac-container",
+      "state": "TARGET",
+      "owner": "ecosystem-census",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "extension",
+          "glob": "**/*.tf"
+        }
+      ],
+      "adapter": null,
+      "blocksAxes": ["Infrastructure / Cloud / IaC"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": [],
+      "upstreamPackages": [
+        {
+          "ecosystem": "any",
+          "name": "Terraform"
+        }
+      ],
+      "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
+      "maturity": "M1_DECLARED",
+      "nextLevelGap": {
+        "target": "M2_IMPLEMENTED",
+        "missing": [
+          "implementation exists",
+          "unit tests for the implementation"
+        ],
+        "owner": "ecosystem-census",
+        "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
+      }
+    },
+    {
+      "id": "ec.load-performance.gatling",
+      "name": "Gatling",
+      "category": "load-performance",
+      "state": "TARGET",
+      "owner": "ecosystem-census",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "dependency",
+          "ecosystem": "sbt",
+          "name": "io.gatling"
+        }
+      ],
+      "adapter": null,
+      "blocksAxes": ["Performance QA"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": [],
+      "upstreamPackages": [
+        {
+          "ecosystem": "any",
+          "name": "Gatling"
+        }
+      ],
+      "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
+      "maturity": "M1_DECLARED",
+      "nextLevelGap": {
+        "target": "M2_IMPLEMENTED",
+        "missing": [
+          "implementation exists",
+          "unit tests for the implementation"
+        ],
+        "owner": "ecosystem-census",
+        "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
+      }
+    },
+    {
+      "id": "ec.load-performance.k6",
+      "name": "k6",
+      "category": "load-performance",
+      "state": "TARGET",
+      "owner": "ecosystem-census",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "manifest-file",
+          "path": "k6.config.js"
+        }
+      ],
+      "adapter": null,
+      "blocksAxes": ["Performance QA"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": [],
+      "upstreamPackages": [
+        {
+          "ecosystem": "any",
+          "name": "k6"
+        }
+      ],
+      "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
+      "maturity": "M1_DECLARED",
+      "nextLevelGap": {
+        "target": "M2_IMPLEMENTED",
+        "missing": [
+          "implementation exists",
+          "unit tests for the implementation"
+        ],
+        "owner": "ecosystem-census",
+        "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
+      }
+    },
+    {
+      "id": "ec.load-performance.locust",
+      "name": "Locust",
+      "category": "load-performance",
+      "state": "TARGET",
+      "owner": "ecosystem-census",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "dependency",
+          "ecosystem": "pypi",
+          "name": "locust"
+        }
+      ],
+      "adapter": null,
+      "blocksAxes": ["Performance QA"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": [],
+      "upstreamPackages": [
+        {
+          "ecosystem": "any",
+          "name": "Locust"
+        }
+      ],
+      "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
+      "maturity": "M1_DECLARED",
+      "nextLevelGap": {
+        "target": "M2_IMPLEMENTED",
+        "missing": [
+          "implementation exists",
+          "unit tests for the implementation"
+        ],
+        "owner": "ecosystem-census",
+        "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
+      }
+    },
+    {
+      "id": "ec.test-framework.jest",
+      "name": "jest",
+      "category": "test-framework",
+      "state": "SUPPORTED",
+      "owner": "framework-inventory",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "dependency",
+          "ecosystem": "npm",
+          "name": "jest"
+        },
+        {
+          "kind": "dependency",
+          "ecosystem": "npm",
+          "name": "jest-cli"
+        },
+        {
+          "kind": "config-file",
+          "path": "jest.config.js"
+        },
+        {
+          "kind": "config-file",
+          "path": "jest.config.ts"
+        }
+      ],
+      "adapter": "typescript",
+      "blocksAxes": ["Discovery"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": ["29", "30"],
+      "upstreamPackages": [
+        {
+          "ecosystem": "npm",
+          "name": "jest"
+        },
+        {
+          "ecosystem": "npm",
+          "name": "jest-cli"
+        }
+      ],
+      "revisitTrigger": "adapter no longer handles a major version in jest; census staleness trigger demotes SUPPORTED",
+      "maturity": "M2_IMPLEMENTED",
+      "nextLevelGap": {
+        "target": "M3_FIXTURE_VERIFIED",
+        "missing": [
+          "positive + negative + boundary + adversarial fixtures pass deterministically in CI"
+        ],
+        "owner": "framework-inventory",
+        "revisitTrigger": "adapter no longer handles a major version in jest; census staleness trigger demotes SUPPORTED"
+      }
+    },
+    {
+      "id": "ec.test-framework.junit",
+      "name": "junit",
+      "category": "test-framework",
+      "state": "SUPPORTED",
+      "owner": "framework-inventory",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "dependency",
+          "ecosystem": "maven",
+          "name": "junit"
+        },
+        {
+          "kind": "dependency",
+          "ecosystem": "maven",
+          "name": "junit-jupiter"
+        },
+        {
+          "kind": "dependency",
+          "ecosystem": "gradle",
+          "name": "junit"
+        },
+        {
+          "kind": "dependency",
+          "ecosystem": "gradle",
+          "name": "junit-jupiter"
+        },
+        {
+          "kind": "config-file",
+          "path": "junit.config.js"
+        },
+        {
+          "kind": "config-file",
+          "path": "junit.config.ts"
+        }
+      ],
+      "adapter": "java",
+      "blocksAxes": ["Discovery"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": ["5"],
+      "upstreamPackages": [
+        {
+          "ecosystem": "maven",
+          "name": "junit"
+        },
+        {
+          "ecosystem": "maven",
+          "name": "junit-jupiter"
+        },
+        {
+          "ecosystem": "gradle",
+          "name": "junit"
+        },
+        {
+          "ecosystem": "gradle",
+          "name": "junit-jupiter"
+        }
+      ],
+      "revisitTrigger": "adapter no longer handles a major version in junit; census staleness trigger demotes SUPPORTED",
+      "maturity": "M1_DECLARED",
+      "nextLevelGap": {
+        "target": "M2_IMPLEMENTED",
+        "missing": [
+          "implementation exists",
+          "unit tests for the implementation"
+        ],
+        "owner": "framework-inventory",
+        "revisitTrigger": "adapter no longer handles a major version in junit; census staleness trigger demotes SUPPORTED"
+      }
+    },
+    {
+      "id": "ec.test-framework.nunit",
+      "name": "nunit",
+      "category": "test-framework",
+      "state": "SUPPORTED",
+      "owner": "framework-inventory",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "dependency",
+          "ecosystem": "nuget",
+          "name": "NUnit"
+        },
+        {
+          "kind": "dependency",
+          "ecosystem": "nuget",
+          "name": "NUnit3TestAdapter"
+        },
+        {
+          "kind": "config-file",
+          "path": "nunit.config.js"
+        },
+        {
+          "kind": "config-file",
+          "path": "nunit.config.ts"
+        }
+      ],
+      "adapter": "csharp",
+      "blocksAxes": ["Discovery"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": ["3", "4"],
+      "upstreamPackages": [
+        {
+          "ecosystem": "nuget",
+          "name": "NUnit"
+        },
+        {
+          "ecosystem": "nuget",
+          "name": "NUnit3TestAdapter"
+        }
+      ],
+      "revisitTrigger": "adapter no longer handles a major version in nunit; census staleness trigger demotes SUPPORTED",
+      "maturity": "M1_DECLARED",
+      "nextLevelGap": {
+        "target": "M2_IMPLEMENTED",
+        "missing": [
+          "implementation exists",
+          "unit tests for the implementation"
+        ],
+        "owner": "framework-inventory",
+        "revisitTrigger": "adapter no longer handles a major version in nunit; census staleness trigger demotes SUPPORTED"
+      }
+    },
+    {
+      "id": "ec.test-framework.pytest",
+      "name": "pytest",
+      "category": "test-framework",
+      "state": "SUPPORTED",
+      "owner": "framework-inventory",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "dependency",
+          "ecosystem": "pypi",
+          "name": "pytest"
+        },
+        {
+          "kind": "dependency",
+          "ecosystem": "pypi",
+          "name": "_pytest"
+        },
+        {
+          "kind": "config-file",
+          "path": "pytest.config.js"
+        },
+        {
+          "kind": "config-file",
+          "path": "pytest.config.ts"
+        }
+      ],
+      "adapter": "python",
+      "blocksAxes": ["Discovery"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": ["7", "8"],
+      "upstreamPackages": [
+        {
+          "ecosystem": "pypi",
+          "name": "pytest"
+        },
+        {
+          "ecosystem": "pypi",
+          "name": "_pytest"
+        }
+      ],
+      "revisitTrigger": "adapter no longer handles a major version in pytest; census staleness trigger demotes SUPPORTED",
+      "maturity": "M2_IMPLEMENTED",
+      "nextLevelGap": {
+        "target": "M3_FIXTURE_VERIFIED",
+        "missing": [
+          "positive + negative + boundary + adversarial fixtures pass deterministically in CI"
+        ],
+        "owner": "framework-inventory",
+        "revisitTrigger": "adapter no longer handles a major version in pytest; census staleness trigger demotes SUPPORTED"
+      }
+    },
+    {
+      "id": "ec.test-framework.testcontainers",
+      "name": "Testcontainers",
+      "category": "test-framework",
+      "state": "TARGET",
+      "owner": "ecosystem-census",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "dependency",
+          "ecosystem": "java",
+          "name": "org.testcontainers"
+        }
+      ],
+      "adapter": null,
+      "blocksAxes": ["Database QA", "Isolation"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": [],
+      "upstreamPackages": [
+        {
+          "ecosystem": "any",
+          "name": "Testcontainers"
+        }
+      ],
+      "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
+      "maturity": "M1_DECLARED",
+      "nextLevelGap": {
+        "target": "M2_IMPLEMENTED",
+        "missing": [
+          "implementation exists",
+          "unit tests for the implementation"
+        ],
+        "owner": "ecosystem-census",
+        "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
+      }
+    },
+    {
+      "id": "ec.test-framework.testng",
+      "name": "testng",
+      "category": "test-framework",
+      "state": "SUPPORTED",
+      "owner": "framework-inventory",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "dependency",
+          "ecosystem": "maven",
+          "name": "org.testng"
+        },
+        {
+          "kind": "dependency",
+          "ecosystem": "gradle",
+          "name": "testng"
+        },
+        {
+          "kind": "config-file",
+          "path": "testng.config.js"
+        },
+        {
+          "kind": "config-file",
+          "path": "testng.config.ts"
+        }
+      ],
+      "adapter": "java",
+      "blocksAxes": ["Discovery"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": ["7"],
+      "upstreamPackages": [
+        {
+          "ecosystem": "maven",
+          "name": "org.testng"
+        },
+        {
+          "ecosystem": "gradle",
+          "name": "testng"
+        }
+      ],
+      "revisitTrigger": "adapter no longer handles a major version in testng; census staleness trigger demotes SUPPORTED",
+      "maturity": "M1_DECLARED",
+      "nextLevelGap": {
+        "target": "M2_IMPLEMENTED",
+        "missing": [
+          "implementation exists",
+          "unit tests for the implementation"
+        ],
+        "owner": "framework-inventory",
+        "revisitTrigger": "adapter no longer handles a major version in testng; census staleness trigger demotes SUPPORTED"
+      }
+    },
+    {
+      "id": "ec.test-framework.vitest",
+      "name": "vitest",
+      "category": "test-framework",
+      "state": "SUPPORTED",
+      "owner": "framework-inventory",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "dependency",
+          "ecosystem": "npm",
+          "name": "vitest"
+        },
+        {
+          "kind": "config-file",
+          "path": "vitest.config.js"
+        },
+        {
+          "kind": "config-file",
+          "path": "vitest.config.ts"
+        }
+      ],
+      "adapter": "typescript",
+      "blocksAxes": ["Discovery"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": ["1", "2"],
+      "upstreamPackages": [
+        {
+          "ecosystem": "npm",
+          "name": "vitest"
+        }
+      ],
+      "revisitTrigger": "adapter no longer handles a major version in vitest; census staleness trigger demotes SUPPORTED",
+      "maturity": "M2_IMPLEMENTED",
+      "nextLevelGap": {
+        "target": "M3_FIXTURE_VERIFIED",
+        "missing": [
+          "positive + negative + boundary + adversarial fixtures pass deterministically in CI"
+        ],
+        "owner": "framework-inventory",
+        "revisitTrigger": "adapter no longer handles a major version in vitest; census staleness trigger demotes SUPPORTED"
+      }
+    },
+    {
+      "id": "ec.test-framework.xunit",
+      "name": "xunit",
+      "category": "test-framework",
+      "state": "SUPPORTED",
+      "owner": "framework-inventory",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "dependency",
+          "ecosystem": "nuget",
+          "name": "xunit"
+        },
+        {
+          "kind": "config-file",
+          "path": "xunit.config.js"
+        },
+        {
+          "kind": "config-file",
+          "path": "xunit.config.ts"
+        }
+      ],
+      "adapter": "csharp",
+      "blocksAxes": ["Discovery"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": ["2"],
+      "upstreamPackages": [
+        {
+          "ecosystem": "nuget",
+          "name": "xunit"
+        }
+      ],
+      "revisitTrigger": "adapter no longer handles a major version in xunit; census staleness trigger demotes SUPPORTED",
+      "maturity": "M1_DECLARED",
+      "nextLevelGap": {
+        "target": "M2_IMPLEMENTED",
+        "missing": [
+          "implementation exists",
+          "unit tests for the implementation"
+        ],
+        "owner": "framework-inventory",
+        "revisitTrigger": "adapter no longer handles a major version in xunit; census staleness trigger demotes SUPPORTED"
+      }
+    },
+    {
+      "id": "ec.test-management.azure-test-plans",
+      "name": "Azure Test Plans",
+      "category": "test-management",
+      "state": "TARGET",
+      "owner": "ecosystem-census",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "workflow-dir",
+          "path": ".azure-test-plans"
+        }
+      ],
+      "adapter": null,
+      "blocksAxes": ["Human / Manual Verification"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": [],
+      "upstreamPackages": [
+        {
+          "ecosystem": "any",
+          "name": "Azure Test Plans"
+        }
+      ],
+      "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
+      "maturity": "M1_DECLARED",
+      "nextLevelGap": {
+        "target": "M2_IMPLEMENTED",
+        "missing": [
+          "implementation exists",
+          "unit tests for the implementation"
+        ],
+        "owner": "ecosystem-census",
+        "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
+      }
+    },
+    {
+      "id": "ec.test-management.testrail",
+      "name": "TestRail",
+      "category": "test-management",
+      "state": "TARGET",
+      "owner": "ecosystem-census",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "extension",
+          "glob": "**/testrail*.yml"
+        }
+      ],
+      "adapter": null,
+      "blocksAxes": ["Human / Manual Verification"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": [],
+      "upstreamPackages": [
+        {
+          "ecosystem": "any",
+          "name": "TestRail"
+        }
+      ],
+      "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
+      "maturity": "M1_DECLARED",
+      "nextLevelGap": {
+        "target": "M2_IMPLEMENTED",
+        "missing": [
+          "implementation exists",
+          "unit tests for the implementation"
+        ],
+        "owner": "ecosystem-census",
+        "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
+      }
+    },
+    {
+      "id": "ec.test-management.xray",
+      "name": "Xray",
+      "category": "test-management",
+      "state": "TARGET",
+      "owner": "ecosystem-census",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "dependency",
+          "ecosystem": "maven",
+          "name": "xray"
+        }
+      ],
+      "adapter": null,
+      "blocksAxes": ["Human / Manual Verification"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": [],
+      "upstreamPackages": [
+        {
+          "ecosystem": "any",
+          "name": "Xray"
+        }
+      ],
+      "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
+      "maturity": "M1_DECLARED",
+      "nextLevelGap": {
+        "target": "M2_IMPLEMENTED",
+        "missing": [
+          "implementation exists",
+          "unit tests for the implementation"
+        ],
+        "owner": "ecosystem-census",
+        "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
+      }
+    },
+    {
+      "id": "ec.test-management.zephyr",
+      "name": "Zephyr",
+      "category": "test-management",
+      "state": "TARGET",
+      "owner": "ecosystem-census",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "manifest-file",
+          "path": "zephyr.properties"
+        }
+      ],
+      "adapter": null,
+      "blocksAxes": ["Human / Manual Verification"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": [],
+      "upstreamPackages": [
+        {
+          "ecosystem": "any",
+          "name": "Zephyr"
+        }
+      ],
+      "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
+      "maturity": "M1_DECLARED",
+      "nextLevelGap": {
+        "target": "M2_IMPLEMENTED",
+        "missing": [
+          "implementation exists",
+          "unit tests for the implementation"
+        ],
+        "owner": "ecosystem-census",
+        "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
+      }
+    },
+    {
+      "id": "ec.test-runner.robot-framework",
+      "name": "Robot Framework",
+      "category": "test-runner",
+      "state": "TARGET",
+      "owner": "ecosystem-census",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "dependency",
+          "ecosystem": "pypi",
+          "name": "robotframework"
+        }
+      ],
+      "adapter": null,
+      "blocksAxes": ["Discovery", "Human / Manual Verification"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": [],
+      "upstreamPackages": [
+        {
+          "ecosystem": "any",
+          "name": "Robot Framework"
+        }
+      ],
+      "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
+      "maturity": "M1_DECLARED",
+      "nextLevelGap": {
+        "target": "M2_IMPLEMENTED",
+        "missing": [
+          "implementation exists",
+          "unit tests for the implementation"
+        ],
+        "owner": "ecosystem-census",
+        "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
+      }
+    },
+    {
+      "id": "ec.test-runner.selenium",
+      "name": "selenium",
+      "category": "test-runner",
+      "state": "SUPPORTED",
+      "owner": "framework-inventory",
+      "observedAt": "2026-09-26",
+      "signals": [
+        {
+          "kind": "dependency",
+          "ecosystem": "npm",
+          "name": "selenium-webdriver"
+        },
+        {
+          "kind": "dependency",
+          "ecosystem": "pypi",
+          "name": "selenium"
+        },
+        {
+          "kind": "dependency",
+          "ecosystem": "maven",
+          "name": "org.seleniumhq.selenium"
+        },
+        {
+          "kind": "dependency",
+          "ecosystem": "java",
+          "name": "selenium-java"
+        },
+        {
+          "kind": "dependency",
+          "ecosystem": "nuget",
+          "name": "Selenium.WebDriver"
+        },
+        {
+          "kind": "dependency",
+          "ecosystem": "go",
+          "name": "github.com/tebeka/selenium"
+        },
+        {
+          "kind": "config-file",
+          "path": "selenium.config.js"
+        },
+        {
+          "kind": "config-file",
+          "path": "selenium.config.ts"
+        }
+      ],
+      "adapter": "typescript,python,java",
+      "blocksAxes": ["Discovery"],
+      "successor": null,
+      "removalDate": null,
+      "notApplicableReason": null,
+      "handledUpstreamMajors": ["4"],
+      "upstreamPackages": [
+        {
+          "ecosystem": "npm",
+          "name": "selenium-webdriver"
+        },
+        {
+          "ecosystem": "pypi",
+          "name": "selenium"
+        },
+        {
+          "ecosystem": "maven",
+          "name": "org.seleniumhq.selenium"
+        },
+        {
+          "ecosystem": "java",
+          "name": "selenium-java"
+        },
+        {
+          "ecosystem": "nuget",
+          "name": "Selenium.WebDriver"
+        },
+        {
+          "ecosystem": "go",
+          "name": "github.com/tebeka/selenium"
+        }
+      ],
+      "revisitTrigger": "adapter no longer handles a major version in selenium; census staleness trigger demotes SUPPORTED",
+      "maturity": "M1_DECLARED",
+      "nextLevelGap": {
+        "target": "M2_IMPLEMENTED",
+        "missing": [
+          "implementation exists",
+          "unit tests for the implementation"
+        ],
+        "owner": "framework-inventory",
+        "revisitTrigger": "adapter no longer handles a major version in selenium; census staleness trigger demotes SUPPORTED"
+      }
+    }
+  ]
+}

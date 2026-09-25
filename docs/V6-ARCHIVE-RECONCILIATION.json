@@ -1,0 +1,76 @@
+{
+  "status": "UNRECONCILED",
+  "expectedDesignRecordCount": 108,
+  "observedDesignRecordCount": 108,
+  "openIssuesInArchive": [
+    539, 546, 547, 551, 553, 556, 561, 565, 575, 588, 589, 590, 593, 594, 595,
+    597, 602, 617
+  ],
+  "records": [
+    {
+      "logicalMilestone": "M18",
+      "githubRange": [539, 549],
+      "designRecords": 11,
+      "disposition": "HISTORICAL_DESIGN_ONLY",
+      "openIssues": [539, 546, 547],
+      "state": "PARTIALLY_RECONCILED"
+    },
+    {
+      "logicalMilestone": "M19",
+      "githubRange": [550, 560],
+      "designRecords": 11,
+      "disposition": "HISTORICAL_DESIGN_ONLY",
+      "openIssues": [551, 553, 556],
+      "state": "PARTIALLY_RECONCILED"
+    },
+    {
+      "logicalMilestone": "M20",
+      "githubRange": [561, 573],
+      "designRecords": 13,
+      "disposition": "HISTORICAL_DESIGN_ONLY",
+      "openIssues": [561, 565],
+      "state": "PARTIALLY_RECONCILED"
+    },
+    {
+      "logicalMilestone": "M21",
+      "githubRange": [574, 586],
+      "designRecords": 13,
+      "disposition": "HISTORICAL_DESIGN_ONLY",
+      "openIssues": [575],
+      "state": "PARTIALLY_RECONCILED"
+    },
+    {
+      "logicalMilestone": "M22",
+      "githubRange": [587, 600],
+      "designRecords": 14,
+      "disposition": "HISTORICAL_DESIGN_ONLY",
+      "openIssues": [588, 589, 590, 593, 594, 595, 597],
+      "state": "PARTIALLY_RECONCILED"
+    },
+    {
+      "logicalMilestone": "M23",
+      "githubRange": [601, 615],
+      "designRecords": 15,
+      "disposition": "HISTORICAL_DESIGN_ONLY",
+      "openIssues": [602],
+      "state": "PARTIALLY_RECONCILED"
+    },
+    {
+      "logicalMilestone": "M24",
+      "githubRange": [616, 631],
+      "designRecords": 16,
+      "disposition": "HISTORICAL_DESIGN_ONLY",
+      "openIssues": [617],
+      "state": "PARTIALLY_RECONCILED"
+    },
+    {
+      "logicalMilestone": "M25",
+      "githubRange": [632, 646],
+      "designRecords": 15,
+      "disposition": "HISTORICAL_NOT_PLANNED",
+      "openIssues": [],
+      "state": "RECONCILED"
+    }
+  ],
+  "closureCommand": "npm run m26:github:sync"
+}

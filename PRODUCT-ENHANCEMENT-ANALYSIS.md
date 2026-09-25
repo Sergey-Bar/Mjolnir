@@ -1,5 +1,42 @@
 # Mjölnir (mjolnir-qa) — Comprehensive Product Enhancement Analysis
 
+> ## ⚠️ DEFERRED — not a source of truth (marked 2026-09-25, v6 Wave 0)
+>
+> **Status: `DEFERRED`. Do not cite, quote, or plan from this document.**
+>
+> This file self-reports its Wave 1/2/3 features as shipped and is
+> referenced by **no ledger, schema, script or CI gate** in this
+> repository. That makes it a second, ungated source of truth — the failure
+> class `docs/TRUST-CONSTITUTION.md` Law 1 and the v6 blueprint's Law 8
+> both exist to prevent. It is retained as history, not as an authority.
+>
+> **Why it is deferred, concretely:** its own verification method — a
+> re-audit of the claims it makes — is part of the work it proposes, so it
+> cannot be used to justify itself. The v6 answer is the opposite
+> approach: a _generated_ capability matrix and a versioned ecosystem
+> census, where a claim is a projection of the registry rather than a
+> sentence somebody wrote.
+>
+> **The v6 replacements, and where the truth now lives:**
+>
+> | This document's claim               | Where the truth lives now                                                                     |
+> | ----------------------------------- | --------------------------------------------------------------------------------------------- |
+> | Framework / language coverage       | `docs/ECOSYSTEM-CENSUS.json` + `docs/ECOSYSTEM-GAPS.md` (generated; `npm run docs:ecosystem`) |
+> | Rule capability and precision       | `docs/RULE-CAPABILITY-MATRIX.md` (generated; `npm run docs:capability`)                       |
+> | Release readiness and current state | `docs/V6-CURRENT-STATE.md` + `docs/V6-GAP-MATRIX.md` (generated; `npm run docs:v6-inventory`) |
+> | "Wave 1/2/3 shipped"                | `docs/ROADMAP.yaml` train status, gated by `npm run docs:roadmap:check`                       |
+> | Support matrices                    | `docs/M26-SUPPORT-MATRIX.json`, gated by `npm run m26:integrity`                              |
+>
+> **The headline counts in this document (a rule count and a language
+> count) are §94-banned claims.** `npm run claims:prose` reports each one
+> as an unbound public claim against the recorded budget in
+> `docs/claim-budget.json`, tracked as `GAP-V6-007`. Fixing it means
+> deleting the numbers, not annotating them — which is why this banner
+> quotes none of them.
+>
+> Decisions taken from this file must be re-derived from the registry
+> before they enter a plan. See `docs/adr/README.md`.
+
 > Prepared 2026-09-20 · Architect-level analysis across 4 stakeholder personas
 
 ---
