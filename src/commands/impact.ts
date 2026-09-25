@@ -18,15 +18,11 @@
  */
 
 import { execFileSync } from "node:child_process";
-import {
-  existsSync,
-  mkdirSync,
-  mkdtempSync,
-  rmSync,
-  writeFileSync,
-} from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
+
+import { writeFileAtomic } from "../lib/fs-atomic.js";
 
 import type { Finding, ScanResult } from "../types.js";
 import { findingFingerprint } from "../engine/finding-identity.js";
@@ -248,7 +244,7 @@ export async function computeImpact(
       if (blob === null) continue; // git failed (rare) — skip, not fatal
       const dest = join(tmpDir, relPath);
       mkdirSync(dirname(dest), { recursive: true });
-      writeFileSync(dest, blob);
+      writeFileAtomic(dest, blob);
     }
     if (truncated) {
       baseTreeTruncated = {

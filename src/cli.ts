@@ -15,15 +15,12 @@ import {
   SCHEMA_VERSION,
   type Finding,
   type RuleCategory,
-  type Severity,
   isAdvisoryFinding,
 } from "./types.js";
-import {
-  EXIT_CLEAN,
-  EXIT_FINDINGS,
-  EXIT_USAGE,
-  EXIT_INTERNAL,
-} from "./exit-codes.js";
+import { EXIT_CLEAN, EXIT_USAGE, EXIT_INTERNAL } from "./exit-codes.js";
+// The one exit-code matrix (plan V5-002). Every surface that finishes an
+// analysis routes its determination through this module.
+import { scanExitCode } from "./claim-evidence.js";
 // M6 (blueprint §9.2): the canonical scan pipeline lives in
 // engine/scan-pipeline.ts — cli.ts is presentation + argument parsing.
 // The namespace import keeps the historical import surface working
@@ -330,22 +327,25 @@ export function validateScanTarget(target: string, err: Output): number | null {
 }
 
 /**
- * Exit-code decision for a finished scan under the given gate level
- * (audit H-7): the previously-dead config.gate field now selects which
- * severities block. Advisory (E0) findings never gate at any level.
+ * Exit-code decision for findings only (audit H-7): the previously-dead
+ * config.gate field selects which severities block. Advisory (E0) findings
+ * never gate at any level.
+ *
+ * This is a findings-only view of the one exit matrix in `claim-evidence`.
+ * Callers that have just finished an ANALYSIS must use `scanExitCode`
+ * instead — this function cannot see `partial`, and a truncated scan with
+ * zero findings is exactly the case that turns a bug into a green build.
  */
 export function exitForFindings(
   findings: readonly Finding[],
   gate: "advisory" | "error" | "warning",
 ): number {
-  if (gate === "advisory") return EXIT_CLEAN;
-  const gateSeverities: readonly Severity[] =
-    gate === "warning" ? ["error", "warning"] : ["error"];
-  return findings.some(
-    (f) => gateSeverities.includes(f.severity) && !isAdvisoryFinding(f),
-  )
-    ? EXIT_FINDINGS
-    : EXIT_CLEAN;
+  return scanExitCode({
+    partial: false,
+    findings,
+    gate,
+    isAdvisory: isAdvisoryFinding,
+  });
 }
 
 /** Testable `ci install` handler. Returns the process exit code. */

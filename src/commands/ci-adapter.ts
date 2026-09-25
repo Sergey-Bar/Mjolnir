@@ -10,7 +10,7 @@
  *   jenkins — generate Jenkins Jenkinsfile Groovy
  */
 
-import { writeFileSync } from "node:fs";
+import { writeFileAtomic } from "../lib/fs-atomic.js";
 import { join, resolve } from "node:path";
 
 import type { Output } from "../cli-io.js";
@@ -97,7 +97,9 @@ export function runCiAdapterCommand(
   }
 
   try {
-    writeFileSync(join(target, filename), output);
+    // Atomic (audit S9): a truncated Jenkinsfile or workflow file is a
+    // half-written CI definition that still parses as a file.
+    writeFileAtomic(join(target, filename), output);
   } catch (error) {
     io.err(
       `Unable to write CI template: ${

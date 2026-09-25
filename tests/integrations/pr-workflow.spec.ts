@@ -71,9 +71,7 @@ describe("mjolnir.yml (the PR feedback loop workflow)", () => {
       true,
     );
     expect(
-      steps.some((step) =>
-        step.run?.includes("dist/cli.mjs . --scope changed --format json"),
-      ),
+      steps.some((step) => step.run?.includes("dist/cli.mjs . --format json")),
     ).toBe(true);
     expect(
       steps.some((step) => step.run?.includes("dist/cli.mjs pr-comment")),
@@ -174,7 +172,8 @@ describe("mjolnir.yml (the PR feedback loop workflow)", () => {
     // The step must record the real exit code: `continue-on-error` would keep
     // the code from later steps, and a blanket success would erase it.
     expect(analysis?.run).toContain('echo "exit_code=$code"');
-    expect(analysis?.run).toContain("node dist/cli.mjs . --scope changed");
+    expect(analysis?.run).toContain("node dist/cli.mjs . --format json");
+    expect(analysis?.run).not.toContain("--scope changed");
   });
 
   it("gates the pull request on the recorded exit code", () => {

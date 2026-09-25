@@ -11,14 +11,10 @@
  * Writes FLAKY.md next to the scan target unless --no-flaky-md.
  */
 
-import {
-  existsSync,
-  readdirSync,
-  readFileSync,
-  statSync,
-  writeFileSync,
-} from "node:fs";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join, dirname } from "node:path";
+
+import { writeFileAtomic } from "../lib/fs-atomic.js";
 
 import { analyze, renderFlakyMd, renderLeaderboard } from "./analyze.js";
 import { parseTraceArtifact } from "./trace.js";
@@ -260,7 +256,9 @@ export function runForensics(
     const base = stat.isFile() ? dirname(target) : target;
     flakyMdPath = join(base, "FLAKY.md");
     try {
-      writeFileSync(flakyMdPath, renderFlakyMd(report));
+      // Atomic (audit S9): a crash mid-write left a truncated FLAKY.md at the
+      // real path, and the next triage read served confident nonsense from it.
+      writeFileAtomic(flakyMdPath, renderFlakyMd(report));
     } catch {
       flakyMdPath = undefined;
     }

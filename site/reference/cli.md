@@ -50,8 +50,10 @@ mjolnir --json > mjolnir.json && mjolnir summary mjolnir.json
 "no-tests-found"` never fabricates a number).
 - **Flags**: `--stdout` forces stdout; `--path-prefix <dir>` re-scopes
   finding paths for subdirectory scans.
-- **Exit codes**: `0` on success — the command never blocks; the gate
-  step decides. `10` missing file argument. `2` unreadable/invalid JSON.
+- **Exit codes**: `0` on success. `1` findings at or above the gate. `2`
+  **inconclusive** — a partial scan or an unsupported surface; a CI step
+  should fail on it, not skip it. `10` missing file argument. See
+  [exit codes](./exit-codes.md).
 
 ## Live scan progress
 

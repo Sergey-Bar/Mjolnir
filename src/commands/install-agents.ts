@@ -21,7 +21,8 @@
  * 10 refusal/usage · 20 crash.
  */
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync } from "node:fs";
+import { writeFileAtomic } from "../lib/fs-atomic.js";
 import { isAbsolute, join, relative, resolve } from "node:path";
 import { runGit } from "../scope/git-resolve.js";
 import type { Output } from "../cli.js";
@@ -248,7 +249,10 @@ export function executeInstall(entries: InstallPlanEntry[]): number {
     if (e.action === "refuse" || e.action === "no-op") continue;
     const dir = join(e.file, "..");
     mkdirSync(dir, { recursive: true });
-    writeFileSync(e.file, e.content);
+    // Atomic (audit S9): this writes agent definitions and GIT HOOKS into the
+    // user's repository. A truncated hook is a hook that fails silently, and
+    // the next commit runs without the check the user installed.
+    writeFileAtomic(e.file, e.content);
     written++;
   }
   return written;
@@ -407,16 +411,19 @@ export function planHookInstall(cwd: string): HookPlanEntry {
 }
 
 export function executeHookInstall(entry: HookPlanEntry): boolean {
+  // Atomic (audit S9) throughout: these are GIT HOOKS. A truncated hook is a
+  // hook that fails open — the user's next commit proceeds without the check
+  // they installed, and nothing reports that it did not run.
   switch (entry.action) {
     case "create": {
       mkdirSync(join(entry.file, ".."), { recursive: true });
-      writeFileSync(entry.file, `#!/bin/sh\n${hookBlock(CLI_VERSION)}\n`);
+      writeFileAtomic(entry.file, `#!/bin/sh\n${hookBlock(CLI_VERSION)}\n`);
       return true;
     }
     case "append": {
       const existing = readFileSync(entry.file, "utf8");
       const sep = existing.endsWith("\n") ? "" : "\n";
-      writeFileSync(
+      writeFileAtomic(
         entry.file,
         `${existing}${sep}\n${hookBlock(CLI_VERSION)}\n`,
       );
@@ -427,7 +434,7 @@ export function executeHookInstall(entry: HookPlanEntry): boolean {
       const openIdx = existing.indexOf(HOOK_MARKER_OPEN);
       const closeIdx = existing.indexOf(HOOK_MARKER_CLOSE);
       if (openIdx !== -1 && closeIdx !== -1) {
-        writeFileSync(
+        writeFileAtomic(
           entry.file,
           existing.slice(0, openIdx) +
             hookBlock(CLI_VERSION) +
@@ -435,7 +442,7 @@ export function executeHookInstall(entry: HookPlanEntry): boolean {
         );
       } else {
         const sep = existing.endsWith("\n") ? "" : "\n";
-        writeFileSync(
+        writeFileAtomic(
           entry.file,
           `${existing}${sep}\n${hookBlock(CLI_VERSION)}\n`,
         );

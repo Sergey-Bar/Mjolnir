@@ -10,7 +10,8 @@
  *   check    — check scan results against policy gates
  */
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync } from "node:fs";
+import { writeFileAtomic } from "../lib/fs-atomic.js";
 import { join } from "node:path";
 
 import { runScan } from "../engine/scan-pipeline.js";
@@ -86,7 +87,10 @@ export async function runPolicyCommand(
     if (!existsSync(dir)) {
       mkdirSync(dir, { recursive: true });
     }
-    writeFileSync(policyPath, JSON.stringify(policy, null, 2) + "\n");
+    // Atomic (audit S9): the policy file is a gate input. A truncated write
+    // left Mj�lnir reading a half-parsed policy, which then silently applied
+    // fewer rules than the user configured.
+    writeFileAtomic(policyPath, JSON.stringify(policy, null, 2) + "\n");
     io.out(`Policy written to ${policyPath}`);
     io.out(`Use 'mjolnir policy validate ${policyPath}' to validate.`);
     io.out(

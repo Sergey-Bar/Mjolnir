@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Comprehensive UX verification for all new features.
  */
 

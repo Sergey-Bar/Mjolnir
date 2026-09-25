@@ -52,7 +52,7 @@ jobs:
           MJ_BLOCKING: ${{ inputs.blocking || 'error' }}
         run: |
           set +e
-          node dist/cli.mjs . --scope changed --format json --blocking "$MJ_BLOCKING" > mjolnir.json
+          node dist/cli.mjs . --format json --blocking "$MJ_BLOCKING" > mjolnir.json
           code=$?
           set -e
           echo "exit_code=$code" >> "$GITHUB_OUTPUT"

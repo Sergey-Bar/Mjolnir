@@ -19,6 +19,9 @@ import {
   EXIT_USAGE,
   EXIT_INTERNAL,
 } from "./exit-codes.js";
+// The one exit-code matrix (plan V5-002).
+import { scanExitCode } from "./claim-evidence.js";
+import { isAdvisoryFinding } from "./types.js";
 import type { CliArgs } from "./engine/scan-pipeline.js";
 import { runScan, KNOWN_RULE_IDS } from "./engine/scan-pipeline.js";
 import { buildMachineContract } from "./engine/machine-contract.js";
@@ -101,12 +104,7 @@ import { ENGINE_VERSION as CLI_VERSION } from "./engine/version.js";
 import { internalErrorMessage, out, err } from "./cli-io.js";
 import type { Output } from "./cli-io.js";
 
-import {
-  parseArgs,
-  parseArgsOrUsage,
-  validateScanTarget,
-  exitForFindings,
-} from "./cli.js";
+import { parseArgs, parseArgsOrUsage, validateScanTarget } from "./cli.js";
 
 /**
  * Render scan output in the requested format.
@@ -216,12 +214,19 @@ export async function runScanCommand(
         knownRuleIds: KNOWN_RULE_IDS,
       });
       io.out(result.score === null ? "unknown" : String(result.score));
-      return exitForFindings(
-        result.findings,
-        args.blocking === "none"
-          ? "advisory"
-          : (args.blocking ?? scoreConfig.gate ?? "error"),
-      );
+      // V5-002: this path used to call exitForFindings directly and never
+      // look at `partial`, so `--score` on a truncated scan with zero
+      // findings exited 0. `--score` is what badge and baseline tooling
+      // read; a green there is a green that ships.
+      return scanExitCode({
+        partial: result.partial,
+        findings: result.findings,
+        gate:
+          args.blocking === "none"
+            ? "advisory"
+            : (args.blocking ?? scoreConfig.gate ?? "error"),
+        isAdvisory: isAdvisoryFinding,
+      });
     }
 
     renderScanOutput(result, args, target, io);
@@ -268,12 +273,15 @@ export async function runScanCommand(
       knownRuleIds: KNOWN_RULE_IDS,
     });
     for (const w of warnings) io.err(w);
-    return exitForFindings(
-      result.findings,
-      args.blocking === "none"
-        ? "advisory"
-        : (args.blocking ?? config.gate ?? "error"),
-    );
+    return scanExitCode({
+      partial: false,
+      findings: result.findings,
+      gate:
+        args.blocking === "none"
+          ? "advisory"
+          : (args.blocking ?? config.gate ?? "error"),
+      isAdvisory: isAdvisoryFinding,
+    });
   } catch (err) {
     if (err instanceof ConfigValidationError) {
       io.err(err.message);
