@@ -187,11 +187,11 @@ jobs:
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
 
       - name: Move current Action major tag
-        if: ${{ !contains(steps.create.outputs.tag, '-rc.') }}
+        if: ${{ !contains(steps.identity.outputs.tag, '-rc.') }}
         shell: bash
         env:
-          TAG: ${{ steps.create.outputs.tag }}
-          TAG_COMMIT: ${{ steps.create.outputs.tag-commit }}
+          TAG: ${{ steps.identity.outputs.tag }}
+          TAG_COMMIT: ${{ steps.identity.outputs.tag-commit }}
         run: |
           set -euo pipefail
           VERSION="${TAG#v}"
