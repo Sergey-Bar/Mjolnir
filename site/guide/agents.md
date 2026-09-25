@@ -45,7 +45,8 @@ inline.
 ## Boundaries (what the agent loop must never do)
 
 - Suppress a finding to obtain a clean digest — suppressions require a
-  reason, live in `mjolnir.config.json`, and expire after 90 days.
+  reason, live in `mjolnir.config.json`, and are bounded only by an explicit
+  ISO `expires` date.
 - Read trust into the digest: a `VERIFIED-RESOLVED` line is a §15
   lifecycle resolution, not a proof of correctness.
 - Treat the score as a reward signal to maximize — it is a measurement

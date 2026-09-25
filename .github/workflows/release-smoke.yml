@@ -9,7 +9,12 @@ name: Release Smoke
 on:
   schedule:
     - cron: "30 4 * * *"
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Exact published version to install; defaults to the checkout package version
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -33,6 +38,12 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
-      - run: npx vitest run tests/integrations/registry-install.spec.ts
+      - name: Install exact published version and verify consumer behavior
+        shell: bash
         env:
+          INPUT_VERSION: ${{ inputs.version }}
           RUN_REGISTRY_INSTALL_TEST: "1"
+        run: |
+          set -euo pipefail
+          VERSION="${INPUT_VERSION:-$(node -p "require('./package.json').version")}"
+          REGISTRY_INSTALL_VERSION="$VERSION" npx vitest run tests/integrations/registry-install.spec.ts

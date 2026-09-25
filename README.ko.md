@@ -18,7 +18,7 @@ Mjölnir는 실패할 수 없는 테스트와 빨간색이 될 수 없는 파이
 [![node](https://img.shields.io/badge/node-%E2%89%A5%2022.18-1F6F7C.svg?style=flat-square&labelColor=0A1119)](https://nodejs.org)
 
 ```bash
-npx mjolnir-qa@latest
+npx mjolnir-qa@3.0.0
 ```
 
 [실제 동작 보기](#실제-동작-보기) · [빠른 시작](#빠른-시작) · [무엇을 찾는가](#mjölnir가-찾는-것) · [점수](#신뢰도-점수) · [증거](#증거-모델) · [실행 포렌식](#런타임-포렌식) · [CI](#ci-무결성) · [에이전트](#ai-에이전트) · [보안](#신뢰와-보안) · [한계](#mjölnir가-알려줄-수-없는-것) · [문서](#문서)
@@ -28,15 +28,29 @@ npx mjolnir-qa@latest
 
 [English](README.md) | [简体中文](README.zh.md) | [繁體中文](README.zht.md) | 한국어 | [Deutsch](README.de.md) | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | [日本語](README.ja.md) | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | [Türkçe](README.tr.md) | [Українська](README.uk.md) | [বাংলা](README.bn.md) | [Ελληνικά](README.gr.md) | [Tiếng Việt](README.vi.md) | [עברית](README.he.md) | [العربية](README.ar.md) | [Bosanski](README.bs.md)
 
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-15.
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-25.
 
-<!-- Source hash: 3541b09e8d04 -->
+<!-- Source hash: `f3d2a07f2d68` -->
 
 </details>
 
 </div>
 
 <br />
+
+## Release status (English canonical)
+
+The published line is `3.0.0`; this working tree is the `4.0.0-rc.1`
+candidate. `3.0.0` must not be republished or retagged. The M26–M50 program is
+tracked in
+[`docs/ROADMAP.yaml`](docs/ROADMAP.yaml); provisional capability contracts
+are not automatically enabled or certified. Repository-owned checks pass, but
+Trust certification remains `NOT_CERTIFIED` until the protected holdout,
+real-world, platform/consumer, remote-workflow, support-matrix, and corpus
+evidence gates pass. Run `npm run m26:readiness` before treating any candidate
+as releasable. This document does not publish a tag or authorize a release.
+
+> Machine-assisted canonical text. Translate this block before treating it as localized copy.
 
 ## 초록색 체크는 주장일 뿐, 증명이 아닙니다
 
@@ -58,7 +72,7 @@ npx mjolnir-qa@latest
 
 <sub>데모 스캔이 이 workflow에 대해 보고한 모든 발견 사항을 보고된 줄에 표시했습니다. `npm run docs:readme-brand`가 [`demo-report.json`](assets/readme/demo-report.json)에서 생성하며, CI에서 변경되지 않도록 고정됩니다.</sub>
 
-**엄격 모드.** 가장 공격적인 탐지 — `.only`, `continue-on-error`, 빈 테스트, 재시도 남용 — 는 격리 티어에 있습니다. `--strict`에서만 실행되며 `info` 심각도로 제한됩니다: 플래그를 지정하지만 절대 게이트를 닫지 않습니다. 기본 스캔(`--strict` 없는 `npx mjolnir-qa@latest`)은 핵심 및 확장 규칙만 다룹니다. 자문 레이어도 원할 때 `--strict`를 추가하세요.
+**엄격 모드.** 가장 공격적인 탐지 — `.only`, `continue-on-error`, 빈 테스트, 재시도 남용 — 는 격리 티어에 있습니다. `--strict`에서만 실행되며 `info` 심각도로 제한됩니다: 플래그를 지정하지만 절대 게이트를 닫지 않습니다. 기본 스캔(`--strict` 없는 `npx mjolnir-qa@3.0.0`)은 핵심 및 확장 규칙만 다룹니다. 자문 레이어도 원할 때 `--strict`를 추가하세요.
 
 Mjölnir는 테스트 스위트와 CI workflow, 그리고 있다면 실제 실행 리포트를 읽습니다. 테스트를 실행하지 않고, 의존성을 설치하지 않으며, 스캔하는 코드를 실행하지도 않습니다. 증거가 없을 때는 확신을 지어내는 대신 그렇다고 말합니다.
 
@@ -93,7 +107,7 @@ CI workflow가 있는 작은 Playwright 스위트인 [`examples/demo-repo`](exam
 
 <p align="center">
   <a href="assets/video/mjolnir-demo.mp4">
-    <img src="assets/video/mjolnir-demo-poster.png" alt="데모 녹화의 한 프레임: 터미널 창에서 npx mjolnir-qa@latest가 데모 저장소를 스캔하는 모습" width="900" />
+    <img src="assets/video/mjolnir-demo-poster.png" alt="데모 녹화의 한 프레임: 터미널 창에서 npx mjolnir-qa@3.0.0가 데모 저장소를 스캔하는 모습" width="900" />
   </a>
 </p>
 
@@ -162,7 +176,7 @@ Docs: mjolnir rules --md   (full catalog, this rule included)
 ## 빠른 시작
 
 ```bash
-npx mjolnir-qa@latest
+npx mjolnir-qa@3.0.0
 ```
 
 현재 디렉터리를 스캔하고 Trust Report를 출력합니다. 무엇을 찾았는지, 어디까지 믿을 수 있는지, 그 이유, 그리고 다음에 할 일. 게이트 이상에서 아무것도 발견되지 않으면 `0`으로 종료합니다.
@@ -170,24 +184,39 @@ npx mjolnir-qa@latest
 CI에서는 브랜치가 도입한 부분만 스캔하세요. 그래야 레거시 스위트가 첫 pull request를 뒤덮지 않습니다.
 
 ```bash
-npx mjolnir-qa@latest --scope changed
+npx mjolnir-qa@3.0.0 --scope changed
 ```
 
-`mjolnir ci install`은 이를 GitHub Actions workflow로 작성하며, 메이저 태그 `v1`에 고정된 [action](https://github.com/Sergey-Bar/Mjolnir#readme)을 사용합니다 (`--no-action`을 쓰면 일반 `npx`). 차단해야 한다고 결정하기 전까지는 권고 모드로 유지됩니다.
+`mjolnir ci install`은 이를 GitHub Actions workflow로 작성하며, 메이저 태그 `v3`에 고정된 [action](https://github.com/Sergey-Bar/Mjolnir#readme)을 사용합니다 (`--no-action`을 쓰면 일반 `npx`). 차단해야 한다고 결정하기 전까지는 권고 모드로 유지됩니다.
 
-| 명령                                | 하는 일                                         |
-| ----------------------------------- | ----------------------------------------------- |
-| `mjolnir`                           | Trust Report: 판정, 확신도, 다음 조치           |
-| `mjolnir --scope changed`           | 브랜치가 도입한 부분만 (CI용 형태)              |
-| `mjolnir ci install`                | 권고용 PR workflow 생성 (action 기반)           |
-| `mjolnir explain QA-CI-001`         | 무엇이, 왜, 어떻게 고치는지와 측정된 FP 비율    |
-| `mjolnir why src/a.spec.ts:42`      | 바로 이 줄이 표시된 이유. 차단하지 않습니다.    |
-| `mjolnir forensics ./test-results/` | 실제 실행에서 얻은 런타임 증거                  |
-| `mjolnir trust-report`              | 독립형 Trust Artifact (md + json)               |
-| `mjolnir handoff`                   | 코딩 에이전트를 위한 수정 계획                  |
-| `mjolnir --json` / `--format sarif` | 기계가 읽을 수 있는 출력, GitHub Code Scanning  |
-| `mjolnir --format codequality`      | GitLab Code Quality 리포트 (MR 위젯 아티팩트)   |
-| `mjolnir --strict`                  | quarantine 등급 규칙도 실행 (FP 위험이 더 높음) |
+| 명령                                          | 하는 일                                         |
+| --------------------------------------------- | ----------------------------------------------- |
+| `mjolnir`                                     | Trust Report: 판정, 확신도, 다음 조치           |
+| `mjolnir --scope changed`                     | 브랜치가 도입한 부분만 (CI용 형태)              |
+| `mjolnir ci install`                          | 권고용 PR workflow 생성 (action 기반)           |
+| `mjolnir business-case`                       | ROI estimate: projected savings per finding     |
+| `mjolnir release-report`                      | Release readiness: GO, CONDITIONAL GO, or NO-GO |
+| `mjolnir release-trust`                       | 12-dimension release assurance verdict          |
+| `mjolnir report`                              | Generate a Playwright-compatible report         |
+| `mjolnir trend`                               | Record, show, or diff local quality snapshots   |
+| `mjolnir policy`                              | Initialize, validate, or check policy gates     |
+| `mjolnir quarantine`                          | Review deterministic proposals (prototype)      |
+| `mjolnir analyze --cross-file`                | Bounded cross-file analysis                     |
+| `mjolnir ci-adapter github .`                 | Generate CI templates for supported providers   |
+| `mjolnir dashboard`                           | Generate a self-contained quality dashboard     |
+| `mjolnir exec-report`                         | Executive KPIs and recommendations (advisory)   |
+| `mjolnir enterprise`                          | Self-hosted templates (prototype)               |
+| `mjolnir maturity`                            | Assess maturity or display maturity levels      |
+| `mjolnir mutation tests/mutation-report.json` | Analyze mutation reports; never promotes trust  |
+| `mjolnir mcp`                                 | Read-only MCP tools over stdio                  |
+| `mjolnir explain QA-CI-001`                   | 무엇이, 왜, 어떻게 고치는지와 측정된 FP 비율    |
+| `mjolnir why src/a.spec.ts:42`                | 바로 이 줄이 표시된 이유. 차단하지 않습니다.    |
+| `mjolnir forensics ./test-results/`           | 실제 실행에서 얻은 런타임 증거                  |
+| `mjolnir trust-report`                        | 독립형 Trust Artifact (md + json)               |
+| `mjolnir handoff`                             | 코딩 에이전트를 위한 수정 계획                  |
+| `mjolnir --json` / `--format sarif`           | 기계가 읽을 수 있는 출력, GitHub Code Scanning  |
+| `mjolnir --format codequality`                | GitLab Code Quality 리포트 (MR 위젯 아티팩트)   |
+| `mjolnir --strict`                            | quarantine 등급 규칙도 실행 (FP 위험이 더 높음) |
 
 <details>
 <summary><strong>그 밖의 모든 명령</strong> — 불안정한 테스트 분류, 리포트, 거버넌스</summary>
@@ -452,18 +481,18 @@ mjolnir ci install
 또는 이미 있는 workflow에 Marketplace action을 추가합니다:
 
 ```yaml
-- uses: Sergey-Bar/Mjolnir@v1
+- uses: Sergey-Bar/Mjolnir@v3
   with:
     scope: changed
     fail-on: error
 ```
 
-메이저 라인을 따라가려면 `@v1`을, 재현 가능한 게이트를 원하면 정확한 태그 (`@v0.5.32`)를 고정하세요. [docs/DISTRIBUTION-KIT.md](docs/DISTRIBUTION-KIT.md)는 Marketplace, Smithery, MCP 레지스트리를 다룹니다.
+메이저 라인을 따라가려면 `@v3`을, 재현 가능한 게이트를 원하면 정확한 태그 (`@v0.5.32`)를 고정하세요. [docs/DISTRIBUTION-KIT.md](docs/DISTRIBUTION-KIT.md)는 Marketplace, Smithery, MCP 레지스트리를 다룹니다.
 
 발견 사항을 GitHub Code Scanning에 올리려면 SARIF를 업로드하세요 (workflow 또는 job 범위에서 `security-events: write` 필요):
 
 ```yaml
-- run: npx mjolnir-qa@latest --format sarif > mjolnir.sarif
+- run: npx mjolnir-qa@3.0.0 --format sarif > mjolnir.sarif
   continue-on-error: true
 - uses: github/codeql-action/upload-sarif@v3
   if: ${{ !cancelled() }}
@@ -476,7 +505,7 @@ GitLab에서는 `--format codequality`가 MR 위젯과 diff 주석이 읽는 Cod
 ### 변경 범위 귀속
 
 ```bash
-npx mjolnir-qa@latest --scope changed
+npx mjolnir-qa@3.0.0 --scope changed
 ```
 
 발견 사항은 **merge-base** 기준으로 측정해 브랜치가 추가한 줄에 귀속됩니다. 범위는 전체 스캔이 찾는 것과 같은 파일 집합 (TS/JS spec과 어댑터 설정, `test_*.py`, `*Test.java`, `*Tests.cs`, `.github/workflows/*.yml`)에 커밋되지 않은 변경과 추적되지 않은 변경을 더한 것이라, 커밋하기 전에도 동작합니다. 기준은 `main → master → origin/main → origin/master → origin/HEAD` 순서로 결정되며, `--base <ref>`로 바꿀 수 있습니다.
@@ -504,7 +533,7 @@ SCAN → EVIDENCE → HANDOFF → AGENT → RE-SCAN → PROOF
 자체 CLI가 있는 클라이언트에 추가하기:
 
 ```bash
-claude mcp add mjolnir -- npx -y mjolnir-qa@latest mcp
+claude mcp add mjolnir -- npx -y mjolnir-qa@3.0.0 mcp
 ```
 
 또는 `mcpServers` 블록을 받는 모든 클라이언트에:
@@ -512,7 +541,7 @@ claude mcp add mjolnir -- npx -y mjolnir-qa@latest mcp
 ```json
 {
   "mcpServers": {
-    "mjolnir": { "command": "npx", "args": ["-y", "mjolnir-qa@latest", "mcp"] }
+    "mjolnir": { "command": "npx", "args": ["-y", "mjolnir-qa@3.0.0", "mcp"] }
   }
 }
 ```
@@ -603,7 +632,7 @@ mjolnir create-rule QA-PW-140 --title "Screenshot without diff bound"
 <img src="assets/readme/closing.svg" alt="여러분의 저장소에서 실행해 보세요." width="100%" />
 
 ```bash
-npx mjolnir-qa@latest
+npx mjolnir-qa@3.0.0
 ```
 
 [가이드 읽기](https://sergey-bar.github.io/Mjolnir/guide/getting-started) · [문서 사이트](https://sergey-bar.github.io/Mjolnir/) · [npm](https://www.npmjs.com/package/mjolnir-qa)

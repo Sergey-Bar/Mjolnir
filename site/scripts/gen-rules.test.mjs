@@ -10,7 +10,14 @@ import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { parseRule, siteBody, FIELDS, FAMILIES } from "./gen-rules.mjs";
+import {
+  parseRule,
+  siteBody,
+  FIELDS,
+  FAMILIES,
+  activeRuleIds,
+  retiredRuleIds,
+} from "./gen-rules.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const RULES_DIR = join(HERE, "..", "..", "docs", "rules");
@@ -115,6 +122,17 @@ test("every real docs/rules/*.md parses with a title and known family", () => {
     0,
     `untitled rule docs: ${untitled.join(", ")}`,
   );
+});
+
+test("retired rule IDs are excluded from the public catalog", () => {
+  const retired = retiredRuleIds(
+    ["QA-PW-005", "QA-PW-004"],
+    new Set(["QA-PW-004"]),
+  );
+  const active = activeRuleIds();
+  assert.equal(active.size, 79);
+  assert.equal(retired.has("QA-PW-005"), true);
+  assert.equal(active.has("QA-PW-004"), true);
 });
 
 test("FIELDS covers the columns the catalog UI reads", () => {

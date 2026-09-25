@@ -17,12 +17,14 @@ import { LOGOS } from "./logos";
 import { data } from "./home.data";
 import { MONOGRAM } from "./stack";
 
-const COMMAND = "npx mjolnir-qa@latest";
+const COMMAND = "npx mjolnir-qa@4.0.0-rc.1";
 const CI_COMMAND = `${COMMAND} --scope changed`;
-const MCP_COMMAND = "claude mcp add mjolnir -- npx -y mjolnir-qa@latest mcp";
+const MCP_COMMAND =
+  "claude mcp add mjolnir -- npx -y mjolnir-qa@4.0.0-rc.1 mcp";
 const ACTION = [
-  "- uses: Sergey-Bar/Mjolnir@v1",
+  "- uses: Sergey-Bar/Mjolnir@v4",
   "  with:",
+  "    version: 4.0.0-rc.1",
   "    scope: changed",
   "    fail-on: error",
 ].join("\n");
@@ -71,7 +73,7 @@ const CHAPTERS = [
   {
     id: "ch-rules",
     title: "Measured rules",
-    body: "A published false-positive rate for each rule.",
+    body: "A published false-positive rate where corpus evidence exists.",
   },
   {
     id: "ch-ship",

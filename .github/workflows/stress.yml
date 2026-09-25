@@ -77,17 +77,30 @@ jobs:
         run: node tests/stress/generate-pathological.mjs "$RUNNER_TEMP/patho"
       - name: Scan without crashing; honest output
         run: |
-          node dist/cli.mjs "$RUNNER_TEMP/patho" --json > "$RUNNER_TEMP/patho-result.json" || true
+          set +e
+          node dist/cli.mjs "$RUNNER_TEMP/patho" --json > "$RUNNER_TEMP/patho-result.json"
+          status=$?
+          set -e
+          if [ "$status" -ne 0 ] && [ "$status" -ne 2 ]; then
+            echo "FAIL: pathological scan exited $status"
+            exit 1
+          fi
           node -e '
             const r = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
             if (typeof r.score !== "number" && r.score !== null) {
               console.error("FAIL: no score"); process.exit(1);
             }
-            console.log("partial:", r.partial, "findings:", (r.findings || []).length);
-          ' "$RUNNER_TEMP/patho-result.json"
+            if (typeof r.partial !== "boolean" || !Array.isArray(r.findings)) {
+              console.error("FAIL: incomplete honest output"); process.exit(1);
+            }
+            if (r.internalError || r.ruleCrashCount > 0) {
+              console.error("FAIL: internal or rule crash"); process.exit(1);
+            }
+            console.log("exit:", process.argv[2], "partial:", r.partial, "findings:", r.findings.length);
+          ' "$RUNNER_TEMP/patho-result.json" "$status"
 
   soak-stability:
-    name: "Tier 2 / 20-run soak: byte-identical + flat RSS (ubuntu, Node 22)"
+    name: "Tier 2 / 20-run soak: byte-identical JSON (ubuntu, Node 22)"
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -100,7 +113,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
-      - name: Soak 20 scans of fresh temp copies; assert byte-identical JSON + flat RSS
+      - name: Soak 20 scans of fresh temp copies; assert byte-identical JSON
         run: node tests/stress/soak.mjs
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: failure()

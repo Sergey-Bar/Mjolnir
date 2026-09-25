@@ -25,7 +25,11 @@ At **1.0.0 and every later release**, these surfaces are frozen:
 | Support matrix                      | Node 22 on ubuntu-latest, windows-latest, macos-latest; Node 24 on ubuntu-latest. The CI matrix is the proof; if CI drops a combination, this document changes in the same PR. |
 | Privacy                             | Scanning is zero-network. Telemetry decisions are governed separately and always opt-in.                                                                                       |
 
-## What counts as breaking (major bump)
+The exit-code row applies to scan and CI surfaces. `release-report` and
+`release-trust` have command-specific verdicts and exits documented in
+`RELEASE-TRUST-CONTRACT.md`.
+
+Runtime install examples in the Action, Smithery, Site, README, distribution kit, and release controls are pinned to the exact candidate version. `@latest` in advisory prose is not an execution or trust contract. The version-surface checker rejects mutable references in enforcing surfaces. The 3.0.0 migration and rollout checklist is in [`RELEASE-3.0.0-READINESS.md`](RELEASE-3.0.0-READINESS.md).
 
 - Removing or renaming any field of the JSON/SARIF report, or changing a
   field's type or the meaning of its values.

@@ -143,6 +143,19 @@ describe("reporter version-sync gate (WI-10, plan §14)", () => {
     expect(src).toContain("mjolnir.report.json");
   });
 
+  it("uses a machine-readable advisory ramp state", () => {
+    const policy = JSON.parse(
+      readFileSync(join(ROOT, "docs", "reporter-version-policy.json"), "utf8"),
+    ) as {
+      policy: string;
+      greenReleaseCycles: number;
+      requiredGreenReleaseCycles: number;
+    };
+    expect(policy.policy).toBe("ADVISORY");
+    expect(policy.greenReleaseCycles).toBe(0);
+    expect(policy.requiredGreenReleaseCycles).toBe(3);
+  });
+
   it("advisory mode: a trailing reporter version still exits 0", () => {
     // Run the gate against the real repo — the reporter (0.1.0) trails
     // the root package, which is the documented advisory posture.

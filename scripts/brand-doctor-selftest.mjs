@@ -35,6 +35,18 @@ const DOCTOR = join(HERE, "brand-doctor.mjs");
 const OUT_DIR = join(ROOT, "docs", "design", "gate-evidence");
 
 const p = (...seg) => join(ROOT, ...seg);
+const waitBuffer = new Int32Array(new SharedArrayBuffer(4));
+const writeWithRetry = (file, content) => {
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    try {
+      writeFileSync(file, content, "utf8");
+      return;
+    } catch (error) {
+      if (attempt === 4) throw error;
+      Atomics.wait(waitBuffer, 0, 0, 25);
+    }
+  }
+};
 
 /** Runs the doctor. Returns `{ code, out }`. */
 function runDoctor() {
@@ -206,9 +218,9 @@ function main() {
         failed++;
         continue;
       }
-      writeFileSync(seed.file, seeded, "utf8");
+      writeWithRetry(seed.file, seeded);
       const r = runDoctor();
-      writeFileSync(seed.file, original, "utf8");
+      writeWithRetry(seed.file, original);
 
       const rejected = r.code !== 0;
       const named = r.out.includes(seed.expect);
@@ -223,8 +235,7 @@ function main() {
       );
     }
   } finally {
-    for (const [file, original] of originals)
-      writeFileSync(file, original, "utf8");
+    for (const [file, original] of originals) writeWithRetry(file, original);
   }
 
   // Belt and braces: prove every seeded file is byte-identical to how it

@@ -32,10 +32,29 @@ function fail(msg: string): never {
   process.exit(1);
 }
 
-function semverKey(v: string): [number, number, number] {
-  const m = /^v?(\d+)\.(\d+)\.(\d+)$/.exec(v);
-  if (!m) fail(`not a valid semver heading: ${v}`);
-  return [Number(m?.[1]), Number(m?.[2]), Number(m?.[3])];
+type ParsedVersion = {
+  core: [number, number, number];
+  rc: number | undefined;
+};
+
+function semverKey(v: string): ParsedVersion {
+  const m = /^v?(\d+)\.(\d+)\.(\d+)(?:-rc\.(\d+))?$/.exec(v);
+  if (!m) fail(`not a valid stable or RC semver heading: ${v}`);
+  return {
+    core: [Number(m?.[1]), Number(m?.[2]), Number(m?.[3])],
+    rc: m?.[4] === undefined ? undefined : Number(m[4]),
+  };
+}
+
+function compareVersions(a: ParsedVersion, b: ParsedVersion): number {
+  for (let index = 0; index < 3; index += 1) {
+    const difference = (a.core[index] ?? 0) - (b.core[index] ?? 0);
+    if (difference !== 0) return difference;
+  }
+  if (a.rc === undefined && b.rc === undefined) return 0;
+  if (a.rc === undefined) return 1;
+  if (b.rc === undefined) return -1;
+  return a.rc - b.rc;
 }
 
 // ── arguments ──────────────────────────────────────────────────────────
@@ -60,7 +79,7 @@ if (expectedVersion === undefined) {
 }
 if (expectedVersion === undefined) {
   console.error(
-    "Usage: tsx scripts/check-changelog.ts [--expect-version <X.Y.Z>] [--rules-touched]",
+    "Usage: tsx scripts/check-changelog.ts [--expect-version <X.Y.Z[-rc.N]>] [--rules-touched]",
   );
   process.exit(2);
 }
@@ -75,7 +94,8 @@ if (!/^#\s*Changelog$/im.test(text) && !/Keep a Changelog/i.test(text)) {
 }
 
 // ── headings: collect `## [X.Y.Z] — date` entries ──────────────────────
-const headingRe = /^## \[(v?\d+\.\d+\.\d+)\] ?— ?(\d{4}-\d{2}-\d{2})/gm;
+const headingRe =
+  /^## \[(v?\d+\.\d+\.\d+(?:-rc\.\d+)?)\] ?— ?(\d{4}-\d{2}-\d{2})/gm;
 const headings: Array<{ version: string; date: string; line: number }> = [];
 for (const m of text.matchAll(headingRe)) {
   headings.push({
@@ -85,7 +105,7 @@ for (const m of text.matchAll(headingRe)) {
   });
 }
 if (headings.length === 0) {
-  fail("no `## [X.Y.Z] — YYYY-MM-DD` headings found");
+  fail("no `## [X.Y.Z[-rc.N]] — YYYY-MM-DD` headings found");
 }
 
 // ── 2. strict descending order, no duplicates, dated ──────────────────
@@ -106,22 +126,20 @@ for (let i = 0; i < headings.length; i++) {
     const prev = headings[i - 1] as { version: string; line: number };
     const a = semverKey(prev.version);
     const b = semverKey(h.version);
-    if (a[0] === b[0] && a[1] === b[1] && a[2] === b[2]) {
+    const comparison = compareVersions(a, b);
+    if (comparison === 0) {
       fail(`duplicate version heading: ${h.version} (line ${h.line})`);
     }
     const inGateEra =
-      b[0] > GATE_ERA[0] ||
-      (b[0] === GATE_ERA[0] && b[1] >= GATE_ERA[1] && b[2] >= GATE_ERA[2]);
-    if (inGateEra) {
-      const greater =
-        a[0] > b[0] ||
-        (a[0] === b[0] && a[1] > b[1]) ||
-        (a[0] === b[0] && a[1] === b[1] && a[2] > b[2]);
-      if (!greater) {
-        fail(
-          `heading order violated: ${prev.version} (line ${prev.line}) is not newer than ${h.version} (line ${h.line}) — gate-era entries must be strictly descending`,
-        );
-      }
+      b.core[0] > GATE_ERA[0] ||
+      (b.core[0] === GATE_ERA[0] && b.core[1] > GATE_ERA[1]) ||
+      (b.core[0] === GATE_ERA[0] &&
+        b.core[1] === GATE_ERA[1] &&
+        b.core[2] >= GATE_ERA[2]);
+    if (inGateEra && comparison <= 0) {
+      fail(
+        `heading order violated: ${prev.version} (line ${prev.line}) is not newer than ${h.version} (line ${h.line}) — gate-era entries must be strictly descending`,
+      );
     }
   }
 }

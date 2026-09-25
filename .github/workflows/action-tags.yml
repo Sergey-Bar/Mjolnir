@@ -1,4 +1,4 @@
-name: Stable Action Tags
+name: Stable v3 Action Tag
 
 on:
   push:
@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 jobs:
-  move-major-tags:
+  move-current-major:
     if: startsWith(github.ref, 'refs/tags/v') && !contains(github.ref_name, '-rc.')
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -21,11 +21,16 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-      - name: Move stable action tags
+      - name: Move stable v3 action tag
         shell: bash
         run: |
           set -euo pipefail
-           for major in v1 v2 v3; do
-            git tag -f "$major" "$GITHUB_SHA"
-            git push origin "refs/tags/$major" --force
-          done
+          VERSION="${GITHUB_REF_NAME#v}"
+          MAJOR="${VERSION%%.*}"
+          if [[ "$MAJOR" != "3" ]]; then
+            echo "No action tag update for v$MAJOR; the current action major is v3."
+            exit 0
+          fi
+          MAJOR_TAG="v$MAJOR"
+          git tag -f "$MAJOR_TAG" "$GITHUB_SHA"
+          git push origin "refs/tags/$MAJOR_TAG" --force

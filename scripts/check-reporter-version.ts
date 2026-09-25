@@ -60,6 +60,33 @@ const rootPkg = JSON.parse(readFileSync(rootPkgPath, "utf8")) as {
   engines?: { node?: string };
 };
 
+const policyPath = join(root, "docs", "reporter-version-policy.json");
+const policy = existsSync(policyPath)
+  ? (JSON.parse(readFileSync(policyPath, "utf8")) as {
+      policy?: string;
+      greenReleaseCycles?: number;
+      requiredGreenReleaseCycles?: number;
+    })
+  : {
+      policy: "ADVISORY",
+      greenReleaseCycles: 0,
+      requiredGreenReleaseCycles: 3,
+    };
+if (
+  typeof policy.greenReleaseCycles !== "number" ||
+  typeof policy.requiredGreenReleaseCycles !== "number"
+) {
+  hardFail("reporter version policy cycle state is malformed");
+}
+if (
+  policy.policy === "BLOCKING" &&
+  policy.greenReleaseCycles < policy.requiredGreenReleaseCycles
+) {
+  hardFail(
+    `reporter version policy is blocking before ${policy.requiredGreenReleaseCycles} green cycles`,
+  );
+}
+
 if (reporter.name !== "mjolnir-qa-playwright-reporter") {
   hardFail(`reporter package name drifted: ${String(reporter.name)}`);
 }
@@ -118,10 +145,10 @@ if (reporterAhead) {
 }
 if (rmaj !== mmaj || rmin !== mmin) {
   warn(
-    `reporter version ${String(reporter.version)} trails the root package ${String(rootPkg.version)} — advisory while the reporter line is unpublished; becomes blocking after 3 green release cycles (plan §14)`,
+    `reporter version ${String(reporter.version)} trails the root package ${String(rootPkg.version)} — ${policy.policy} policy has ${policy.greenReleaseCycles}/${policy.requiredGreenReleaseCycles} green release cycles`,
   );
 }
 
 console.log(
-  `REPORTER VERSION SYNC: OK (advisory mode) — reporter ${String(reporter.version)}, root ${String(rootPkg.version)}, ingestion contract intact.`,
+  `REPORTER VERSION SYNC: OK (${policy.policy === "ADVISORY" ? "advisory" : "blocking"} mode) — reporter ${String(reporter.version)}, root ${String(rootPkg.version)}, green cycles ${policy.greenReleaseCycles}/${policy.requiredGreenReleaseCycles}, ingestion contract intact.`,
 );

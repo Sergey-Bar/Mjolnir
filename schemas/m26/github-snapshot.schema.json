@@ -1,0 +1,223 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "m26-github-snapshot.schema.json",
+  "title": "M26 GitHub snapshot",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "provenance",
+    "observedAt",
+    "baseSha",
+    "issues",
+    "milestones",
+    "pullRequests",
+    "reconciliation"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source",
+        "capturedBy",
+        "population",
+        "networkAccess",
+        "archiveCount",
+        "liveCount",
+        "disposition"
+      ],
+      "properties": {
+        "source": { "type": "string", "minLength": 1 },
+        "capturedBy": { "type": "string", "minLength": 1 },
+        "population": { "type": "string", "minLength": 1 },
+        "networkAccess": { "type": "boolean" },
+        "archiveCount": { "type": "integer", "minimum": 0 },
+        "liveCount": { "type": "integer", "minimum": 0 },
+        "disposition": { "type": "string", "minLength": 1 }
+      }
+    },
+    "observedAt": { "type": "string", "format": "date-time" },
+    "baseSha": { "type": "string", "pattern": "^[0-9a-fA-F]{40}$" },
+    "issues": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/issue" }
+    },
+    "milestones": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/milestone" }
+    },
+    "pullRequests": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/pullRequest" }
+    },
+    "reconciliation": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "state",
+        "diagnostics",
+        "issue_count",
+        "milestone_count",
+        "pull_request_count",
+        "duplicate_issue_numbers",
+        "cross_milestone_issue_numbers",
+        "counter_mismatches",
+        "not_planned_closures"
+      ],
+      "properties": {
+        "state": {
+          "enum": ["NOT_RUN", "NOT_RECONCILED", "RECONCILED"]
+        },
+        "diagnostics": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "issue_count": { "type": "integer", "minimum": 0 },
+        "milestone_count": { "type": "integer", "minimum": 0 },
+        "pull_request_count": { "type": "integer", "minimum": 0 },
+        "duplicate_issue_numbers": {
+          "type": "array",
+          "items": { "type": "integer", "minimum": 1 }
+        },
+        "cross_milestone_issue_numbers": {
+          "type": "array",
+          "items": { "type": "integer", "minimum": 1 }
+        },
+        "counter_mismatches": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              { "type": "string", "minLength": 1 },
+              {
+                "type": "object",
+                "additionalProperties": true
+              }
+            ]
+          }
+        },
+        "not_planned_closures": {
+          "type": "array",
+          "items": { "type": "integer", "minimum": 1 }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "issue": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "number",
+        "title",
+        "url",
+        "state",
+        "state_reason",
+        "milestone",
+        "labels",
+        "created_at",
+        "updated_at",
+        "closed_at",
+        "body_sha256",
+        "evidence_links"
+      ],
+      "properties": {
+        "number": { "type": "integer", "minimum": 1 },
+        "title": { "type": "string", "minLength": 1 },
+        "url": { "type": "string", "minLength": 1 },
+        "state": { "enum": ["open", "closed"] },
+        "state_reason": { "type": ["string", "null"] },
+        "milestone": {
+          "oneOf": [
+            { "type": "null" },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["number", "title"],
+              "properties": {
+                "number": { "type": "integer", "minimum": 1 },
+                "title": { "type": "string", "minLength": 1 }
+              }
+            }
+          ]
+        },
+        "milestone_numbers": {
+          "type": "array",
+          "items": { "type": "integer", "minimum": 1 }
+        },
+        "labels": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "created_at": { "type": "string", "format": "date-time" },
+        "updated_at": { "type": "string", "format": "date-time" },
+        "closed_at": { "type": ["string", "null"], "format": "date-time" },
+        "last_commit_sha": { "type": ["string", "null"] },
+        "last_pull_request_number": {
+          "type": ["integer", "null"],
+          "minimum": 1
+        },
+        "body_sha256": { "type": "string", "pattern": "^[0-9a-fA-F]{64}$" },
+        "evidence_links": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "milestone": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "number",
+        "title",
+        "state",
+        "open_issues",
+        "closed_issues",
+        "due_on"
+      ],
+      "properties": {
+        "number": { "type": "integer", "minimum": 1 },
+        "title": { "type": "string", "minLength": 1 },
+        "state": { "enum": ["open", "closed"] },
+        "open_issues": { "type": "integer", "minimum": 0 },
+        "closed_issues": { "type": "integer", "minimum": 0 },
+        "due_on": { "type": ["string", "null"] },
+        "description": { "type": ["string", "null"] },
+        "description_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-fA-F]{64}$"
+        },
+        "provider_open_issues": { "type": "integer", "minimum": 0 },
+        "provider_closed_issues": { "type": "integer", "minimum": 0 }
+      },
+      "anyOf": [
+        { "required": ["description"] },
+        { "required": ["description_sha256"] }
+      ]
+    },
+    "pullRequest": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "number",
+        "title",
+        "url",
+        "state",
+        "created_at",
+        "updated_at"
+      ],
+      "properties": {
+        "number": { "type": "integer", "minimum": 1 },
+        "title": { "type": "string", "minLength": 1 },
+        "url": { "type": "string", "minLength": 1 },
+        "state": { "enum": ["open", "closed", "merged"] },
+        "head_sha": { "type": "string", "pattern": "^[0-9a-fA-F]{40}$" },
+        "base_sha": { "type": "string", "pattern": "^[0-9a-fA-F]{40}$" },
+        "created_at": { "type": "string", "format": "date-time" },
+        "updated_at": { "type": "string", "format": "date-time" },
+        "merged_at": { "type": ["string", "null"], "format": "date-time" }
+      }
+    }
+  }
+}

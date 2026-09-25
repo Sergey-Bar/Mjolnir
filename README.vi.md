@@ -18,7 +18,7 @@ rồi chấm điểm mức độ đáng tin của kết quả, kèm bằng chứ
 [![node](https://img.shields.io/badge/node-%E2%89%A5%2022.18-1F6F7C.svg?style=flat-square&labelColor=0A1119)](https://nodejs.org)
 
 ```bash
-npx mjolnir-qa@latest
+npx mjolnir-qa@3.0.0
 ```
 
 [Xem cách hoạt động](#xem-cách-hoạt-động) · [Bắt đầu nhanh](#bắt-đầu-nhanh) · [Phát hiện gì](#mjölnir-phát-hiện-gì) · [Điểm](#điểm-đáng-tin) · [Bằng chứng](#mô-hình-bằng-chứng) · [Phân tích lần chạy](#phân-tích-pháp-chứng-lúc-chạy) · [CI](#tính-toàn-vẹn-ci) · [Tác tử](#tác-tử-ai) · [Bảo mật](#tin-cậy-và-bảo-mật) · [Giới hạn](#những-điều-mjölnir-không-thể-cho-bạn-biết) · [Tài liệu](#tài-liệu)
@@ -28,15 +28,29 @@ npx mjolnir-qa@latest
 
 [English](README.md) | [简体中文](README.zh.md) | [繁體中文](README.zht.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | [日本語](README.ja.md) | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | [Türkçe](README.tr.md) | [Українська](README.uk.md) | [বাংলা](README.bn.md) | [Ελληνικά](README.gr.md) | Tiếng Việt | [עברית](README.he.md) | [العربية](README.ar.md) | [Bosanski](README.bs.md)
 
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-15.
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-25.
 
-<!-- Source hash: 3541b09e8d04 -->
+<!-- Source hash: `f3d2a07f2d68` -->
 
 </details>
 
 </div>
 
 <br />
+
+## Release status (English canonical)
+
+The published line is `3.0.0`; this working tree is the `4.0.0-rc.1`
+candidate. `3.0.0` must not be republished or retagged. The M26–M50 program is
+tracked in
+[`docs/ROADMAP.yaml`](docs/ROADMAP.yaml); provisional capability contracts
+are not automatically enabled or certified. Repository-owned checks pass, but
+Trust certification remains `NOT_CERTIFIED` until the protected holdout,
+real-world, platform/consumer, remote-workflow, support-matrix, and corpus
+evidence gates pass. Run `npm run m26:readiness` before treating any candidate
+as releasable. This document does not publish a tag or authorize a release.
+
+> Machine-assisted canonical text. Translate this block before treating it as localized copy.
 
 ## Dấu tích xanh là một lời khẳng định, không phải bằng chứng
 
@@ -58,7 +72,7 @@ Không cái nào khiến pipeline chuyển đỏ, và cái nào trông cũng có
 
 <sub>Mọi phát hiện mà lần quét demo báo cáo cho workflow này, tại dòng được báo cáo. Được tạo bởi `npm run docs:readme-brand` từ [`demo-report.json`](assets/readme/demo-report.json) và được khóa chống sai lệch trong CI.</sub>
 
-**Chế độ nghiêm ngặt.** Các phát hiện hung hăng nhất — `.only`, `continue-on-error`, kiểm tra trống, lạm dụng thử lại — nằm ở tầng cách ly. Chúng chỉ chạy với `--strict` và bị giới hạn ở mức nghiêm trọng `info`: chúng đánh dấu, không bao giờ chặn. Quét mặc định (`npx mjolnir-qa@latest` không có `--strict`) chỉ bao gồm các quy tắc cốt lõi và mở rộng. Thêm `--strict` khi bạn cũng muốn lớp tư vấn.
+**Chế độ nghiêm ngặt.** Các phát hiện hung hăng nhất — `.only`, `continue-on-error`, kiểm tra trống, lạm dụng thử lại — nằm ở tầng cách ly. Chúng chỉ chạy với `--strict` và bị giới hạn ở mức nghiêm trọng `info`: chúng đánh dấu, không bao giờ chặn. Quét mặc định (`npx mjolnir-qa@3.0.0` không có `--strict`) chỉ bao gồm các quy tắc cốt lõi và mở rộng. Thêm `--strict` khi bạn cũng muốn lớp tư vấn.
 
 Mjölnir đọc bộ test, các workflow CI và, nếu bạn có, báo cáo của một lần chạy thật. Nó không chạy test của bạn, không cài dependency và không thực thi mã mà nó quét. Khi không có bằng chứng, nó nói thẳng như vậy thay vì bịa ra sự tự tin:
 
@@ -93,7 +107,7 @@ Một lần quét thật trên [`examples/demo-repo`](examples/demo-repo), một
 
 <p align="center">
   <a href="assets/video/mjolnir-demo.mp4">
-    <img src="assets/video/mjolnir-demo-poster.png" alt="Một khung hình từ bản ghi demo: npx mjolnir-qa@latest đang quét kho demo trong cửa sổ terminal" width="900" />
+    <img src="assets/video/mjolnir-demo-poster.png" alt="Một khung hình từ bản ghi demo: npx mjolnir-qa@3.0.0 đang quét kho demo trong cửa sổ terminal" width="900" />
   </a>
 </p>
 
@@ -162,7 +176,7 @@ Docs: mjolnir rules --md   (full catalog, this rule included)
 ## Bắt đầu nhanh
 
 ```bash
-npx mjolnir-qa@latest
+npx mjolnir-qa@3.0.0
 ```
 
 Nó quét thư mục hiện tại và in ra Trust Report: nó tìm thấy gì, bạn có thể tin đến mức nào, vì sao, và bước tiếp theo là gì. Nó thoát với `0` khi không tìm thấy gì ở mức cổng hoặc cao hơn.
@@ -170,24 +184,39 @@ Nó quét thư mục hiện tại và in ra Trust Report: nó tìm thấy gì, b
 Trong CI, chỉ quét những gì nhánh đưa vào, để một bộ test cũ không nhấn chìm pull request đầu tiên của bạn:
 
 ```bash
-npx mjolnir-qa@latest --scope changed
+npx mjolnir-qa@3.0.0 --scope changed
 ```
 
-`mjolnir ci install` ghi điều đó thành một workflow GitHub Actions, dùng [action](https://github.com/Sergey-Bar/Mjolnir#readme) được ghim vào tag chính `v1` (hoặc `npx` thuần với `--no-action`). Nó chỉ mang tính tư vấn cho đến khi bạn quyết định nó nên chặn.
+`mjolnir ci install` ghi điều đó thành một workflow GitHub Actions, dùng [action](https://github.com/Sergey-Bar/Mjolnir#readme) được ghim vào tag chính `v3` (hoặc `npx` thuần với `--no-action`). Nó chỉ mang tính tư vấn cho đến khi bạn quyết định nó nên chặn.
 
-| Lệnh                                | Chức năng                                              |
-| ----------------------------------- | ------------------------------------------------------ |
-| `mjolnir`                           | Trust Report: kết luận, độ tin, hành động tiếp theo    |
-| `mjolnir --scope changed`           | Chỉ những gì nhánh của bạn đưa vào (dạng dùng cho CI)  |
-| `mjolnir ci install`                | Tạo workflow PR mang tính tư vấn (dựa trên action)     |
-| `mjolnir explain QA-CI-001`         | Cái gì, vì sao và cách sửa, kèm tỷ lệ FP đã đo         |
-| `mjolnir why src/a.spec.ts:42`      | Vì sao chính dòng này bị đánh dấu. Không bao giờ chặn. |
-| `mjolnir forensics ./test-results/` | Bằng chứng runtime từ một lần chạy thật                |
-| `mjolnir trust-report`              | Trust Artifact độc lập (md + json)                     |
-| `mjolnir handoff`                   | Kế hoạch khắc phục cho tác tử lập trình                |
-| `mjolnir --json` / `--format sarif` | Đầu ra máy đọc được, GitHub Code Scanning              |
-| `mjolnir --format codequality`      | Báo cáo GitLab Code Quality (artifact cho widget MR)   |
-| `mjolnir --strict`                  | Chạy cả các quy tắc cấp quarantine (rủi ro FP cao hơn) |
+| Lệnh                                          | Chức năng                                              |
+| --------------------------------------------- | ------------------------------------------------------ |
+| `mjolnir`                                     | Trust Report: kết luận, độ tin, hành động tiếp theo    |
+| `mjolnir --scope changed`                     | Chỉ những gì nhánh của bạn đưa vào (dạng dùng cho CI)  |
+| `mjolnir ci install`                          | Tạo workflow PR mang tính tư vấn (dựa trên action)     |
+| `mjolnir business-case`                       | ROI estimate: projected savings per finding            |
+| `mjolnir release-report`                      | Release readiness: GO, CONDITIONAL GO, or NO-GO        |
+| `mjolnir release-trust`                       | 12-dimension release assurance verdict                 |
+| `mjolnir report`                              | Generate a Playwright-compatible report                |
+| `mjolnir trend`                               | Record, show, or diff local quality snapshots          |
+| `mjolnir policy`                              | Initialize, validate, or check policy gates            |
+| `mjolnir quarantine`                          | Review deterministic proposals (prototype)             |
+| `mjolnir analyze --cross-file`                | Bounded cross-file analysis                            |
+| `mjolnir ci-adapter github .`                 | Generate CI templates for supported providers          |
+| `mjolnir dashboard`                           | Generate a self-contained quality dashboard            |
+| `mjolnir exec-report`                         | Executive KPIs and recommendations (advisory)          |
+| `mjolnir enterprise`                          | Self-hosted templates (prototype)                      |
+| `mjolnir maturity`                            | Assess maturity or display maturity levels             |
+| `mjolnir mutation tests/mutation-report.json` | Analyze mutation reports; never promotes trust         |
+| `mjolnir mcp`                                 | Read-only MCP tools over stdio                         |
+| `mjolnir explain QA-CI-001`                   | Cái gì, vì sao và cách sửa, kèm tỷ lệ FP đã đo         |
+| `mjolnir why src/a.spec.ts:42`                | Vì sao chính dòng này bị đánh dấu. Không bao giờ chặn. |
+| `mjolnir forensics ./test-results/`           | Bằng chứng runtime từ một lần chạy thật                |
+| `mjolnir trust-report`                        | Trust Artifact độc lập (md + json)                     |
+| `mjolnir handoff`                             | Kế hoạch khắc phục cho tác tử lập trình                |
+| `mjolnir --json` / `--format sarif`           | Đầu ra máy đọc được, GitHub Code Scanning              |
+| `mjolnir --format codequality`                | Báo cáo GitLab Code Quality (artifact cho widget MR)   |
+| `mjolnir --strict`                            | Chạy cả các quy tắc cấp quarantine (rủi ro FP cao hơn) |
 
 <details>
 <summary><strong>Mọi lệnh khác</strong> — phân loại test chập chờn, báo cáo, quản trị</summary>
@@ -452,18 +481,18 @@ mjolnir ci install
 Hoặc thêm action trên Marketplace vào một workflow bạn đã có:
 
 ```yaml
-- uses: Sergey-Bar/Mjolnir@v1
+- uses: Sergey-Bar/Mjolnir@v3
   with:
     scope: changed
     fail-on: error
 ```
 
-Ghim `@v1` để theo dòng phiên bản chính, hoặc một tag chính xác (`@v0.5.32`) để có cổng tái lập được. [docs/DISTRIBUTION-KIT.md](docs/DISTRIBUTION-KIT.md) đề cập đến Marketplace, Smithery và các sổ đăng ký MCP.
+Ghim `@v3` để theo dòng phiên bản chính, hoặc một tag chính xác (`@v0.5.32`) để có cổng tái lập được. [docs/DISTRIBUTION-KIT.md](docs/DISTRIBUTION-KIT.md) đề cập đến Marketplace, Smithery và các sổ đăng ký MCP.
 
 Để đưa phát hiện vào GitHub Code Scanning, hãy tải lên SARIF (yêu cầu `security-events: write` ở phạm vi workflow hoặc job):
 
 ```yaml
-- run: npx mjolnir-qa@latest --format sarif > mjolnir.sarif
+- run: npx mjolnir-qa@3.0.0 --format sarif > mjolnir.sarif
   continue-on-error: true
 - uses: github/codeql-action/upload-sarif@v3
   if: ${{ !cancelled() }}
@@ -476,7 +505,7 @@ Trên GitLab, `--format codequality` ghi báo cáo Code Quality mà widget MR v�
 ### Quy trách nhiệm theo phạm vi thay đổi
 
 ```bash
-npx mjolnir-qa@latest --scope changed
+npx mjolnir-qa@3.0.0 --scope changed
 ```
 
 Phát hiện được quy về các dòng mà nhánh của bạn đã thêm, đo so với **merge-base**. Phạm vi là cùng tập tệp mà một lần quét đầy đủ phát hiện (spec TS/JS và cấu hình adapter, `test_*.py`, `*Test.java`, `*Tests.cs`, `.github/workflows/*.yml`), cộng thêm các thay đổi chưa commit và chưa theo dõi, nên nó hoạt động cả trước khi bạn commit. Nhánh gốc được xác định theo thứ tự `main → master → origin/main → origin/master → origin/HEAD`; ghi đè bằng `--base <ref>`.
@@ -504,7 +533,7 @@ SCAN → EVIDENCE → HANDOFF → AGENT → RE-SCAN → PROOF
 Thêm vào một client có CLI riêng:
 
 ```bash
-claude mcp add mjolnir -- npx -y mjolnir-qa@latest mcp
+claude mcp add mjolnir -- npx -y mjolnir-qa@3.0.0 mcp
 ```
 
 Hoặc vào bất kỳ client nào nhận khối `mcpServers`:
@@ -512,7 +541,7 @@ Hoặc vào bất kỳ client nào nhận khối `mcpServers`:
 ```json
 {
   "mcpServers": {
-    "mjolnir": { "command": "npx", "args": ["-y", "mjolnir-qa@latest", "mcp"] }
+    "mjolnir": { "command": "npx", "args": ["-y", "mjolnir-qa@3.0.0", "mcp"] }
   }
 }
 ```
@@ -603,7 +632,7 @@ Thiết lập môi trường phát triển, các lệnh cổng thường trực,
 <img src="assets/readme/closing.svg" alt="Chạy nó trên kho của bạn." width="100%" />
 
 ```bash
-npx mjolnir-qa@latest
+npx mjolnir-qa@3.0.0
 ```
 
 [Đọc hướng dẫn](https://sergey-bar.github.io/Mjolnir/guide/getting-started) · [Trang tài liệu](https://sergey-bar.github.io/Mjolnir/) · [npm](https://www.npmjs.com/package/mjolnir-qa)

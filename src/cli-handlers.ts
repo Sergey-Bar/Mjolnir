@@ -188,9 +188,13 @@ export async function runScanCommand(
         ...(args.debug
           ? {
               onRuleCrash: (ruleId: string, file: string, error: unknown) => {
-                crashLog.push(
-                  `${ruleId} crashed on ${file}: ${error instanceof Error ? error.message : String(error)}`,
-                );
+                const detail =
+                  error instanceof Error
+                    ? [error.message, error.stack]
+                        .filter((value): value is string => Boolean(value))
+                        .join("\n")
+                    : String(error);
+                crashLog.push(`${ruleId} crashed on ${file}: ${detail}`);
               },
             }
           : {}),

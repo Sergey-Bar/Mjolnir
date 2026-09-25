@@ -185,4 +185,74 @@ describe("CHANGELOG integrity gate (WI-12A)", () => {
     const r = runGate(BASELINE, []);
     expect(r.code).toBe(0);
   });
+
+  it("accepts an RC heading for the exact expected prerelease", () => {
+    const r = runGate(
+      synthetic("### Added\n\n- release candidate evidence", "3.0.0-rc.1"),
+      ["--expect-version", "3.0.0-rc.1"],
+    );
+    expect(r.code).toBe(0);
+    expect(r.out).toContain("3.0.0-rc.1 heading present");
+  });
+
+  it("rejects a stable heading when the exact RC is expected", () => {
+    const r = runGate(synthetic("### Added\n\n- stable evidence", "3.0.0"), [
+      "--expect-version",
+      "3.0.0-rc.1",
+    ]);
+    expect(r.code).toBe(1);
+    expect(r.out).toContain("no heading for version 3.0.0-rc.1");
+  });
+
+  it("requires descending RC numbers", () => {
+    const changelog = [
+      "# Changelog",
+      "",
+      "## [3.0.0-rc.2] — 2026-09-25",
+      "",
+      "### Added",
+      "",
+      "- rc two",
+      "",
+      "## [3.0.0-rc.1] — 2026-09-24",
+      "",
+      "### Added",
+      "",
+      "- rc one",
+      "",
+    ].join("\n");
+    const r = runGate(changelog, ["--expect-version", "3.0.0-rc.2"]);
+    expect(r.code).toBe(0);
+  });
+
+  it("rejects ascending RC numbers", () => {
+    const changelog = [
+      "# Changelog",
+      "",
+      "## [3.0.0-rc.1] — 2026-09-24",
+      "",
+      "### Added",
+      "",
+      "- rc one",
+      "",
+      "## [3.0.0-rc.2] — 2026-09-25",
+      "",
+      "### Added",
+      "",
+      "- rc two",
+      "",
+    ].join("\n");
+    const r = runGate(changelog, ["--expect-version", "3.0.0-rc.1"]);
+    expect(r.code).toBe(1);
+    expect(r.out).toContain("heading order violated");
+  });
+
+  it("applies rules-touched evidence to the exact RC section", () => {
+    const r = runGate(
+      synthetic("### Added\n\n- release candidate plumbing", "3.0.0-rc.1"),
+      ["--expect-version", "3.0.0-rc.1", "--rules-touched"],
+    );
+    expect(r.code).toBe(1);
+    expect(r.out).toContain("documents no rule ID");
+  });
 });

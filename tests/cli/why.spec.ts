@@ -171,10 +171,11 @@ describe("renderWhy", () => {
     expect(plain).not.toContain("Runtime corroboration:");
   });
 
-  it("carries the suppression guidance (reason required, 90-day expiry)", () => {
+  it("carries the current explicit-expiry suppression guidance", () => {
     const text = renderWhy(explainAt([finding()], "e2e/a.spec.ts", 3));
     expect(text).toContain("reason REQUIRED");
-    expect(text).toContain("90 days");
+    expect(text).toContain("explicit ISO `expires` date");
+    expect(text).not.toContain("90 days");
   });
 
   it("escapes hostile metadata (markdown + no injection)", () => {

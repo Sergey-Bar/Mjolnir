@@ -18,7 +18,7 @@ y luego puntúa hasta dónde se puede confiar en el resultado, con la evidencia 
 [![node](https://img.shields.io/badge/node-%E2%89%A5%2022.18-1F6F7C.svg?style=flat-square&labelColor=0A1119)](https://nodejs.org)
 
 ```bash
-npx mjolnir-qa@latest
+npx mjolnir-qa@3.0.0
 ```
 
 [Míralo en acción](#míralo-en-acción) · [Inicio rápido](#inicio-rápido) · [Qué encuentra](#qué-encuentra-mjölnir) · [Puntuación](#la-puntuación-de-fiabilidad) · [Evidencia](#el-modelo-de-evidencia) · [Forense](#forense-de-ejecución) · [CI](#integridad-de-ci) · [Agentes](#agentes-de-ia) · [Seguridad](#confianza-y-seguridad) · [Límites](#lo-que-mjölnir-no-puede-decirte) · [Docs](#documentación)
@@ -28,15 +28,29 @@ npx mjolnir-qa@latest
 
 [English](README.md) | [简体中文](README.zh.md) | [繁體中文](README.zht.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | Español | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | [日本語](README.ja.md) | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | [Türkçe](README.tr.md) | [Українська](README.uk.md) | [বাংলা](README.bn.md) | [Ελληνικά](README.gr.md) | [Tiếng Việt](README.vi.md) | [עברית](README.he.md) | [العربية](README.ar.md) | [Bosanski](README.bs.md)
 
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-15.
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-25.
 
-<!-- Source hash: 3541b09e8d04 -->
+<!-- Source hash: `f3d2a07f2d68` -->
 
 </details>
 
 </div>
 
 <br />
+
+## Release status (English canonical)
+
+The published line is `3.0.0`; this working tree is the `4.0.0-rc.1`
+candidate. `3.0.0` must not be republished or retagged. The M26–M50 program is
+tracked in
+[`docs/ROADMAP.yaml`](docs/ROADMAP.yaml); provisional capability contracts
+are not automatically enabled or certified. Repository-owned checks pass, but
+Trust certification remains `NOT_CERTIFIED` until the protected holdout,
+real-world, platform/consumer, remote-workflow, support-matrix, and corpus
+evidence gates pass. Run `npm run m26:readiness` before treating any candidate
+as releasable. This document does not publish a tag or authorize a release.
+
+> Machine-assisted canonical text. Translate this block before treating it as localized copy.
 
 ## Un check verde es una afirmación, no una prueba
 
@@ -58,7 +72,7 @@ Ninguno pone el pipeline en rojo, y todos parecen deliberados en la revisión. P
 
 <sub>Cada hallazgo que el escaneo de demostración reportó para este workflow, en la línea reportada. Generado con `npm run docs:readme-brand` a partir de [`demo-report.json`](assets/readme/demo-report.json) y bloqueado contra desviaciones en CI.</sub>
 
-**Modo estricto.** Las detecciones más agresivas — `.only`, `continue-on-error`, tests vacíos, abuso de reintentos — viven en la cuarentena. Solo se ejecutan con `--strict` y están limitadas a severidad `info`: señalan, pero nunca bloquean. El escaneo por defecto (`npx mjolnir-qa@latest` sin `--strict`) solo cubre reglas core y extended. Añade `--strict` cuando quieras la capa de asesoramiento también.
+**Modo estricto.** Las detecciones más agresivas — `.only`, `continue-on-error`, tests vacíos, abuso de reintentos — viven en la cuarentena. Solo se ejecutan con `--strict` y están limitadas a severidad `info`: señalan, pero nunca bloquean. El escaneo por defecto (`npx mjolnir-qa@3.0.0` sin `--strict`) solo cubre reglas core y extended. Añade `--strict` cuando quieras la capa de asesoramiento también.
 
 Mjölnir lee la suite, los workflows de CI y, si lo tienes, el informe de una ejecución real. No ejecuta tus tests, no instala tus dependencias ni ejecuta el código que escanea. Y cuando no tiene evidencia, lo dice en lugar de inventar confianza:
 
@@ -93,7 +107,7 @@ Un escaneo real de [`examples/demo-repo`](examples/demo-repo), una pequeña suit
 
 <p align="center">
   <a href="assets/video/mjolnir-demo.mp4">
-    <img src="assets/video/mjolnir-demo-poster.png" alt="Un fotograma de la grabación de demostración: npx mjolnir-qa@latest escaneando el repositorio de demostración en una ventana de terminal" width="900" />
+    <img src="assets/video/mjolnir-demo-poster.png" alt="Un fotograma de la grabación de demostración: npx mjolnir-qa@3.0.0 escaneando el repositorio de demostración en una ventana de terminal" width="900" />
   </a>
 </p>
 
@@ -162,7 +176,7 @@ Esa es la unidad de valor: un lugar donde CI reporta un pase que no se ganó.
 ## Inicio rápido
 
 ```bash
-npx mjolnir-qa@latest
+npx mjolnir-qa@3.0.0
 ```
 
 Escanea el directorio actual e imprime el Trust Report: qué encontró, hasta dónde puedes confiar en ello, por qué y qué hacer a continuación. Sale con `0` cuando no se encontró nada en el gate o por encima.
@@ -170,24 +184,39 @@ Escanea el directorio actual e imprime el Trust Report: qué encontró, hasta d�
 En CI, escanea solo lo que introdujo la rama, para que una suite heredada no ahogue tu primer pull request:
 
 ```bash
-npx mjolnir-qa@latest --scope changed
+npx mjolnir-qa@3.0.0 --scope changed
 ```
 
-`mjolnir ci install` lo escribe como un workflow de GitHub Actions, usando la [action](https://github.com/Sergey-Bar/Mjolnir#readme) fijada a la etiqueta mayor `v1` (o `npx` a secas con `--no-action`). Se mantiene consultivo hasta que decidas que debe bloquear.
+`mjolnir ci install` lo escribe como un workflow de GitHub Actions, usando la [action](https://github.com/Sergey-Bar/Mjolnir#readme) fijada a la etiqueta mayor `v3` (o `npx` a secas con `--no-action`). Se mantiene consultivo hasta que decidas que debe bloquear.
 
-| Comando                             | Qué hace                                                             |
-| ----------------------------------- | -------------------------------------------------------------------- |
-| `mjolnir`                           | Trust Report: veredicto, confianza, siguiente acción                 |
-| `mjolnir --scope changed`           | Solo lo que introdujo tu rama (la forma para CI)                     |
-| `mjolnir ci install`                | Genera el workflow consultivo de PR (basado en la action)            |
-| `mjolnir explain QA-CI-001`         | Qué, por qué y cómo corregir, más la tasa de FP medida               |
-| `mjolnir why src/a.spec.ts:42`      | Por qué se marcó exactamente esta línea. Nunca bloquea.              |
-| `mjolnir forensics ./test-results/` | Evidencia de ejecución de una ejecución real                         |
-| `mjolnir trust-report`              | Trust Artifact autocontenido (md + json)                             |
-| `mjolnir handoff`                   | Plan de remediación para un agente de código                         |
-| `mjolnir --json` / `--format sarif` | Salida legible por máquina, GitHub Code Scanning                     |
-| `mjolnir --format codequality`      | Informe de GitLab Code Quality (artefacto del widget de MR)          |
-| `mjolnir --strict`                  | Ejecuta también las reglas del nivel quarantine (mayor riesgo de FP) |
+| Comando                                       | Qué hace                                                             |
+| --------------------------------------------- | -------------------------------------------------------------------- |
+| `mjolnir`                                     | Trust Report: veredicto, confianza, siguiente acción                 |
+| `mjolnir --scope changed`                     | Solo lo que introdujo tu rama (la forma para CI)                     |
+| `mjolnir ci install`                          | Genera el workflow consultivo de PR (basado en la action)            |
+| `mjolnir business-case`                       | ROI estimate: projected savings per finding                          |
+| `mjolnir release-report`                      | Release readiness: GO, CONDITIONAL GO, or NO-GO                      |
+| `mjolnir release-trust`                       | 12-dimension release assurance verdict                               |
+| `mjolnir report`                              | Generate a Playwright-compatible report                              |
+| `mjolnir trend`                               | Record, show, or diff local quality snapshots                        |
+| `mjolnir policy`                              | Initialize, validate, or check policy gates                          |
+| `mjolnir quarantine`                          | Review deterministic proposals (prototype)                           |
+| `mjolnir analyze --cross-file`                | Bounded cross-file analysis                                          |
+| `mjolnir ci-adapter github .`                 | Generate CI templates for supported providers                        |
+| `mjolnir dashboard`                           | Generate a self-contained quality dashboard                          |
+| `mjolnir exec-report`                         | Executive KPIs and recommendations (advisory)                        |
+| `mjolnir enterprise`                          | Self-hosted templates (prototype)                                    |
+| `mjolnir maturity`                            | Assess maturity or display maturity levels                           |
+| `mjolnir mutation tests/mutation-report.json` | Analyze mutation reports; never promotes trust                       |
+| `mjolnir mcp`                                 | Read-only MCP tools over stdio                                       |
+| `mjolnir explain QA-CI-001`                   | Qué, por qué y cómo corregir, más la tasa de FP medida               |
+| `mjolnir why src/a.spec.ts:42`                | Por qué se marcó exactamente esta línea. Nunca bloquea.              |
+| `mjolnir forensics ./test-results/`           | Evidencia de ejecución de una ejecución real                         |
+| `mjolnir trust-report`                        | Trust Artifact autocontenido (md + json)                             |
+| `mjolnir handoff`                             | Plan de remediación para un agente de código                         |
+| `mjolnir --json` / `--format sarif`           | Salida legible por máquina, GitHub Code Scanning                     |
+| `mjolnir --format codequality`                | Informe de GitLab Code Quality (artefacto del widget de MR)          |
+| `mjolnir --strict`                            | Ejecuta también las reglas del nivel quarantine (mayor riesgo de FP) |
 
 <details>
 <summary><strong>Todos los demás comandos</strong>: triaje de flakes, informes, gobernanza</summary>
@@ -452,18 +481,18 @@ mjolnir ci install
 O añade la action del Marketplace a un workflow que ya tengas:
 
 ```yaml
-- uses: Sergey-Bar/Mjolnir@v1
+- uses: Sergey-Bar/Mjolnir@v3
   with:
     scope: changed
     fail-on: error
 ```
 
-Fija `@v1` para seguir la línea mayor, o una etiqueta exacta (`@v0.5.32`) para un gate reproducible. [docs/DISTRIBUTION-KIT.md](docs/DISTRIBUTION-KIT.md) cubre el Marketplace, Smithery y los registros MCP.
+Fija `@v3` para seguir la línea mayor, o una etiqueta exacta (`@v0.5.32`) para un gate reproducible. [docs/DISTRIBUTION-KIT.md](docs/DISTRIBUTION-KIT.md) cubre el Marketplace, Smithery y los registros MCP.
 
 Para llevar los hallazgos a GitHub Code Scanning, sube SARIF (requiere `security-events: write` a nivel de workflow o job):
 
 ```yaml
-- run: npx mjolnir-qa@latest --format sarif > mjolnir.sarif
+- run: npx mjolnir-qa@3.0.0 --format sarif > mjolnir.sarif
   continue-on-error: true
 - uses: github/codeql-action/upload-sarif@v3
   if: ${{ !cancelled() }}
@@ -476,7 +505,7 @@ En GitLab, `--format codequality` escribe el informe de Code Quality que leen el
 ### Atribución por alcance modificado
 
 ```bash
-npx mjolnir-qa@latest --scope changed
+npx mjolnir-qa@3.0.0 --scope changed
 ```
 
 Los hallazgos se atribuyen a las líneas que añadió tu rama, medidas contra el **merge-base**. El alcance es el mismo conjunto de archivos que descubre un escaneo completo (specs TS/JS y configuraciones de adaptadores, `test_*.py`, `*Test.java`, `*Tests.cs`, `.github/workflows/*.yml`), más los cambios sin commit y sin seguimiento, así que funciona antes de hacer commit. La base se resuelve como `main → master → origin/main → origin/master → origin/HEAD`; puedes sobrescribirla con `--base <ref>`.
@@ -504,7 +533,7 @@ SCAN → EVIDENCE → HANDOFF → AGENT → RE-SCAN → PROOF
 Añádelo a un cliente que tenga su propia CLI:
 
 ```bash
-claude mcp add mjolnir -- npx -y mjolnir-qa@latest mcp
+claude mcp add mjolnir -- npx -y mjolnir-qa@3.0.0 mcp
 ```
 
 O a cualquier cliente que acepte un bloque `mcpServers`:
@@ -512,7 +541,7 @@ O a cualquier cliente que acepte un bloque `mcpServers`:
 ```json
 {
   "mcpServers": {
-    "mjolnir": { "command": "npx", "args": ["-y", "mjolnir-qa@latest", "mcp"] }
+    "mjolnir": { "command": "npx", "args": ["-y", "mjolnir-qa@3.0.0", "mcp"] }
   }
 }
 ```
@@ -603,7 +632,7 @@ El entorno de desarrollo, los comandos de los gates permanentes y las leyes anti
 <img src="assets/readme/closing.svg" alt="Pruébalo en tu repo." width="100%" />
 
 ```bash
-npx mjolnir-qa@latest
+npx mjolnir-qa@3.0.0
 ```
 
 [Lee la guía](https://sergey-bar.github.io/Mjolnir/guide/getting-started) · [Sitio de documentación](https://sergey-bar.github.io/Mjolnir/) · [npm](https://www.npmjs.com/package/mjolnir-qa)

@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "policy": "ADVISORY",
+  "greenReleaseCycles": 0,
+  "requiredGreenReleaseCycles": 3,
+  "lastGreenCandidate": null,
+  "nextReview": "After three independently evidenced stable candidates."
+}

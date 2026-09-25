@@ -9,9 +9,16 @@ mjolnir ci install
 Or wire it into GitHub Code Scanning natively via SARIF:
 
 ```yaml
-- run: npx mjolnir-qa@latest --format sarif > mjolnir.sarif
-- uses: github/codeql-action/upload-sarif@v3
-  with:
+jobs:
+  verify:
+    permissions:
+      contents: read
+      security-events: write
+      pull-requests: write
+    steps:
+      - run: npx mjolnir-qa@4.0.0-rc.1 --format sarif > mjolnir.sarif
+      - uses: github/codeql-action/upload-sarif@v3
+        with:
     sarif_file: mjolnir.sarif
 ```
 
@@ -21,7 +28,7 @@ diff annotations:
 ```yaml
 mjolnir:
   image: node:22
-  script: npx --yes mjolnir-qa@latest . --scope changed --format codequality
+  script: npx --yes mjolnir-qa@4.0.0-rc.1 . --scope changed --format codequality
     > gl-code-quality-report.json
   artifacts:
     reports:

@@ -5,7 +5,7 @@ Mjölnir releases are prepared on protected release branches and published only 
 ## Release model
 
 - `main` is the stable integration branch and stays protected.
-- A release branch such as `release/v2.0.3` contains the reviewed version and changelog PR.
+- A release branch such as `release/vX.Y.Z-rc.N` contains the reviewed version and changelog PR.
 - The package version for a release candidate must be `X.Y.Z-rc.N`; the corresponding annotated tag is `vX.Y.Z-rc.N`.
 - `.github/workflows/release.yml` is dry-run by default.
 - Publishing additionally requires the repository variable `NPM_PUBLISH=true` and approval of the `release-candidate` and `npm-publish` GitHub Environments.
@@ -24,7 +24,7 @@ Configure these once before publishing:
 
 The npm Trusted Publisher Environment must match the workflow exactly. Leave `NODE_AUTH_TOKEN` unset.
 
-## `v2.0.3` decision gate
+## Historical `v2.0.3` decision gate
 
 The existing `v2.0.3` tag points at commit `460c7d71e67d54d667414ff36e6f100d604b6185`, which is not reachable from current `main`. Before the 2.1.0 promotion, npm `latest` is `2.0.2`.
 
@@ -43,11 +43,11 @@ The RC workflow rejects stable versions, so it cannot silently resolve this deci
    ```bash
    git switch main
    git pull --ff-only origin main
-   git switch -c release/v3.0.0
+   git switch -c release/vX.Y.Z-rc.N
    ```
 
 2. Prepare a normal version PR:
-   - set the root `package.json` version to `3.0.0` or the approved next RC;
+   - set the root `package.json` version to the owner-approved next SemVer (for an RC: `X.Y.Z-rc.N`);
    - the historical `2.0.3-rc.1` path remains subject to the decision gate above; do not recreate it without owner approval;
    - add the matching `CHANGELOG.md` heading;
    - update synchronized version surfaces with the existing version scripts;
@@ -66,7 +66,7 @@ The RC workflow rejects stable versions, so it cannot silently resolve this deci
 5. Run a dry-run dispatch from the merged release branch. Keep **Dry run** enabled.
 
    ```bash
-   gh workflow run release.yml --ref release/v2.0.3 -f dry_run=true
+     gh workflow run release.yml --ref release/vX.Y.Z-rc.N -f dry_run=true
    ```
 
 The dry run validates the RC-only version, release branch, changelog, ancestry from protected `main`, complete local gate, tarball contents, and SHA-256. It uploads the candidate artifact but creates no tag, npm version, or GitHub Release.
@@ -81,7 +81,7 @@ After reviewing the dry-run artifact and approving the two Environments:
 4. Approve the `npm-publish` Environment.
 
 ```bash
-gh workflow run release.yml --ref release/v2.0.3 -f dry_run=false
+gh workflow run release.yml --ref release/vX.Y.Z-rc.N -f dry_run=false
 ```
 
 The workflow:
@@ -151,7 +151,7 @@ TARBALL=$(npm pack --ignore-scripts --pack-destination "$RUNNER_TEMP" | tail -n 
 node scripts/pack-audit.mjs "$RUNNER_TEMP/$TARBALL"
 ```
 
-`npm run ci-local` already performs the build, certification, property, fuzz, coverage, ratchet, audit, brand, and site checks. Corpus audit remains a separate fail-closed network gate because authoritative upstream revisions and baseline provenance require owner review.
+`npm run ci-local` performs the build, certification, property, fuzz, coverage, ratchet, audit, brand, and site checks. Before a non-dry-run release, `npm run m26:readiness` also must pass. Corpus audit remains a separate fail-closed network gate because authoritative upstream revisions and baseline provenance require owner review.
 
 ## Lifecycle scripts
 
@@ -164,8 +164,17 @@ No additional lifecycle hook may be added without an equivalent row explaining w
 
 ## Current state
 
-- npm `latest` is **3.0.0** after this stable promotion.
-- protected `main`: `3f31ac7e` after PR #538.
+- release readiness contract: [`RELEASE-3.0.0-READINESS.md`](RELEASE-3.0.0-READINESS.md)
+- installation: [`INSTALLATION-3.0.0.md`](INSTALLATION-3.0.0.md)
+- migration: [`MIGRATION-3.0.0.md`](MIGRATION-3.0.0.md)
+- rollback: [`ROLLBACK-3.0.0.md`](ROLLBACK-3.0.0.md)
+- `3.0.0` is already published; do not republish or retag it for the current working tree.
+- current working candidate: `4.0.0-rc.1`; it has no authorized tag or release mutation.
+- `npm run release:decision` is the machine-readable final decision gate.
+- npm `latest` is **3.0.0** after this stable promotion; package publication does not imply Trust certification.
+- registry evidence: [`mjolnir-qa@3.0.0`](https://www.npmjs.com/package/mjolnir-qa/v/3.0.0) and npm attestations.
+- GitHub Release evidence: [`v3.0.0`](https://github.com/Sergey-Bar/Mjolnir/releases/tag/v3.0.0).
+- protected `main`: `d981ba356313ae8cea0538ca85c665e88b84c530` at the current candidate observation.
 - historical `v2.0.3`: `460c7d71e67d54d667414ff36e6f100d604b6185`, retained unchanged; a tag alone is not an installable release.
 - automatic publishing from `main`: disabled.
 - stable and RC npm publication: gated by their GitHub Environments.

@@ -288,7 +288,7 @@ export function renderHandoff(
     "- Validate each occurrence according to its evidence level before editing.",
     "- Apply the smallest behavior-preserving fix.",
     "- Re-run the verification procedure below; correlate by fingerprint.",
-    "- Never suppress a finding merely to obtain a green scan (suppressions live in `mjolnir.config.json`, require a reason, and expire after 90 days).",
+    "- Never suppress a finding merely to obtain a green scan (suppressions live in `mjolnir.config.json` and require a reason; only an explicit ISO `expires` date is bounded).",
   );
   lines.push("");
   lines.push(scopeNote(options) ? scopeNote(options).trim() : "");

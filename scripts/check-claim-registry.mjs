@@ -25,6 +25,7 @@ for (const claim of registry.claims) {
     "corpus",
     "benchmark",
     "candidateProof",
+    "proof",
     "authority",
     "expiry",
     "state",
@@ -34,6 +35,29 @@ for (const claim of registry.claims) {
   for (const source of [claim.valueSource, ...claim.relatedSources]) {
     if (!existsSync(join(root, source))) {
       throw new Error(`${claim.id}: missing source ${source}`);
+    }
+  }
+  if (
+    typeof claim.proof !== "object" ||
+    claim.proof === null ||
+    !["BLOCKED", "LOCAL_PROVEN", "REMOTE_PROVEN"].includes(claim.proof.status)
+  ) {
+    throw new Error(`${claim.id}: proof status is invalid`);
+  }
+  if (
+    manifest.identity?.candidateSha === null &&
+    claim.proof.status !== "BLOCKED"
+  ) {
+    throw new Error(`${claim.id}: unproven candidate cannot carry proof`);
+  }
+  if (claim.proof.status !== "BLOCKED") {
+    for (const field of ["artifact", "digest", "observedAt", "authority"]) {
+      if (!claim.proof[field] || claim.proof[field] === "NONE") {
+        throw new Error(`${claim.id}: proof ${field} missing`);
+      }
+    }
+    if (!existsSync(join(root, claim.proof.artifact))) {
+      throw new Error(`${claim.id}: proof artifact missing`);
     }
   }
   for (const field of ["implementation", "tests", "corpus"]) {

@@ -50,6 +50,20 @@ describe("QA-PW-124: only applies to playwright.config.*, ignores everything els
   });
 });
 
+describe("QA-PY-004: malformed call roots do not crash", () => {
+  it("handles unclosed and nested call-like targets", () => {
+    for (const text of [
+      "assert issubclass(cs1\n",
+      "assert hasattr(constants_base, attr)\n",
+      "assert getattr(object, name, default)\n",
+    ]) {
+      expect(() =>
+        pyBareTruthinessAssert.run({ path: "test_x.py", text }),
+      ).not.toThrow();
+    }
+  });
+});
+
 describe("QA-PY-004: is_/has_/can_/should_/was_/were_ boolean-name convention is skipped", () => {
   for (const prefix of ["is", "has", "can", "should", "was", "were"]) {
     it(`does not fire for a bare "${prefix}_..." assert`, () => {

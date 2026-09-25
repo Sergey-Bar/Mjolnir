@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "m26-support-matrix-record.schema.json",
+  "title": "M26 finite support matrix record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "cell_id",
+    "axis",
+    "cell",
+    "disposition",
+    "owner",
+    "evidence",
+    "observed_result",
+    "resource_budget",
+    "last_candidate"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "cell_id": {
+      "type": "string",
+      "pattern": "^MATRIX-[A-Z0-9][A-Z0-9._:-]*$"
+    },
+    "axis": { "type": "string", "minLength": 1 },
+    "cell": { "type": "string", "minLength": 1 },
+    "disposition": { "enum": ["TESTED", "NOT_APPLICABLE", "BLOCKED"] },
+    "owner": { "type": "string", "minLength": 1 },
+    "evidence": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "command": { "type": "string", "minLength": 1 },
+    "fixture": { "type": "string", "minLength": 1 },
+    "observed_result": { "type": "string", "minLength": 1 },
+    "resource_budget": {
+      "oneOf": [
+        { "type": "string", "minLength": 1 },
+        { "type": "object", "minProperties": 1 }
+      ]
+    },
+    "last_candidate": { "type": "string", "minLength": 1 },
+    "not_applicable_rationale": { "type": ["string", "null"] },
+    "blocked_reason": { "type": ["string", "null"] },
+    "revisit_trigger": { "type": ["string", "null"] },
+    "source_issue_ids": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    }
+  },
+  "anyOf": [{ "required": ["command"] }, { "required": ["fixture"] }],
+  "allOf": [
+    {
+      "if": { "properties": { "disposition": { "const": "NOT_APPLICABLE" } } },
+      "then": { "required": ["not_applicable_rationale"] }
+    },
+    {
+      "if": { "properties": { "disposition": { "const": "BLOCKED" } } },
+      "then": { "required": ["blocked_reason", "revisit_trigger"] }
+    }
+  ]
+}

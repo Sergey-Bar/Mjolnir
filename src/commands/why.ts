@@ -107,7 +107,7 @@ function evidenceLines(f: Finding, ui: UiContext): string[] {
 }
 
 const SUPPRESSION_HINT =
-  "Suppression (only with cause): an `ignore` entry in mjolnir.config.json — reason REQUIRED, expires after 90 days. Prefer fixing the root cause.";
+  "Suppression (only with cause): an `ignore` entry in mjolnir.config.json — reason REQUIRED; only an explicit ISO `expires` date is bounded. Prefer fixing the root cause.";
 
 /** Render the why answer. Pure over (match, ui). */
 export function renderWhy(

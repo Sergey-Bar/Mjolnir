@@ -11,6 +11,7 @@ const localRequired = [
   "npm run build",
   "npm run typecheck",
   "npm run lint",
+  "npm run version:check",
   "npm run test:property",
   "npm run test:fuzz",
   "npm run coverage:ratchet",
@@ -35,6 +36,7 @@ const remoteRequired = [
   "npm run build",
   "npm run typecheck",
   "npm run lint",
+  "npm run version:check",
   "npm run brand:doctor",
   "npm run brand:doctor:selftest",
   "npm run brand:fonts:check",
@@ -45,8 +47,13 @@ const remoteRequired = [
   "npm run site:doctor",
 ];
 
-const certifyRequired = ["npm run test", "npx vitest run tests/contract/"];
+const certifyRequired = [
+  "npm run version:check",
+  "npm run test",
+  "npx vitest run tests/contract/",
+];
 const certifyCiRequired = [
+  "npm run version:check",
   "npm run test:coverage:ci",
   "npx vitest run tests/contract/",
 ];

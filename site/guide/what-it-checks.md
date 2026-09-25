@@ -47,8 +47,8 @@ Every rule is `core`, `extended`, or `quarantine`, assigned from its
 
 ## How much of this is measured
 
-Most rules do **not** yet carry a false-positive rate measured against
-real OSS code, and the tool says so rather than implying otherwise:
+74 of the 79 active rules carry a false-positive rate measured against real
+OSS code; the remaining 5 are explicitly unmeasured and non-core:
 
 - The [rule catalog](/rules/) marks every rule either with its measured
   rate or as _on assumption_ — filter with **Measured only** to see the

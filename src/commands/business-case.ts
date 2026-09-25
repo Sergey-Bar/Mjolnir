@@ -3,8 +3,8 @@
  *
  * Projects the business impact of untrustworthy verification by
  * combining:
- *   - Measured false-positive rate per rule (from the FP audit
- *     corpus)
+ *   - Measured false-positive rate when corpus evidence exists
+ *     (otherwise explicit unmeasured/quarantine status)
  *   - Industry-specific cost of a false-green release per incident
  *   - Historical incident data from git log (optional)
  *   - Projected savings over 6/12 months (optional)

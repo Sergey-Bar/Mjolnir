@@ -1,12 +1,12 @@
-import { Buffer } from "node:buffer";
-import { createHash } from "node:crypto";
-import { spawnSync } from "node:child_process";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync } from "node:fs";
 import { join } from "node:path";
+import {
+  inspectCandidateWorktree,
+  readCandidateManifest,
+} from "./candidate-manifest.mjs";
 
 const root = process.argv[2] ?? process.cwd();
-const path = join(root, "candidate-trust-manifest.json");
-const manifest = JSON.parse(readFileSync(path, "utf8"));
+const manifest = readCandidateManifest(root);
 const fail = (message) => {
   console.error(`candidate-manifest: ${message}`);
   process.exit(1);
@@ -34,59 +34,47 @@ for (const source of manifest.sourceRefs ?? []) {
   if (!existsSync(join(root, source)))
     fail(`missing source reference ${source}`);
 }
-const packageHash = createHash("sha256")
-  .update(readFileSync(join(root, "package.json")))
-  .digest("hex");
-const lockHash = createHash("sha256")
-  .update(readFileSync(join(root, "package-lock.json")))
-  .digest("hex");
-if (packageHash !== manifest.identity.packageSha256) fail("package hash drift");
-if (lockHash !== manifest.identity.lockfileSha256) fail("lockfile hash drift");
-const untracked = spawnSync(
-  "git",
-  ["ls-files", "--others", "--exclude-standard"],
-  { cwd: root, encoding: "utf8", windowsHide: true },
-)
-  .stdout.split(/\r?\n/)
-  .filter((value) => value && value !== "candidate-trust-manifest.json")
-  .sort();
-const tracked =
-  spawnSync("git", ["ls-files", "-z"], {
-    cwd: root,
-    encoding: null,
-    windowsHide: true,
-  })
-    .stdout?.toString("utf8")
-    .split("\0")
-    .filter((value) => value && value !== "candidate-trust-manifest.json") ??
-  [];
-const treePaths = [...new Set([...tracked, ...untracked])].sort();
-const treeParts = treePaths.flatMap((value) => [
-  Buffer.from(`${value}\0`),
-  readFileSync(join(root, value)),
-]);
-const workingTreeHash = createHash("sha256")
-  .update(Buffer.concat(treeParts))
-  .digest("hex");
-if (workingTreeHash !== manifest.identity.workingTreeSha256) {
-  fail(
-    `working-tree hash drift (expected ${manifest.identity.workingTreeSha256}, received ${workingTreeHash})`,
-  );
+if (manifest.train !== "M26") fail("train must be M26");
+if (manifest.worktreePolicy !== "PRESERVE_NO_RESET_STASH_DELETE") {
+  fail("worktree preservation policy is not explicit");
 }
-const changedPathCount = new Set(
-  [
-    ...spawnSync("git", ["diff", "--name-only", "HEAD"], {
-      cwd: root,
-      encoding: "utf8",
-      windowsHide: true,
-    })
-      .stdout.split(/\r?\n/)
-      .filter((value) => value && value !== "candidate-trust-manifest.json"),
-    ...untracked,
-  ].filter(Boolean),
-).size;
-if (changedPathCount !== manifest.identity.changedPathCount) {
-  fail("changed-path count drift");
+if (typeof manifest.owner !== "string" || manifest.owner.length === 0) {
+  fail("candidate owner missing");
+}
+if (
+  typeof manifest.approvalAuthority !== "string" ||
+  manifest.approvalAuthority.length === 0
+) {
+  fail("approval authority missing");
+}
+if (typeof manifest.control !== "object" || manifest.control === null) {
+  fail("M26 control record missing");
+}
+if (!Array.isArray(manifest.blockers) || manifest.blockers.length === 0) {
+  fail("candidate blockers must be explicit");
+}
+const worktree = inspectCandidateWorktree(root);
+for (const key of [
+  "version",
+  "baseSha",
+  "packageSha256",
+  "lockfileSha256",
+  "workingTreeSha256",
+  "changedPathCount",
+]) {
+  if (worktree[key] !== manifest.identity[key]) fail(`${key} drift`);
+}
+if (
+  JSON.stringify(worktree.dirtyFiles) !==
+  JSON.stringify(manifest.identity.dirtyFiles)
+) {
+  fail("dirty-file inventory drift");
+}
+if (
+  JSON.stringify(worktree.worktreeInventory) !==
+  JSON.stringify(manifest.identity.worktreeInventory)
+) {
+  fail("worktree inventory drift");
 }
 if (
   !manifest.claimRegistry?.path ||

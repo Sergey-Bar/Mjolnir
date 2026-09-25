@@ -30,6 +30,7 @@ import { fileURLToPath } from "node:url";
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SITE = join(HERE, "..");
 const SRC = join(SITE, "..", "docs", "rules");
+const AUDIT = join(SITE, "..", "tests", "corpus", "detector-hashes.json");
 const OUT = join(SITE, "rules");
 const BLOB = "https://github.com/Sergey-Bar/Mjolnir/blob/main/";
 
@@ -136,6 +137,16 @@ export function siteBody(id, md) {
   return out;
 }
 
+export function activeRuleIds(source = readFileSync(AUDIT, "utf8")) {
+  const hashes = JSON.parse(source);
+  return new Set(Object.keys(hashes));
+}
+
+export function retiredRuleIds(allIds, active = activeRuleIds()) {
+  const activeSet = active instanceof Set ? active : new Set(active);
+  return new Set(allIds.filter((id) => !activeSet.has(id)));
+}
+
 function main() {
   if (!existsSync(SRC)) {
     console.error(
@@ -147,8 +158,17 @@ function main() {
   rmSync(OUT, { recursive: true, force: true });
   mkdirSync(OUT, { recursive: true });
 
-  const files = readdirSync(SRC)
-    .filter((f) => /^QA-[A-Z]+-\d+\.md$/.test(f))
+  const active = activeRuleIds();
+  const allFiles = readdirSync(SRC).filter((f) =>
+    /^QA-[A-Z]+-\d+\.md$/.test(f),
+  );
+  const allIds = allFiles.map((file) => file.replace(/\.md$/, ""));
+  const retired = retiredRuleIds(allIds, active);
+  const files = allFiles
+    .filter((f) => {
+      const id = f.replace(/\.md$/, "");
+      return active.has(id) && !retired.has(id);
+    })
     .sort();
 
   const rules = [];

@@ -680,6 +680,33 @@ export function checkArtifactIntegrity(root: string): {
       };
 }
 
+function isReleaseVersion(value: string): boolean {
+  const isNumeric = (part: string): boolean =>
+    /^\d+$/.test(part) && (part === "0" || !part.startsWith("0"));
+  const [core, prerelease, ...extra] = value.split("-");
+  const [major, minor, patch, ...coreExtra] = (core ?? "").split(".");
+  if (
+    extra.length > 0 ||
+    major === undefined ||
+    minor === undefined ||
+    patch === undefined ||
+    coreExtra.length > 0 ||
+    !isNumeric(major) ||
+    !isNumeric(minor) ||
+    !isNumeric(patch)
+  ) {
+    return false;
+  }
+  if (prerelease === undefined) return true;
+  const [kind, number, ...rcExtra] = prerelease.split(".");
+  return (
+    kind === "rc" &&
+    number !== undefined &&
+    isNumeric(number) &&
+    rcExtra.length === 0
+  );
+}
+
 export function checkReleaseVersionConsistency(root: string): {
   evidence: EvidenceState;
   determination: Determination;
@@ -696,8 +723,19 @@ export function checkReleaseVersionConsistency(root: string): {
   }
   const pkg = JSON.parse(readFileSync(pkgPath, "utf8")) as { version?: string };
   const cl = readFileSync(clPath, "utf8");
-  const head = /^##\s+\[?(\d+\.\d+\.\d+)\]?/m.exec(cl)?.[1];
-  if (!pkg.version || head === undefined) {
+  const head = cl.split(/\r?\n/).reduce<string | undefined>((found, line) => {
+    if (found !== undefined || !line.startsWith("## [")) return found;
+    const headingEnd = line.indexOf("]", 4);
+    if (headingEnd < 5) return undefined;
+    const candidate = line.slice(4, headingEnd).trim();
+    return isReleaseVersion(candidate) ? candidate : undefined;
+  }, undefined);
+  if (
+    !pkg.version ||
+    !isReleaseVersion(pkg.version) ||
+    head === undefined ||
+    !isReleaseVersion(head)
+  ) {
     return {
       evidence: "INCONCLUSIVE",
       determination: "INCONCLUSIVE",

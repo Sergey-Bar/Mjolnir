@@ -18,7 +18,7 @@
 [![node](https://img.shields.io/badge/node-%E2%89%A5%2022.18-1F6F7C.svg?style=flat-square&labelColor=0A1119)](https://nodejs.org)
 
 ```bash
-npx mjolnir-qa@latest
+npx mjolnir-qa@3.0.0
 ```
 
 [Δείτε το σε δράση](#δείτε-το-σε-δράση) · [Γρήγορη εκκίνηση](#γρήγορη-εκκίνηση) · [Τι βρίσκει](#τι-βρίσκει-το-mjölnir) · [Βαθμολογία](#η-βαθμολογία-αξιοπιστίας) · [Τεκμήρια](#το-μοντέλο-τεκμηρίωσης) · [Ανάλυση εκτελέσεων](#ανάλυση-εκτελέσεων-τεστ) · [CI](#ακεραιότητα-ci) · [Πράκτορες](#πράκτορες-τν) · [Ασφάλεια](#εμπιστοσύνη-και-ασφάλεια) · [Όρια](#τι-δεν-μπορεί-να-σας-πει-το-mjölnir) · [Τεκμηρίωση](#τεκμηρίωση)
@@ -28,15 +28,29 @@ npx mjolnir-qa@latest
 
 [English](README.md) | [简体中文](README.zh.md) | [繁體中文](README.zht.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | [日本語](README.ja.md) | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | [Türkçe](README.tr.md) | [Українська](README.uk.md) | [বাংলা](README.bn.md) | Ελληνικά | [Tiếng Việt](README.vi.md) | [עברית](README.he.md) | [العربية](README.ar.md) | [Bosanski](README.bs.md)
 
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-15.
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-25.
 
-<!-- Source hash: 3541b09e8d04 -->
+<!-- Source hash: `f3d2a07f2d68` -->
 
 </details>
 
 </div>
 
 <br />
+
+## Release status (English canonical)
+
+The published line is `3.0.0`; this working tree is the `4.0.0-rc.1`
+candidate. `3.0.0` must not be republished or retagged. The M26–M50 program is
+tracked in
+[`docs/ROADMAP.yaml`](docs/ROADMAP.yaml); provisional capability contracts
+are not automatically enabled or certified. Repository-owned checks pass, but
+Trust certification remains `NOT_CERTIFIED` until the protected holdout,
+real-world, platform/consumer, remote-workflow, support-matrix, and corpus
+evidence gates pass. Run `npm run m26:readiness` before treating any candidate
+as releasable. This document does not publish a tag or authorize a release.
+
+> Machine-assisted canonical text. Translate this block before treating it as localized copy.
 
 ## Ένα πράσινο τικ είναι ισχυρισμός, όχι απόδειξη
 
@@ -58,7 +72,7 @@ npx mjolnir-qa@latest
 
 <sub>Κάθε εύρημα που ανέφερε η σάρωση επίδειξης για αυτό το workflow, στη γραμμή που ανέφερε. Δημιουργείται με `npm run docs:readme-brand` από το [`demo-report.json`](assets/readme/demo-report.json) και κλειδώνεται έναντι αποκλίσεων στο CI.</sub>
 
-**Αυστηρή λειτουργία.** Οι πιο επιθετικές ανιχνεύσεις — `.only`, `continue-on-error`, κενά τεστ, κατάχρηση επανάληψης — ζουν στο επίπεδο καραντίνας. Τρέχουν μόνο με `--strict` και περιορίζονται σε σοβαρότητα `info`: ειδοποιούν, δεν μπλοκάρουν ποτέ. Η προεπιλεγμένη σάρωση (`npx mjolnir-qa@latest` χωρίς `--strict`) καλύπτει μόνο βασικούς και εκτεταμένους κανόνες. Προσθέστε `--strict` όταν θέλετε και το επίπεδο συμβουλών.
+**Αυστηρή λειτουργία.** Οι πιο επιθετικές ανιχνεύσεις — `.only`, `continue-on-error`, κενά τεστ, κατάχρηση επανάληψης — ζουν στο επίπεδο καραντίνας. Τρέχουν μόνο με `--strict` και περιορίζονται σε σοβαρότητα `info`: ειδοποιούν, δεν μπλοκάρουν ποτέ. Η προεπιλεγμένη σάρωση (`npx mjolnir-qa@3.0.0` χωρίς `--strict`) καλύπτει μόνο βασικούς και εκτεταμένους κανόνες. Προσθέστε `--strict` όταν θέλετε και το επίπεδο συμβουλών.
 
 Το Mjölnir διαβάζει τη σουίτα, τα CI workflows και, αν υπάρχει, την αναφορά μιας πραγματικής εκτέλεσης. Δεν εκτελεί τα τεστ σας, δεν εγκαθιστά τις εξαρτήσεις σας και δεν εκτελεί τον κώδικα που σαρώνει. Κι όταν δεν έχει τεκμήρια, το λέει αντί να επινοεί βεβαιότητα:
 
@@ -93,7 +107,7 @@ npx mjolnir-qa@latest
 
 <p align="center">
   <a href="assets/video/mjolnir-demo.mp4">
-    <img src="assets/video/mjolnir-demo-poster.png" alt="Ένα καρέ της εγγραφής επίδειξης: το npx mjolnir-qa@latest σαρώνει το αποθετήριο επίδειξης σε ένα παράθυρο τερματικού" width="900" />
+    <img src="assets/video/mjolnir-demo-poster.png" alt="Ένα καρέ της εγγραφής επίδειξης: το npx mjolnir-qa@3.0.0 σαρώνει το αποθετήριο επίδειξης σε ένα παράθυρο τερματικού" width="900" />
   </a>
 </p>
 
@@ -162,7 +176,7 @@ Docs: mjolnir rules --md   (full catalog, this rule included)
 ## Γρήγορη εκκίνηση
 
 ```bash
-npx mjolnir-qa@latest
+npx mjolnir-qa@3.0.0
 ```
 
 Σαρώνει τον τρέχοντα κατάλογο και τυπώνει το Trust Report: τι βρήκε, πόσο μπορείτε να το εμπιστευτείτε, γιατί και τι να κάνετε μετά. Τερματίζει με `0` όταν δεν βρέθηκε τίποτα στο επίπεδο της πύλης ή πάνω από αυτό.
@@ -170,24 +184,39 @@ npx mjolnir-qa@latest
 Στο CI, σαρώστε μόνο ό,τι εισήγαγε το branch, ώστε μια παλιά σουίτα να μη πνίξει το πρώτο σας pull request:
 
 ```bash
-npx mjolnir-qa@latest --scope changed
+npx mjolnir-qa@3.0.0 --scope changed
 ```
 
-Το `mjolnir ci install` το γράφει ως GitHub Actions workflow, χρησιμοποιώντας το [action](https://github.com/Sergey-Bar/Mjolnir#readme) καρφιτσωμένο στο κύριο tag `v1` (ή απλό `npx` με `--no-action`). Παραμένει συμβουλευτικό μέχρι να αποφασίσετε ότι πρέπει να μπλοκάρει.
+Το `mjolnir ci install` το γράφει ως GitHub Actions workflow, χρησιμοποιώντας το [action](https://github.com/Sergey-Bar/Mjolnir#readme) καρφιτσωμένο στο κύριο tag `v3` (ή απλό `npx` με `--no-action`). Παραμένει συμβουλευτικό μέχρι να αποφασίσετε ότι πρέπει να μπλοκάρει.
 
-| Εντολή                              | Τι κάνει                                                            |
-| ----------------------------------- | ------------------------------------------------------------------- |
-| `mjolnir`                           | Trust Report: ετυμηγορία, βεβαιότητα, επόμενη ενέργεια              |
-| `mjolnir --scope changed`           | Μόνο ό,τι εισήγαγε το branch σας (η μορφή για CI)                   |
-| `mjolnir ci install`                | Δημιουργεί το συμβουλευτικό workflow για PR (βασισμένο στο action)  |
-| `mjolnir explain QA-CI-001`         | Τι, γιατί και διόρθωση, συν το μετρημένο ποσοστό FP                 |
-| `mjolnir why src/a.spec.ts:42`      | Γιατί σημειώθηκε ακριβώς αυτή η γραμμή. Δεν μπλοκάρει ποτέ.         |
-| `mjolnir forensics ./test-results/` | Τεκμήρια χρόνου εκτέλεσης από πραγματική εκτέλεση                   |
-| `mjolnir trust-report`              | Αυτόνομο Trust Artifact (md + json)                                 |
-| `mjolnir handoff`                   | Σχέδιο αποκατάστασης για πράκτορα κώδικα                            |
-| `mjolnir --json` / `--format sarif` | Έξοδος αναγνώσιμη από μηχανές, GitHub Code Scanning                 |
-| `mjolnir --format codequality`      | Αναφορά GitLab Code Quality (artifact του widget του MR)            |
-| `mjolnir --strict`                  | Εκτελεί επίσης κανόνες επιπέδου quarantine (υψηλότερος κίνδυνος FP) |
+| Εντολή                                        | Τι κάνει                                                            |
+| --------------------------------------------- | ------------------------------------------------------------------- |
+| `mjolnir`                                     | Trust Report: ετυμηγορία, βεβαιότητα, επόμενη ενέργεια              |
+| `mjolnir --scope changed`                     | Μόνο ό,τι εισήγαγε το branch σας (η μορφή για CI)                   |
+| `mjolnir ci install`                          | Δημιουργεί το συμβουλευτικό workflow για PR (βασισμένο στο action)  |
+| `mjolnir business-case`                       | ROI estimate: projected savings per finding                         |
+| `mjolnir release-report`                      | Release readiness: GO, CONDITIONAL GO, or NO-GO                     |
+| `mjolnir release-trust`                       | 12-dimension release assurance verdict                              |
+| `mjolnir report`                              | Generate a Playwright-compatible report                             |
+| `mjolnir trend`                               | Record, show, or diff local quality snapshots                       |
+| `mjolnir policy`                              | Initialize, validate, or check policy gates                         |
+| `mjolnir quarantine`                          | Review deterministic proposals (prototype)                          |
+| `mjolnir analyze --cross-file`                | Bounded cross-file analysis                                         |
+| `mjolnir ci-adapter github .`                 | Generate CI templates for supported providers                       |
+| `mjolnir dashboard`                           | Generate a self-contained quality dashboard                         |
+| `mjolnir exec-report`                         | Executive KPIs and recommendations (advisory)                       |
+| `mjolnir enterprise`                          | Self-hosted templates (prototype)                                   |
+| `mjolnir maturity`                            | Assess maturity or display maturity levels                          |
+| `mjolnir mutation tests/mutation-report.json` | Analyze mutation reports; never promotes trust                      |
+| `mjolnir mcp`                                 | Read-only MCP tools over stdio                                      |
+| `mjolnir explain QA-CI-001`                   | Τι, γιατί και διόρθωση, συν το μετρημένο ποσοστό FP                 |
+| `mjolnir why src/a.spec.ts:42`                | Γιατί σημειώθηκε ακριβώς αυτή η γραμμή. Δεν μπλοκάρει ποτέ.         |
+| `mjolnir forensics ./test-results/`           | Τεκμήρια χρόνου εκτέλεσης από πραγματική εκτέλεση                   |
+| `mjolnir trust-report`                        | Αυτόνομο Trust Artifact (md + json)                                 |
+| `mjolnir handoff`                             | Σχέδιο αποκατάστασης για πράκτορα κώδικα                            |
+| `mjolnir --json` / `--format sarif`           | Έξοδος αναγνώσιμη από μηχανές, GitHub Code Scanning                 |
+| `mjolnir --format codequality`                | Αναφορά GitLab Code Quality (artifact του widget του MR)            |
+| `mjolnir --strict`                            | Εκτελεί επίσης κανόνες επιπέδου quarantine (υψηλότερος κίνδυνος FP) |
 
 <details>
 <summary><strong>Όλες οι υπόλοιπες εντολές</strong> — διαλογή ασταθών τεστ, αναφορές, διακυβέρνηση</summary>
@@ -452,18 +481,18 @@ mjolnir ci install
 Ή προσθέστε το action του Marketplace σε ένα workflow που ήδη έχετε:
 
 ```yaml
-- uses: Sergey-Bar/Mjolnir@v1
+- uses: Sergey-Bar/Mjolnir@v3
   with:
     scope: changed
     fail-on: error
 ```
 
-Καρφιτσώστε το `@v1` για να ακολουθείτε την κύρια γραμμή, ή ένα ακριβές tag (`@v0.5.32`) για αναπαραγώγιμη πύλη. Το [docs/DISTRIBUTION-KIT.md](docs/DISTRIBUTION-KIT.md) καλύπτει το Marketplace, το Smithery και τα μητρώα MCP.
+Καρφιτσώστε το `@v3` για να ακολουθείτε την κύρια γραμμή, ή ένα ακριβές tag (`@v0.5.32`) για αναπαραγώγιμη πύλη. Το [docs/DISTRIBUTION-KIT.md](docs/DISTRIBUTION-KIT.md) καλύπτει το Marketplace, το Smithery και τα μητρώα MCP.
 
 Για να στείλετε τα ευρήματα στο GitHub Code Scanning, ανεβάστε SARIF (απαιτεί `security-events: write` σε επίπεδο workflow ή job):
 
 ```yaml
-- run: npx mjolnir-qa@latest --format sarif > mjolnir.sarif
+- run: npx mjolnir-qa@3.0.0 --format sarif > mjolnir.sarif
   continue-on-error: true
 - uses: github/codeql-action/upload-sarif@v3
   if: ${{ !cancelled() }}
@@ -476,7 +505,7 @@ mjolnir ci install
 ### Απόδοση στο εύρος των αλλαγών
 
 ```bash
-npx mjolnir-qa@latest --scope changed
+npx mjolnir-qa@3.0.0 --scope changed
 ```
 
 Τα ευρήματα αποδίδονται στις γραμμές που πρόσθεσε το branch σας, μετρημένες ως προς το **merge-base**. Το εύρος είναι το ίδιο σύνολο αρχείων που ανακαλύπτει μια πλήρης σάρωση (specs TS/JS και ρυθμίσεις adapters, `test_*.py`, `*Test.java`, `*Tests.cs`, `.github/workflows/*.yml`), συν τις αλλαγές χωρίς commit και τις μη παρακολουθούμενες, οπότε λειτουργεί πριν κάνετε commit. Η βάση επιλύεται με τη σειρά `main → master → origin/main → origin/master → origin/HEAD`· αντικαταστήστε τη με `--base <ref>`.
@@ -504,7 +533,7 @@ SCAN → EVIDENCE → HANDOFF → AGENT → RE-SCAN → PROOF
 Προσθέστε το σε έναν client που έχει δικό του CLI:
 
 ```bash
-claude mcp add mjolnir -- npx -y mjolnir-qa@latest mcp
+claude mcp add mjolnir -- npx -y mjolnir-qa@3.0.0 mcp
 ```
 
 Ή σε οποιονδήποτε client δέχεται ένα μπλοκ `mcpServers`:
@@ -512,7 +541,7 @@ claude mcp add mjolnir -- npx -y mjolnir-qa@latest mcp
 ```json
 {
   "mcpServers": {
-    "mjolnir": { "command": "npx", "args": ["-y", "mjolnir-qa@latest", "mcp"] }
+    "mjolnir": { "command": "npx", "args": ["-y", "mjolnir-qa@3.0.0", "mcp"] }
   }
 }
 ```
@@ -603,7 +632,7 @@ mjolnir create-rule QA-PW-140 --title "Screenshot without diff bound"
 <img src="assets/readme/closing.svg" alt="Τρέξτε το στο αποθετήριό σας." width="100%" />
 
 ```bash
-npx mjolnir-qa@latest
+npx mjolnir-qa@3.0.0
 ```
 
 [Διαβάστε τον οδηγό](https://sergey-bar.github.io/Mjolnir/guide/getting-started) · [Ιστότοπος τεκμηρίωσης](https://sergey-bar.github.io/Mjolnir/) · [npm](https://www.npmjs.com/package/mjolnir-qa)

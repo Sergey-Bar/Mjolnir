@@ -74,11 +74,46 @@ describe("release candidate workflow", () => {
     expect(validation).toContain("^[0-9]+\\.[0-9]+\\.[0-9]+-rc\\.[0-9]+$");
     expect(validation).toContain('git cat-file -t "refs/tags/$TAG"');
     expect(validation).toContain('"$REF_NAME" == "release/v$BASE_VERSION"');
-    expect(validation).toContain('"## [$BASE_VERSION]" CHANGELOG.md');
+    expect(validation).not.toContain('grep -F "##');
     expect(validation).toContain(
       "git merge-base --is-ancestor origin/main HEAD",
     );
     expect(validation).not.toContain("git push");
+  });
+
+  it("runs the exact RC-aware changelog gate before certification", () => {
+    const changelog = stepIndex("verify", (step) => step.id === "changelog");
+    const certification = stepIndex(
+      "verify",
+      (step) => step.run === "npm run ci-local",
+    );
+    expect(changelog).toBeGreaterThanOrEqual(0);
+    expect(changelog).toBeLessThan(certification);
+    const run = steps("verify")[changelog]?.run ?? "";
+    expect(steps("verify")[changelog]?.env?.EXPECTED_VERSION).toBe(
+      "${{ steps.context.outputs.version }}",
+    );
+    expect(run).toContain(
+      'npm run changelog:check -- --expect-version "$VERSION"',
+    );
+    expect(run).toContain('git diff --quiet "$BASE_REF" HEAD -- src/rules');
+    expect(run).toContain("--rules-touched");
+  });
+
+  it("requires authorized candidate evidence before non-dry-run certification", () => {
+    const authorization = stepIndex(
+      "verify",
+      (step) => step.run?.includes("npm run m26:audit") === true,
+    );
+    const certification = stepIndex(
+      "verify",
+      (step) => step.run === "npm run ci-local",
+    );
+    expect(authorization).toBeGreaterThanOrEqual(0);
+    expect(authorization).toBeLessThan(certification);
+    expect(steps("verify")[authorization]?.if).toContain(
+      "steps.context.outputs.dry-run == 'false'",
+    );
   });
 
   it("builds, certifies, packs once, audits, and uploads the candidate", () => {
@@ -167,6 +202,7 @@ describe("release candidate workflow", () => {
     expect(publishStep?.run).toContain("--provenance");
     expect(publishStep?.run).toContain("--ignore-scripts");
     const commands = steps("publish-npm").map((step) => step.run ?? "");
+    expect(commands.join("\n")).toContain("dist.integrity");
     expect(commands.join("\n")).not.toContain("npm run build");
     expect(commands.join("\n")).not.toContain("npm ci");
     expect(commands.join("\n")).toContain("sha256sum");
@@ -234,14 +270,18 @@ describe("release candidate workflow", () => {
     expect(source).not.toContain("continue-on-error");
   });
 
-  it("moves stable action tags only outside RC releases", () => {
+  it("moves only the current v3 action tag outside RC releases", () => {
     const actionTags = readFileSync(
       join(root, ".github", "workflows", "action-tags.yml"),
       "utf8",
     );
     expect(actionTags).toContain("!contains(github.ref_name, '-rc.')");
-    expect(actionTags).toContain('git tag -f "$major" "$GITHUB_SHA"');
-    expect(actionTags).toContain('git push origin "refs/tags/$major" --force');
+    expect(actionTags).toContain('if [[ "$MAJOR" != "3" ]]');
+    expect(actionTags).toContain('git tag -f "$MAJOR_TAG" "$GITHUB_SHA"');
+    expect(actionTags).toContain(
+      'git push origin "refs/tags/$MAJOR_TAG" --force',
+    );
+    expect(actionTags).not.toContain("for major in v1 v2 v3");
   });
 
   it("executes only real spec paths", () => {

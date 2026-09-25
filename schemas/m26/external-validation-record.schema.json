@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "m26-external-validation-record.schema.json",
+  "title": "M26 external validation record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "record_id",
+    "protocol",
+    "owner",
+    "candidate",
+    "observed_at",
+    "consent",
+    "evidence",
+    "retention",
+    "support_requests",
+    "claim_review",
+    "limitations",
+    "result"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "record_id": { "type": "string", "pattern": "^EXT-[A-Z0-9][A-Z0-9._-]*$" },
+    "protocol": { "type": "string", "minLength": 1 },
+    "owner": { "type": "string", "minLength": 1 },
+    "status": { "enum": ["BLOCKED", "PASS", "FAIL"], "default": "BLOCKED" },
+    "execution_status": { "enum": ["NOT_RUN", "RUN"], "default": "NOT_RUN" },
+    "candidate": { "type": ["string", "null"] },
+    "observed_at": { "type": ["string", "null"], "format": "date-time" },
+    "consent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state", "evidence"],
+      "properties": {
+        "state": { "enum": ["NOT_REQUESTED", "NOT_RECORDED", "CONSENTED"] },
+        "evidence": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "retention": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["policy", "deletion_status"],
+      "properties": {
+        "policy": { "type": "string", "minLength": 1 },
+        "deletion_status": { "enum": ["NOT_RUN", "BLOCKED", "COMPLETE"] }
+      }
+    },
+    "support_requests": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "claim_review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "evidence"],
+      "properties": {
+        "status": { "enum": ["NOT_RUN", "BLOCKED", "COMPLETE"] },
+        "evidence": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "limitations": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "result": { "type": ["string", "null"] }
+  }
+}

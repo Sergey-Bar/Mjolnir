@@ -6,7 +6,8 @@ execute it today, and the pointer. The P9 exit bar: an adjudication
 cycle operable end-to-end by a second human; publishing remains
 identity-bound until a co-maintainer exists (docs/MAINTAINERS.md).
 
-Measured at: v0.5.37 (2026-09-09, initial audit).
+Measured at: v3.0.0 working-candidate audit (2026-09-25). The published
+v3.0.0 tag remains immutable; the next release is a separately assigned SemVer.
 
 ## Adjudication cycle (the P9 deliverable — second-human ready)
 
@@ -22,15 +23,16 @@ Measured at: v0.5.37 (2026-09-09, initial audit).
 
 ## Release cycle
 
-| Operation                       | Executable by      | Pointer                                             |
-| ------------------------------- | ------------------ | --------------------------------------------------- |
-| Standing gates (typecheck→test) | any maintainer     | CONTRIBUTING.md "the standing gate"                 |
-| Version PR (release bot)        | automatic on main  | .github/workflows/release.yml                       |
-| npm publish                     | **identity-bound** | 2FA + provenance OIDC (docs/OWNER-RUNBOOK.md)       |
-| dist-tags (`latest`/`next`)     | runbooked          | docs/PUBLISHING.md                                  |
-| GitHub Release publish          | runbooked          | release.yml automation + note review                |
-| v1 action moving tag            | automatic          | release.yml action-tags job (rc tags never move it) |
-| Marketplace publish             | **identity-bound** | account-bound (docs/DISTRIBUTION-KIT.md checklist)  |
+| Operation                       | Executable by      | Pointer                                                      |
+| ------------------------------- | ------------------ | ------------------------------------------------------------ |
+| Standing gates (typecheck→test) | any maintainer     | CONTRIBUTING.md "the standing gate"                          |
+| Version-candidate PR            | any maintainer     | docs/ROADMAP.yaml + docs/RELEASE-3.0.0-READINESS.md          |
+| Release workflow dispatch       | release authority  | manual release.yml / stable-release.yml dispatch             |
+| npm publish                     | **identity-bound** | 2FA + provenance OIDC (docs/OWNER-RUNBOOK.md)                |
+| dist-tags (`latest`/`next`)     | runbooked          | docs/PUBLISHING.md                                           |
+| GitHub Release publish          | runbooked          | release.yml automation + note review                         |
+| v3 action moving tag            | automatic          | action-tags.yml job (rc tags and older majors never move it) |
+| Marketplace publish             | **identity-bound** | account-bound (docs/DISTRIBUTION-KIT.md checklist)           |
 
 ## Site & repo settings
 
