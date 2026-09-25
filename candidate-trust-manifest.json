@@ -34,17 +34,13 @@
     "packageSha256": "f190bb7a5cf0fef8e23ec506439a44c00b12e28162d64d96fc135c78cf82cc05",
     "lockfileSha256": "aeaff5bca556b58283a5c3c074adda7e429f28b2a76cd51b0efeaeaba9b5021c",
     "workingTreeSha256": "c7da1fb9182b8efb19fc46c863dccc202a6c8d3e0c8033353d9d2e3fd9381612",
-    "changedPathCount": 1,
+    "changedPathCount": 0,
     "supportEnvelope": "self-hosted; hosted services require explicit consent and separate proof",
     "worktreeInventory": {
-      "changedPaths": [
-        "scripts/check-candidate-manifest.mjs"
-      ],
+      "changedPaths": [],
       "untrackedPaths": []
     },
-    "dirtyFiles": [
-      "scripts/check-candidate-manifest.mjs"
-    ]
+    "dirtyFiles": []
   },
   "claimRegistry": {
     "path": "docs/claim-registry.json",
