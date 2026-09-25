@@ -284,6 +284,21 @@ describe("every GitHub workflow satisfies the repo's own audit conventions", () 
           }
         }
       });
+
+      it("no step output is read through a hyphenated property name (audit S-11)", () => {
+        // `${{ steps.x.outputs.a-b }}` parses as subtraction, not as the
+        // output `a-b`: the expression evaluates to `null - null` = 0 and the
+        // consuming gate silently compares against a constant. Publish the
+        // measurement as `a_b` and read `steps.x.outputs.a_b`.
+        const text = readFileSync(join(WORKFLOWS_DIR, file), "utf8");
+        const offenders = [
+          ...text.matchAll(/steps\.[\w-]+\.outputs\.\w+-[\w-]+/g),
+        ].map((match) => match[0]);
+        expect(
+          offenders,
+          `hyphenated step output reference(s) in ${file} evaluate to 0: ${offenders.join(", ")}`,
+        ).toEqual([]);
+      });
     });
   }
 });

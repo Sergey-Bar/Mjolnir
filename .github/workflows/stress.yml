@@ -35,7 +35,10 @@ jobs:
           start=$(date +%s)
           node dist/cli.mjs "$RUNNER_TEMP/stress-repo" --json --blocking none > "$RUNNER_TEMP/stress-result.json"
           end=$(date +%s)
-          echo "scan-seconds=$((end - start))" >> "$GITHUB_OUTPUT"
+          # Underscores, not hyphens: a hyphen in a step output name is parsed
+          # as subtraction when read back in an expression, so the budget
+          # check below would compare 0 against 120 and never fail.
+          echo "scan_seconds=$((end - start))" >> "$GITHUB_OUTPUT"
           node -e '
             const r = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
             if (r.partial !== false) { console.error("FAIL: partial scan"); process.exit(1); }
@@ -46,10 +49,15 @@ jobs:
             console.log("findings:", r.findings.length, "declarations:", r.testDeclarationCount);
           ' "$RUNNER_TEMP/stress-result.json"
       - name: Enforce the 120 s budget
+        env:
+          SCAN_SECONDS: ${{ steps.scan.outputs.scan_seconds }}
         run: |
-          seconds=${{ steps.scan.outputs.scan-seconds }}
-          echo "scan took ${seconds}s"
-          if [ "$seconds" -gt 120 ]; then
+          if [ -z "$SCAN_SECONDS" ]; then
+            echo "FAIL: the scan step recorded no duration, so the budget cannot be enforced"
+            exit 1
+          fi
+          echo "scan took ${SCAN_SECONDS}s"
+          if [ "$SCAN_SECONDS" -gt 120 ]; then
             echo "FAIL: scan exceeded the 120 s budget"
             exit 1
           fi

@@ -17,6 +17,8 @@ interface WorkflowStep {
 
 interface WorkflowJob {
   permissions?: Record<string, string>;
+  needs?: string | string[];
+  if?: string;
   steps?: WorkflowStep[];
 }
 
@@ -98,6 +100,27 @@ describe("mjolnir.yml (the PR feedback loop workflow)", () => {
     });
   });
 
+  it("renders and uploads the report on findings, not only on a clean scan", () => {
+    // A report that only exists when nothing was found tells a reviewer
+    // nothing at the exact moment they need it.
+    const steps = loadPrWorkflow().jobs.scan?.steps ?? [];
+    const gateIndex = steps.findIndex((step) =>
+      step.name?.startsWith("Gate on"),
+    );
+    for (const name of ["Render unified report"]) {
+      const step = steps.find((candidate) => candidate.name === name);
+      expect(step?.if, name).toBe("always()");
+    }
+    const upload = steps.find((step) =>
+      step.uses?.startsWith("actions/upload-artifact"),
+    );
+    expect(upload?.if).toBe("always()");
+    // The gate runs last so the evidence is published before the verdict.
+    expect(gateIndex).toBeGreaterThan(
+      steps.findIndex((step) => step.name === "Render unified report"),
+    );
+  });
+
   it("publishes only from the downloaded report artifact", () => {
     const steps = loadPrWorkflow().jobs.publish?.steps ?? [];
     expect(
@@ -120,6 +143,17 @@ describe("mjolnir.yml (the PR feedback loop workflow)", () => {
     expect(String(script)).toContain("updateComment");
   });
 
+  it("publishes only after the gate passed, not merely after the scan ran", () => {
+    const wf = loadPrWorkflow();
+    expect(wf.jobs.publish?.needs).toBe("scan");
+    // The scan job's result is now the gate's result, because the gate is the
+    // last step in that job. A comment must never imply a clean scan that the
+    // gate rejected.
+    expect(String(wf.jobs.publish?.if)).toContain(
+      "needs.scan.result == 'success'",
+    );
+  });
+
   it("does not leave dead github.rest.checks references", () => {
     const jobs = Object.values(loadPrWorkflow().jobs);
     for (const job of jobs) {
@@ -136,7 +170,49 @@ describe("mjolnir.yml (the PR feedback loop workflow)", () => {
   it("tolerates analysis exit without a blanket shell true", () => {
     const steps = loadPrWorkflow().jobs.scan?.steps ?? [];
     const analysis = steps.find((step) => step.name === "Run analysis");
-    expect(analysis?.["continue-on-error"]).toBe(true);
     expect(analysis?.run).not.toMatch(/\|\|\s*true/);
+    // The step must record the real exit code: `continue-on-error` would keep
+    // the code from later steps, and a blanket success would erase it.
+    expect(analysis?.run).toContain('echo "exit_code=$code"');
+    expect(analysis?.run).toContain("node dist/cli.mjs . --scope changed");
+  });
+
+  it("gates the pull request on the recorded exit code", () => {
+    // G-V5-009: the dogfood workflow forced exit 0 and had no gate step, so
+    // its own PRs read green regardless of what the scan found. The gate is
+    // the deliverable of this workflow.
+    const steps = loadPrWorkflow().jobs.scan?.steps ?? [];
+    const gate = steps.find((step) => step.name?.startsWith("Gate on"));
+    expect(gate, "the scan job must contain a gate step").toBeDefined();
+    expect(gate?.env?.["EXIT_CODE"]).toBe(
+      "${{ steps.analysis.outputs.exit_code }}",
+    );
+    expect(gate?.if).toBe("always()");
+    expect(gate?.["continue-on-error"]).toBeUndefined();
+    const script = gate?.run ?? "";
+    // Each verdict the exit-code contract can produce must have a verdict.
+    expect(script).toMatch(/0\)/);
+    expect(script).toMatch(/1\)/);
+    expect(script).toMatch(/2\)/);
+    expect(script).toMatch(/""\)/);
+    expect(script).toMatch(/\*\)/);
+  });
+
+  it("treats a clean exit with no report as partial, never as clean", () => {
+    const steps = loadPrWorkflow().jobs.scan?.steps ?? [];
+    const analysis = steps.find((step) => step.name === "Run analysis");
+    expect(analysis?.run).toContain('echo "exit_code=2"');
+  });
+
+  it("exposes the finding gate as an explicit, non-secret input", () => {
+    const wf = loadPrWorkflow() as Workflow & {
+      on?: { workflow_dispatch?: { inputs?: Record<string, unknown> } };
+    };
+    const input = wf.on?.workflow_dispatch?.inputs?.blocking;
+    expect(
+      input,
+      "the gate must be overridable, and the default stated",
+    ).toBeDefined();
+    expect(input).toMatchObject({ default: "error" });
   });
 });

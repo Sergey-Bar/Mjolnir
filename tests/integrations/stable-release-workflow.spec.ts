@@ -122,9 +122,29 @@ describe("stable release workflow", () => {
   it("materializes an existing immutable tag before packing", () => {
     expect(source).toContain("tag_commit=$TAG_COMMIT");
     expect(source).toContain("Materialize and build existing release tag");
+    // Underscore, not hyphen: a hyphen in a job output name is parsed as
+    // subtraction, so the expected-commit check compared against 0.
     expect(source).toContain(
-      "EXPECTED_COMMIT: ${{ needs.verify.outputs.tag-commit }}",
+      "EXPECTED_COMMIT: ${{ needs.verify.outputs.tag_commit }}",
     );
+    expect(source).not.toMatch(/needs\.verify\.outputs\.\w+-/);
+  });
+
+  it("publishes the tag commit the identity step actually produced", () => {
+    // The Action-major move read `steps.identity.outputs.tag-commit`, but the
+    // identity step only ever wrote `tag`. The read evaluated to nothing and
+    // `git tag -f` would have run with an empty target.
+    const move = workflow.jobs.tag?.steps?.find((step) =>
+      step.run?.includes('git tag -f "v$MAJOR"'),
+    );
+    expect(move?.env?.TAG_COMMIT).toBe(
+      "${{ steps.identity.outputs.tag_commit }}",
+    );
+    expect(move?.run).toContain('test -n "$TAG_COMMIT"');
+    const identity = workflow.jobs.tag?.steps?.find((step) =>
+      step.run?.includes('git tag -a "$TAG"'),
+    );
+    expect(identity?.run).toContain('echo "tag_commit=$TAG_COMMIT"');
   });
 
   it("runs the exact stable changelog gate before certification", () => {
@@ -152,6 +172,26 @@ describe("stable release workflow", () => {
     );
     expect(readiness).toBeGreaterThanOrEqual(0);
     expect(readiness).toBeLessThan(certification ?? -1);
+  });
+
+  it("produces and publishes the release-trust record a stable release must have", () => {
+    // G-V5-011: the stable flow certified and published without ever
+    // producing the release-trust artifact the RC flow produces. A stable
+    // release is the one consumers install.
+    const run = workflow.jobs.verify?.steps
+      ?.map((step) => step.run ?? "")
+      .join("\n");
+    expect(run).toContain(
+      "release-trust --json > release-assets/release-trust.json",
+    );
+    expect(run).toContain("test -s release-assets/release-trust.json");
+    const published = workflow.jobs["github-release"]?.steps
+      ?.map((step) => step.run ?? "")
+      .join("\n");
+    expect(published).toContain("release-assets/release-trust.json");
+    expect(published).toContain(
+      "the stable release has no release-trust record",
+    );
   });
 
   it("validates the packaged CLI version banner", () => {

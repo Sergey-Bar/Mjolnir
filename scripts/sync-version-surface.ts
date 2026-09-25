@@ -6,9 +6,9 @@ import {
 } from "../src/release/version-surface.js";
 
 const root = process.argv[2] ?? process.cwd();
-const { version } = JSON.parse(
+const { version, publishedStable } = JSON.parse(
   readFileSync(join(root, "package.json"), "utf8"),
-) as { version: string };
+) as { version: string; publishedStable?: string };
 const surfaces = Object.fromEntries(
   VERSION_SURFACE_PATHS.map((path) => [
     path,
@@ -17,7 +17,11 @@ const surfaces = Object.fromEntries(
       : undefined,
   ]),
 );
-const result = synchronizeVersionSurfaceEnvelope(version, surfaces);
+const result = synchronizeVersionSurfaceEnvelope(
+  version,
+  surfaces,
+  publishedStable,
+);
 
 for (const path of result.changedPaths) {
   const content = result.surfaces[path];
@@ -30,6 +34,7 @@ console.log(
   JSON.stringify({
     status: "PASS",
     version,
+    publishedStable,
     changedPaths: result.changedPaths,
   }),
 );

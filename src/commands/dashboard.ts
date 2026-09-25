@@ -12,19 +12,23 @@ import { isAbsolute, relative, resolve } from "node:path";
 import { sanitizeErrorText } from "../forensics/evidence-hygiene.js";
 import { writeFileAtomic } from "../lib/fs-atomic.js";
 import { internalErrorMessage, type Output } from "../cli-io.js";
-import {
-  EXIT_CLEAN,
-  EXIT_FINDINGS,
-  EXIT_INTERNAL,
-  EXIT_USAGE,
-} from "../exit-codes.js";
+import { decideClaim } from "../claim-evidence.js";
+import { EXIT_INTERNAL, EXIT_USAGE } from "../exit-codes.js";
 
 export interface DashboardData {
   score: number | null;
   totalFindings: number;
   errorCount: number;
   warningCount: number;
-  frameworkCount: number;
+  /**
+   * `null` when framework detection itself was unknown. A zero there would
+   * read as "this project uses no frameworks", which is the opposite claim.
+   */
+  frameworkCount: number | null;
+  /** True when the analysis did not cover the whole surface. */
+  partial: boolean;
+  /** How many findings the table below actually rendered. */
+  findingsShown: number;
   findings: Array<{
     ruleId: string;
     severity: string;
@@ -33,6 +37,8 @@ export interface DashboardData {
   }>;
   generatedAt: string;
 }
+
+const FINDINGS_SHOWN_LIMIT = 100;
 
 function escapeHtml(text: string): string {
   return sanitizeErrorText(text, { maxLength: 1_000 })
@@ -60,6 +66,16 @@ function generateDashboardHtml(data: DashboardData): string {
     )
     .join("");
 
+  const banner = data.partial
+    ? `<p style="color:#eab308;font-weight:600">PARTIAL ANALYSIS — the whole surface was not analyzed. These numbers describe the analyzed portion only.</p>`
+    : "";
+  const truncation =
+    data.findingsShown < data.totalFindings
+      ? `<p>Showing ${data.findingsShown} of ${data.totalFindings} findings (display limit).</p>`
+      : "";
+  const frameworkValue =
+    data.frameworkCount === null ? "unknown" : String(data.frameworkCount);
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -80,16 +96,16 @@ function generateDashboardHtml(data: DashboardData): string {
 </head>
 <body>
 <h1>🔍 Quality Dashboard</h1>
-<p>Generated: ${escapeHtml(data.generatedAt)}</p>
+${banner}<p>Generated: ${escapeHtml(data.generatedAt)}</p>
 <div class="score">${data.score !== null ? data.score + "/100" : "N/A"}</div>
 <div class="kpi-grid">
   <div class="kpi"><div class="value">${data.totalFindings}</div><div class="label">Findings</div></div>
   <div class="kpi"><div class="value" style="color:#ef4444">${data.errorCount}</div><div class="label">Errors</div></div>
   <div class="kpi"><div class="value" style="color:#eab308">${data.warningCount}</div><div class="label">Warnings</div></div>
-  <div class="kpi"><div class="value">${data.frameworkCount}</div><div class="label">Frameworks</div></div>
+  <div class="kpi"><div class="value">${frameworkValue}</div><div class="label">Frameworks</div></div>
 </div>
 <h2>Findings</h2>
-<table><thead><tr><th>Rule</th><th>Severity</th><th>File</th><th>Message</th></tr></thead><tbody>${rows}</tbody></table>
+${truncation}<table><thead><tr><th>Rule</th><th>Severity</th><th>File</th><th>Message</th></tr></thead><tbody>${rows}</tbody></table>
 </body>
 </html>`;
 }
@@ -129,14 +145,20 @@ export async function runDashboardCommand(
       strict: false,
     });
 
+    const shown = result.findings.slice(0, FINDINGS_SHOWN_LIMIT);
     const data: DashboardData = {
       score: result.score,
       totalFindings: result.findings.length,
       errorCount: result.findings.filter((f) => f.severity === "error").length,
       warningCount: result.findings.filter((f) => f.severity === "warning")
         .length,
-      frameworkCount: result.frameworks.length,
-      findings: result.findings.slice(0, 100).map((f) => ({
+      // Undetectable is not the same as none detected.
+      frameworkCount: result.frameworkDetectionUnknown
+        ? null
+        : result.frameworks.length,
+      partial: result.partial,
+      findingsShown: shown.length,
+      findings: shown.map((f) => ({
         ruleId: f.ruleId,
         severity: f.severity,
         file: f.file,
@@ -153,8 +175,24 @@ export async function runDashboardCommand(
     io.out(
       `Findings: ${data.totalFindings} (${data.errorCount} errors, ${data.warningCount} warnings)`,
     );
+    if (data.frameworkCount === null) {
+      io.out("Frameworks: unknown — detection did not complete");
+    }
+    if (data.findingsShown < data.totalFindings) {
+      io.out(
+        `Table shows ${data.findingsShown} of ${data.totalFindings} findings (display limit).`,
+      );
+    }
 
-    return data.errorCount > 0 ? EXIT_FINDINGS : EXIT_CLEAN;
+    // One determination, partial checked first: a truncated analysis must not
+    // exit clean.
+    const decision = decideClaim({
+      partial: data.partial,
+      blockingFindings: data.errorCount,
+      supported: true,
+    });
+    io.out(`Determination: ${decision.state} — ${decision.reason}`);
+    return decision.exitCode;
   } catch (e) {
     internalErrorMessage(e, io.err, false);
     return EXIT_INTERNAL;

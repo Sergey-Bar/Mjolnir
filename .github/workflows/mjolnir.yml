@@ -2,6 +2,19 @@ name: Mjölnir
 
 on:
   pull_request:
+  workflow_dispatch:
+    inputs:
+      blocking:
+        description: >-
+          Finding gate for the dogfood scan. `error` is the honest default;
+          `none` is advisory and records the findings without gating.
+        required: false
+        default: "error"
+        type: choice
+        options:
+          - error
+          - warning
+          - none
 
 concurrency:
   group: mjolnir-${{ github.ref }}
@@ -27,17 +40,29 @@ jobs:
           cache: npm
       - run: npm ci --ignore-scripts
       - run: npm run build
+      # The scan step records the exit code and never fails itself, because
+      # the report below must run on findings — a report that only appears
+      # when nothing was found is not a report. The verdict lives in the gate
+      # step, which reads the recorded code. `continue-on-error` here would
+      # hide the code from every later step; capturing it does not.
       - name: Run analysis
         id: analysis
-        continue-on-error: true
         shell: bash
+        env:
+          MJ_BLOCKING: ${{ inputs.blocking || 'error' }}
         run: |
           set +e
-          node dist/cli.mjs . --scope changed --format json > mjolnir.json
+          node dist/cli.mjs . --scope changed --format json --blocking "$MJ_BLOCKING" > mjolnir.json
           code=$?
+          set -e
           echo "exit_code=$code" >> "$GITHUB_OUTPUT"
           if [ ! -s mjolnir.json ]; then
             printf '{"schemaVersion":1,"partial":true,"score":null,"reason":"analysis-failed","frameworks":[],"frameworkDetectionUnknown":true,"dimensions":[],"findings":[],"analysisStatus":{"discovery":"partial","rules":"partial","skippedFiles":0,"durationMs":0,"reasons":["analysis-failed"]}}\n' > mjolnir.json
+            if [ "$code" = "0" ]; then
+              # A clean exit with no report is a broken scan, not a clean one.
+              echo "exit_code=2" >> "$GITHUB_OUTPUT"
+              echo "::error::analysis produced no report; treating as partial"
+            fi
           fi
           exit 0
       - name: Render unified report
@@ -60,7 +85,30 @@ jobs:
           path: mjolnir-comment.md
           if-no-files-found: error
           retention-days: 30
+      # The gate. A dogfood check that cannot fail is worse than no check,
+      # because the PR reads green. Exit 1 = findings at the configured gate;
+      # exit 2 = partial. Partial is never clean: an incomplete scan that
+      # reports zero findings has proven nothing about the changed surface.
+      - name: Gate on analysis result
+        id: gate
+        if: always()
+        shell: bash
+        env:
+          EXIT_CODE: ${{ steps.analysis.outputs.exit_code }}
+        run: |
+          set -euo pipefail
+          case "$EXIT_CODE" in
+            0) echo "Mjölnir scan clean at the configured gate." ;;
+            1) echo "::error::Mjölnir gate failed: findings at the configured gate."; exit 1 ;;
+            2) echo "::error::Mjölnir scan was PARTIAL — the changed surface was not fully analyzed, so no clean claim is made."; exit 1 ;;
+            "") echo "::error::Mjölnir produced no exit code; the analysis step did not run."; exit 1 ;;
+            *) echo "::error::Mjölnir exited $EXIT_CODE (usage/internal error)."; exit 1 ;;
+          esac
+          echo "outcome=clean" >> "$GITHUB_OUTPUT"
 
+  # The comment is the deliverable and must appear whether or not the gate
+  # passed. The gate is the verdict, and it lives in the scan job: this job
+  # runs only when that job succeeded, which now means "the gate passed".
   publish:
     needs: scan
     if: ${{ always() && needs.scan.result == 'success' }}
@@ -73,11 +121,12 @@ jobs:
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: mjolnir-report
+          path: report
       - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             const fs = require('fs');
-            const body = fs.readFileSync('mjolnir-comment.md', 'utf8');
+            const body = fs.readFileSync('report/mjolnir-comment.md', 'utf8');
             if (!body.trim()) return;
             const marker = '<!-- mjolnir-report:v2 -->';
             const comments = await github.paginate(

@@ -1,7 +1,7 @@
 schemaVersion: 1
 program: "M26-M50"
 status: "blocked-pending-live-ledger"
-source: ".kilo/plans/1790280258089-qa-sdet-ten-release-trains.md"
+source: "docs/RELEASE-TRAINS.md"
 archive:
   status: "UNRECONCILED"
   expectedDesignRecordCount: 108
@@ -54,6 +54,9 @@ dependencyResolution:
   status: "APPROVED_STAGED"
   approvedBy: "Sergey-Bar"
   approvedAt: "2026-09-25"
+  # Provenance of the decision. Untracked by design: it records where the
+  # design note lived on the authoring machine. The program's authority is
+  # `source:` above, which every clone can read.
   source: ".kilo/plans/1790280258089-qa-sdet-ten-release-trains.md"
   cycles:
     - "M31 -> M34 -> M33 -> M31"

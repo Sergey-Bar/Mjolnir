@@ -1,84 +1,85 @@
 /**
- * `mjolnir exec-report` — Executive Quality Report (QM-3).
+ * `mjolnir exec-report` — a short, measured summary of one scan.
  *
- * Generates a board-ready quality report with KPIs, trend summary,
- * risk assessment, and strategic recommendations.
+ * What changed, and why: this command used to render an executive "Risk Level:
+ * LOW", KPI deltas ("↑ healthy") with no previous run to compare against,
+ * and assurances ("Score 85/100 is excellent — maintain current quality gate")
+ * that no measurement supports. It also ignored the `partial` flag entirely,
+ * so a truncated scan could print "No findings — clean scan." and exit 0.
  *
- * Output is human-readable terminal format suitable for copying into
- * executive presentations or email briefings.
+ * It now reports only what the scan measured, names the surface each number
+ * came from, and defers the verdict to the one determination function
+ * (`decideClaim`) so a partial scan can never read as clean. Whether a
+ * business is "low risk" is a decision this tool does not make for anyone.
  */
 
 import { existsSync } from "node:fs";
 
-import type { Finding } from "../types.js";
 import { runScan } from "../engine/scan-pipeline.js";
 import { sectionHeader, plainContext } from "../reporter/ui.js";
 import { internalErrorMessage, type Output } from "../cli-io.js";
-import {
-  EXIT_CLEAN,
-  EXIT_FINDINGS,
-  EXIT_INTERNAL,
-  EXIT_USAGE,
-} from "../exit-codes.js";
+import { decideClaim } from "../claim-evidence.js";
+import { EXIT_INTERNAL, EXIT_USAGE } from "../exit-codes.js";
 
 const ui = plainContext();
 
 export interface ExecutiveKpi {
   label: string;
   value: string;
-  delta: string;
-  status: "good" | "warning" | "critical";
+  /** Where the number came from. A KPI with no source is a rumour. */
+  source: string;
+  /** `null` when the measurement does not support a direction. */
+  direction: "higher-is-better" | "lower-is-better" | null;
 }
 
 export interface ExecutiveReport {
   score: number | null;
+  partial: boolean;
   kpis: ExecutiveKpi[];
-  riskLevel: "low" | "medium" | "high";
   topFindings: Array<{
     ruleId: string;
     file: string;
     message: string;
     severity: string;
   }>;
-  recommendations: string[];
+  determination: "READY" | "BLOCKED" | "INCONCLUSIVE";
 }
 
-function assessRisk(findings: Finding[]): "low" | "medium" | "high" {
-  const errors = findings.filter((f) => f.severity === "error").length;
-  const warnings = findings.filter((f) => f.severity === "warning").length;
-  if (errors > 5 || warnings > 20) return "high";
-  if (errors > 0 || warnings > 5) return "medium";
-  return "low";
-}
-
-function buildRecommendations(
-  findings: Finding[],
-  score: number | null,
-): string[] {
-  const recs: string[] = [];
-  const errors = findings.filter((f) => f.severity === "error").length;
-  const warnings = findings.filter((f) => f.severity === "warning").length;
-
-  if (errors > 0) {
-    recs.push(`Fix ${errors} error finding(s) blocking release confidence`);
-  }
-  if (warnings > 0) {
-    recs.push(`Review ${warnings} warning finding(s) before next release`);
-  }
-  if (score !== null && score < 70) {
-    recs.push(
-      `Score ${score}/100 is below the 70 threshold — prioritize rule coverage`,
-    );
-  }
-  if (score !== null && score >= 90) {
-    recs.push(
-      `Score ${score}/100 is excellent — maintain current quality gate`,
-    );
-  }
-  if (recs.length === 0) {
-    recs.push("No critical issues — maintain current quality practices");
-  }
-  return recs;
+export function buildExecutiveKpis(result: {
+  score: number | null;
+  findings: ReadonlyArray<{ severity: string }>;
+  partial: boolean;
+}): ExecutiveKpi[] {
+  const errors = result.findings.filter((f) => f.severity === "error").length;
+  const warnings = result.findings.filter(
+    (f) => f.severity === "warning",
+  ).length;
+  return [
+    {
+      label: "Worthiness score",
+      value: result.score !== null ? `${result.score}/100` : "not measured",
+      source: "scan result score",
+      direction: "higher-is-better",
+    },
+    {
+      label: "Error findings",
+      value: String(errors),
+      source: "scan result findings",
+      direction: "lower-is-better",
+    },
+    {
+      label: "Warning findings",
+      value: String(warnings),
+      source: "scan result findings",
+      direction: "lower-is-better",
+    },
+    {
+      label: "Analysis complete",
+      value: result.partial ? "no (partial)" : "yes",
+      source: "scan result partial flag",
+      direction: null,
+    },
+  ];
 }
 
 export async function runExecReportCommand(
@@ -97,83 +98,32 @@ export async function runExecReportCommand(
       target,
       json: true,
       verbose: false,
-      maxDurationMs: Number.POSITIVE_INFINITY,
+      maxDurationMs: 600_000,
       scopeChanged: false,
       format: "json",
       strict: false,
     });
 
-    const risk = assessRisk(result.findings);
-    const recommendations = buildRecommendations(result.findings, result.score);
+    const decision = decideClaim({
+      partial: result.partial,
+      blockingFindings: result.findings.filter((f) => f.severity === "error")
+        .length,
+      supported: true,
+    });
+    const kpis = buildExecutiveKpis(result);
 
-    const kpis = [
-      {
-        label: "Worthiness Score",
-        value: result.score !== null ? `${result.score}/100` : "N/A",
-        delta:
-          result.score !== null && result.score >= 80
-            ? "↑ healthy"
-            : result.score !== null
-              ? "↓ needs work"
-              : "—",
-        status:
-          result.score !== null && result.score >= 80
-            ? "good"
-            : result.score !== null && result.score >= 60
-              ? "warning"
-              : "critical",
-      },
-      {
-        label: "Total Findings",
-        value: String(result.findings.length),
-        delta: "",
-        status:
-          result.findings.length <= 5
-            ? "good"
-            : result.findings.length <= 20
-              ? "warning"
-              : "critical",
-      },
-      {
-        label: "Errors",
-        value: String(
-          result.findings.filter((f) => f.severity === "error").length,
-        ),
-        delta: "",
-        status:
-          result.findings.filter((f) => f.severity === "error").length === 0
-            ? "good"
-            : "critical",
-      },
-      {
-        label: "Warnings",
-        value: String(
-          result.findings.filter((f) => f.severity === "warning").length,
-        ),
-        delta: "",
-        status:
-          result.findings.filter((f) => f.severity === "warning").length <= 5
-            ? "good"
-            : "warning",
-      },
-    ];
-
-    const header = sectionHeader("EXECUTIVE QUALITY REPORT", ui);
+    const header = sectionHeader("SCAN SUMMARY", ui);
     io.out(`${header}\n`);
-    io.out(`Generated: ${new Date().toISOString()}`);
     io.out(`Target: ${target}`);
-    io.out(`Risk Level: ${risk.toUpperCase()}`);
+    io.out(`Determination: ${decision.state} — ${decision.reason}`);
     io.out("");
-
-    io.out("--- Key Performance Indicators ---");
+    io.out("--- Measured values ---");
     for (const kpi of kpis) {
-      const icon =
-        kpi.status === "good" ? "✅" : kpi.status === "warning" ? "⚠️ " : "🔴";
-      io.out(`  ${icon} ${kpi.label}: ${kpi.value} ${kpi.delta}`);
+      io.out(`  ${kpi.label}: ${kpi.value}  (source: ${kpi.source})`);
     }
     io.out("");
 
-    io.out("--- Top Findings ---");
+    io.out("--- Top findings ---");
     const top = result.findings.slice(0, 5);
     for (const f of top) {
       io.out(
@@ -181,19 +131,23 @@ export async function runExecReportCommand(
       );
     }
     if (result.findings.length === 0) {
-      io.out("  No findings — clean scan.");
+      // Law 11: an incomplete empty result is inconclusive, never clean.
+      io.out(
+        result.partial
+          ? "  No findings in the analyzed portion of the surface. The scan was PARTIAL, so this is not a clean result."
+          : "  No findings in a complete scan of this surface.",
+      );
+    }
+    if (result.findings.length > top.length) {
+      io.out(`  …and ${result.findings.length - top.length} more.`);
     }
     io.out("");
-
-    io.out("--- Recommendations ---");
-    for (const r of recommendations) {
-      io.out(`  • ${r}`);
-    }
+    io.out(
+      "Not reported here: business risk, ROI, or release readiness. Those are decisions, and this tool has no evidence for them.",
+    );
     io.out("");
 
-    return result.findings.some((f) => f.severity === "error")
-      ? EXIT_FINDINGS
-      : EXIT_CLEAN;
+    return decision.exitCode;
   } catch (e) {
     internalErrorMessage(e, io.err, false);
     return EXIT_INTERNAL;

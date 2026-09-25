@@ -17,6 +17,53 @@ export const VERSION_SURFACE_PATHS = [
 
 type VersionSurfaces = Record<string, string | undefined>;
 
+/**
+ * The version a consumer gets when they pin nothing.
+ *
+ * `action.yml` fetches an exact tarball from the npm registry, so its default
+ * must be a version that EXISTS on the registry. While the working candidate
+ * is a release candidate, that is the last published stable version — not the
+ * working version. Pointing the Action at an unpublished RC made every
+ * consumer who did not override `version` fail on a 404.
+ *
+ * `publishedStable` in package.json is the record; this function is the law
+ * that keeps the two from drifting.
+ */
+export function checkActionDefaultVersion(
+  publishedStable: string,
+  surfaces: VersionSurfaces,
+): string[] {
+  const violations: string[] = [];
+  if (!isValidSemver(publishedStable)) {
+    return [`publishedStable: invalid semver ${publishedStable}`];
+  }
+  if (publishedStable.includes("-")) {
+    violations.push(
+      `publishedStable: ${publishedStable} is a prerelease; the Action default must be a published stable version`,
+    );
+  }
+  const action = surfaces["action.yml"];
+  if (typeof action !== "string" || action.length === 0) {
+    return [...violations, "action.yml: missing"];
+  }
+  const marker = action.indexOf("  version:\n");
+  if (marker < 0) return [...violations, "action.yml: version input missing"];
+  const valueStart = marker + "  version:\n".length;
+  const rest = action.slice(valueStart);
+  const defaultAt = rest.indexOf('default: "');
+  if (defaultAt < 0)
+    return [...violations, "action.yml: version default missing"];
+  const literalStart = valueStart + defaultAt + 'default: "'.length;
+  const literalEnd = action.indexOf('"', literalStart);
+  const declared = action.slice(literalStart, literalEnd);
+  if (declared !== publishedStable) {
+    violations.push(
+      `action.yml: version default is ${declared}, expected the published stable ${publishedStable}`,
+    );
+  }
+  return violations;
+}
+
 export function checkVersionSurfaceEnvelope(
   version: string,
   surfaces: VersionSurfaces,
@@ -26,7 +73,9 @@ export function checkVersionSurfaceEnvelope(
   const major = version.split(".")[0] ?? "";
   const required = new Map<string, string[]>([
     ["src/engine/version.ts", [`export const ENGINE_VERSION = "${version}";`]],
-    ["action.yml", [`default: "${version}"`]],
+    // The Action default is checked against `publishedStable`, not the working
+    // version — see checkActionDefaultVersion.
+    ["action.yml", []],
     ["smithery.yaml", [`"version": "${version}"`, `mjolnir-qa@${version}`]],
     [
       "site/.vitepress/theme/Home.vue",
@@ -109,6 +158,7 @@ export function checkVersionSurfaceEnvelope(
 export function synchronizeVersionSurfaceEnvelope(
   version: string,
   surfaces: VersionSurfaces,
+  publishedStable?: string,
 ): { surfaces: VersionSurfaces; changedPaths: string[] } {
   if (!isValidSemver(version)) throw new Error(`invalid version: ${version}`);
 
@@ -151,7 +201,17 @@ export function synchronizeVersionSurfaceEnvelope(
     'export const ENGINE_VERSION = "',
     version,
   );
-  replaceValue("action.yml", '    default: "', version, actionVersionStart);
+  // action.yml's default is the PUBLISHED STABLE version, never the working
+  // version: while the candidate is an RC, the working version does not exist
+  // on npm and the Action would 404 for every consumer who pinned nothing.
+  if (publishedStable !== undefined) {
+    replaceValue(
+      "action.yml",
+      '    default: "',
+      publishedStable,
+      actionVersionStart,
+    );
+  }
   replaceValue("smithery.yaml", '"version": "', version);
   replaceValue("smithery.yaml", "mjolnir-qa@", version);
   replaceValue(
@@ -176,6 +236,9 @@ export function synchronizeVersionSurfaceEnvelope(
   replaceValue("docs/DISTRIBUTION-KIT.md", "mjolnir-qa@", version, 0, true);
 
   const violations = checkVersionSurfaceEnvelope(version, next);
+  if (publishedStable !== undefined) {
+    violations.push(...checkActionDefaultVersion(publishedStable, next));
+  }
   if (violations.length > 0) {
     throw new Error(
       `version surface synchronization failed: ${violations.join("; ")}`,

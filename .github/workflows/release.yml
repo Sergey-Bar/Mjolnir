@@ -1,4 +1,4 @@
-name: Release Candidate
+﻿name: Release Candidate
 
 on:
   push:
@@ -24,11 +24,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     outputs:
-      artifact-name: ${{ steps.package.outputs.artifact_name }}
+      artifact_name: ${{ steps.package.outputs.artifact_name }}
       checksum: ${{ steps.package.outputs.checksum }}
       commit: ${{ steps.context.outputs.commit }}
-      dry-run: ${{ steps.context.outputs.dry_run }}
-      package-name: ${{ steps.context.outputs.package_name }}
+      dry_run: ${{ steps.context.outputs.dry_run }}
+      package_name: ${{ steps.context.outputs.package_name }}
       tag: ${{ steps.context.outputs.tag }}
       tarball: ${{ steps.package.outputs.tarball }}
       version: ${{ steps.context.outputs.version }}
@@ -115,7 +115,7 @@ jobs:
           fi
           npm run changelog:check -- --expect-version "$VERSION" "${EXTRA[@]}"
       - name: Require authorized candidate evidence
-        if: steps.context.outputs.dry-run == 'false'
+        if: steps.context.outputs.dry_run == 'false'
         run: |
           npm run m26:audit
           npm run candidate:readiness
@@ -167,7 +167,7 @@ jobs:
 
   tag:
     needs: verify
-    if: needs.verify.outputs.dry-run == 'false' && vars.NPM_PUBLISH == 'true'
+    if: needs.verify.outputs.dry_run == 'false' && vars.NPM_PUBLISH == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     environment: release-candidate
@@ -247,7 +247,7 @@ jobs:
         run: npm install --global npm@11.5.1
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          name: ${{ needs.verify.outputs.artifact-name }}
+          name: ${{ needs.verify.outputs.artifact_name }}
           path: .
       - name: Verify downloaded artifact
         shell: bash
@@ -263,7 +263,7 @@ jobs:
         name: Check npm registry
         shell: bash
         env:
-          PACKAGE_NAME: ${{ needs.verify.outputs.package-name }}
+          PACKAGE_NAME: ${{ needs.verify.outputs.package_name }}
           VERSION: ${{ needs.verify.outputs.version }}
           TARBALL: ${{ needs.verify.outputs.tarball }}
         run: |
@@ -284,7 +284,7 @@ jobs:
       - name: Verify the published version is live on npm
         shell: bash
         env:
-          PACKAGE_NAME: ${{ needs.verify.outputs.package-name }}
+          PACKAGE_NAME: ${{ needs.verify.outputs.package_name }}
           VERSION: ${{ needs.verify.outputs.version }}
         run: |
           set -euo pipefail
@@ -300,7 +300,7 @@ jobs:
       - name: Verify and repair the next dist-tag
         shell: bash
         env:
-          PACKAGE_NAME: ${{ needs.verify.outputs.package-name }}
+          PACKAGE_NAME: ${{ needs.verify.outputs.package_name }}
           VERSION: ${{ needs.verify.outputs.version }}
         run: |
           set -euo pipefail
@@ -328,7 +328,7 @@ jobs:
           persist-credentials: false
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          name: ${{ needs.verify.outputs.artifact-name }}
+          name: ${{ needs.verify.outputs.artifact_name }}
           path: .
       - name: Reconcile immutable GitHub Release
         shell: bash
