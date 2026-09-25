@@ -64,8 +64,15 @@ for (const key of [
 ]) {
   if (worktree[key] !== manifest.identity[key]) fail(`${key} drift`);
 }
+const baseObjectAvailable =
+  spawnSync(
+    "git",
+    ["cat-file", "-e", `${manifest.identity.baseSha}^{commit}`],
+    { cwd: root, windowsHide: true },
+  ).status === 0;
 if (
   manifest.identity.baseSha !== worktree.baseSha &&
+  baseObjectAvailable &&
   spawnSync(
     "git",
     [
