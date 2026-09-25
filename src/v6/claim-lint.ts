@@ -173,7 +173,8 @@ export interface ClaimCandidate {
   line: number;
 }
 
-function isDirectory(path: string): boolean {
+/** Whether a path is a directory. Exported so the file-walk arms are testable. */
+export function isDirectory(path: string): boolean {
   try {
     return statSync(path).isDirectory();
   } catch {
@@ -252,8 +253,10 @@ export function scanText(
     // calls, which silently skips matches and under-reports. An
     // under-reporting linter is worse than none. The source is a literal
     // from this module's own `CLAIM_PATTERNS`, never user input.
-    for (let index = 0; index < lines.length; index += 1) {
-      const line = lines[index] ?? "";
+    // `entries()` rather than an index loop: `noUncheckedIndexedAccess` makes
+    // `lines[index]` `string | undefined`, and the `?? ""` that satisfies it
+    // is a branch no input can reach.
+    for (const [index, line] of lines.entries()) {
       // eslint-disable-next-line security/detect-non-literal-regexp
       const regex = new RegExp(
         claimPattern.pattern.source,
@@ -324,8 +327,8 @@ export interface ClaimBinding {
 export function extractBindings(text: string): ClaimBinding[] {
   const out: ClaimBinding[] = [];
   const lines = text.split("\n");
-  for (let index = 0; index < lines.length; index += 1) {
-    const line = lines[index] ?? "";
+  // `entries()` rather than an index loop: see the note in `scanText`.
+  for (const [index, line] of lines.entries()) {
     // Global-local copy of this module's own literal: the shared pattern is
     // not global, because a shared global regex would carry `lastIndex`
     // across lines and silently skip matches.
