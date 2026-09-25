@@ -1,3 +1,20 @@
+/**
+ * M26 ledger gate.
+ *
+ * Two stages, because the records and the work are different things:
+ *
+ *   - `integrity` (default for the build gate): every ledger record must be
+ *     structurally valid. A malformed or missing record is a defect and fails.
+ *   - `readiness` (the release gate): integrity PLUS no open release blocker
+ *     and no BLOCKED support cell. An honestly recorded open gap fails here.
+ *
+ * A build gate that demands all open work be closed is a gate nobody can
+ * satisfy, and an unsatisfiable gate teaches the team to route around it. So
+ * `integrity` is what `certify` runs and `readiness` is what the release
+ * workflows run — and both run the same validators, so the two can never
+ * disagree about whether a record is valid.
+ */
+
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import {
@@ -7,7 +24,19 @@ import {
   validateSupportMatrix,
 } from "../src/ledger/m26-validators.js";
 
-const root = process.argv[2] ?? process.cwd();
+const args = process.argv.slice(2);
+const stageIndex = args.findIndex((arg) => arg === "--stage");
+const stage = stageIndex === -1 ? "readiness" : args[stageIndex + 1];
+if (stage !== "integrity" && stage !== "readiness") {
+  console.error(
+    `m26: unknown stage "${String(stage)}"; use integrity|readiness`,
+  );
+  process.exit(2);
+}
+const positional = args.filter(
+  (arg, index) => !arg.startsWith("--") && index !== stageIndex + 1,
+);
+const root = positional[0] ?? process.cwd();
 const readJson = (path: string): unknown => {
   try {
     return JSON.parse(readFileSync(join(root, path), "utf8")) as unknown;
@@ -104,10 +133,11 @@ const results = {
   dispositions: dispositionResult,
   external: validateExternalValidationRecord(external),
 };
-const status = Object.values(results).some((result) => result.status === "FAIL")
-  ? "FAIL"
-  : Object.values(results).some((result) => result.status === "BLOCKED")
-    ? "BLOCKED"
-    : "PASS";
-console.log(JSON.stringify({ status, results }, null, 2));
-if (status !== "PASS") process.exit(1);
+const sections = Object.values(results);
+const failed = sections.some((result) => result.status === "FAIL");
+const blocked = sections.some((result) => result.status === "BLOCKED");
+const status = failed ? "FAIL" : blocked ? "BLOCKED" : "PASS";
+console.log(JSON.stringify({ stage, status, results }, null, 2));
+// `integrity` fails on malformed records only; an honestly recorded open gap
+// is a readiness fact, not a broken ledger.
+if (failed || (stage === "readiness" && status !== "PASS")) process.exit(1);

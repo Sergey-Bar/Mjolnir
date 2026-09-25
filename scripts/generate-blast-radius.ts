@@ -172,7 +172,7 @@ export function buildManifest(): BlastRadiusManifest {
     flags,
     formats,
     exitCodes:
-      "0 clean · 1 findings at/above gate · 2 partial (never blocks) · 10 usage error · 20 internal error (frozen, docs/VERSIONING.md)",
+      "0 clean · 1 findings at/above gate · 2 inconclusive (partial or unsupported analysis — a CI step should fail on it) · 10 usage error · 20 internal error (frozen, docs/VERSIONING.md)",
   };
 }
 

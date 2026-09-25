@@ -1,44 +1,96 @@
 /**
- * `mjolnir maturity` — Quality Maturity Model (QM-6).
+ * `mjolnir maturity` — organizational QA-maturity signals.
  *
- * Assesses the organization's QA maturity across dimensions:
- *   Test hygiene — rule coverage, assertion quality
- *   CI integrity — gate coverage, feedback speed
- *   Runtime verification — forensics adoption, flake management
- *   Process maturity — triage cadence, suppression governance
+ * What changed, and why: this command used to emit an "Overall: Optimizing
+ * (87/100)" style assessment derived from whether three files happened to
+ * exist, with hardcoded dimension scores (75/70/65/30) and a `ruleCount = 79`
+ * fallback invented when a catalog could not be read. A file-existence proxy
+ * is not a maturity measurement, and a number with no provenance is worse than
+ * no number: it is a decision someone else will make on.
  *
- * Output: maturity level (Initial → Managed → Defined → Quantitatively Managed → Optimizing)
- * with specific improvement recommendations.
- *
- * Subcommands:
- *   assess   — run the maturity assessment
- *   levels   — show all maturity levels
+ * It now reports what it can actually observe — the presence of specific,
+ * named QA artifacts — and states that the artifact is a signal, not a score.
+ * There is no overall score, because Mjölnir cannot measure organizational
+ * maturity. Scheduled for removal in 5.0; see docs/RELEASE-TRAINS.md.
  */
 
 import { existsSync } from "node:fs";
-import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { sectionHeader, plainContext } from "../reporter/ui.js";
 import { internalErrorMessage, type Output } from "../cli-io.js";
-import { EXIT_CLEAN, EXIT_INTERNAL, EXIT_USAGE } from "../exit-codes.js";
+import { unmeasuredClaim } from "../claim-evidence.js";
+import { EXIT_INTERNAL, EXIT_USAGE } from "../exit-codes.js";
 
 const ui = plainContext();
 
-export interface MaturityDimension {
-  name: string;
-  level:
-    "Initial" | "Managed" | "Defined" | "Quantitatively Managed" | "Optimizing";
-  score: number;
-  findings: string[];
+/** A named, checkable artifact. Presence is the observation; nothing more. */
+interface MaturitySignal {
+  id: string;
+  question: string;
+  /** The path whose existence is the observation. */
+  path: string;
+  /** What its presence does and does not tell you. */
+  says: string;
+  doesNotSay: string;
 }
 
-export interface MaturityAssessment {
-  timestamp: string;
-  overall:
-    "Initial" | "Managed" | "Defined" | "Quantitatively Managed" | "Optimizing";
-  overallScore: number;
-  dimensions: MaturityDimension[];
+const SIGNALS: readonly MaturitySignal[] = [
+  {
+    id: "policy",
+    question: "Is a Mjölnir policy file committed?",
+    path: ".mjolnir/mjolnir.policy.json",
+    says: "a policy file exists in this checkout",
+    doesNotSay: "that the policy is enforced, current, or correct",
+  },
+  {
+    id: "suppressions",
+    question: "Is a suppression ledger committed?",
+    path: ".mjolnir/suppressions.json",
+    says: "suppressions are tracked as data",
+    doesNotSay: "that the suppressions are justified or still needed",
+  },
+  {
+    id: "history",
+    question: "Are previous runs recorded?",
+    path: ".mjolnir/stats.json",
+    says: "run history exists in this checkout",
+    doesNotSay: "that the history is complete, or that anyone reviewed it",
+  },
+  {
+    id: "baseline",
+    question: "Is a scan baseline committed?",
+    path: ".mjolnir/baseline.json",
+    says: "a baseline exists to diff against",
+    doesNotSay: "that the baseline was taken from a clean, complete scan",
+  },
+  {
+    id: "rule-catalog",
+    question: "Is the generated rule catalog committed?",
+    path: "docs/rules/catalog.md",
+    says: "generated rule documentation is in the repository",
+    doesNotSay: "how many rules are enabled, measured, or certified",
+  },
+] as const;
+
+export interface MaturitySignalResult {
+  id: string;
+  question: string;
+  path: string;
+  present: boolean;
+  says: string;
+  doesNotSay: string;
+}
+
+export function assessMaturitySignals(root: string): MaturitySignalResult[] {
+  return SIGNALS.map((signal) => ({
+    id: signal.id,
+    question: signal.question,
+    path: signal.path,
+    present: existsSync(join(root, signal.path)),
+    says: signal.says,
+    doesNotSay: signal.doesNotSay,
+  }));
 }
 
 const MATURITY_LEVELS = [
@@ -48,19 +100,6 @@ const MATURITY_LEVELS = [
   "Quantitatively Managed",
   "Optimizing",
 ] as const;
-
-function assessDimension(
-  name: string,
-  score: number,
-  findings: string[] = [],
-): MaturityDimension {
-  if (score >= 90) return { name, level: "Optimizing", score, findings };
-  if (score >= 75)
-    return { name, level: "Quantitatively Managed", score, findings };
-  if (score >= 60) return { name, level: "Defined", score, findings };
-  if (score >= 40) return { name, level: "Managed", score, findings };
-  return { name, level: "Initial", score, findings };
-}
 
 export function runMaturityCommand(
   argv: string[],
@@ -73,14 +112,16 @@ export function runMaturityCommand(
     io.out(sectionHeader("MATURITY LEVELS", ui));
     io.out("");
     for (let i = 0; i < MATURITY_LEVELS.length; i++) {
-      const level = MATURITY_LEVELS[i];
-      io.out(`${i + 1}. ${level}`);
+      io.out(`${i + 1}. ${MATURITY_LEVELS[i]}`);
     }
     io.out("");
     io.out(
-      "Score ranges: Initial (0-39), Managed (40-59), Defined (60-74), Quantitatively Managed (75-89), Optimizing (90-100)",
+      "These are vocabulary only. Mjölnir does not place a repository on this scale: it observes named artifacts and reports which are present.",
     );
-    return EXIT_CLEAN;
+    return unmeasuredClaim(
+      "maturity levels",
+      "A maturity level is a judgement, not a measurement.",
+    ).exitCode;
   }
 
   if (subcommand === "assess") {
@@ -90,122 +131,31 @@ export function runMaturityCommand(
     }
 
     try {
-      // Read rule catalog if available to assess coverage
-      let ruleCount = 0;
-      const catalogPath = join(target, "docs", "rules", "catalog.md");
-      if (existsSync(catalogPath)) {
-        try {
-          const content = readFileSync(catalogPath, "utf8");
-          ruleCount = (content.match(/QA-/g) ?? []).length;
-        } catch {
-          ruleCount = 79; // default known count
-        }
-      } else {
-        ruleCount = 79;
-      }
+      const signals = assessMaturitySignals(target);
+      const present = signals.filter((signal) => signal.present).length;
 
-      // Read config to check policy adoption
-      let hasPolicy = false;
-      const policyPath = join(target, ".mjolnir", "mjolnir.policy.json");
-      if (existsSync(policyPath)) {
-        try {
-          hasPolicy = true;
-        } catch {
-          hasPolicy = false;
-        }
-      }
-
-      // Read stats to check history tracking
-      let hasHistory = false;
-      const statsPath = join(target, ".mjolnir", "stats.json");
-      if (existsSync(statsPath)) {
-        try {
-          hasHistory = true;
-        } catch {
-          hasHistory = false;
-        }
-      }
-
-      // Read trend data
-      let hasTrends = false;
-      const trendPath = join(target, ".mjolnir", "trend.jsonl");
-      if (existsSync(trendPath)) {
-        try {
-          hasTrends = true;
-        } catch {
-          hasTrends = false;
-        }
-      }
-
-      const dimensions: MaturityDimension[] = [
-        assessDimension(
-          "Test Hygiene",
-          Math.min(100, Math.round((ruleCount / 100) * 100)),
-          [
-            `${ruleCount} rules loaded`,
-            ruleCount >= 50 ? "Good rule coverage" : "Increase rule coverage",
-          ],
-        ),
-        assessDimension("CI Integrity", hasPolicy ? 75 : 30, [
-          hasPolicy ? "Policy-as-code active" : "Implement policy-as-code",
-          "Gate configuration verified",
-        ]),
-        assessDimension("Runtime Verification", hasTrends ? 70 : 25, [
-          hasTrends ? "Trend tracking active" : "Start quality trend tracking",
-          hasHistory ? "Historical data available" : "No historical data yet",
-        ]),
-        assessDimension("Process Maturity", hasHistory ? 65 : 20, [
-          hasHistory ? "Fix tracking active" : "Start tracking fixes",
-          "Triage cadence needs definition",
-        ]),
-      ];
-
-      const avgScore = Math.round(
-        dimensions.reduce((sum, d) => sum + d.score, 0) / dimensions.length,
+      io.out(sectionHeader("QA ARTIFACT SIGNALS", ui));
+      io.out(
+        `Target: ${target} · ${present}/${signals.length} named artifacts present`,
       );
-      const overall =
-        avgScore >= 90
-          ? ("Optimizing" as const)
-          : avgScore >= 75
-            ? ("Quantitatively Managed" as const)
-            : avgScore >= 60
-              ? ("Defined" as const)
-              : avgScore >= 40
-                ? ("Managed" as const)
-                : ("Initial" as const);
-
-      const assessment: MaturityAssessment = {
-        timestamp: new Date().toISOString(),
-        overall,
-        overallScore: avgScore,
-        dimensions,
-      };
-
-      io.out(sectionHeader("MATURITY ASSESSMENT", ui));
-      io.out(`Generated: ${assessment.timestamp}`);
-      io.out(`Overall: ${assessment.overall} (${assessment.overallScore}/100)`);
+      io.out(
+        "No overall score: Mjölnir cannot measure organizational maturity.",
+      );
       io.out("");
 
-      for (const d of dimensions) {
-        const icon = d.score >= 75 ? "🟢" : d.score >= 50 ? "🟡" : "🔴";
-        io.out(`${icon} ${d.name}: ${d.level} (${d.score}/100)`);
-        for (const f of d.findings) {
-          io.out(`  - ${f}`);
-        }
-        io.out("");
+      for (const signal of signals) {
+        io.out(
+          `${signal.present ? "[present]" : "[absent]"}  ${signal.question}`,
+        );
+        io.out(`    path: ${signal.path}`);
+        io.out(`    presence says: ${signal.says}`);
+        io.out(`    presence does NOT say: ${signal.doesNotSay}`);
       }
 
-      const improvement = dimensions
-        .filter((d) => d.score < 75)
-        .map((d) => `Improve ${d.name} to reach Quantitatively Managed`);
-      if (improvement.length > 0) {
-        io.out("--- Improvement Areas ---");
-        for (const i of improvement) {
-          io.out(`• ${i}`);
-        }
-      }
-
-      return EXIT_CLEAN;
+      return unmeasuredClaim(
+        "maturity",
+        "These are artifact-presence signals, not a maturity assessment, so no clean result is reported.",
+      ).exitCode;
     } catch (e) {
       internalErrorMessage(e, io.err, false);
       return EXIT_INTERNAL;

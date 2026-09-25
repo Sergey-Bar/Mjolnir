@@ -15,7 +15,8 @@
  * replace a customized workflow without an explicit `--force`.
  */
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync } from "node:fs";
+import { writeFileAtomic } from "../lib/fs-atomic.js";
 import { join } from "node:path";
 
 import { CLI_VERSION } from "../cli.js";
@@ -409,6 +410,9 @@ export function ciInstall(
       };
     }
   }
-  writeFileSync(target, template);
+  // Atomic (audit S9): this writes into the USER's repository. A crash
+  // mid-write left a truncated workflow file that still looked like a valid
+  // file to a human reading the diff, and broke their CI on the next push.
+  writeFileAtomic(target, template);
   return { written: target, existed, refused: false, diffSummary: [] };
 }

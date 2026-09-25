@@ -549,7 +549,7 @@ export function buildHowItWorksSvg(): string {
   const exits: Array<[string, string]> = [
     ["0", "clean"],
     ["1", "findings at or above gate"],
-    ["2", "partial scan, never blocks"],
+    ["2", "inconclusive — treat as failure"],
     ["10", "usage error"],
     ["20", "internal error"],
   ];

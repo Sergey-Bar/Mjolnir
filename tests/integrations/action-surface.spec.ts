@@ -86,8 +86,59 @@ describe("root action.yml (Marketplace surface) is locked", () => {
     expect(action.inputs["fail-on-partial"]?.default).toBe("false");
   });
 
-  it("defaults to the exact released package version", () => {
-    expect(action.inputs["version"]?.default).toBe(ENGINE_VERSION);
+  it("defaults to the published stable version, never the working candidate", () => {
+    // The action fetches an exact tarball from npm. Defaulting to the working
+    // version made every consumer who pinned nothing 404 while the candidate
+    // was an RC. `publishedStable` in package.json is the record; the check
+    // below is the law that keeps action.yml from drifting from it.
+    const pkg = JSON.parse(
+      readFileSync(join(ROOT, "package.json"), "utf8"),
+    ) as { version: string; publishedStable: string };
+    expect(action.inputs["version"]?.default).toBe(pkg.publishedStable);
+    expect(pkg.publishedStable).not.toContain("-");
+    expect(pkg.publishedStable).not.toBe(ENGINE_VERSION);
+  });
+
+  it("rejects an unpublished pinned version before the scan, with a reason", () => {
+    const resolve = action.runs.steps.find(
+      (s) => s.name === "Resolve the pinned package version",
+    );
+    expect(resolve, "no registry-resolvability step").toBeDefined();
+    expect(resolve?.run).toContain("npm view");
+    expect(resolve?.run).toContain("is not published on the npm registry");
+    expect(resolve?.env?.MJ_VERSION).toBe("${{ inputs.version }}");
+  });
+
+  it("never resolves a floating version at runtime", () => {
+    const validate = action.runs.steps.find(
+      (s) => s.name === "Validate inputs",
+    );
+    expect(validate?.env?.MJ_VERSION).toBe("${{ inputs.version }}");
+    expect(validate?.run ?? "").toContain(
+      "version must be an exact semantic version",
+    );
+    for (const step of action.runs.steps) {
+      expect(step.run ?? "").not.toContain("mjolnir-qa@latest");
+    }
+  });
+
+  it("produces its report on findings, not only on a clean scan", () => {
+    // A step whose `if:` omits `always()` is implicitly `success()`. The scan
+    // step exits non-zero on findings, so every reporter was skipped exactly
+    // when a reviewer needed it.
+    const reporters = action.runs.steps.filter(
+      (s) =>
+        s.name === "Capture JSON report for reporting" ||
+        s.name === "Generate unified PR report" ||
+        s.name === "Emit annotations + step summary" ||
+        s.name === "Post unified report as PR comment" ||
+        s.name === "Upload unified report artifacts" ||
+        s.name === "Upload SARIF to GitHub Code Scanning",
+    );
+    expect(reporters.length).toBeGreaterThanOrEqual(6);
+    for (const step of reporters) {
+      expect(String(step.if), step.name).toContain("always()");
+    }
   });
 
   it("declares the documented inputs", () => {
@@ -127,7 +178,7 @@ describe("root action.yml (Marketplace surface) is locked", () => {
     }
   });
 
-  it("rejects floating package versions and never resolves latest at runtime", () => {
+  it("rejects floating package versions in the input vocabulary", () => {
     const validate = action.runs.steps.find(
       (s) => s.name === "Validate inputs",
     );
@@ -135,10 +186,6 @@ describe("root action.yml (Marketplace surface) is locked", () => {
     expect(validate?.run ?? "").toContain(
       "version must be an exact semantic version",
     );
-    for (const step of action.runs.steps) {
-      expect(step.run ?? "").not.toContain("npm view");
-      expect(step.run ?? "").not.toContain("mjolnir-qa@${MJ_VERSION}");
-    }
   });
 
   it("pins every action reference to a 40-hex SHA with a version comment (audit S-3)", () => {

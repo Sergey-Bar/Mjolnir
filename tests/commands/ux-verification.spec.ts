@@ -21,17 +21,29 @@ import {
   runQuarantineCommand,
   buildQuarantineProposals,
   filterByStatus,
+  proposalsFromStaticFindings,
+  runtimeFailuresFromReport,
   type QuarantineProposal,
 } from "../../src/commands/quarantine.js";
 import { runCiAdapterCommand } from "../../src/commands/ci-adapter.js";
 import { runEnterpriseCommand } from "../../src/commands/enterprise.js";
 import { runAnalyzeCommand } from "../../src/commands/analyze.js";
 import { buildPlaywrightReport } from "../../src/commands/report-playwright.js";
-import { EXIT_CLEAN, EXIT_USAGE, EXIT_INTERNAL } from "../../src/exit-codes.js";
+import {
+  EXIT_CLEAN,
+  EXIT_PARTIAL,
+  EXIT_USAGE,
+  EXIT_INTERNAL,
+} from "../../src/exit-codes.js";
 import { ENGINE_VERSION } from "../../src/engine/version.js";
 
 const out = vi.fn();
 const err = vi.fn();
+
+/** Everything a command has printed to stdout so far. */
+function stdout(): string {
+  return out.mock.calls.map((call) => String(call[0])).join("\n");
+}
 
 let counter = 0;
 
@@ -135,44 +147,68 @@ describe("TREND (QM-2)", () => {
   });
 });
 
-describe("MATURITY (QM-6)", () => {
-  it("assesses all dimensions", () => {
+describe("MATURITY (V5-001: artifact signals, not a score)", () => {
+  it("reports named artifact signals and no overall score", () => {
     const dir = makeTempDir();
     const code = runMaturityCommand(["assess", dir], { out, err });
-    expect(code).toBe(EXIT_CLEAN);
-    expect(out).toHaveBeenCalledWith(
-      expect.stringContaining("MATURITY ASSESSMENT"),
-    );
+    // A presence list is not a maturity assessment, so it never reads clean.
+    expect(code).toBe(EXIT_PARTIAL);
+    const text = stdout();
+    expect(text).toContain("QA ARTIFACT SIGNALS");
+    expect(text).toContain("No overall score");
+    expect(text).not.toMatch(/\(\d+\/100\)/);
+    expect(text).not.toMatch(/Overall: (Initial|Managed|Defined|Optimizing)/);
     rmSync(dir, { recursive: true, force: true });
   });
-  it("shows maturity levels", () => {
+
+  it("shows the level vocabulary without placing the target on it", () => {
     const code = runMaturityCommand(["levels"], { out, err });
-    expect(code).toBe(EXIT_CLEAN);
-    expect(out).toHaveBeenCalledWith(expect.stringContaining("Initial"));
-    expect(out).toHaveBeenCalledWith(expect.stringContaining("Optimizing"));
+    expect(code).toBe(EXIT_PARTIAL);
+    const text = stdout();
+    expect(text).toContain("Initial");
+    expect(text).toContain("Optimizing");
+    expect(text).toContain("vocabulary only");
+    expect(text).not.toMatch(/Score ranges:/);
+  });
+
+  it("observes a present artifact without over-claiming what it means", () => {
+    const dir = makeTempDir();
+    mkdirSync(join(dir, ".mjolnir"), { recursive: true });
+    writeFileSync(join(dir, ".mjolnir", "mjolnir.policy.json"), "{}", "utf8");
+    runMaturityCommand(["assess", dir], { out, err });
+    const text = stdout();
+    expect(text).toContain("[present]");
+    expect(text).toContain("does NOT say");
+    rmSync(dir, { recursive: true, force: true });
   });
 });
 
-describe("QUARANTINE (TL-3)", () => {
-  it("lists proposals from a target", async () => {
-    const dir = makeTempDir();
-    writeFileSync(
-      join(dir, "results.xml"),
-      `<testsuite><testcase/></testsuite>`,
-    );
-    const code = await runQuarantineCommand(["list", dir], { out, err });
-    expect(code).toBe(EXIT_CLEAN);
-    rmSync(dir, { recursive: true, force: true });
+describe("QUARANTINE (V5-001: no invented flakiness)", () => {
+  it("refuses to propose quarantines from a static scan", () => {
+    const code = runQuarantineCommand(["list", makeTempDir()], { out, err });
+    // No runtime report → no attempts → no proposal. Anything else means
+    // Mjölnir invented a flaky test.
+    expect(code).toBe(EXIT_PARTIAL);
+    expect(stdout()).toContain("no runtime behaviour to observe");
   });
-  it("review subcommand works", async () => {
-    const code = await runQuarantineCommand(["review"], { out, err });
-    expect(code).toBe(EXIT_CLEAN);
+
+  it("review states that nothing exists rather than claiming an update", () => {
+    const code = runQuarantineCommand(["review", "--accept"], { out, err });
+    expect(code).toBe(EXIT_PARTIAL);
+    const text = stdout();
+    expect(text).toContain("nothing was changed");
+    expect(text).not.toContain("Quarantines updated");
   });
-  it("stats subcommand works", async () => {
-    const code = await runQuarantineCommand(["stats"], { out, err });
-    expect(code).toBe(EXIT_CLEAN);
+
+  it("stats refuses to print zeros as measured statistics", () => {
+    const code = runQuarantineCommand(["stats"], { out, err });
+    expect(code).toBe(EXIT_PARTIAL);
+    const text = stdout();
+    expect(text).toContain("no statistics can be reported");
+    expect(text).not.toMatch(/Total: 0 \|/);
   });
-  it("buildQuarantineProposals assigns correct severity", () => {
+
+  it("a static finding can never become a proposal", () => {
     const mockFinding = {
       ruleId: "QA-TEST-001",
       category: "QA-TEST",
@@ -187,12 +223,65 @@ describe("QUARANTINE (TL-3)", () => {
       why: "why",
       fix: "fix",
     } as const;
-    const proposals = buildQuarantineProposals([mockFinding]);
+    expect(proposalsFromStaticFindings([mockFinding])).toEqual([]);
+  });
+
+  it("proposals come from observed attempts, never from severity", () => {
+    const proposals = buildQuarantineProposals([
+      {
+        ruleId: "flaky login",
+        file: "a.ts",
+        line: 1,
+        message: "msg",
+        attempts: 3,
+        everFailed: true,
+      },
+      {
+        // Observed once: below the threshold, so no proposal.
+        ruleId: "one-off",
+        file: "b.ts",
+        line: 2,
+        message: "msg",
+        attempts: 1,
+        everFailed: true,
+      },
+      {
+        // Many attempts but never failed: retries that passed are not flakiness.
+        ruleId: "retried",
+        file: "c.ts",
+        line: 3,
+        message: "msg",
+        attempts: 5,
+        everFailed: false,
+      },
+    ]);
     expect(proposals).toHaveLength(1);
     expect(proposals[0]?.id).toBe("Q-001");
     expect(proposals[0]?.attempts).toBe(3);
+    expect(proposals[0]?.everFailed).toBe(true);
     expect(proposals[0]?.status).toBe("proposed");
   });
+
+  it("a report record with no observed attempt count is not evidence", () => {
+    expect(
+      runtimeFailuresFromReport({
+        tests: [
+          { title: "no attempts", file: "a.ts" },
+          { title: "attempts", file: "b.ts", attempts: 2 },
+        ],
+      }),
+    ).toEqual([
+      {
+        ruleId: "attempts",
+        file: "b.ts",
+        line: 0,
+        message: "no message recorded",
+        attempts: 2,
+        everFailed: true,
+      },
+    ]);
+  });
+
   it("filterByStatus filters correctly", () => {
     const proposals: QuarantineProposal[] = [
       {
@@ -202,6 +291,7 @@ describe("QUARANTINE (TL-3)", () => {
         line: 1,
         message: "msg",
         attempts: 3,
+        everFailed: true,
         status: "proposed" as const,
         reason: "",
       },
@@ -212,6 +302,7 @@ describe("QUARANTINE (TL-3)", () => {
         line: 1,
         message: "msg",
         attempts: 3,
+        everFailed: true,
         status: "accepted" as const,
         reason: "",
       },
@@ -303,18 +394,23 @@ describe("ANALYZE --cross-file (SDET-7)", () => {
   });
 });
 
-describe("REPORT PLAYWRIGHT (SDET-2)", () => {
-  it("builds report from scan results", () => {
+describe("REPORT PLAYWRIGHT (V5-001: never a fabricated test run)", () => {
+  it("builds report from scan results without claiming tests ran", () => {
     const report = buildPlaywrightReport({
       findings: [],
       score: 85,
       frameworks: ["playwright"],
     });
     expect(report.version).toBe(1);
-    expect(report.status).toBe("passed");
     expect(report.mjolnir.score).toBe(85);
+    // A clean STATIC scan is not a green test run.
+    expect(report.totalTests).toBe(0);
+    expect(report.passedTests).toBe(0);
+    expect(report.suites).toEqual([]);
+    expect(report.mjolnir.execution).toBe("STATIC_ANALYSIS");
   });
-  it("builds report with findings", () => {
+
+  it("keeps findings in the mjolnir block, never as executed tests", () => {
     const report = buildPlaywrightReport({
       findings: [
         {
@@ -336,7 +432,21 @@ describe("REPORT PLAYWRIGHT (SDET-2)", () => {
       frameworks: ["playwright"],
     });
     expect(report.status).toBe("failed");
-    expect(report.totalTests).toBe(1);
+    expect(report.totalTests).toBe(0);
+    expect(report.suites).toEqual([]);
+    expect(report.mjolnir.findings).toHaveLength(1);
+  });
+
+  it("a partial scan never reports a completed run", () => {
+    const report = buildPlaywrightReport({
+      findings: [],
+      score: null,
+      frameworks: [],
+      partial: true,
+    });
+    expect(report.status).toBe("interrupted");
+    expect(report.mjolnir.status).toBe("interrupted");
+    expect(report.mjolnir.partial).toBe(true);
   });
 });
 
@@ -350,7 +460,7 @@ describe("EDGE CASES", () => {
   it("maturity assess handles fresh dir", () => {
     const dir = makeTempDir();
     const code = runMaturityCommand(["assess", dir], { out, err });
-    expect(code).toBe(EXIT_CLEAN);
+    expect(code).toBe(EXIT_PARTIAL);
     rmSync(dir, { recursive: true, force: true });
   });
   it("enterprise handles unknown subcommand", () => {
@@ -361,11 +471,12 @@ describe("EDGE CASES", () => {
     const code = runAnalyzeCommand(["/nonexistent"], { out, err });
     expect(code).toBe(EXIT_USAGE);
   });
-  it("quarantine handles non-existent dir gracefully", async () => {
-    const code = await runQuarantineCommand(["list", "/nonexistent-path"], {
-      out,
-      err,
-    });
-    expect(code).toBe(EXIT_CLEAN);
+  it("quarantine on a missing path is a usage error, not a clean result", () => {
+    const code = runQuarantineCommand(
+      ["list", "/nonexistent-path", "--from", "r.json"],
+      { out, err },
+    );
+    // A path that does not exist proves nothing about the target.
+    expect(code).toBe(EXIT_USAGE);
   });
 });

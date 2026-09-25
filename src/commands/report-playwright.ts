@@ -1,11 +1,16 @@
 /**
- * `mjolnir report playwright` — Playwright Reporter Package (SDET-2).
+ * `mjolnir report` — Mjölnir findings in the Playwright report shape.
  *
- * Generates a Playwright-compatible JSON report from Mjölnir scan results,
- * enabling Playwright's own UI and tooling to visualize Mjölnir findings.
+ * What this command does NOT do, and why: a Playwright report describes tests
+ * that were EXECUTED, with per-test outcomes and durations. A static scan
+ * executed nothing. Presenting findings as Playwright `suites`/`tests` with a
+ * `passed` status manufactured a runtime result that never happened — and on a
+ * clean scan it published "0 tests, all passed", which a Playwright consumer
+ * reads as a green test run.
  *
- * The report follows the Playwright JSON report schema's structure:
- * each finding becomes a "test" entry with Mjölnir's verdict as outcome.
+ * So the execution block is empty and says so, and the findings live in the
+ * `mjolnir` extension block where they are honestly labelled as static
+ * analysis. The file is a findings report in a familiar shape, not a test run.
  */
 
 import { existsSync, mkdirSync } from "node:fs";
@@ -16,12 +21,8 @@ import type { Finding } from "../types.js";
 import { runScan } from "../engine/scan-pipeline.js";
 import { sectionHeader, plainContext } from "../reporter/ui.js";
 import { internalErrorMessage, type Output } from "../cli-io.js";
-import {
-  EXIT_CLEAN,
-  EXIT_FINDINGS,
-  EXIT_INTERNAL,
-  EXIT_USAGE,
-} from "../exit-codes.js";
+import { decideClaim } from "../claim-evidence.js";
+import { EXIT_INTERNAL, EXIT_USAGE } from "../exit-codes.js";
 
 const ui = plainContext();
 
@@ -38,18 +39,33 @@ export interface PlaywrightReport {
   startTime: string;
   endTime: string;
   duration: number;
+  /**
+   * Playwright's closed status enum. Static analysis executed no test, so none
+   * of passed/failed/timedout is true; `interrupted` is the only member that
+   * does not assert a completed test run.
+   */
   status: "passed" | "failed" | "timedout" | "interrupted";
+  /** Always 0: this command never executes a test. */
   totalTests: number;
+  /** Always 0: see totalTests. */
   passedTests: number;
+  /** Always 0: see totalTests. */
   failedTests: number;
+  /** Always empty: see the module comment. */
   suites: Array<{
     title: string;
     file: string;
     tests: PlaywrightReportEntry[];
   }>;
   mjolnir: {
+    /** Names the producer so a consumer cannot mistake this for a test run. */
+    execution: "STATIC_ANALYSIS";
+    /** Never `passed`/`failed` on the strength of a static scan. */
+    status: "passed" | "failed" | "interrupted";
+    partial: boolean;
     score: number | null;
     framework: string;
+    frameworkDetectionUnknown: boolean;
     findings: Array<{
       ruleId: string;
       file: string;
@@ -63,64 +79,36 @@ export interface PlaywrightReport {
   };
 }
 
-function findingOutcome(f: Finding): PlaywrightReportEntry["outcome"] {
-  if (f.severity === "error") return "failed";
-  if (f.severity === "warning") return "expectedFailure";
-  return "passed";
-}
-
 export function buildPlaywrightReport(result: {
   findings: Finding[];
   score: number | null;
   frameworks: string[];
+  frameworkDetectionUnknown?: boolean;
+  partial?: boolean;
 }): PlaywrightReport {
   const now = new Date();
-  const findingsByFile = new Map<string, Finding[]>();
-  for (const f of result.findings) {
-    const existing = findingsByFile.get(f.file) ?? [];
-    existing.push(f);
-    findingsByFile.set(f.file, existing);
-  }
+  const partial = result.partial === true;
+  const hasError = result.findings.some((f) => f.severity === "error");
+  // Partial and blocked both refuse to claim a completed run.
+  const status = partial ? "interrupted" : hasError ? "failed" : "passed";
 
-  const suites = Array.from(findingsByFile.entries()).map(
-    ([file, findings]): {
-      title: string;
-      file: string;
-      tests: PlaywrightReportEntry[];
-    } => ({
-      title: file,
-      file,
-      tests: findings.map((f): PlaywrightReportEntry => ({
-        title: `${f.ruleId}: ${f.message}`,
-        path: file,
-        outcome: findingOutcome(f),
-        duration: 0,
-        annotations: [
-          {
-            type: f.severity === "error" ? "error" : "warning",
-            message: `${f.ruleId} — ${f.message}${f.fix ? `\nFix: ${f.fix}` : ""}`,
-          },
-        ],
-      })),
-    }),
-  );
-
-  const allTests = suites.flatMap((s) => s.tests);
   return {
     version: 1,
     startTime: now.toISOString(),
     endTime: now.toISOString(),
     duration: 0,
-    status: result.findings.some((f) => f.severity === "error")
-      ? "failed"
-      : "passed",
-    totalTests: allTests.length,
-    passedTests: allTests.filter((t) => t.outcome === "passed").length,
-    failedTests: allTests.filter((t) => t.outcome === "failed").length,
-    suites,
+    status,
+    totalTests: 0,
+    passedTests: 0,
+    failedTests: 0,
+    suites: [],
     mjolnir: {
+      execution: "STATIC_ANALYSIS",
+      status,
+      partial,
       score: result.score,
       framework: result.frameworks[0] ?? "unknown",
+      frameworkDetectionUnknown: result.frameworkDetectionUnknown === true,
       findings: result.findings.map((f) => {
         const entry: {
           ruleId: string;
@@ -197,7 +185,16 @@ export async function runReportPlaywrightCommand(
       encoding: "utf8",
     });
 
-    const header = sectionHeader("PLAYWRIGHT REPORT", ui);
+    // One determination, from the one function — partial is checked before
+    // the finding gate so a truncated scan can never read as clean.
+    const decision = decideClaim({
+      partial: result.partial,
+      blockingFindings: result.findings.filter((f) => f.severity === "error")
+        .length,
+      supported: true,
+    });
+
+    const header = sectionHeader("PLAYWRIGHT-SHAPED FINDINGS REPORT", ui);
     io.out(`${header}\n`);
     io.out(
       `Score: ${result.score !== null ? result.score + "/100" : "unknown"}`,
@@ -207,12 +204,11 @@ export async function runReportPlaywrightCommand(
     );
     io.out(`Report written: ${fullPath}`);
     io.out(
-      `Tests: ${report.totalTests} total, ${report.passedTests} passed, ${report.failedTests} failed`,
+      "Executed tests: 0 — this is static analysis, not a test run. The Playwright suite block is empty by design.",
     );
+    io.out(`Determination: ${decision.state} — ${decision.reason}`);
 
-    return result.findings.some((f) => f.severity === "error")
-      ? EXIT_FINDINGS
-      : EXIT_CLEAN;
+    return decision.exitCode;
   } catch (e) {
     internalErrorMessage(e, io.err, false);
     return EXIT_INTERNAL;

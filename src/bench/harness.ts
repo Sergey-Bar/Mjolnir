@@ -15,7 +15,8 @@
  * is proven across ≥3 consecutive release cycles.
  */
 
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync } from "node:fs";
+import { writeFileAtomic } from "../lib/fs-atomic.js";
 import { createHash } from "node:crypto";
 import { join } from "node:path";
 
@@ -68,7 +69,9 @@ export function generateFixture(root: string, spec: FixtureSpec): BenchFixture {
         String(f),
       );
       const name = `spec_${d}_${f}.spec.ts`;
-      writeFileSync(join(dir, name), content);
+      // Atomic (audit S9): a half-written synthetic fixture still counts
+      // toward the manifest hash, so a truncated corpus looked reproducible.
+      writeFileAtomic(join(dir, name), content);
       manifest.update(`${name}:${content.length}\n`);
     }
   }

@@ -43,10 +43,14 @@ export interface WriteFileAtomicOptions {
 
 /**
  * Atomically replace `path` with `data`.
+ *
+ * Accepts binary payloads as well as text: base-tree materialization in
+ * `impact` writes git blobs, and a writer that only takes strings forces those
+ * call sites back to the non-atomic path rather than keeping them contained.
  */
 export function writeFileAtomic(
   path: string,
-  data: string,
+  data: string | Uint8Array,
   opts: WriteFileAtomicOptions = {},
 ): void {
   const dir = dirname(path);
@@ -58,7 +62,11 @@ export function writeFileAtomic(
   try {
     // wx: exclusive create — two concurrent writers never interleave.
     fd = openSync(tmp, "wx", opts.mode ?? 0o644);
-    writeSync(fd, data, null, opts.encoding ?? "utf8");
+    if (typeof data === "string") {
+      writeSync(fd, data, null, opts.encoding ?? "utf8");
+    } else {
+      writeSync(fd, data);
+    }
   } finally {
     if (fd !== undefined) closeSync(fd);
   }

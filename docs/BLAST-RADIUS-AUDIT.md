@@ -7,16 +7,16 @@ contract enforces: **every external import in src/ must belong to the
 allowlist**, and the shipped surface (adapters, rules, flags, formats, exit
 codes) must match this document exactly.
 
-## Inventory: 326 files, 91359 LOC
+## Inventory: 327 files, 91828 LOC
 
 | Area             | Files | LOC   |
 | ---------------- | ----- | ----- |
 | src/engine       | 55    | 24458 |
-| src/commands     | 44    | 13274 |
+| src/commands     | 44    | 13415 |
 | src/rules        | 88    | 11758 |
-| src/(root)       | 7     | 3428  |
+| src/(root)       | 8     | 3608  |
 | src/reporter     | 15    | 3366  |
-| src/forensics    | 17    | 3067  |
+| src/forensics    | 17    | 3065  |
 | src/governance   | 1     | 2744  |
 | src/ledger       | 1     | 2660  |
 | src/frameworks   | 6     | 2653  |
@@ -25,13 +25,13 @@ codes) must match this document exactly.
 | src/agent        | 1     | 1726  |
 | src/discovery    | 10    | 1689  |
 | src/adapters     | 11    | 1677  |
-| src/integrations | 11    | 1544  |
+| src/integrations | 11    | 1548  |
 | src/benchmark    | 3     | 1433  |
 | src/gaps         | 2     | 1390  |
 | src/qa           | 1     | 1285  |
-| src/bench        | 5     | 1065  |
+| src/bench        | 5     | 1068  |
+| src/release      | 7     | 1012  |
 | src/research     | 1     | 995   |
-| src/release      | 7     | 877   |
 | src/mutation     | 6     | 836   |
 | src/mcp          | 3     | 816   |
 | src/brand        | 3     | 807   |
@@ -40,7 +40,7 @@ codes) must match this document exactly.
 | src/traceability | 2     | 441   |
 | src/scope        | 2     | 427   |
 | src/playwright   | 2     | 312   |
-| src/lib          | 5     | 298   |
+| src/lib          | 5     | 306   |
 | src/trust        | 2     | 232   |
 | src/anti-gaming  | 2     | 169   |
 
@@ -52,14 +52,14 @@ codes) must match this document exactly.
 | src/rules/rule                  | 82        |
 | src/rules/shared/positions      | 62        |
 | src/reporter/ui                 | 26        |
+| src/lib/fs-atomic               | 20        |
 | src/cli-io                      | 20        |
 | src/forensics/types             | 20        |
-| src/exit-codes                  | 16        |
+| src/exit-codes                  | 17        |
 | src/engine/adapter              | 14        |
 | src/rules/index                 | 13        |
-| src/engine/scan-pipeline        | 12        |
 | src/discovery/ignores           | 11        |
-| src/lib/fs-atomic               | 11        |
+| src/engine/scan-pipeline        | 11        |
 | src/forensics/evidence-hygiene  | 11        |
 | src/rules/measured-fp.generated | 11        |
 | src/engine/ts-ast               | 10        |
@@ -69,7 +69,7 @@ codes) must match this document exactly.
 | Dependency         | Files importing it |
 | ------------------ | ------------------ |
 | node:fs            | 69                 |
-| node:path          | 64                 |
+| node:path          | 65                 |
 | node:crypto        | 25                 |
 | ts-morph           | 7                  |
 | node:url           | 4                  |
@@ -90,4 +90,4 @@ codes) must match this document exactly.
 - **Rules registry**: 79 live, 22 retired, 74 measured
 - **CLI flags**: "--ascii" "--base" "--blocking" "--cache" "--category" "--classic" "--debug" "--enable-plugins" "--format" "--help" "--json" "--max-duration" "--monorepo" "--no-ascii" "--no-progress" "--record-milestones" "--scope" "--score" "--staged" "--strict" "--tone" "--verbose" "--width" "-h"
 - **Report formats**: codequality, json, mermaid, sarif, terminal
-- **Exit codes** (frozen): 0 clean · 1 findings at/above gate · 2 partial (never blocks) · 10 usage error · 20 internal error (frozen, docs/VERSIONING.md)
+- **Exit codes** (frozen): 0 clean · 1 findings at/above gate · 2 inconclusive (partial or unsupported analysis — a CI step should fail on it) · 10 usage error · 20 internal error (frozen, docs/VERSIONING.md)

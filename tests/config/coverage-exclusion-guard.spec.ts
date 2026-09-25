@@ -1,102 +1,93 @@
 /**
- * Coverage exclusion guard (certification-audit F10 / Phase 6.3).
+ * Coverage exclusion truth ledger (plan V5-000, replaces the F10 snapshot).
  *
- * The vitest coverage `exclude` list is a hand-maintained escape hatch:
- * every entry lets real source escape the per-file 100% ratchet. Left
- * unguarded, entries accumulate silently and the gate erodes. This spec
- * snapshot-locks the committed exclusion set — growing it requires a
- * conscious edit HERE, next to the justification this test forces you to
- * re-read.
+ * The vitest coverage `exclude` list is a hand-maintained escape hatch: every
+ * entry lets real source escape the per-file ratchet. The previous guard
+ * snapshot-locked the list, which stopped silent growth but recorded nothing
+ * about WHY each file is exempt or who owns removing it — a list that can
+ * only grow, with no expiry, is a ratchet with the brake released.
+ *
+ * The ledger (docs/COVERAGE-EXEMPTIONS.json) is the record: one classified,
+ * owned, expiring entry per exclusion. This spec checks the ledger against the
+ * committed list AND against the real import graph, so a classification that
+ * stops being true (a dead module gains a caller, a shipped verb quietly
+ * stops shipping) fails here rather than rotting in a JSON file.
  */
 
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
+import {
+  committedExclusions,
+  readLedger,
+  validateCoverageExemptionLedger,
+} from "../../scripts/lib/coverage-exemption-ledger";
+
 const ROOT = join(import.meta.dirname, "..", "..");
 
-/** The only exclusions allowed, each with its standing justification. */
-const DOCUMENTED_EXCLUSIONS = [
-  // Process-launch glue: exercised functionally by the spawned-binary
-  // integration test (mcp-transport.spec.ts), but a spawned subprocess's
-  // istanbul report cannot merge into the parent run.
-  "src/mcp/stdio.ts",
-  // Types-only modules carry no executable code paths.
-  "src/types.ts",
-  "src/forensics/types.ts",
-  "src/playwright/selector-health-types.ts",
-  // Wave 2+3 commands: per-file coverage below 80% floor while
-  // dedicated unit tests land in follow-up PRs. Integration-tested
-  // via tests/commands/ux-verification.spec.ts. Global totals remain
-  // ratcheted by scripts/check-coverage-ratchet.mjs.
-  "src/commands/analyze.ts",
-  "src/commands/business-case.ts",
-  "src/commands/ci-adapter.ts",
-  "src/commands/dashboard.ts",
-  "src/commands/enterprise.ts",
-  "src/commands/exec-report.ts",
-  "src/commands/maturity.ts",
-  "src/commands/policy.ts",
-  "src/commands/quarantine.ts",
-  "src/commands/release-report.ts",
-  "src/commands/report-playwright.ts",
-  "src/commands/scan-cache.ts",
-  "src/commands/trend.ts",
-  "src/plugins/npm-loader.ts",
-  "src/agent/decision-receipt.ts",
-  "src/bench/m48-scale-operating-model.ts",
-  "src/benchmark/m47-false-green-benchmark.ts",
-  "src/change-intelligence.ts",
-  "src/detectors/m45-detector-lifecycle.ts",
-  "src/engine/m38-challenge-contract.ts",
-  "src/engine/m39-simulation-contract.ts",
-  "src/engine/m40-language-expansion-contract.ts",
-  "src/engine/m43-system-of-systems.ts",
-  "src/engine/m44-historical-intelligence.ts",
-  "src/engine/m45-detector-lifecycle.ts",
-  "src/engine/m49-experience-parity-contract.ts",
-  "src/engine/m50-release-proof-contract.ts",
-  "src/engine/runtime-evidence-graph.ts",
-  "src/frameworks/provider-capability-contract.ts",
-  "src/frameworks/universal-pack-contract.ts",
-  "src/governance/m33-m34-contract.ts",
-  "src/mutation/failure-sensitivity.ts",
-  "src/plugins/sdk-contract.ts",
-  "src/qa/domain-model.ts",
-  "src/research/m46-reproducible-research-lab-contract.ts",
-  "src/ledger/m26-validators.ts",
-  "src/release/version-surface.ts",
-  // Forensics triage: low branch density; global totals ratcheted.
-  "src/forensics/triage.ts",
-  // CLI entry: Wave 2/3 subcommand registrations lower function
-  // coverage; integration-exercised via spawn test.
-  "src/cli.ts",
-  "dist/**",
-] as const;
-
-function committedExclusions(): string[] {
-  const text = readFileSync(join(ROOT, "vitest.config.ts"), "utf8");
-  const coverageIdx = text.indexOf("coverage: {");
-  if (coverageIdx === -1) return [];
-  // The FIRST exclude array inside the coverage block is the exclusion list
-  // (the test.include/exclude arrays live outside it).
-  const excludeIdx = text.indexOf("exclude: [", coverageIdx);
-  if (excludeIdx === -1) return [];
-  const open = text.indexOf("[", excludeIdx);
-  const close = text.indexOf("]", open);
-  const body = text.slice(open + 1, close);
-  return [...body.matchAll(/"([^"]+)"/g)].map((m) => m[1] as string);
-}
-
-describe("coverage exclusion guard (F10)", () => {
-  it("the committed coverage exclude list matches the documented allowlist exactly", () => {
-    const committed = committedExclusions();
-    expect(committed).toEqual([...DOCUMENTED_EXCLUSIONS]);
+describe("coverage exclusion truth ledger (V5-000)", () => {
+  it("passes its own gate: ledger, committed list, and import graph agree", () => {
+    expect(validateCoverageExemptionLedger(ROOT)).toEqual([]);
   });
 
-  it("every allowlist entry is a real path-shaped string (guards reordering typos)", () => {
-    for (const entry of DOCUMENTED_EXCLUSIONS) {
-      expect(entry.startsWith("src/") || entry.startsWith("dist/")).toBe(true);
+  it("the ledger and the committed coverage exclude list are the same set, in order", () => {
+    const ledger = readLedger(ROOT);
+    expect(ledger.entries.map((entry) => entry.path)).toEqual(
+      committedExclusions(ROOT),
+    );
+  });
+
+  it("every exclusion is classified, owned, justified, and dated", () => {
+    const ledger = readLedger(ROOT);
+    for (const entry of ledger.entries) {
+      expect(entry.classification, entry.path).toMatch(
+        /^(PERMANENT_STRUCTURAL|DEAD_CODE|CONTRACT_ONLY|SHIPPED_SURFACE)$/,
+      );
+      expect(entry.owner?.length, entry.path).toBeGreaterThan(0);
+      expect(entry.justification?.length, entry.path).toBeGreaterThan(0);
+      expect(typeof entry.shippedSurface, entry.path).toBe("boolean");
+    }
+  });
+
+  it("a non-structural exclusion carries a review deadline and a removal plan", () => {
+    const ledger = readLedger(ROOT);
+    for (const entry of ledger.entries) {
+      if (entry.classification === "PERMANENT_STRUCTURAL") {
+        expect(entry.structuralReason?.length, entry.path).toBeGreaterThan(0);
+        expect(entry.reviewBy, entry.path).toBeUndefined();
+        continue;
+      }
+      expect(entry.reviewBy, entry.path).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      expect(entry.removalPlan?.length, entry.path).toBeGreaterThan(0);
+    }
+  });
+
+  it("the shipped-surface exemption ratchet may fall but never rise", () => {
+    const ledger = readLedger(ROOT);
+    const debt = ledger.entries.filter(
+      (entry) =>
+        entry.shippedSurface && entry.classification !== "PERMANENT_STRUCTURAL",
+    ).length;
+    expect(debt).toBeLessThanOrEqual(ledger.policy.shippedSurfaceCeiling);
+  });
+
+  it("the ledger is a record of reality, not a claim: a misclassified entry fails", () => {
+    // A DEAD_CODE entry that gains a production caller must be reported, not
+    // silently tolerated — that is exactly the drift the ledger exists to catch.
+    const problems = validateCoverageExemptionLedger(ROOT, {
+      now: new Date("2999-01-01T00:00:00Z"),
+    });
+    expect(problems.some((problem) => problem.includes("review date"))).toBe(
+      true,
+    );
+  });
+
+  it("the vitest config still carries the committed exclusions verbatim", () => {
+    const text = readFileSync(join(ROOT, "vitest.config.ts"), "utf8");
+    const committed = committedExclusions(ROOT);
+    for (const entry of committed) {
+      expect(text, entry).toContain(`"${entry}"`);
     }
   });
 });

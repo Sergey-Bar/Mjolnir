@@ -13,7 +13,8 @@
  *   compliance  — generate compliance template
  */
 
-import { existsSync, mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync } from "node:fs";
+import { writeFileAtomic } from "../lib/fs-atomic.js";
 import { join } from "node:path";
 
 import { sectionHeader, plainContext } from "../reporter/ui.js";
@@ -61,7 +62,10 @@ export function runEnterpriseCommand(
       },
     };
     const path = join(outputDir, "deployment-config.json");
-    writeFileSync(path, JSON.stringify(config, null, 2) + "\n");
+    // Atomic (audit S9): the generated config lands in the user's repository
+    // and is typically committed. A truncated JSON file there fails to parse,
+    // and the deployment then reads as "no config" rather than "bad config".
+    writeFileAtomic(path, JSON.stringify(config, null, 2) + "\n");
     io.out(sectionHeader("ENTERPRISE CONFIG", ui));
     io.out(`Config written: ${path}`);
     io.out(`Type: ${config.deployment.type}`);
@@ -102,7 +106,7 @@ Add to mjolnir.config.json:
 \`\`\`
 `;
     const path = join(outputDir, "sso-setup.md");
-    writeFileSync(path, guide);
+    writeFileAtomic(path, guide);
     io.out(`SSO guide written: ${path}`);
     return EXIT_CLEAN;
   }
@@ -122,7 +126,7 @@ Add to mjolnir.config.json:
 | Monitoring | dashboard, exec-report | HTML/terminal output |
 `;
       const path = join(outputDir, `${framework.toLowerCase()}-compliance.md`);
-      writeFileSync(path, template);
+      writeFileAtomic(path, template);
       io.out(`Compliance template: ${path}`);
     }
     return EXIT_CLEAN;

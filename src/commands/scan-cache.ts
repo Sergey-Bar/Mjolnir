@@ -11,13 +11,8 @@
  * Cache entries are stored as JSON in `.mjolnir/cache/<hash>.json`.
  */
 
-import {
-  existsSync,
-  mkdirSync,
-  readdirSync,
-  readFileSync,
-  writeFileSync,
-} from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync } from "node:fs";
+import { writeFileAtomic } from "../lib/fs-atomic.js";
 import { createHash } from "node:crypto";
 import { join } from "node:path";
 
@@ -75,7 +70,9 @@ export function saveCacheEntry(root: string, entry: CacheEntry): boolean {
     if (!existsSync(dir)) {
       mkdirSync(dir, { recursive: true });
     }
-    writeFileSync(
+    // Atomic (audit S9): a truncated cache entry is a half-parsed verdict for
+    // a file it never fully analyzed. It must never become a cache hit.
+    writeFileAtomic(
       entryPath(root, entry.hash),
       JSON.stringify(entry, null, 2) + "\n",
     );

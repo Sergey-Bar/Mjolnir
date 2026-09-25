@@ -13,21 +13,57 @@ governance section of [CONTRIBUTING.md](../CONTRIBUTING.md).
 
 At **1.0.0 and every later release**, these surfaces are frozen:
 
-| Surface                             | Commitment                                                                                                                                                                     |
-| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| JSON report                         | `schemaVersion: 1` is frozen; changes within v1 are **additive-only** (new optional fields). Removing or renaming a field requires a `schemaVersion: 2` major release.         |
-| Exit codes                          | `0` clean · `1` findings at/above gate · `2` partial scan (never blocks) · `10` usage error · `20` internal error — semantics frozen.                                          |
-| CLI verbs & flags                   | No removal or rename without the deprecation cycle below. New verbs/flags are additive.                                                                                        |
-| Config keys (`mjolnir.config.json`) | Removal or rename = breaking (major). Additions = minor.                                                                                                                       |
-| Plugin & local-rule manifests       | The shape of `QADoctorRule` and JSON rule manifests is frozen; additive fields only.                                                                                           |
-| Rule IDs (`QA-<FAMILY>-NNN`)        | **Immutable and never reused**, once shipped.                                                                                                                                  |
-| Tiering                             | A detector behavior change requires a `detectorRevision` bump and re-measurement before a tier change — never silent (see [RULE-LIFECYCLE.md](RULE-LIFECYCLE.md)).             |
-| Support matrix                      | Node 22 on ubuntu-latest, windows-latest, macos-latest; Node 24 on ubuntu-latest. The CI matrix is the proof; if CI drops a combination, this document changes in the same PR. |
-| Privacy                             | Scanning is zero-network. Telemetry decisions are governed separately and always opt-in.                                                                                       |
+| Surface                             | Commitment                                                                                                                                                                                            |
+| ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| JSON report                         | `schemaVersion: 1` is frozen; changes within v1 are **additive-only** (new optional fields). Removing or renaming a field requires a `schemaVersion: 2` major release.                                |
+| Exit codes                          | `0` clean · `1` findings at/above gate · `2` **inconclusive** (partial or unsupported analysis — treat as failure) · `10` usage error · `20` internal error — numbers frozen, semantics stated below. |
+| CLI verbs & flags                   | No removal or rename without the deprecation cycle below. New verbs/flags are additive.                                                                                                               |
+| Config keys (`mjolnir.config.json`) | Removal or rename = breaking (major). Additions = minor.                                                                                                                                              |
+| Plugin & local-rule manifests       | The shape of `QADoctorRule` and JSON rule manifests is frozen; additive fields only.                                                                                                                  |
+| Rule IDs (`QA-<FAMILY>-NNN`)        | **Immutable and never reused**, once shipped.                                                                                                                                                         |
+| Tiering                             | A detector behavior change requires a `detectorRevision` bump and re-measurement before a tier change — never silent (see [RULE-LIFECYCLE.md](RULE-LIFECYCLE.md)).                                    |
+| Support matrix                      | Node 22 on ubuntu-latest, windows-latest, macos-latest; Node 24 on ubuntu-latest. The CI matrix is the proof; if CI drops a combination, this document changes in the same PR.                        |
+| Privacy                             | Scanning is zero-network. Telemetry decisions are governed separately and always opt-in.                                                                                                              |
 
 The exit-code row applies to scan and CI surfaces. `release-report` and
 `release-trust` have command-specific verdicts and exits documented in
 `RELEASE-TRUST-CONTRACT.md`.
+
+### Exit code 2 is not a pass
+
+Earlier versions of this document described exit `2` as "partial scan (never
+blocks)". That wording is withdrawn. It was the licence for every downstream
+pipeline to treat an incomplete analysis as a green one, which is the exact
+inversion of the Trust Constitution: an analysis that did not finish has not
+proven anything about the surface it did not reach.
+
+**The numbers are frozen and unchanged.** What is now explicit is the meaning:
+
+| Exit | Meaning        | A CI step should |
+| ---- | -------------- | ---------------- |
+| `0`  | clean          | pass             |
+| `1`  | findings       | fail             |
+| `2`  | inconclusive   | **fail**         |
+| `10` | usage error    | fail             |
+| `20` | internal error | fail             |
+
+`2` covers two cases, and neither is a pass:
+
+- **Partial analysis** — the budget expired, files were skipped, rules
+  crashed, discovery was truncated, or the run was degraded. The unanalyzed
+  surface is precisely where an unknown blocking finding would live.
+- **Unsupported / unmeasured** — the command has no measurement of what it was
+  asked about and says so instead of rendering a plausible number.
+
+`--blocking none` suppresses **findings**, not the fact that the analysis did
+not finish. There is no flag that turns an incomplete run into exit `0`. If you
+want advisory behavior, run without the gate and read the report; do not
+invert the exit code.
+
+The one table that decides this is `EXIT_MATRIX` in `src/claim-evidence.ts`,
+and `scanExitCode` is the only function that consults it. The contract test
+`tests/contract/exit-matrix.spec.ts` walks every cell, including the
+partial-at-every-gate rows that used to be green.
 
 Runtime install examples in the Action, Smithery, Site, README, distribution kit, and release controls are pinned to the exact candidate version. `@latest` in advisory prose is not an execution or trust contract. The version-surface checker rejects mutable references in enforcing surfaces. The 3.0.0 migration and rollout checklist is in [`RELEASE-3.0.0-READINESS.md`](RELEASE-3.0.0-READINESS.md).
 

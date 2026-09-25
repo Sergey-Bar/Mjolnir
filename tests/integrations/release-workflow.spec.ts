@@ -112,7 +112,7 @@ describe("release candidate workflow", () => {
     expect(authorization).toBeGreaterThanOrEqual(0);
     expect(authorization).toBeLessThan(certification);
     expect(steps("verify")[authorization]?.if).toContain(
-      "steps.context.outputs.dry-run == 'false'",
+      "steps.context.outputs.dry_run == 'false'",
     );
   });
 
@@ -141,7 +141,7 @@ describe("release candidate workflow", () => {
     const job = workflow.jobs.tag;
     expect(job?.environment).toBe("release-candidate");
     expect(job?.permissions).toEqual({ contents: "write" });
-    expect(job?.if).toContain("needs.verify.outputs.dry-run == 'false'");
+    expect(job?.if).toContain("needs.verify.outputs.dry_run == 'false'");
     expect(job?.if).toContain("vars.NPM_PUBLISH == 'true'");
     expect(job?.outputs).toEqual({
       commit:

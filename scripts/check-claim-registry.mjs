@@ -10,6 +10,7 @@ if (registry.schemaVersion !== 1 || !Array.isArray(registry.claims)) {
 }
 const pkg = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
 const version = pkg.version;
+const publishedStable = pkg.publishedStable;
 const manifest = JSON.parse(
   readFileSync(join(root, "candidate-trust-manifest.json"), "utf8"),
 );
@@ -73,9 +74,20 @@ for (const claim of registry.claims) {
       join(root, ".github", "workflows", "mjolnir.yml"),
       "utf8",
     );
-    if (!action.includes(`default: "${version}"`)) {
+    // The Action's default must be a version that EXISTS on the registry.
+    // While the candidate is an RC, that is the published stable, not the
+    // working version — otherwise every consumer who pins nothing gets a 404.
+    if (typeof publishedStable !== "string" || publishedStable === "") {
+      throw new Error("package.json: publishedStable is missing");
+    }
+    if (publishedStable.includes("-")) {
       throw new Error(
-        `action.yml does not default to package version ${version}`,
+        `publishedStable ${publishedStable} is a prerelease; the Action default must be a published stable version`,
+      );
+    }
+    if (!action.includes(`default: "${publishedStable}"`)) {
+      throw new Error(
+        `action.yml does not default to the published stable version ${publishedStable}`,
       );
     }
     if (

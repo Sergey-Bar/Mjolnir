@@ -61,10 +61,12 @@ inputs:
     default: "22.18"
   version:
     description: >-
-      Exact mjolnir-qa npm version to run. Defaults to the current released
-      package version; override only with another exact version.
+      Exact mjolnir-qa npm version to run. Defaults to the last PUBLISHED
+      stable release — not the working candidate, which does not exist on the
+      registry while it is a release candidate. Override only with another
+      published exact version.
     required: false
-    default: "4.0.0-rc.1"
+    default: "3.0.0"
   upload-sarif:
     description: >-
       Upload SARIF to GitHub Code Scanning (requires security-events:
@@ -171,6 +173,21 @@ runs:
           exit 10
         fi
 
+    # The action fetches an exact tarball, so an unpublished version is a 404
+    # with no explanation at the point of use. Resolve it here, where the
+    # message can name the version and the reason.
+    - name: Resolve the pinned package version
+      shell: bash
+      env:
+        MJ_VERSION: ${{ inputs.version }}
+      run: |
+        if ! npm view "mjolnir-qa@$MJ_VERSION" version >/dev/null 2>&1; then
+          echo "::error::mjolnir-qa@$MJ_VERSION is not published on the npm registry."
+          echo "::error::A release candidate exists only in this repository until it is published."
+          echo "::error::Pin 'version:' to a published version (for example 3.0.0), or drop the input to use the default."
+          exit 10
+        fi
+
     - name: Scan
       id: scan
       shell: bash
@@ -249,7 +266,7 @@ runs:
 
     - name: Upload SARIF to GitHub Code Scanning
       if: >-
-        inputs.format == 'sarif' && inputs.upload-sarif == 'true' &&
+        always() && inputs.format == 'sarif' && inputs.upload-sarif == 'true' &&
         steps.scan.outputs.sarif-file != ''
       uses: github/codeql-action/upload-sarif@b96794f015dfd88f77b49b1c93e0fa7110f94c63 # v4
       with:
@@ -261,8 +278,15 @@ runs:
     # --from`). The action only moves bytes. The capture scan uses
     # --blocking none so reporting can never change the gate result.
 
+    # Every reporting step below is `always()`. The scan step exits non-zero on
+    # findings, and a step whose `if:` omits `always()` is implicitly also
+    # `success()` — so a run that found something produced no report, no
+    # annotations, and no comment. A report that only appears when nothing was
+    # found tells a reviewer nothing at the moment they need it.
+
     - name: Capture JSON report for reporting
       if: >-
+        always() &&
         (inputs.annotations == 'true' || inputs.pr-comment == 'true' ||
         inputs.trust-artifact == 'true') && inputs.format != 'json'
       id: capture
@@ -285,6 +309,7 @@ runs:
     - name: Generate unified PR report
       id: pr-report
       if: >-
+        always() &&
         (inputs.annotations == 'true' || inputs.pr-comment == 'true' ||
         inputs.trust-artifact == 'true')
       shell: bash
@@ -297,7 +322,7 @@ runs:
         echo "file=mjolnir-comment.md" >> "$GITHUB_OUTPUT"
 
     - name: Emit annotations + step summary
-      if: inputs.annotations == 'true'
+      if: always() && inputs.annotations == 'true'
       shell: bash
       env:
         MJ_VERSION: ${{ inputs.version }}
@@ -311,7 +336,7 @@ runs:
 
     - name: Post unified report as PR comment
       if: >-
-        inputs.pr-comment == 'true' &&
+        always() && inputs.pr-comment == 'true' &&
         github.event_name == 'pull_request'
       shell: bash
       env:
@@ -338,7 +363,7 @@ runs:
         fi
 
     - name: Upload unified report artifacts
-      if: inputs.trust-artifact == 'true'
+      if: always() && inputs.trust-artifact == 'true'
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: mjolnir-report
