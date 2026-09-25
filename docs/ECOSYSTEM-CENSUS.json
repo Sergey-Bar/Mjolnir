@@ -3,8 +3,8 @@
   "artifact": "ecosystem-census",
   "generatedBy": "npm run docs:ecosystem",
   "censusId": "mjolnir-ecosystem-census",
-  "observedAt": "2026-09-25",
-  "baseSha": "200bf34e760c46fe27d5aab309467a290e7f8f41",
+  "observedAt": "2026-09-26",
+  "baseSha": "54c989eb3d83c0da32cae838f2839b56ac959b30",
   "counts": {
     "entries": 33,
     "state:TARGET": 19,
@@ -19,7 +19,7 @@
       "category": "api-contract-testing",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "manifest-file",
@@ -56,7 +56,7 @@
       "category": "api-contract-testing",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "dependency",
@@ -94,7 +94,7 @@
       "category": "api-contract-testing",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "dependency",
@@ -132,7 +132,7 @@
       "category": "api-contract-testing",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "dependency",
@@ -170,7 +170,7 @@
       "category": "api-contract-testing",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "dependency",
@@ -208,7 +208,7 @@
       "category": "bdd-spec-dsl",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "dependency",
@@ -246,7 +246,7 @@
       "category": "bdd-spec-dsl",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "dependency",
@@ -284,7 +284,7 @@
       "category": "ci-cd-provider",
       "state": "SUPPORTED",
       "owner": "provider-capability-contract",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "manifest-file",
@@ -315,7 +315,7 @@
       "category": "ci-cd-provider",
       "state": "SUPPORTED",
       "owner": "provider-capability-contract",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "workflow-dir",
@@ -351,7 +351,7 @@
       "category": "ci-cd-provider",
       "state": "SUPPORTED",
       "owner": "provider-capability-contract",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "manifest-file",
@@ -382,7 +382,7 @@
       "category": "ci-cd-provider",
       "state": "SUPPORTED",
       "owner": "provider-capability-contract",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "manifest-file",
@@ -413,7 +413,7 @@
       "category": "component-e2e",
       "state": "SUPPORTED",
       "owner": "framework-inventory",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "dependency",
@@ -458,7 +458,7 @@
       "category": "component-e2e",
       "state": "SUPPORTED",
       "owner": "framework-inventory",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "dependency",
@@ -530,7 +530,7 @@
       "category": "component-e2e",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "dependency",
@@ -568,7 +568,7 @@
       "category": "iac-container",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "extension",
@@ -605,7 +605,7 @@
       "category": "iac-container",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "extension",
@@ -642,7 +642,7 @@
       "category": "load-performance",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "dependency",
@@ -680,7 +680,7 @@
       "category": "load-performance",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "manifest-file",
@@ -717,7 +717,7 @@
       "category": "load-performance",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "dependency",
@@ -755,7 +755,7 @@
       "category": "test-framework",
       "state": "SUPPORTED",
       "owner": "framework-inventory",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "dependency",
@@ -809,7 +809,7 @@
       "category": "test-framework",
       "state": "SUPPORTED",
       "owner": "framework-inventory",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "dependency",
@@ -882,7 +882,7 @@
       "category": "test-framework",
       "state": "SUPPORTED",
       "owner": "framework-inventory",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "dependency",
@@ -937,7 +937,7 @@
       "category": "test-framework",
       "state": "SUPPORTED",
       "owner": "framework-inventory",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "dependency",
@@ -991,7 +991,7 @@
       "category": "test-framework",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "dependency",
@@ -1029,7 +1029,7 @@
       "category": "test-framework",
       "state": "SUPPORTED",
       "owner": "framework-inventory",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "dependency",
@@ -1084,7 +1084,7 @@
       "category": "test-framework",
       "state": "SUPPORTED",
       "owner": "framework-inventory",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "dependency",
@@ -1129,7 +1129,7 @@
       "category": "test-framework",
       "state": "SUPPORTED",
       "owner": "framework-inventory",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "dependency",
@@ -1175,7 +1175,7 @@
       "category": "test-management",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "workflow-dir",
@@ -1212,7 +1212,7 @@
       "category": "test-management",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "extension",
@@ -1249,7 +1249,7 @@
       "category": "test-management",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "dependency",
@@ -1287,7 +1287,7 @@
       "category": "test-management",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "manifest-file",
@@ -1324,7 +1324,7 @@
       "category": "test-runner",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "dependency",
@@ -1362,7 +1362,7 @@
       "category": "test-runner",
       "state": "SUPPORTED",
       "owner": "framework-inventory",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "dependency",
@@ -1456,7 +1456,7 @@
       "category": "api-contract-testing",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "manifest-file",
@@ -1493,7 +1493,7 @@
       "category": "api-contract-testing",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "dependency",
@@ -1531,7 +1531,7 @@
       "category": "api-contract-testing",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "dependency",
@@ -1569,7 +1569,7 @@
       "category": "api-contract-testing",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "dependency",
@@ -1607,7 +1607,7 @@
       "category": "api-contract-testing",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "dependency",
@@ -1645,7 +1645,7 @@
       "category": "bdd-spec-dsl",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "dependency",
@@ -1683,7 +1683,7 @@
       "category": "bdd-spec-dsl",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "dependency",
@@ -1721,7 +1721,7 @@
       "category": "ci-cd-provider",
       "state": "SUPPORTED",
       "owner": "provider-capability-contract",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "manifest-file",
@@ -1752,7 +1752,7 @@
       "category": "ci-cd-provider",
       "state": "SUPPORTED",
       "owner": "provider-capability-contract",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "workflow-dir",
@@ -1788,7 +1788,7 @@
       "category": "ci-cd-provider",
       "state": "SUPPORTED",
       "owner": "provider-capability-contract",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "manifest-file",
@@ -1819,7 +1819,7 @@
       "category": "ci-cd-provider",
       "state": "SUPPORTED",
       "owner": "provider-capability-contract",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "manifest-file",
@@ -1850,7 +1850,7 @@
       "category": "component-e2e",
       "state": "SUPPORTED",
       "owner": "framework-inventory",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "dependency",
@@ -1895,7 +1895,7 @@
       "category": "component-e2e",
       "state": "SUPPORTED",
       "owner": "framework-inventory",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "dependency",
@@ -1967,7 +1967,7 @@
       "category": "component-e2e",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "dependency",
@@ -2005,7 +2005,7 @@
       "category": "iac-container",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "extension",
@@ -2042,7 +2042,7 @@
       "category": "iac-container",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "extension",
@@ -2079,7 +2079,7 @@
       "category": "load-performance",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "dependency",
@@ -2117,7 +2117,7 @@
       "category": "load-performance",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "manifest-file",
@@ -2154,7 +2154,7 @@
       "category": "load-performance",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "dependency",
@@ -2192,7 +2192,7 @@
       "category": "test-framework",
       "state": "SUPPORTED",
       "owner": "framework-inventory",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "dependency",
@@ -2246,7 +2246,7 @@
       "category": "test-framework",
       "state": "SUPPORTED",
       "owner": "framework-inventory",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "dependency",
@@ -2319,7 +2319,7 @@
       "category": "test-framework",
       "state": "SUPPORTED",
       "owner": "framework-inventory",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "dependency",
@@ -2374,7 +2374,7 @@
       "category": "test-framework",
       "state": "SUPPORTED",
       "owner": "framework-inventory",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "dependency",
@@ -2428,7 +2428,7 @@
       "category": "test-framework",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "dependency",
@@ -2466,7 +2466,7 @@
       "category": "test-framework",
       "state": "SUPPORTED",
       "owner": "framework-inventory",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "dependency",
@@ -2521,7 +2521,7 @@
       "category": "test-framework",
       "state": "SUPPORTED",
       "owner": "framework-inventory",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "dependency",
@@ -2566,7 +2566,7 @@
       "category": "test-framework",
       "state": "SUPPORTED",
       "owner": "framework-inventory",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "dependency",
@@ -2612,7 +2612,7 @@
       "category": "test-management",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "workflow-dir",
@@ -2649,7 +2649,7 @@
       "category": "test-management",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "extension",
@@ -2686,7 +2686,7 @@
       "category": "test-management",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "dependency",
@@ -2724,7 +2724,7 @@
       "category": "test-management",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "manifest-file",
@@ -2761,7 +2761,7 @@
       "category": "test-runner",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "dependency",
@@ -2799,7 +2799,7 @@
       "category": "test-runner",
       "state": "SUPPORTED",
       "owner": "framework-inventory",
-      "observedAt": "2026-09-25",
+      "observedAt": "2026-09-26",
       "signals": [
         {
           "kind": "dependency",

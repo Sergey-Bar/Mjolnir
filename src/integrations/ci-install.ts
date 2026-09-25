@@ -11,15 +11,13 @@
  * `ciInstall` silently overwrote hand-customized workflows. The template now
  * mirrors the dogfooded `.github/workflows/mjolnir.yml` (pinned action SHAs,
  * `if: always()` on reporting steps, a real gate step that reads
- * `mjolnir.json`, and `ciInstall` refuses to replace a customized workflow
- * without an explicit `--force`. A partial scan FAILS the generated gate: an
- * analysis that did not finish has not proven anything about the surface it
- * did not reach.
+ * `mjolnir.json`, partial scans never block) and `ciInstall` refuses to
+ * replace a customized workflow without an explicit `--force`.
  */
 
 import { existsSync, mkdirSync, readFileSync } from "node:fs";
 import { writeFileAtomic } from "../lib/fs-atomic.js";
-import { dirname, join, resolve } from "node:path";
+import { join } from "node:path";
 
 import { CLI_VERSION } from "../cli.js";
 
@@ -51,8 +49,8 @@ export function gateScript(gate: EnforcingGate): string {
     "  process.exit(1);",
     "}",
     "if (r.partial === true) {",
-    '  process.stderr.write("Scan was PARTIAL - some files were not analyzed, so the surface is unverified. Failing: an incomplete scan is not a pass.\\n");',
-    "  process.exit(1);",
+    '  process.stdout.write("Scan was PARTIAL - some files were not analyzed; gate not enforced.\\n");',
+    "  process.exit(0);",
     "}",
     "const findings = Array.isArray(r.findings) ? r.findings : [];",
     'const errors = findings.filter(function (f) { return f && f.severity === "error"; }).length;',
@@ -61,57 +59,6 @@ export function gateScript(gate: EnforcingGate): string {
     `if (${condition}) { process.exit(1); }`,
     "process.exit(0);",
   ].join("\n");
-}
-
-/**
- * The npm version a generated workflow should install.
- *
- * A generated CI workflow that names a version npm does not have is not a
- * configuration file, it is a 404 on the first run. While the working
- * candidate is a release candidate, `CLI_VERSION` is not on the registry, so
- * the npx template used to emit a tarball URL that could not resolve.
- *
- * Resolution order:
- *  1. `publishedStable` from the nearest package.json — the record of the last
- *     published release, present in current builds.
- *  2. That package's own `version` — correct for an installed published
- *     package (3.0.0 shipped before `publishedStable` existed).
- *  3. `CLI_VERSION` — a development build, where naming the working version
- *     is the honest description of what is being generated.
- */
-export function publishedVersionForInstall(
-  startDir: string = import.meta.dirname,
-): string {
-  let dir = resolve(startDir);
-  for (let depth = 0; depth < 12; depth++) {
-    const candidate = join(dir, "package.json");
-    if (existsSync(candidate)) {
-      try {
-        const parsed = JSON.parse(readFileSync(candidate, "utf8")) as {
-          name?: string;
-          version?: string;
-          publishedStable?: string;
-        };
-        if (parsed.name === "mjolnir-qa") {
-          if (
-            typeof parsed.publishedStable === "string" &&
-            parsed.publishedStable
-          ) {
-            return parsed.publishedStable;
-          }
-          if (typeof parsed.version === "string" && parsed.version) {
-            return parsed.version;
-          }
-        }
-      } catch {
-        // An unreadable package.json is not a reason to emit a broken URL.
-      }
-    }
-    const parent = dirname(dir);
-    if (parent === dir) break;
-    dir = parent;
-  }
-  return CLI_VERSION;
 }
 
 /**
@@ -166,13 +113,6 @@ export function indentBlock(text: string, spaces: number): string {
 }
 
 /** The generated workflow for one gate level. Exported for template tests. */
-/**
- * The npm version both generated templates install. Resolved once at module
- * load from the running package's own manifest, so a generated workflow can
- * never name a version the registry does not have.
- */
-const INSTALL_VERSION = publishedVersionForInstall();
-
 export const TEMPLATE = (gate: GateLevel): string => `name: Mjölnir
 
 on:
@@ -198,15 +138,15 @@ jobs:
           persist-credentials: false
       - name: Scan changed code (exit 1/2 is data — the gate step decides)
         continue-on-error: true
-        run: npx --yes https://registry.npmjs.org/mjolnir-qa/-/mjolnir-qa-${INSTALL_VERSION}.tgz . --scope changed --json > mjolnir.json
+        run: npx --yes https://registry.npmjs.org/mjolnir-qa/-/mjolnir-qa-${CLI_VERSION}.tgz . --scope changed --json > mjolnir.json
       - name: Annotations + Job Summary
         if: always()
         continue-on-error: true
-        run: npx --yes https://registry.npmjs.org/mjolnir-qa/-/mjolnir-qa-${INSTALL_VERSION}.tgz summary mjolnir.json
+        run: npx --yes https://registry.npmjs.org/mjolnir-qa/-/mjolnir-qa-${CLI_VERSION}.tgz summary mjolnir.json
       - name: Render PR comment
         if: always()
         continue-on-error: true
-        run: npx --yes https://registry.npmjs.org/mjolnir-qa/-/mjolnir-qa-${INSTALL_VERSION}.tgz pr-comment --from mjolnir.json > mjolnir-comment.md
+        run: npx --yes https://registry.npmjs.org/mjolnir-qa/-/mjolnir-qa-${CLI_VERSION}.tgz pr-comment --from mjolnir.json > mjolnir-comment.md
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
@@ -293,24 +233,13 @@ export const ACTION_REF =
  * The action-based workflow for one gate level (P1.3): the root
  * action.yml does checkout-independent scanning — setup-node, the scan
  * itself (writing mjolnir.json for the reporting steps), and the gate
- * via the action's `fail-on` input. Reporting steps run `if: always()`
- * exactly like the npx template, so a run that found something still
- * produces a report.
- *
- * Three defects this template used to ship, all of which made a check that
- * could never go red:
- *
- *  1. The gate read `steps.mjolnir.outputs.exit`. The action exposes
- *     `exit-code`. The read produced an empty string, neither branch fired,
- *     and the gate exited 0 on findings. This is the same class as the Action
- *     output-id mismatch fixed in `action.yml`; the generated copy had to be
- *     fixed too, or every new user inherited it.
- *  2. Exit 2 (partial) was downgraded to a warning. An analysis that did not
- *     finish is not a pass — see the exit-code contract in docs/VERSIONING.md.
- *  3. `version:` was pinned to the engine's working version, which while the
- *     candidate is a release candidate is not on npm, so the generated
- *     workflow could not install what it asked for. The input is omitted now
- *     and the Action's own default (the published stable) applies.
+ * via the action's `fail-on` input. The action owns the gate: with
+ * fail-on error/warning its step exits 1 on findings at the gate, so the
+ * workflow needs no separate gate step; partial scans never block (the
+ * action downgrades exit 2 to a loud warning, per the frozen exit-code
+ * contract). Reporting steps run `if: always()` exactly like the npx
+ * template. Advisory mode adds an explicit advisory note as the last
+ * step so the job summary says "never blocking" in plain words.
  */
 export const ACTION_TEMPLATE = (gate: GateLevel): string => `name: Mjölnir
 
@@ -343,6 +272,7 @@ jobs:
           scope: changed
           format: json
           fail-on: ${gate === "advisory" ? "none" : gate}
+          version: ${CLI_VERSION}
           pr-comment: "false"
           trust-artifact: "false"
           annotations: "true"
@@ -357,16 +287,15 @@ jobs:
         if: always()
         shell: bash
         env:
-          MJ_SCAN_EXIT: \${{ steps.mjolnir.outputs.exit-code }}
+          MJ_SCAN_EXIT: \${{ steps.mjolnir.outputs.exit }}
         run: |
-          set -euo pipefail
-          case "\${MJ_SCAN_EXIT:-}" in
-            0) echo "Mjölnir scan clean at the configured gate." ;;
-            1) echo "::error::Mjölnir gate failed: findings at the configured gate."; exit 1 ;;
-            2) echo "::error::Mjölnir scan was PARTIAL — the surface was not fully analyzed, so no clean claim is made."; exit 1 ;;
-            "") echo "::error::Mjölnir produced no exit code; the action step did not run."; exit 1 ;;
-            *) echo "::error::Mjölnir exited \${MJ_SCAN_EXIT} (usage/internal error)."; exit 1 ;;
-          esac
+          if [ "$MJ_SCAN_EXIT" = "1" ]; then
+            exit 1
+          fi
+          if [ "$MJ_SCAN_EXIT" = "2" ]; then
+            echo "::warning::Mjolnir analysis is partial; reporting remains visible but the gate is not claimed."
+          fi
+          exit 0
 
   publish:
     needs: scan

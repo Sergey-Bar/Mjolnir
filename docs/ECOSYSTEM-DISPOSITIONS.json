@@ -3,7 +3,7 @@
   "artifact": "ecosystem-dispositions",
   "generatedBy": "npm run docs:ecosystem",
   "note": "Baseline of recorded dispositions for QA tools the census has no entry for. A tool missing from this file fails `ecosystem:gaps`; that is the drift-lock, not a reminder.",
-  "baseSha": "200bf34e760c46fe27d5aab309467a290e7f8f41",
+  "baseSha": "54c989eb3d83c0da32cae838f2839b56ac959b30",
   "count": 0,
   "dispositions": []
 }

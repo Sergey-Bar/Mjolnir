@@ -109,6 +109,7 @@
     "release:verify": "npm run m26:audit && npm run version:check && npm run claims:check && npm run candidate:manifest:check && npm run candidate:decision:release && npm run candidate:readiness && npm run coverage:exemptions && npm run docs:roadmap:check && npm run enterprise:threat-model",
     "self-scan": "node dist/cli.mjs .",
     "ci-local:parity": "node scripts/check-ci-local-parity.mjs",
+    "ci:standard": "node scripts/check-ci-standard.mjs",
     "test:property": "node scripts/check-property-runs.mjs && vitest run --config vitest.property.config.ts",
     "test:fuzz": "vitest run --config vitest.fuzz.config.ts",
     "prepare": "husky",

@@ -248,7 +248,13 @@ describe("P4 — a bound claim is a resolvable binding, not a comment", () => {
           {
             registryId: "rule-registry-census",
             maturity: "M4_CORPUS_VERIFIED",
-            proofCommand: "npm run rules:quality:check",
+            // A command that actually exists. The obvious example for an
+            // M4 binding is `rules:quality:check`, which the v6 blueprint
+            // schedules for Wave 4 and which therefore does not exist yet —
+            // and a fixture that names a non-existent command teaches the
+            // exact thing this gate exists to catch. The repo's own
+            // `docs-consistency` test caught this the first time.
+            proofCommand: "npm run typecheck",
             line: 1,
             surface: "README.md",
           },
