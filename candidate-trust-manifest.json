@@ -28,19 +28,43 @@
   "generatedAt": "2026-09-25",
   "identity": {
     "state": "WORKING_CANDIDATE",
-    "baseSha": "d7679ccf6376dab232fe30489b545e370fa7d423",
+    "baseSha": "d727ae42b1a382307fc07a381054950d02d4c682",
     "candidateSha": null,
     "version": "4.0.0-rc.1",
     "packageSha256": "8cd17750328505b3f6003a88e1a173b3803eb1b0f10041fdacd9899935bc9376",
     "lockfileSha256": "aeaff5bca556b58283a5c3c074adda7e429f28b2a76cd51b0efeaeaba9b5021c",
-    "workingTreeSha256": "00c79bb0048a5f23ed8d91194d7f73e2be24190051732e81a4ed512b5b8ff52e",
-    "changedPathCount": 0,
+    "workingTreeSha256": "9b2a81bcaa995580d5f54880dd2a0f07dfe6c20378d2403a45b4378f2d1530a5",
+    "changedPathCount": 11,
     "supportEnvelope": "self-hosted; hosted services require explicit consent and separate proof",
     "worktreeInventory": {
-      "changedPaths": [],
+      "changedPaths": [
+        "README.md",
+        "docs/BLAST-RADIUS-AUDIT.md",
+        "docs/DISTRIBUTION-KIT.md",
+        "scripts/check-version-surface.ts",
+        "site/.vitepress/theme/Home.vue",
+        "site/guide/ci.md",
+        "site/guide/forensics.md",
+        "site/guide/getting-started.md",
+        "smithery.yaml",
+        "src/release/version-surface.ts",
+        "tests/contract/version-surface.spec.ts"
+      ],
       "untrackedPaths": []
     },
-    "dirtyFiles": []
+    "dirtyFiles": [
+      "README.md",
+      "docs/BLAST-RADIUS-AUDIT.md",
+      "docs/DISTRIBUTION-KIT.md",
+      "scripts/check-version-surface.ts",
+      "site/.vitepress/theme/Home.vue",
+      "site/guide/ci.md",
+      "site/guide/forensics.md",
+      "site/guide/getting-started.md",
+      "smithery.yaml",
+      "src/release/version-surface.ts",
+      "tests/contract/version-surface.spec.ts"
+    ]
   },
   "claimRegistry": {
     "path": "docs/claim-registry.json",

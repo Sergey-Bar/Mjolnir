@@ -18,7 +18,11 @@ const surfaces = Object.fromEntries(
       : undefined,
   ]),
 );
-const violations = checkVersionSurfaceEnvelope(version, surfaces);
+const violations = checkVersionSurfaceEnvelope(
+  version,
+  surfaces,
+  publishedStable,
+);
 if (typeof publishedStable !== "string") {
   violations.push("package.json: publishedStable is missing");
 } else {

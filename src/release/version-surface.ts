@@ -1,18 +1,35 @@
 import { isValidSemver } from "./version-consistency.js";
 
-export const VERSION_SURFACE_PATHS = [
+/**
+ * Surfaces that report WHICH BUILD IS RUNNING. These read the working version.
+ */
+export const IDENTITY_SURFACE_PATHS = [
   "src/engine/version.ts",
+  "src/commands/enterprise.ts",
+  "src/mcp/server.ts",
+  "src/reporter/sarif.ts",
+] as const;
+
+/**
+ * Surfaces that tell a READER WHAT TO RUN. These must read a version that
+ * exists on the registry — the published stable — never the working candidate,
+ * which does not exist there while it is a release candidate.
+ */
+export const INSTALL_SURFACE_PATHS = [
   "action.yml",
   "smithery.yaml",
   "site/.vitepress/theme/Home.vue",
   "README.md",
+  "README.br.md",
   "site/guide/getting-started.md",
   "site/guide/ci.md",
   "site/guide/forensics.md",
   "docs/DISTRIBUTION-KIT.md",
-  "src/commands/enterprise.ts",
-  "src/mcp/server.ts",
-  "src/reporter/sarif.ts",
+] as const;
+
+export const VERSION_SURFACE_PATHS = [
+  ...IDENTITY_SURFACE_PATHS,
+  ...INSTALL_SURFACE_PATHS,
 ] as const;
 
 type VersionSurfaces = Record<string, string | undefined>;
@@ -67,30 +84,26 @@ export function checkActionDefaultVersion(
 export function checkVersionSurfaceEnvelope(
   version: string,
   surfaces: VersionSurfaces,
+  publishedStable?: string,
 ): string[] {
   if (!isValidSemver(version)) return [`invalid package version: ${version}`];
 
   const major = version.split(".")[0] ?? "";
+  // Two different questions, two different answers.
+  //
+  //   IDENTITY surfaces report which build is running. That IS the working
+  //   version, and it should read `version`.
+  //
+  //   INSTALL surfaces tell a reader what to run. That must be a version that
+  //   EXISTS on the registry. While the candidate is an RC the working version
+  //   is not published, so every `npx mjolnir-qa@4.0.0-rc.1` in the README
+  //   and the site is an instruction that fails with a 404 on copy-paste.
+  const installVersion =
+    typeof publishedStable === "string" ? publishedStable : version;
+
   const required = new Map<string, string[]>([
+    // --- identity surfaces: the working version -------------------------
     ["src/engine/version.ts", [`export const ENGINE_VERSION = "${version}";`]],
-    // The Action default is checked against `publishedStable`, not the working
-    // version — see checkActionDefaultVersion.
-    ["action.yml", []],
-    ["smithery.yaml", [`"version": "${version}"`, `mjolnir-qa@${version}`]],
-    [
-      "site/.vitepress/theme/Home.vue",
-      [
-        `npx mjolnir-qa@${version}`,
-        `mjolnir-qa@${version} mcp`,
-        `Sergey-Bar/Mjolnir@v${major}`,
-        `version: ${version}`,
-      ],
-    ],
-    ["README.md", [`mjolnir-qa@${version}`]],
-    ["site/guide/getting-started.md", [`npx mjolnir-qa@${version}`]],
-    ["site/guide/ci.md", [`mjolnir-qa@${version}`]],
-    ["site/guide/forensics.md", [`npx mjolnir-qa@${version} forensics`]],
-    ["docs/DISTRIBUTION-KIT.md", [`mjolnir-qa@${version}`]],
     [
       "src/commands/enterprise.ts",
       [
@@ -107,12 +120,31 @@ export function checkVersionSurfaceEnvelope(
     ],
     [
       "src/reporter/sarif.ts",
+      ['import { ENGINE_VERSION } from "../engine/version.js"'],
+    ],
+    // --- install surfaces: the published version ------------------------
+    ["action.yml", []],
+    [
+      "smithery.yaml",
+      [`"version": "${installVersion}"`, `mjolnir-qa@${installVersion}`],
+    ],
+    [
+      "site/.vitepress/theme/Home.vue",
       [
-        'import { ENGINE_VERSION } from "../engine/version.js"',
-        "version: ENGINE_VERSION",
+        `npx mjolnir-qa@${installVersion}`,
+        `mjolnir-qa@${installVersion} mcp`,
+        `Sergey-Bar/Mjolnir@v${major}`,
+        `version: ${version}`,
       ],
     ],
+    ["README.md", [`mjolnir-qa@${installVersion}`]],
+    ["README.br.md", [`mjolnir-qa@${installVersion}`]],
+    ["site/guide/getting-started.md", [`npx mjolnir-qa@${installVersion}`]],
+    ["site/guide/ci.md", [`mjolnir-qa@${installVersion}`]],
+    ["site/guide/forensics.md", [`npx mjolnir-qa@${installVersion} forensics`]],
+    ["docs/DISTRIBUTION-KIT.md", [`mjolnir-qa@${installVersion}`]],
   ]);
+
   const violations: string[] = [];
 
   for (const path of VERSION_SURFACE_PATHS) {
@@ -128,16 +160,42 @@ export function checkVersionSurfaceEnvelope(
     }
   }
 
-  for (const path of [
-    "action.yml",
-    "smithery.yaml",
-    "site/.vitepress/theme/Home.vue",
-    "README.md",
-    "site/guide/getting-started.md",
-    "site/guide/ci.md",
-    "site/guide/forensics.md",
-    "docs/DISTRIBUTION-KIT.md",
-  ]) {
+  // An install surface must not instruct anyone to run the working version
+  // while that version is unpublished. The check is the inverse of the one
+  // above: the published version must be present, AND the working version in
+  // an install position is a violation.
+  if (typeof publishedStable === "string" && publishedStable !== version) {
+    for (const path of INSTALL_SURFACE_PATHS) {
+      const content = surfaces[path];
+      if (typeof content !== "string") continue;
+      const prefixes = [
+        "npx mjolnir-qa@",
+        "npx --yes mjolnir-qa@",
+        "npx -y mjolnir-qa@",
+        '"-y", "mjolnir-qa@',
+        "npm i -g mjolnir-qa@",
+      ];
+      for (const prefix of prefixes) {
+        let offset = content.indexOf(prefix);
+        while (offset >= 0) {
+          const start = offset + prefix.length;
+          const end = content.slice(start).search(/[\s"']/u);
+          const candidate = content.slice(
+            start,
+            end < 0 ? undefined : start + end,
+          );
+          if (candidate === version) {
+            violations.push(
+              `${path}: instructs installing mjolnir-qa@${version}, which is not published; use ${publishedStable}`,
+            );
+          }
+          offset = content.indexOf(prefix, start);
+        }
+      }
+    }
+  }
+
+  for (const path of INSTALL_SURFACE_PATHS) {
     if (surfaces[path]?.includes("mjolnir-qa@latest")) {
       violations.push(`${path}: mutable mjolnir-qa@latest is forbidden`);
     }
@@ -181,7 +239,12 @@ export function synchronizeVersionSurfaceEnvelope(
         throw new Error(`${path}: version literal missing`);
       }
       const valueStart = start + startMarker.length;
-      const relativeEnd = output.slice(valueStart).search(/["\s]/);
+      // The literal ends at a quote, a backtick, or whitespace. Backtick
+      // matters: in Markdown an install command is inline code
+      // (`` `npx mjolnir-qa@3.0.0` ``), and without it as a terminator the
+      // sync consumed the closing backtick and corrupted every line it
+      // rewrote in a translated README.
+      const relativeEnd = output.slice(valueStart).search(/["'\s`]/);
       if (relativeEnd < 0)
         throw new Error(`${path}: version literal is malformed`);
       const end = valueStart + relativeEnd;
@@ -201,9 +264,29 @@ export function synchronizeVersionSurfaceEnvelope(
     'export const ENGINE_VERSION = "',
     version,
   );
-  // action.yml's default is the PUBLISHED STABLE version, never the working
-  // version: while the candidate is an RC, the working version does not exist
-  // on npm and the Action would 404 for every consumer who pinned nothing.
+
+  // Identity surfaces follow the working version.
+  replaceValue(
+    "site/.vitepress/theme/Home.vue",
+    "Sergey-Bar/Mjolnir@v",
+    major,
+    0,
+    true,
+  );
+  replaceValue(
+    "site/.vitepress/theme/Home.vue",
+    '"    version: ',
+    version,
+    0,
+    true,
+  );
+
+  // Install surfaces follow the PUBLISHED version. Running
+  // `npm run version:surface:sync` while the candidate is an RC therefore
+  // rewrites every install command to the published stable — which is the
+  // whole point: an install instruction that 404s on copy-paste is a defect,
+  // and the command that fixes it must never introduce one.
+  const installVersion = publishedStable ?? version;
   if (publishedStable !== undefined) {
     replaceValue(
       "action.yml",
@@ -212,30 +295,19 @@ export function synchronizeVersionSurfaceEnvelope(
       actionVersionStart,
     );
   }
-  replaceValue("smithery.yaml", '"version": "', version);
-  replaceValue("smithery.yaml", "mjolnir-qa@", version);
-  replaceValue(
-    "site/.vitepress/theme/Home.vue",
-    "mjolnir-qa@",
-    version,
-    0,
-    true,
-  );
-  replaceValue("site/.vitepress/theme/Home.vue", "Sergey-Bar/Mjolnir@v", major);
-  replaceValue("site/.vitepress/theme/Home.vue", '"    version: ', version);
-  replaceValue("README.md", "mjolnir-qa@", version, 0, true);
-  replaceValue(
-    "site/guide/getting-started.md",
-    "mjolnir-qa@",
-    version,
-    0,
-    true,
-  );
-  replaceValue("site/guide/ci.md", "mjolnir-qa@", version, 0, true);
-  replaceValue("site/guide/forensics.md", "mjolnir-qa@", version, 0, true);
-  replaceValue("docs/DISTRIBUTION-KIT.md", "mjolnir-qa@", version, 0, true);
+  for (const path of INSTALL_SURFACE_PATHS) {
+    if (path === "action.yml") continue;
+    replaceValue(path, "mjolnir-qa@", installVersion, 0, true);
+    if (path === "smithery.yaml") {
+      replaceValue(path, '"version": "', installVersion);
+    }
+  }
 
-  const violations = checkVersionSurfaceEnvelope(version, next);
+  const violations = checkVersionSurfaceEnvelope(
+    version,
+    next,
+    publishedStable,
+  );
   if (publishedStable !== undefined) {
     violations.push(...checkActionDefaultVersion(publishedStable, next));
   }

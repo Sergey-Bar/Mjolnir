@@ -9,13 +9,13 @@ rule ID, a location, and a fix.
 Run it with no install:
 
 ```bash
-npx mjolnir-qa@4.0.0-rc.1
+npx mjolnir-qa@3.0.0
 ```
 
 Or install globally:
 
 ```bash
-npm i -g mjolnir-qa@4.0.0-rc.1
+npm i -g mjolnir-qa@3.0.0
 ```
 
 Requires Node.js ≥ 22.18. Works on Windows, macOS, and Linux.

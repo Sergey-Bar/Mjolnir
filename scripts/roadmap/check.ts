@@ -156,7 +156,12 @@ const result = validateRoadmap(roadmap, facts);
 console.log(
   JSON.stringify(
     {
-      status: result.errors.length > 0 ? "FAIL" : "PASS",
+      status:
+        result.errors.length > 0
+          ? "FAIL"
+          : result.blockers.length > 0
+            ? "BLOCKED"
+            : "PASS",
       ledgerFacts: {
         missingSources,
         untrackedSources,

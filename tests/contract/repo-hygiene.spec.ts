@@ -242,21 +242,48 @@ describe("source plans referenced by .planning/STATE.md exist and are tracked", 
 describe("smithery.yaml descriptor sync", () => {
   // The descriptor is YAML (its flow mappings carry trailing commas), so
   // parse it with the repo's YAML library, never JSON.parse.
-  const smithery = parse(readFileSync(join(ROOT, "smithery.yaml"), "utf8")) as {
+  const smitheryYaml = readFileSync(join(ROOT, "smithery.yaml"), "utf8");
+  const smithery = parse(smitheryYaml) as {
     version?: string;
     description?: string;
   };
 
-  it("declares the same version as package.json", () => {
+  it("advertises a version that is actually published", () => {
     const pkg = JSON.parse(
       readFileSync(join(ROOT, "package.json"), "utf8"),
-    ) as { version?: string };
+    ) as {
+      version?: string;
+      publishedStable?: string;
+    };
+    // A registry descriptor is an install instruction for whoever reads it.
+    // While the working candidate is a release candidate, that version is not
+    // on npm, so a descriptor naming it advertises something nobody can
+    // install. The stronger property is the one worth asserting: the descriptor
+    // must name a PUBLISHED version, and `publishedStable` is the record of
+    // which one that is.
     expect(
       smithery.version,
-      "smithery.yaml 'version' drifted from package.json — the registry " +
-        "must never advertise a version the package is not. Update the " +
-        "descriptor in the same commit as the version bump.",
-    ).toBe(pkg.version);
+      "smithery.yaml 'version' must be the published stable version — the " +
+        "registry must never advertise a version the package is not. Update " +
+        "the descriptor and `publishedStable` in the same commit as the bump.",
+    ).toBe(pkg.publishedStable);
+    expect(
+      smithery.version,
+      "the descriptor must not name a prerelease",
+    ).not.toMatch(/-/);
+  });
+
+  it("the MCP npx invocation names the same published version", () => {
+    const pkg = JSON.parse(
+      readFileSync(join(ROOT, "package.json"), "utf8"),
+    ) as {
+      version?: string;
+      publishedStable?: string;
+    };
+    // A descriptor whose version field is right but whose npx args point at an
+    // unpublished build installs a different package than the one it advertises.
+    expect(smitheryYaml).toContain(`mjolnir-qa@${pkg.publishedStable}`);
+    expect(smitheryYaml).not.toContain(`mjolnir-qa@${pkg.version}`);
   });
 
   it("names every tool in the MCP catalog in its description", async () => {
