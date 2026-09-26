@@ -979,6 +979,80 @@ export function classifyName(name: string): {
   return null;
 }
 
+// ─── What is not QA tooling ─────────────────────────────────────────
+
+/**
+ * Tooling that a QA engine is right to *ignore*, with a reason.
+ *
+ * The first corpus run reported 44 `UNRECOGNIZED` tools, and 15 of them
+ * were error trackers, tracing SDKs and GitHub API clients — `@sentry/*`,
+ * `@opentelemetry/*`, `@elastic/*`, `@octokit/*`, `@actions/*`. None of
+ * them says anything about test quality, and every one of them was
+ * occupying a gap slot.
+ *
+ * That is a Law 8 failure in the *other* direction from the one Law 8
+ * names. An inflated gap list is not an honest one: it drowns the four
+ * real findings (the `pytest-*` plugins, the accessibility scanners, the
+ * report producers) in fifteen phantoms, and a report nobody can triage
+ * protects nothing. The first corpus run was right to name them; it was
+ * wrong to call them gaps.
+ *
+ * Each entry states the reason, because "we decided these don't count" is
+ * a judgement someone has to be able to re-make. These are *observation*
+ * patterns — a name is still detected and still reported in the scan — so
+ * nothing is hidden; they are simply not counted as capability gaps.
+ */
+export interface NotQaToolingPattern {
+  id: string;
+  pattern: RegExp;
+  rationale: string;
+}
+
+export const NOT_QA_TOOLING: readonly NotQaToolingPattern[] = [
+  {
+    id: "error-tracking",
+    pattern:
+      /^(@sentry\/|sentry|bugsnag|rollbar|datadoghq|@datadoghq\/\w+|raygun|bugherd)/i,
+    rationale:
+      "Error tracking reports where production broke. It says nothing about whether a test proves anything, and a test-quality engine that treated it as a coverage signal would be measuring the wrong thing.",
+  },
+  {
+    id: "tracing-and-telemetry",
+    pattern:
+      /^(@opentelemetry\/|opentelemetry|@elastic\/|@newrelic\/|newrelic|dd-trace|@datadog\/)/i,
+    rationale:
+      "Tracing and metrics SDKs instrument runtime behaviour. They are observability inputs, not test evidence, and counting them as a gap would inflate the backlog with every company that has a tracing stack.",
+  },
+  {
+    id: "source-control-api",
+    pattern:
+      /^(@octokit\/|octokit|@actions\/core|@actions\/github|@actions\/http-client|@actions\/io|@actions\/runner|@actions\/cache|@actions\/artifact)/i,
+    rationale:
+      "GitHub API clients and Actions SDK packages appear in CI workflow code, not in test code. A QA engine analysing a repository should see them and say nothing about them.",
+  },
+  {
+    id: "general-runtime",
+    // `react-dom` is covered by the `react` prefix. `eslint`, `typescript`
+    // and `prettier` are deliberately NOT here: a linter and a formatter
+    // are absent from this list on purpose, because exempting them by name
+    // is a judgement about *this* repository's stack, and the next
+    // repository's build tooling would need a new entry. They land in
+    // `notAFinding` anyway -- they match no QA name pattern either.
+    pattern:
+      /^(react|vue|angular|@angular\/core|svelte|next|nuxt|express|fastify|webpack|vite|rollup)/i,
+    rationale:
+      "An application dependency. It appears in the same package.json as the tooling, and a gap report that lists it is a gap report nobody reads.",
+  },
+];
+
+/** The pattern that classifies a name as not-QA-tooling, or `null`. */
+export function classifyNotQaTooling(name: string): NotQaToolingPattern | null {
+  for (const entry of NOT_QA_TOOLING) {
+    if (entry.pattern.test(name)) return entry;
+  }
+  return null;
+}
+
 // ─── Build the census ────────────────────────────────────────────────
 
 export interface Census {
@@ -1323,6 +1397,8 @@ export function classifyObservations(
   recognized: DiscoveryObservation[];
   unrecognized: DiscoveryObservation[];
   notAFinding: DiscoveryObservation[];
+  /** Observations excluded by NOT_QA_TOOLING rather than by being ordinary. */
+  notQaTooling: number;
 } {
   const bySignal = new Map<string, string>();
   for (const entry of census.entries) {
@@ -1333,6 +1409,7 @@ export function classifyObservations(
   const recognized: DiscoveryObservation[] = [];
   const unrecognized: DiscoveryObservation[] = [];
   const notAFinding: DiscoveryObservation[] = [];
+  let notQaTooling = 0;
   for (const observation of observations) {
     const hit =
       bySignal.get(signalKeyForObservation(observation)) ??
@@ -1352,13 +1429,20 @@ export function classifyObservations(
       });
       continue;
     }
+    // Classifiable as QA tooling by name, but explicitly out of scope for a
+    // test-quality engine. Still observed and still reportable in a scan --
+    // it is simply not a capability gap. Counting error trackers and CI API
+    // clients as gaps is how a 4-finding backlog becomes an unreadable 19.
+    if (classifyNotQaTooling(observation.name) !== null) {
+      notQaTooling += 1;
+    }
     notAFinding.push({
       ...observation,
       censusId: null,
       category: "UNCLASSIFIED",
     });
   }
-  return { recognized, unrecognized, notAFinding };
+  return { recognized, unrecognized, notAFinding, notQaTooling };
 }
 
 /**
