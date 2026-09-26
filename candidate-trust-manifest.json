@@ -28,21 +28,19 @@
   "generatedAt": "2026-09-26",
   "identity": {
     "state": "WORKING_CANDIDATE",
-    "baseSha": "d1ac43dc66c031de3ef3ec6d4bfc21e2c035b7c5",
+    "baseSha": "eff49205662d6790220f8f0dc6382418300257f5",
     "candidateSha": null,
     "version": "4.0.0-rc.1",
     "packageSha256": "86f25406fdae2933c0d4d0c6103c0b058a000d2e0eaf3294ee889e52c4a9a0ca",
     "lockfileSha256": "ddc729c2b004b6c6d6b13d2fff9c1e84c5fabec2da9978a66ab421e715bab644",
     "workingTreeSha256": "547374e6a0b91cb730c36858e69bb1592742eb2e73d1f55fd37bda411367990d",
-    "changedPathCount": 11,
+    "changedPathCount": 9,
     "supportEnvelope": "self-hosted; hosted services require explicit consent and separate proof",
     "worktreeInventory": {
       "changedPaths": [
         "CHANGELOG.md",
         "package-lock.json",
         "package.json",
-        "site/scripts/gen-report.mjs",
-        "site/scripts/gen-report.test.mjs",
         "src/cli.ts",
         "src/mcp/stdio.ts"
       ],
@@ -59,8 +57,6 @@
       "package-lock.json",
       "package.json",
       "scripts/sentry-release.mjs",
-      "site/scripts/gen-report.mjs",
-      "site/scripts/gen-report.test.mjs",
       "src/cli.ts",
       "src/integrations/sentry.ts",
       "src/mcp/stdio.ts",
