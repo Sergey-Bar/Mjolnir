@@ -10,6 +10,12 @@ export interface CompletionInput {
   scopeUnrecognized: number;
   parseFailed: number;
   parseFallbacks?: number;
+  /**
+   * Files that had an AST stage and lost it to the scan deadline, so they
+   * were analyzed by regex alone. Distinct from `parseFallbacks`, which
+   * counts a file whose parse was ATTEMPTED and then failed or degraded.
+   */
+  astFallbackFiles?: number;
   scopeDegraded?: string;
   runtimeIncomplete?: boolean;
   identityIncomplete?: boolean;
@@ -45,6 +51,13 @@ export function deriveCompletion(input: CompletionInput): CompletionState {
   if (input.parseFailed > 0) reasons.add(`parse-failed:${input.parseFailed}`);
   if (input.parseFallbacks && input.parseFallbacks > 0) {
     reasons.add(`parse-fallbacks:${input.parseFallbacks}`);
+  }
+  // The count of files analyzed WITHOUT the AST stage they could have had.
+  // The named reason alone says "some capability was lost"; this says how
+  // much, which is the difference between a reader trusting the score and a
+  // reader knowing exactly how much of the surface it does not cover.
+  if (input.astFallbackFiles && input.astFallbackFiles > 0) {
+    reasons.add(`ast-budget-fallback-files:${input.astFallbackFiles}`);
   }
   if (input.scopeDegraded) reasons.add(`scope-degraded:${input.scopeDegraded}`);
   if (input.runtimeIncomplete) reasons.add("runtime-incomplete");

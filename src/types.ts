@@ -492,8 +492,20 @@ export interface ScanResult {
     durationMs: number;
     /**
      * Named reasons the scan stopped early (audit H-8): "deadline",
-     * "file-cap:<adapter>", "rule-loop-deadline". Present only when
-     * truncation actually happened — absence means the scan is whole.
+     * "file-cap:<adapter>", "rule-loop-deadline", "ast-budget-fallback".
+     * Present only when truncation actually happened — absence means the
+     * scan is whole.
+     *
+     * Open `string[]`, NOT a closed union: a producer may add a member
+     * without a schema bump. The cost of that choice is that a consumer
+     * asserting the EXACT set breaks on every new reason, so assertions
+     * here are containment assertions, never `toEqual([...])`.
+     *
+     * "ast-budget-fallback" specifically means the scan ran out of time
+     * before a file could be analyzed through its adapter's AST stage, and
+     * that file was analyzed by regex instead. It is a capability loss, not
+     * a speed trade, and the count of affected files is in `reasons` as
+     * "ast-budget-fallback-files:<n>".
      */
     truncationReasons?: string[];
     /** Canonical completion reasons, including scope and parser degradation. */

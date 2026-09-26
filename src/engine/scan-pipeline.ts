@@ -572,6 +572,12 @@ export interface FileAnalysisResult {
   parseFallbacks: number;
   scanned: number;
   analyzed: number;
+  /**
+   * Files that HAD an AST stage and lost it to the scan deadline, so they
+   * were analyzed by regex alone. Zero for every adapter that declares no
+   * `parseAst` — that is a capability envelope, not a downgrade.
+   */
+  astFallbackFiles: number;
 }
 
 export async function runFileAnalysisPhase(
@@ -597,6 +603,7 @@ export async function runFileAnalysisPhase(
   let rulesPartial = false;
   let parseFailed = 0;
   let parseFallbacks = 0;
+  let astFallbackFiles = 0;
   let scanned = 0;
   let analyzed = 0;
 
@@ -651,7 +658,24 @@ export async function runFileAnalysisPhase(
         provenance: classifyProvenance({ text }),
       });
     }
+    // The AST stage is a DIFFERENT detection capability, not a slower version
+    // of the same one, so losing it changes the findings and the score. It is
+    // therefore only taken while the scan still has time budget: past the
+    // deadline the file is analyzed by regex alone. That flip used to be
+    // silent — the mode is baked into the cache key (so the cache faithfully
+    // recorded the downgrade) and nothing told the reader. `file-budget`
+    // only fired incidentally, when the per-file deadline at the rule loop
+    // was also already spent. The disclosure below is what makes the scan
+    // honestly `partial` instead of quietly less capable.
     const wantsAst = adapter.parseAst !== undefined && Date.now() <= deadline;
+    if (adapter.parseAst !== undefined && !wantsAst) {
+      // Distinguish "the adapter has no AST stage" (python without a wasm
+      // grammar, github-actions — a permanent, declared capability envelope)
+      // from "the deadline took it away" (a capability this scan COULD have
+      // had and did not). Only the second is a truncation.
+      truncationReasons.add("ast-budget-fallback");
+      astFallbackFiles++;
+    }
     const identity = (mode: "ast" | "regex") => ({
       relPath,
       adapterId: adapter.id,
@@ -822,6 +846,7 @@ export async function runFileAnalysisPhase(
     parseFallbacks,
     scanned,
     analyzed,
+    astFallbackFiles,
   };
 }
 
@@ -999,6 +1024,8 @@ export interface AssembleScanResultInput {
   scopeUnrecognized: number;
   parseFailed: number;
   parseFallbacks?: number;
+  /** Files that lost their AST stage to the scan deadline. See completion.ts. */
+  astFallbackFiles?: number;
   scanned: number;
   analyzed?: number;
   testFiles: string[];
@@ -1188,6 +1215,7 @@ export function assembleScanResult(o: AssembleScanResultInput): ScanResult {
     scopeUnrecognized: o.scopeUnrecognized,
     parseFailed: o.parseFailed,
     parseFallbacks: o.parseFallbacks ?? 0,
+    astFallbackFiles: o.astFallbackFiles ?? 0,
     ...(o.scopeInfo.degraded !== undefined
       ? { scopeDegraded: o.scopeInfo.degraded }
       : {}),
@@ -1565,6 +1593,7 @@ export async function runScan(
   rulesPartial = analysis.rulesPartial;
   parseFailed = analysis.parseFailed;
   const parseFallbacks = analysis.parseFallbacks;
+  const astFallbackFiles = analysis.astFallbackFiles;
   const scanned = analysis.scanned;
   const analyzed = analysis.analyzed;
 
@@ -1595,6 +1624,7 @@ export async function runScan(
     scopeUnrecognized,
     parseFailed,
     parseFallbacks,
+    astFallbackFiles,
     scanned,
     analyzed,
     testFiles,
