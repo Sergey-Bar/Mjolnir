@@ -7,31 +7,27 @@ contract enforces: **every external import in src/ must belong to the
 allowlist**, and the shipped surface (adapters, rules, flags, formats, exit
 codes) must match this document exactly.
 
-## Inventory: 335 files, 94422 LOC
+## Inventory: 326 files, 85192 LOC
 
 | Area              | Files | LOC   |
 | ----------------- | ----- | ----- |
-| src/engine        | 59    | 25386 |
-| src/commands      | 44    | 13585 |
+| src/engine        | 56    | 24249 |
+| src/commands      | 43    | 13429 |
 | src/rules         | 88    | 11758 |
 | src/(root)        | 8     | 3726  |
 | src/reporter      | 15    | 3387  |
 | src/forensics     | 17    | 3065  |
-| src/governance    | 1     | 2744  |
 | src/ledger        | 1     | 2660  |
 | src/frameworks    | 6     | 2653  |
-| src/detectors     | 1     | 2564  |
-| src/plugins       | 6     | 2295  |
+| src/plugins       | 5     | 1946  |
 | src/discovery     | 10    | 1745  |
 | src/agent         | 1     | 1726  |
 | src/adapters      | 11    | 1715  |
 | src/integrations  | 11    | 1621  |
 | src/benchmark     | 3     | 1433  |
 | src/gaps          | 2     | 1390  |
-| src/qa            | 1     | 1285  |
 | src/bench         | 5     | 1068  |
 | src/release       | 7     | 1012  |
-| src/research      | 1     | 995   |
 | src/mutation      | 6     | 836   |
 | src/mcp           | 3     | 816   |
 | src/brand         | 3     | 807   |
@@ -50,29 +46,29 @@ codes) must match this document exactly.
 
 | Module                          | Importers |
 | ------------------------------- | --------- |
-| src/types                       | 138       |
-| src/rules/rule                  | 82        |
+| src/types                       | 135       |
+| src/rules/rule                  | 81        |
 | src/rules/shared/positions      | 62        |
 | src/reporter/ui                 | 26        |
-| src/lib/fs-atomic               | 21        |
-| src/cli-io                      | 20        |
+| src/lib/fs-atomic               | 20        |
 | src/forensics/types             | 20        |
-| src/exit-codes                  | 17        |
+| src/cli-io                      | 19        |
+| src/exit-codes                  | 16        |
 | src/engine/adapter              | 14        |
 | src/rules/index                 | 13        |
 | src/discovery/ignores           | 11        |
-| src/engine/scan-pipeline        | 11        |
 | src/forensics/evidence-hygiene  | 11        |
 | src/rules/measured-fp.generated | 11        |
 | src/engine/ts-ast               | 10        |
+| src/engine/scan-pipeline        | 10        |
 
 ## External dependency allowlist (containment)
 
 | Dependency         | Files importing it |
 | ------------------ | ------------------ |
-| node:fs            | 72                 |
-| node:path          | 68                 |
-| node:crypto        | 27                 |
+| node:fs            | 70                 |
+| node:path          | 66                 |
+| node:crypto        | 23                 |
 | ts-morph           | 7                  |
 | node:url           | 4                  |
 | node:child_process | 4                  |

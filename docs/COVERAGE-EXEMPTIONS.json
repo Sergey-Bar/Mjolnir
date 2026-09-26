@@ -146,15 +146,6 @@
       "justification": "Shipped as `report`; invents Playwright results that were never executed and reports `passed` on zero findings."
     },
     {
-      "path": "src/commands/scan-cache.ts",
-      "classification": "DEAD_CODE",
-      "shippedSurface": false,
-      "owner": "maintainers",
-      "reviewBy": "2026-12-31",
-      "removalPlan": "V5-090 — delete the unwired command; src/engine/scan-cache.ts is the real, wired implementation and must survive.",
-      "justification": "Zero importers. The real cache lives in src/engine/scan-cache.ts, which is wired into the scan path and must not be deleted."
-    },
-    {
       "path": "src/commands/trend.ts",
       "classification": "SHIPPED_SURFACE",
       "shippedSurface": true,
@@ -162,15 +153,6 @@
       "reviewBy": "2026-12-31",
       "removalPlan": "V5-090 — merge into trust-trend; dashboards render stored evidence and never invent truth.",
       "justification": "Shipped as `trend`; duplicates trust-trend, forces a framework count, and is non-deterministic across runs."
-    },
-    {
-      "path": "src/plugins/npm-loader.ts",
-      "classification": "DEAD_CODE",
-      "shippedSurface": false,
-      "owner": "maintainers",
-      "reviewBy": "2026-12-31",
-      "removalPlan": "V5-091 — delete; src/plugins/load.ts is the single real plugin runtime and gains SDK enforcement.",
-      "justification": "Zero importers. A parallel re-implementation of the plugin loader that never shipped."
     },
     {
       "path": "src/agent/decision-receipt.ts",
@@ -209,15 +191,6 @@
       "justification": "Affected-path and selected-vs-full contracts exist with no production caller."
     },
     {
-      "path": "src/detectors/m45-detector-lifecycle.ts",
-      "classification": "DEAD_CODE",
-      "shippedSurface": false,
-      "owner": "maintainers",
-      "reviewBy": "2026-12-31",
-      "removalPlan": "V5-093 — retire the duplicate re-export once the three lifecycle vocabularies unify into one machine state machine.",
-      "justification": "Imported only by src/engine/m45-detector-lifecycle.ts, which itself has no importer. A re-export of a re-export."
-    },
-    {
       "path": "src/engine/m38-challenge-contract.ts",
       "classification": "CONTRACT_ONLY",
       "shippedSurface": false,
@@ -245,15 +218,6 @@
       "justification": "Intake/saturation gates are the right model but run no admission today."
     },
     {
-      "path": "src/engine/m43-system-of-systems.ts",
-      "classification": "CONTRACT_ONLY",
-      "shippedSurface": false,
-      "owner": "maintainers",
-      "reviewBy": "2026-12-31",
-      "removalPlan": "Deferred past 5.0 — stays a catalogued, gated row, never a claim.",
-      "justification": "Cross-repository contract beyond the 5.0 product center."
-    },
-    {
       "path": "src/engine/m44-historical-intelligence.ts",
       "classification": "CONTRACT_ONLY",
       "shippedSurface": false,
@@ -261,15 +225,6 @@
       "reviewBy": "2026-12-31",
       "removalPlan": "V5-072 — become the durable event/hash chain behind the single evidence store.",
       "justification": "History model with no persistence; three competing stores exist instead."
-    },
-    {
-      "path": "src/engine/m45-detector-lifecycle.ts",
-      "classification": "CONTRACT_ONLY",
-      "shippedSurface": false,
-      "owner": "maintainers",
-      "reviewBy": "2026-12-31",
-      "removalPlan": "V5-093 — unify RuleStatus, the M45 lifecycle, and docs/RULE-LIFECYCLE.md into one machine state machine.",
-      "justification": "Second of three rule-lifecycle vocabularies; contract test only."
     },
     {
       "path": "src/engine/m49-experience-parity-contract.ts",
@@ -317,15 +272,6 @@
       "justification": "Pack format only: no pack loader and no pack registry exist."
     },
     {
-      "path": "src/governance/m33-m34-contract.ts",
-      "classification": "CONTRACT_ONLY",
-      "shippedSurface": false,
-      "owner": "maintainers",
-      "reviewBy": "2026-12-31",
-      "removalPlan": "Deferred past 5.0 — hosted governance is explicitly out of the 5.0 scope.",
-      "justification": "Governance contract with no executor; contract test only."
-    },
-    {
       "path": "src/mutation/failure-sensitivity.ts",
       "classification": "CONTRACT_ONLY",
       "shippedSurface": false,
@@ -342,24 +288,6 @@
       "reviewBy": "2026-12-31",
       "removalPlan": "V5-091 — enforce inside src/plugins/load.ts so the SDK becomes the real security boundary.",
       "justification": "The SDK schema is not enforced by the loader that actually requires plugins."
-    },
-    {
-      "path": "src/qa/domain-model.ts",
-      "classification": "CONTRACT_ONLY",
-      "shippedSurface": false,
-      "owner": "maintainers",
-      "reviewBy": "2026-12-31",
-      "removalPlan": "V5-022 — promote src/engine/qa-model.ts to the IR seam; retire the duplicate domain model.",
-      "justification": "Ships honest UNSUPPORTED/NONE states, but no production importer."
-    },
-    {
-      "path": "src/research/m46-reproducible-research-lab-contract.ts",
-      "classification": "CONTRACT_ONLY",
-      "shippedSurface": false,
-      "owner": "maintainers",
-      "reviewBy": "2026-12-31",
-      "removalPlan": "Deferred past 5.0 — research lab stays catalogued and gated.",
-      "justification": "Research contract with no executor; contract test only."
     },
     {
       "path": "src/ledger/m26-validators.ts",
