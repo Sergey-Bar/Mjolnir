@@ -11,7 +11,7 @@ import { join } from "node:path";
 
 import { BADGE_BAND } from "../brand/tokens.js";
 import type { ScanResult } from "../types.js";
-import { deriveScoreState } from "../reporter/score-state.js";
+import { deriveScoreState } from "../reporter/presentation.js";
 
 export interface BadgeOptions {
   /** Where to write mjolnir-badge.json. */

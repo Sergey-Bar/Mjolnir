@@ -73,7 +73,7 @@ const COLOUR_SECTIONS = (): string =>
     ]),
     table(
       "score",
-      "The ScoreState bands. Thresholds and runes live in `src/reporter/score-state.ts`.",
+      "The ScoreState bands. Thresholds and runes live in `src/reporter/presentation.ts`.",
       [
         ["score.critical", SCORE.critical, "0–49 · UNWORTHY · ᚲ"],
         ["score.warning", SCORE.warning, "50–79 · NEEDS WORK · ᚦ"],

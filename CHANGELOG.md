@@ -11,6 +11,135 @@ once shipped, so this file is the record of what changed between versions.
 
 ## [Unreleased]
 
+### Breaking changes
+
+- **`business-case` no longer prints a dollar figure you did not supply.** The
+  `--industry` flag selected from a table of invented incident costs (fintech
+  $50 000, healthcare $100 000, …) with no source, and the product of that table
+  and a measured false-positive rate was printed as "Expected Savings" and
+  "Total potential savings". Pass `--incident-cost <n>` to see the arithmetic;
+  the measured FP rates, their sample sizes and the evidence weight behind them
+  are always shown. `--industry`, `--history` and `--projected` now exit with a
+  reason: `--history` read no history despite promising estimates from scan
+  improvements, and `--projected` divided the total by six and called the
+  quotient a monthly rate.
+- **`enterprise sso` and `enterprise compliance` no longer write files.** They
+  wrote an SSO guide instructing readers to add an `sso` block to
+  `mjolnir.config.json` — a key nothing reads — and three auditor-facing SOC 2 /
+  HIPAA / PCI-DSS templates mapping controls to capabilities this product does
+  not have (SSO/SAML integration, a scan "audit trail", a "privacy scan"). Both
+  now refuse with a reason. `enterprise config` emits
+  `capability-manifest.json`, whose `notProvided` list records the absences
+  instead of inventing a deployment.
+- **The evidence descriptor is now the same on every surface.** The HTML and
+  Markdown trust reports showed four bare words (`E2 · deterministic`) where the
+  terminal showed the full descriptor. They now show
+  `[E2 · deterministic · measured FP 8% · n=14 · trust L3 · runtime: file executed]`.
+  A finding with no `evidenceLevel` of its own now derives one from its type and
+  confidence instead of defaulting to `E2` — the strongest claim the product can
+  make, previously asserted for findings nobody had measured.
+- **Unmeasured counts read "unknown — not measured", not `0`.** The trust
+  report, the PR comment and the step summary all rendered
+  `testDeclarationCount ?? 0` as "0 tests analyzed in 0 files" for a producer
+  that had never measured a declaration. The trust-report JSON twin now emits
+  `null` for those fields. A zero is a claim; an absent measurement is not.
+- **The dashboard no longer varies between runs of an unchanged repository.**
+  The generation timestamp moved out of the visible body into
+  `<meta name="mjolnir-generated-at">`, and `--deterministic` omits it entirely
+  so the artifact is byte-identical and can be diffed in review.
+- **Score bands are decided in one place.** The dashboard split at 60 while the
+  terminal split at 80, so a score the terminal called UNWORTHY rendered amber
+  in HTML; the contributor handover used 90; `mermaid.ts` and
+  `monorepo-analysis.ts` each carried their own copy. All of them now read
+  `src/reporter/presentation.ts`.
+
+### Added
+
+- `npm run report:honesty` — no surface may print a zero for a measurement that
+  may be absent. Four reviewed exceptions are recorded for computation inputs,
+  each with a reason and a follow-up.
+- `npm run thresholds:parity` — no score-band literal may exist outside the
+  threshold registry. It immediately caught a selector-health threshold that
+  shared a number with a trust band but not a meaning.
+- `npm run claims:revalidate` — every claim asserted `fixed` must rest on a
+  candidate-bound, independent revalidation. It rejects evidence that cites the
+  artifact it is meant to prove, and downgrades rather than deleting a claim
+  that loses its evidence.
+- `npm run verbs:budget` — the 5.x law, ratcheted at 50 verbs with a 44 target
+  for 5.0.
+- `npm run script:paths` — no `package.json` script may name a `tests/`,
+  `src/`, `scripts/`, `docs/`, `site/` or `enterprise/` path that does not
+  exist. 107 path references are checked today.
+- `npm run m26:gaps:revalidate` — re-runs every gap row's own
+  `revalidation_command` against the working tree and records the exit code and
+  the commit it ran at.
+- `tests/contract/artifact-determinism.spec.ts` — two runs of the HTML
+  artifact over an unchanged repository must be byte-identical.
+- `src/reporter/presentation.ts` — the one module that makes a presentation
+  decision. It reads a finding, a score or a palette and returns the word, band
+  or descriptor to print. It opens no file, touches no clock and formats no
+  document, and a test enforces that.
+
+### Fixed
+
+- **`frontier:contracts` was reporting 19 suites it never ran.** It named 24
+  test files; nineteen had been deleted by the `cc5fcb88` cleanup and its
+  follow-up. Vitest treats a missing path as "no tests here" rather than an
+  error, so the script exited 0 and printed "57 passed" while nineteen contract
+  suites — including every `m3x`/`m4x`/`m5x` frontier contract — silently did
+  not execute. A missing test file and a green test file are indistinguishable
+  from the outside, so a gate that passes because its subject is absent has
+  certified nothing. The list is rebuilt from the 23 contract suites that
+  exist (1 110 tests, not 57), and `npm run script:paths` now fails the build if
+  any `package.json` script names a path that is gone.
+- The certification ladder's language vocabulary could not name the answer its
+  own admission gate produces. `admit()` returns `UNMEASURED` as the supported
+  state of any claim not backed by evidence, but `LANGUAGE_STATE_RANK` had no
+  word for it — so a language claiming `CERTIFIED` with an empty cohort was
+  handed a result its own vocabulary could not record. `UNMEASURED` is now
+  expressible in both vocabularies, and the four rule-level states
+  (`MEASURED-CORE` … `PROVISIONAL`) are declared in `RULE_ONLY_STATES` as
+  explicitly _not_ language outcomes rather than being filtered out by a
+  hand-maintained list.
+- The contributor handover reported "Welcome aboard — the suite is in good
+  shape" whenever no issues were found, including when no run report had been
+  ingested and flakiness was therefore unmeasured. It now says what it did not
+  check.
+- The confidence table's row labels were encoded as `"k|v"` strings and split
+  back apart, so any value containing a pipe was silently truncated. The rows
+  are typed pairs. The table also gained a `<caption>`, a `<thead>` and
+  `scope` attributes; it was previously a bare `<tbody>` a screen reader
+  announced as six unlabelled rows.
+- `handoff` and `summary` each carried a private colourless score bar that
+  rendered 99 and 100 identically. Both now use the canonical `scoreGauge`, and
+  the redundant `theme.meter` alias is gone.
+- The gap ledger gained three revalidation statuses
+  (`ALREADY_FIXED` / `CONFIRMED_STILL_OPEN` / `STALE_UNVERIFIABLE`). A row may
+  no longer be cleared without a revalidation that was actually run at a named
+  commit, and `STALE_UNVERIFIABLE` deliberately does not clear a release gate —
+  an unverifiable claim must never be able to unblock a release.
+- `m26:github:sync` derived every one of 429 issue dispositions from GitHub's
+  own `state` field — a pure function of its input, containing no engineering
+  judgement — and `GAP-M26-002` then marked that script `fixed`, citing the
+  artifacts it produces. Dispositions now come from
+  `docs/issue-dispositions.json`, where each entry must carry a non-empty
+  reason and a verification naming a command or a source path, and may not be
+  verified by the script that wrote it. An untriaged issue stays open and is
+  flagged, never guessed and never silently closed. 215 of 429 are now visibly
+  awaiting a human decision, which is the honest count.
+
+### Documentation
+
+- `PRODUCT-ENHANCEMENT-ANALYSIS.md` is marked `SUPERSEDED-BY: BITTERSWEET` and
+  gained a section XII auditing its "all 16 features shipped" claims: six do not
+  hold (two shipped fabricated values, two shipped a different capability than
+  described, two never shipped). The document is kept as the record of what was
+  believed on 2026-09-20, because deleting it would destroy the only evidence
+  that the belief was wrong.
+- `docs/RELEASE-TRAINS.md` now records why each of the six scheduled verb
+  removals is justified differently, so the deprecation notices do not all send
+  the same message to users who acted on different output.
+
 ## [4.0.0-rc.1] — 2026-09-25
 
 ### Breaking changes

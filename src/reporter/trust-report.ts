@@ -27,7 +27,7 @@ import { palette, shouldColorize, shouldUseAscii } from "./theme.js";
 import { sectionHeader, type UiContext } from "./ui.js";
 import { renderTerminal } from "./terminal.js";
 import { pct } from "../lib/format.js";
-import { evidenceTag } from "./evidence-tag.js";
+import { evidenceTag, testsAnalyzedCell } from "./presentation.js";
 
 export interface RenderTrustReportOpts {
   isTTY: boolean;
@@ -251,7 +251,7 @@ export function renderTrustReport(
     lines.push("  measured FP (fired) none fired — nothing to weight");
   }
   lines.push(
-    `  tests analyzed      ${result.testDeclarationCount ?? 0} declaration(s) in ${result.testFileCount ?? 0} file(s)`,
+    `  tests analyzed      ${testsAnalyzedCell(result.testDeclarationCount, result.testFileCount)}`,
   );
   lines.push("");
 

@@ -20,9 +20,11 @@ import {
   detectRegression,
   EVIDENCE_REQUIRED_FROM,
   isAtLeast,
+  languageCanExpress,
   LANGUAGE_STATE_RANK,
   rankOf,
   requiresEvidence,
+  RULE_ONLY_STATES,
   RULE_STATUS_RANK,
   validateProjections,
   type CertificationState,
@@ -35,7 +37,6 @@ import {
   supportClaim,
   type LanguageCapability,
 } from "../../src/certification/language-manifest.js";
-import { M40_LANGUAGE_CERTIFICATION_STATES } from "../../src/engine/m40-language-expansion-contract.js";
 import type { RuleStatus } from "../../src/rules/measurement.js";
 
 const FULL_EVIDENCE = {
@@ -168,13 +169,79 @@ describe("the projections are the consolidation, not a rename", () => {
     expect(validateProjections()).toEqual([]);
   });
 
-  it("every M40 language state has a position on the ladder", () => {
-    for (const state of M40_LANGUAGE_CERTIFICATION_STATES) {
+  it("the language vocabulary can name every answer admit() can hand a caller", () => {
+    // The property that actually matters, and it is derivable rather than
+    // hand-listed. For a LANGUAGE claim the declared state is one the language
+    // vocabulary already speaks, and `admit()` returns either that same state
+    // or UNMEASURED. So the two cases below are the complete set of answers a
+    // language can be handed — and both must be sayable.
+    //
+    // The previous version of this test filtered the ladder through a
+    // hard-coded exclusion list and therefore demanded a language projection
+    // for the four RULE states (MEASURED-CORE …). Those describe where a
+    // rule's measurement sits, and `admit()` is vocabulary-agnostic, so
+    // feeding one in proves nothing about a language. Adding them to the
+    // language map would be the fourth vocabulary `validateProjections`
+    // exists to catch.
+    const withEvidence = {
+      corpus: "corpus/x.jsonl",
+      sampleSize: 10,
+      verifiedBy: "v",
+    };
+    for (const state of Object.keys(
+      LANGUAGE_STATE_RANK,
+    ) as CertificationState[]) {
+      const decision = admit(state, withEvidence);
+      expect(
+        languageCanExpress(decision.supportedState),
+        `a language declared ${state} and was told ${decision.supportedState}`,
+      ).toBe(true);
+      // And the unbacked case, which is the one that used to be unsayable.
+      const bare = admit(state, {});
+      expect(
+        languageCanExpress(bare.supportedState),
+        `a language declared ${state} with no evidence and was told ${bare.supportedState}`,
+      ).toBe(true);
+    }
+  });
+
+  it("every state a language can legitimately be at has a projection", () => {
+    // The consolidation is total over the language-reachable ladder. The
+    // exclusion is the module's own RULE_ONLY_STATES declaration, not a list
+    // restated here: adding a rule state without declaring it there now fails
+    // this test, which is the point.
+    for (const state of CERTIFICATION_STATES) {
+      if (RULE_ONLY_STATES.has(state)) continue;
       expect(
         LANGUAGE_STATE_RANK[state],
-        `${state} is in the M40 contract but not on the ladder`,
+        `${state} has no language projection`,
       ).toBeDefined();
     }
+  });
+
+  it("the rule-only states are rule vocabulary, and stay out of the language map", () => {
+    // Named in one place so the exclusion is visible. If a future change makes
+    // one of these reachable as a language outcome, `languageCanExpress` above
+    // is what catches it — not this assertion.
+    for (const state of RULE_ONLY_STATES) {
+      expect(RULE_STATUS_RANK[state], state).toBeDefined();
+    }
+    expect([...RULE_ONLY_STATES].sort()).toEqual([
+      "MEASURED-CORE",
+      "MEASURED-EXTENDED",
+      "MEASURED-QUARANTINE",
+      "PROVISIONAL",
+    ]);
+  });
+
+  it("UNMEASURED is expressible in both vocabularies, because absence is a state", () => {
+    // It is the answer `admit()` gives a language that claimed more than it
+    // could back, so both vocabularies must be able to say it.
+    expect(LANGUAGE_STATE_RANK["UNMEASURED"]).toBe("UNMEASURED");
+    expect(RULE_STATUS_RANK["UNMEASURED"]).toBe("UNMEASURED");
+    const decision = admit("CERTIFIED", {});
+    expect(decision.admitted).toBe(false);
+    expect(decision.supportedState).toBe("UNMEASURED");
   });
 
   it("every RuleStatus has a position on the ladder", () => {

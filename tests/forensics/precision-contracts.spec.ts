@@ -23,7 +23,7 @@ import {
 import { analyze } from "../../src/forensics/analyze.js";
 import type { ForensicsReport } from "../../src/forensics/types.js";
 import { runScan } from "../../src/cli.js";
-import { verdictFor } from "../../src/reporter/terminal.js";
+import { verdictFor } from "../../src/reporter/presentation.js";
 import { renderMermaid } from "../../src/reporter/mermaid.js";
 import { renderTerminal } from "../../src/reporter/terminal.js";
 import type { ScanResult } from "../../src/types.js";

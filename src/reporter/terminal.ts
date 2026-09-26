@@ -9,7 +9,7 @@
  */
 
 import type { Finding, ScanResult } from "../types.js";
-import { DEDUCTIONS, deriveEvidenceLevel } from "../types.js";
+import { DEDUCTIONS } from "../types.js";
 import {
   computeDimensions,
   deductionFor,
@@ -36,7 +36,13 @@ import {
   panel,
   type UiContext,
 } from "./ui.js";
-import { deriveScoreState, headlineFor } from "./score-state.js";
+import {
+  deriveScoreState,
+  evidenceLevelOf,
+  evidenceTag,
+  headlineFor,
+  verdictFor,
+} from "./presentation.js";
 import { LOGO, LOGO_ASCII, TROPHY, FORGED_WORDMARK } from "./art.js";
 import { bluntMessage } from "./tone-blunt.js";
 import { MEASURED_FP } from "../rules/measured-fp.generated.js";
@@ -148,19 +154,6 @@ export function renderTerminal(
   appendNextActions(lines, display, result, ui);
   appendFooter(lines, result, ui);
   return lines.join("\n");
-}
-
-/**
- * Contract-stable three-band verdict (property-locked in
- * tests/scoring-precision.spec.ts). Delegates to the ScoreState model —
- * 100 keeps returning WORTHY here; the FORGED premium treatment lives
- * in the dedicated block, not in this public mapping.
- */
-export function verdictFor(
-  score: number,
-): "WORTHY" | "NEEDS WORK" | "UNWORTHY" {
-  const verdict = deriveScoreState(score).verdict;
-  return verdict === "FORGED" ? "WORTHY" : verdict;
 }
 
 /** Appends the score, gauge, verdict, and honesty metadata for the full scan. */
@@ -443,35 +436,9 @@ interface FindingCard {
   verify: string;
 }
 
-function evidenceTag(f: Finding): string {
-  const level =
-    f.evidenceLevel ?? deriveEvidenceLevel(f.findingType, f.confidence);
-  const kind =
-    level === "E2"
-      ? "deterministic"
-      : level === "E1"
-        ? "heuristic"
-        : "observation";
-  let tag = `${level} · ${kind}`;
-  if (f.measuredFpRate !== undefined) {
-    tag += ` · measured FP ${Math.round(f.measuredFpRate * 100)}%`;
-    if (f.measuredFpN !== undefined) tag += ` · n=${f.measuredFpN}`;
-  }
-  // Plan §16: surface the trust ladder + what runtime vouched for.
-  if (f.trustLevel !== undefined) tag += ` · trust ${f.trustLevel}`;
-  if (f.runtimeCorroboration !== undefined) {
-    const c = f.runtimeCorroboration;
-    let label = "file executed";
-    if (c.level === "defect") label = "defect corroborated";
-    else if (c.level === "test") label = "test executed";
-    tag += ` · runtime: ${label}`;
-  }
-  return `[${tag}]`;
-}
-
 /** Deterministic per-severity verification hint: what re-running should
- * show after the fix lands. Deduction is the honest, evidence-discounted
- * number this finding costs right now. */
+ *  show after the fix lands. Deduction is the honest, evidence-discounted
+ *  number this finding costs right now. */
 function verifyHint(f: Finding): string {
   const pts = deductionFor(f);
   if (f.severity === "error") {
@@ -804,9 +771,7 @@ function appendFooter(
   );
   // Honesty Core: advisory findings are visible but never cost points.
   const advisory = result.findings.filter(
-    (f) =>
-      (f.evidenceLevel ?? deriveEvidenceLevel(f.findingType, f.confidence)) ===
-      "E0",
+    (f) => evidenceLevelOf(f) === "E0",
   ).length;
   if (advisory > 0) {
     pushWrapped(

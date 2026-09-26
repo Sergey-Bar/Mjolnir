@@ -8,7 +8,7 @@
 import { describe, expect, it } from "vitest";
 import { FORGED_WORDMARK } from "../../src/reporter/art.js";
 import { gaugeColorForBand, palette } from "../../src/reporter/theme.js";
-import { deriveScoreState } from "../../src/reporter/score-state.js";
+import { deriveScoreState } from "../../src/reporter/presentation.js";
 
 describe("unmeasured state", () => {
   it("deriveScoreState(null) maps to the unmeasured band and dim color", () => {

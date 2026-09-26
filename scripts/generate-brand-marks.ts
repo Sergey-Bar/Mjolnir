@@ -24,7 +24,7 @@
  *     Elder Futhark spelling of the name (ᛗ ᛃ ᛟ ᛚ ᚾ ᛁ ᚱ, see
  *     docs/design/BRAND-SYSTEM.md), so the monogram is not a new choice,
  *     it is the initial the brand already spells itself with. It is
- *     deliberately NOT one of `RUNES` in src/reporter/score-state.ts (ᚲ
+ *     deliberately NOT one of `RUNES` in src/reporter/presentation.ts (ᚲ
  *     ᚦ ᛏ ᛟ ᛁ) — the single glyph placed beside an actual verdict.
  *     Reusing one of those on the permanent logo would make the brand
  *     mark itself look like a standing verdict ("this product is always

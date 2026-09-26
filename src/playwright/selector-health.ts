@@ -21,9 +21,25 @@ import { sectionHeader, plainContext } from "../reporter/ui.js";
 
 const ui = plainContext();
 
+/**
+ * Below this SELECTOR-HEALTH score, a retry-dependent run is read as
+ * instability the locator signal does not explain, rather than as
+ * corroboration of it.
+ *
+ * This is NOT a Mjölnir worthiness band and deliberately shares no
+ * vocabulary with one: selector health is a 0–100 scale over locator
+ * classes, and a 40 here means "four brittle-locator classes out of a
+ * spec", not "NEEDS WORK" in the trust sense. `thresholds:parity` treats
+ * it as a violation precisely because a 40 here once looked like a band —
+ * two scales, one number, and no way for a reader to tell them apart.
+ */
+const CORROBORATION_FLOOR = 40;
+
 export interface SpecSelectorHealth {
   file: string;
-  score: number; // 0–100
+  /** 0–100 over LOCATOR classes. Not the worthiness score — see
+   *  `CORROBORATION_FLOOR` for why the scales stay separate. */
+  score: number;
   counts: Record<LocatorClass, number>;
   weakestLine?: number;
 }
@@ -254,7 +270,7 @@ export function correlateSelectorHealth(
       correlation: "corroborates",
       claim: {
         assertion:
-          brittle > 0 && spec.score >= 40
+          brittle > 0 && spec.score >= CORROBORATION_FLOOR
             ? `retry-dependent execution corroborates the static brittleness signal (${brittle} brittle locator${brittle === 1 ? "" : "s"})`
             : "retry-dependent execution shows instability the selector signal does not explain",
         safeNextAction:

@@ -249,6 +249,13 @@ export const LANGUAGE_STATE_RANK: Readonly<Record<string, CertificationState>> =
     KNOWN: "KNOWN",
     PARSEABLE: "PARSEABLE",
     SEMANTICALLY_SUPPORTED: "SEMANTICALLY_SUPPORTED",
+    // `admit()` returns UNMEASURED as the `supportedState` of ANY declared
+    // state that was not backed by evidence — including a language that
+    // declared CERTIFIED. So a language can legitimately be *told* it is
+    // UNMEASURED, and a vocabulary that cannot name the answer the gate
+    // hands it cannot record what happened. This is law 1 doing work:
+    // absence is a state, so the state has to be sayable.
+    UNMEASURED: "UNMEASURED",
     MEASURED: "MEASURED",
     CANDIDATE: "CANDIDATE",
     EXPERIMENTAL: "EXPERIMENTAL",
@@ -259,6 +266,40 @@ export const LANGUAGE_STATE_RANK: Readonly<Record<string, CertificationState>> =
     UNSUPPORTED: "UNSUPPORTED",
     BLOCKED: "BLOCKED",
   });
+
+/**
+ * The states that belong to the RULE vocabulary and are not language outcomes.
+ *
+ * `MEASURED-CORE`, `MEASURED-EXTENDED`, `MEASURED-QUARANTINE` and
+ * `PROVISIONAL` describe where a *rule's measurement* sits. `admit()` can never
+ * return one of them as a `supportedState` for a language, because it only
+ * ever returns the declared state or UNMEASURED.
+ *
+ * They are named here rather than filtered inline at each call site so that
+ * the exclusion is ONE visible declaration. Adding a rule state without
+ * declaring it here makes the projection test fail; adding a language-reachable
+ * state without a projection fails too. A silent inline filter would let both
+ * drift, and a filter that drifts is how a fourth vocabulary reappears.
+ */
+export const RULE_ONLY_STATES: ReadonlySet<CertificationState> = new Set([
+  "MEASURED-CORE",
+  "MEASURED-EXTENDED",
+  "MEASURED-QUARANTINE",
+  "PROVISIONAL",
+]);
+
+/**
+ * Can the language vocabulary name this state?
+ *
+ * The property that actually matters, and it is derivable rather than
+ * hand-listed: if `admit()` can hand a caller a `supportedState` the
+ * language projection has no word for, then a language's certification record
+ * cannot record its own admission outcome. That is the incoherence this
+ * module was written to end, and it is a code property, not a list.
+ */
+export function languageCanExpress(state: CertificationState): boolean {
+  return LANGUAGE_STATE_RANK[state] !== undefined;
+}
 
 /**
  * Every state a projection names must exist in the ladder, and no state may

@@ -20,7 +20,7 @@ import {
   SMOOTHING_C,
   SUITE_INVALIDATED_CEILING,
 } from "../../../src/scorer/scorer.js";
-import { verdictFor } from "../../../src/reporter/terminal.js";
+import { verdictFor } from "../../../src/reporter/presentation.js";
 import type { DimensionScore, Finding } from "../../../src/types.js";
 
 function finding(over: Partial<Finding> = {}): Finding {

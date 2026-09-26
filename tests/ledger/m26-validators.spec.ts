@@ -99,10 +99,11 @@ function populatedSnapshot(): Record<string, unknown> {
 
 function gap(
   id: string,
-  status: "open" | "fixed" = "open",
+  status: "open" | "fixed" | "ALREADY_FIXED" | "STALE_UNVERIFIABLE" = "open",
   supersedes?: string,
   supersededBy?: string,
 ): Record<string, unknown> {
+  const cleared = status === "fixed" || status === "ALREADY_FIXED";
   return {
     schemaVersion: 1,
     gap_id: id,
@@ -136,6 +137,20 @@ function gap(
             artifacts: ["fixture-output.txt"],
           }
         : null,
+    // BW-001: a cleared row must carry a revalidation that was actually
+    // run, at a named commit. `GAP-M26-002` was written `fixed` citing the
+    // script that produced the artifacts it claimed to prove, which is the
+    // hole this block closes.
+    ...(cleared
+      ? {
+          revalidation: {
+            command: "npx vitest run tests/ledger/m26-validators.spec.ts",
+            exit_code: 0,
+            observed_at_base_sha: "a".repeat(40),
+            observed: "the fixture validator accepts the record",
+          },
+        }
+      : {}),
     ...(supersedes === undefined ? {} : { supersedes }),
     ...(supersededBy === undefined ? {} : { superseded_by: supersededBy }),
   };
@@ -329,6 +344,61 @@ describe("gap ledger validators", () => {
     const value = gap("GAP-M26-001");
     value.owner = "UNOWNED";
     expect(validateGapLedgerRecord(value).status).toBe("FAIL");
+  });
+
+  it("refuses to clear a gap with no revalidation (BW-001)", () => {
+    // The specific hole GAP-M26-002 fell through: a row typed `fixed` with
+    // a PASS recorded, and no way to tell which tree that PASS described.
+    for (const status of ["fixed", "ALREADY_FIXED"] as const) {
+      const value = gap("GAP-M26-001", status);
+      delete value.revalidation;
+      const result = validateGapLedgerRecord(value);
+      expect(result.status, status).toBe("FAIL");
+      expect(
+        result.diagnostics.map((d) => d.code),
+        status,
+      ).toContain("FIX_WITHOUT_REVALIDATION");
+    }
+  });
+
+  it("refuses a revalidation that is missing its commit", () => {
+    // A PASS with no base SHA is the same hole one field narrower.
+    const value = gap("GAP-M26-001", "fixed");
+    delete (value.revalidation as Record<string, unknown>).observed_at_base_sha;
+    expect(
+      validateGapLedgerRecord(value).diagnostics.map((d) => d.code),
+    ).toContain("FIX_WITHOUT_REVALIDATION");
+  });
+
+  it("treats STALE_UNVERIFIABLE as NOT cleared, so it cannot unblock a release", () => {
+    // An unverifiable claim must never be able to satisfy a gate. This is
+    // the reason the class exists separately from `open`.
+    const value = gap("GAP-M26-RELEASE", "open");
+    value.status = "STALE_UNVERIFIABLE";
+    value.severity = "release-blocker";
+    expect(validateGapLedgerRecord(value).status).toBe("PASS");
+    expect(validateGapLedger([value]).status).toBe("BLOCKED");
+  });
+
+  it("clears a release blocker whose revalidation passed (ALREADY_FIXED)", () => {
+    const value = gap("GAP-M26-RELEASE", "ALREADY_FIXED");
+    value.severity = "release-blocker";
+    expect(validateGapLedgerRecord(value).status).toBe("PASS");
+    expect(validateGapLedger([value]).status).toBe("PASS");
+  });
+
+  it("still blocks a release blocker whose revalidation FAILED", () => {
+    const value = gap("GAP-M26-RELEASE", "ALREADY_FIXED");
+    value.severity = "release-blocker";
+    (value.revalidation as Record<string, unknown>).exit_code = 1;
+    // The row claims it is fixed and records that the command failed. That
+    // contradiction is a hard error, not a warning: the record asserts
+    // something its own evidence refutes, so it fails validation outright
+    // rather than quietly blocking.
+    const result = validateGapLedgerRecord(value);
+    expect(result.diagnostics.map((d) => d.code)).toContain("UNRUN_CLOSURE");
+    expect(result.status).toBe("FAIL");
+    expect(validateGapLedger([value]).status).toBe("FAIL");
   });
 
   it("requires reciprocal supersession links", () => {

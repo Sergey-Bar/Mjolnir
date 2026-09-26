@@ -233,36 +233,38 @@ After reviewing the findings or baselining existing debt, opt into blocking:
 mjolnir ci install --gate error
 ```
 
-| Command                                       | What it does                                      |
-| --------------------------------------------- | ------------------------------------------------- |
-| `mjolnir`                                     | Trust Report: verdict, confidence, next action    |
-| `mjolnir --scope changed`                     | Only what your branch introduced (CI form)        |
-| `mjolnir --blocking error`                    | Exit 1 on error findings — gate releases          |
-| `mjolnir ci install`                          | Write the advisory PR workflow (default)          |
-| `mjolnir ci install --gate error`             | Opt into the blocking PR workflow                 |
-| `mjolnir business-case`                       | ROI estimate: projected savings per finding       |
-| `mjolnir release-report`                      | Release readiness: GO, CONDITIONAL GO, or NO-GO   |
-| `mjolnir release-trust`                       | 12-dimension release assurance verdict            |
-| `mjolnir report`                              | Generate a Playwright-compatible report           |
-| `mjolnir trend`                               | Record, show, or diff local quality snapshots     |
-| `mjolnir policy`                              | Initialize, validate, or check policy gates       |
-| `mjolnir quarantine`                          | Review deterministic proposals (prototype)        |
-| `mjolnir analyze --cross-file`                | Bounded cross-file analysis                       |
-| `mjolnir ci-adapter github .`                 | Generate CI templates for supported providers     |
-| `mjolnir dashboard`                           | Generate a self-contained quality dashboard       |
-| `mjolnir exec-report`                         | Executive KPIs and recommendations (advisory)     |
-| `mjolnir enterprise`                          | Self-hosted templates (prototype)                 |
-| `mjolnir maturity`                            | Assess maturity or display maturity levels        |
-| `mjolnir mutation tests/mutation-report.json` | Analyze mutation reports; never promotes trust    |
-| `mjolnir mcp`                                 | Read-only MCP tools over stdio                    |
-| `mjolnir explain QA-CI-001`                   | What, why and fix, plus measured/unmeasured state |
-| `mjolnir why src/a.spec.ts:42`                | Why this exact line was flagged. Never gates.     |
-| `mjolnir forensics ./test-results/`           | Runtime evidence from a real run                  |
-| `mjolnir trust-report`                        | Self-contained Trust Artifact (md + json)         |
-| `mjolnir handoff`                             | Remediation plan for a coding agent               |
-| `mjolnir --json` / `--format sarif`           | Machine-readable output, GitHub Code Scanning     |
-| `mjolnir --format codequality`                | GitLab Code Quality report (MR widget artifact)   |
-| `mjolnir --strict`                            | Also run quarantine-tier rules (higher FP risk)   |
+| Command                                       | What it does                                                 |
+| --------------------------------------------- | ------------------------------------------------------------ |
+| `mjolnir`                                     | Trust Report: verdict, confidence, next action               |
+| `mjolnir --scope changed`                     | Only what your branch introduced (CI form)                   |
+| `mjolnir --blocking error`                    | Exit 1 on error findings — gate releases                     |
+| `mjolnir ci install`                          | Write the advisory PR workflow (default)                     |
+| `mjolnir ci install --gate error`             | Opt into the blocking PR workflow                            |
+| `mjolnir business-case`                       | Measured FP rates; a cost figure only with `--incident-cost` |
+| `mjolnir release-report`                      | Release readiness: GO, CONDITIONAL GO, or NO-GO              |
+| `mjolnir release-trust`                       | 12-dimension release assurance verdict                       |
+| `mjolnir report`                              | Findings in a Playwright-shaped file (no test outcomes)      |
+| `mjolnir diff`                                | What changed against the stored baseline, by fingerprint     |
+| `mjolnir verify`                              | Digest of what a change resolved and what it introduced      |
+| `mjolnir trend`                               | Record, show, or diff local quality snapshots                |
+| `mjolnir policy`                              | Initialize, validate, or check policy gates                  |
+| `mjolnir quarantine`                          | Review deterministic proposals (prototype)                   |
+| `mjolnir analyze --cross-file`                | Bounded cross-file analysis                                  |
+| `mjolnir ci-adapter github .`                 | Generate CI templates for supported providers                |
+| `mjolnir dashboard`                           | Generate a self-contained quality dashboard                  |
+| `mjolnir exec-report`                         | Executive KPIs and recommendations (advisory)                |
+| `mjolnir enterprise`                          | Self-hosted templates (prototype)                            |
+| `mjolnir maturity`                            | Assess maturity or display maturity levels                   |
+| `mjolnir mutation tests/mutation-report.json` | Analyze mutation reports; never promotes trust               |
+| `mjolnir mcp`                                 | Read-only MCP tools over stdio                               |
+| `mjolnir explain QA-CI-001`                   | What, why and fix, plus measured/unmeasured state            |
+| `mjolnir why src/a.spec.ts:42`                | Why this exact line was flagged. Never gates.                |
+| `mjolnir forensics ./test-results/`           | Runtime evidence from a real run                             |
+| `mjolnir trust-report`                        | Self-contained Trust Artifact (md + json)                    |
+| `mjolnir handoff`                             | Remediation plan for a coding agent                          |
+| `mjolnir --json` / `--format sarif`           | Machine-readable output, GitHub Code Scanning                |
+| `mjolnir --format codequality`                | GitLab Code Quality report (MR widget artifact)              |
+| `mjolnir --strict`                            | Also run quarantine-tier rules (higher FP risk)              |
 
 <details>
 <summary><strong>Every other command</strong> — flake triage, reporting, governance</summary>

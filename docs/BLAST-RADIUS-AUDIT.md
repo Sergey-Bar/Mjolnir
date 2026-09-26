@@ -7,60 +7,59 @@ contract enforces: **every external import in src/ must belong to the
 allowlist**, and the shipped surface (adapters, rules, flags, formats, exit
 codes) must match this document exactly.
 
-## Inventory: 326 files, 85192 LOC
+## Inventory: 310 files, 66459 LOC
 
 | Area              | Files | LOC   |
 | ----------------- | ----- | ----- |
-| src/engine        | 56    | 24249 |
-| src/commands      | 43    | 13429 |
+| src/commands      | 43    | 13533 |
+| src/engine        | 49    | 12052 |
 | src/rules         | 88    | 11758 |
-| src/(root)        | 8     | 3726  |
-| src/reporter      | 15    | 3387  |
+| src/reporter      | 14    | 3527  |
+| src/(root)        | 7     | 3122  |
 | src/forensics     | 17    | 3065  |
-| src/ledger        | 1     | 2660  |
-| src/frameworks    | 6     | 2653  |
-| src/plugins       | 5     | 1946  |
+| src/ledger        | 1     | 2776  |
 | src/discovery     | 10    | 1745  |
-| src/agent         | 1     | 1726  |
 | src/adapters      | 11    | 1715  |
 | src/integrations  | 11    | 1621  |
-| src/benchmark     | 3     | 1433  |
 | src/gaps          | 2     | 1390  |
-| src/bench         | 5     | 1068  |
+| src/frameworks    | 4     | 1336  |
 | src/release       | 7     | 1012  |
-| src/mutation      | 6     | 836   |
 | src/mcp           | 3     | 816   |
 | src/brand         | 3     | 807   |
+| src/plugins       | 4     | 715   |
 | src/store         | 2     | 671   |
+| src/bench         | 4     | 592   |
+| src/certification | 2     | 560   |
 | src/config        | 3     | 540   |
 | src/scorer        | 3     | 533   |
-| src/certification | 2     | 519   |
+| src/mutation      | 5     | 496   |
 | src/traceability  | 2     | 441   |
 | src/scope         | 2     | 427   |
-| src/playwright    | 2     | 312   |
+| src/playwright    | 2     | 328   |
 | src/lib           | 5     | 306   |
 | src/trust         | 2     | 232   |
+| src/benchmark     | 2     | 174   |
 | src/anti-gaming   | 2     | 169   |
 
 ## Internal fan-in — top 15 (change-blast candidates)
 
 | Module                          | Importers |
 | ------------------------------- | --------- |
-| src/types                       | 135       |
+| src/types                       | 134       |
 | src/rules/rule                  | 81        |
 | src/rules/shared/positions      | 62        |
 | src/reporter/ui                 | 26        |
 | src/lib/fs-atomic               | 20        |
-| src/forensics/types             | 20        |
 | src/cli-io                      | 19        |
+| src/forensics/types             | 19        |
 | src/exit-codes                  | 16        |
 | src/engine/adapter              | 14        |
 | src/rules/index                 | 13        |
+| src/reporter/presentation       | 13        |
 | src/discovery/ignores           | 11        |
 | src/forensics/evidence-hygiene  | 11        |
 | src/rules/measured-fp.generated | 11        |
 | src/engine/ts-ast               | 10        |
-| src/engine/scan-pipeline        | 10        |
 
 ## External dependency allowlist (containment)
 
@@ -68,7 +67,7 @@ codes) must match this document exactly.
 | ------------------ | ------------------ |
 | node:fs            | 70                 |
 | node:path          | 66                 |
-| node:crypto        | 23                 |
+| node:crypto        | 15                 |
 | ts-morph           | 7                  |
 | node:url           | 4                  |
 | node:child_process | 4                  |
@@ -76,7 +75,7 @@ codes) must match this document exactly.
 | web-tree-sitter    | 3                  |
 | yaml               | 2                  |
 | node:process       | 2                  |
-| node:util          | 2                  |
+| node:util          | 1                  |
 | node:zlib          | 1                  |
 | node:buffer        | 1                  |
 | node:readline      | 1                  |

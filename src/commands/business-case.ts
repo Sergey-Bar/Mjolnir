@@ -1,49 +1,37 @@
 /**
- * `mjolnir business-case` — ROI estimate per finding (extended).
+ * `mjolnir business-case` — measured false-positive rates, and the
+ * arithmetic a reader can audit.
  *
- * Projects the business impact of untrustworthy verification by
- * combining:
- *   - Measured false-positive rate when corpus evidence exists
- *     (otherwise explicit unmeasured/quarantine status)
- *   - Industry-specific cost of a false-green release per incident
- *   - Historical incident data from git log (optional)
- *   - Projected savings over 6/12 months (optional)
+ * What changed, and why: this command multiplied a MEASURED false-positive
+ * rate by a table of invented incident costs (fintech $50 000, healthcare
+ * $100 000, …) with no source, and printed the product as "Expected
+ * Savings" and "Total potential savings". A dollar figure with no
+ * provenance is worse than no dollar figure: someone puts it in a
+ * business case and defends it in a room. It also had a `--history` flag
+ * whose own help text promised "estimates from actual scan improvements"
+ * and which did nothing but print a pointer elsewhere, and a `--projected`
+ * flag that divided the total by six and called the result a monthly rate.
  *
- * Static analysis — no test execution, no telemetry, deterministic
- * output.
+ * So the invented cost table is gone. The one number this command can
+ * defend is the measured false-positive rate and how many findings carry
+ * it. A dollar conversion happens only when the reader supplies the cost
+ * of an incident themselves (`--incident-cost`), because then the number
+ * has a source: theirs.
+ *
+ * Scheduled for removal in 5.0 — see docs/RELEASE-TRAINS.md.
  */
 
 import { runScan } from "../cli.js";
-import { EXIT_CLEAN, EXIT_INTERNAL } from "../exit-codes.js";
+import { EXIT_CLEAN, EXIT_INTERNAL, EXIT_USAGE } from "../exit-codes.js";
 import { internalErrorMessage, type Output } from "../cli-io.js";
 import { out, err } from "../cli-io.js";
+import { evidenceLevelOf } from "../reporter/presentation.js";
 
-const DEFAULT_INCIDENT_COST = 25000;
-
-/** Industry cost multipliers for false-green incidents. */
-const INDUSTRY_COSTS: Record<string, number> = {
-  default: DEFAULT_INCIDENT_COST,
-  fintech: 50000,
-  healthcare: 100000,
-  ecommerce: 15000,
-  saas: 30000,
-  enterprise: 40000,
-  gaming: 20000,
-  education: 10000,
-};
-
-const INDUSTRY_DESCRIPTIONS: Record<string, string> = {
-  default: "general",
-  fintech: "financial services (regulatory fines, PCI/HIPAA)",
-  healthcare: "healthcare (HIPAA, patient safety)",
-  ecommerce: "e-commerce (cart abandonment, lost sales)",
-  saas: "SaaS (churn, reputation)",
-  enterprise: "enterprise (contract penalties, SLA breaches)",
-  gaming: "gaming (player trust, reviews)",
-  education: "education (student data, accreditation)",
-};
-
-/** Calculate expected savings per finding. */
+/**
+ * Evidence weight per level, applied to a user-supplied incident cost.
+ * E0 is an observation and never counts — there is nothing to save against
+ * a claim nobody made.
+ */
 function expectedSavings(
   fpRate: number | null,
   evidenceLevel: string,
@@ -60,73 +48,73 @@ function renderSummary(
   savingsPerFinding: Array<{
     ruleId: string;
     fpRate: number | null;
+    fpN: number | null;
     evidenceLevel: string;
     expectedSavings: number | null;
   }>,
-  incidentCost: number,
-  industry: string,
-  totalSavings: number,
+  incidentCost: number | null,
+  totalSavings: number | null,
 ): string {
+  const measured = savingsPerFinding.filter((s) => s.fpRate !== null).length;
   const lines: string[] = [
-    "Mjölnir Business Case — Estimated ROI per finding",
-    "=================================================",
+    "Mjölnir — measured false-positive rates on the findings that fired",
+    "=".repeat(58),
     "",
-    `Industry profile: ${industry} (${INDUSTRY_DESCRIPTIONS[industry] ?? "general"})`,
-    `Assumed cost per false-green incident: $${incidentCost}`,
-    `Sample: ${savingsPerFinding.filter((s) => s.fpRate !== null).length} of ${savingsPerFinding.length} rules have measured FP rates`,
+    `Measured: ${measured} of ${savingsPerFinding.length} findings carry a corpus-measured FP rate.`,
+    ...(incidentCost === null
+      ? [
+          "",
+          "NO DOLLAR FIGURES ARE SHOWN. Converting a false-positive rate into money",
+          "requires the cost of one false-green incident in YOUR organisation, which",
+          "this tool does not know and will not invent. Pass --incident-cost <n> to",
+          "see the arithmetic; the number is then yours, not Mjölnir's.",
+        ]
+      : [
+          "",
+          `Incident cost used: $${incidentCost.toLocaleString()} (your figure, from --incident-cost).`,
+          `Findings that fired: ${savingsPerFinding.length}.`,
+        ]),
     "",
-    "| Rule ID | FP Rate | Evidence | Expected Savings |",
-    "| ------- | ------- | -------- | --------------- |",
+    "| Rule ID | FP Rate | n | Evidence | Expected cost |",
+    "| ------- | ------- | - | -------- | ------------- |",
   ];
 
   for (const {
     ruleId,
     fpRate,
+    fpN,
     evidenceLevel,
     expectedSavings: savings,
   } of savingsPerFinding) {
     const fpDisplay =
-      fpRate !== null ? `${Math.round(fpRate * 100)}%` : "unmeasured";
-    const savingsDisplay = savings !== null ? `$${savings}` : "n/a";
+      fpRate !== null ? `${Math.round(fpRate * 100)}%` : "not measured";
+    const nDisplay = fpN !== null ? String(fpN) : "—";
+    const savingsDisplay =
+      incidentCost === null || savings === null
+        ? "—"
+        : `$${savings.toLocaleString()}`;
     lines.push(
-      `| ${ruleId} | ${fpDisplay} | ${evidenceLevel} | ${savingsDisplay} |`,
+      `| ${ruleId} | ${fpDisplay} | ${nDisplay} | ${evidenceLevel} | ${savingsDisplay} |`,
     );
   }
 
   lines.push("");
-  lines.push("Interpretation:");
-  lines.push("---------------");
+  lines.push("How to read this:");
+  lines.push("--------------------");
   lines.push(
-    "- E2 findings (deterministic proof) carry full business risk — eliminate first",
-  );
-  lines.push("- E1 findings (pattern evidence) carry half the assessed risk");
-  lines.push(
-    "- Unmeasured rules (n < 10) have no quantified FP rate — add corpus classification",
+    "- E2 is deterministic proof and counts in full; E1 is pattern evidence and counts half;",
   );
   lines.push(
-    `- Total potential savings across all findings: $${totalSavings.toLocaleString()}`,
+    "  E0 is an observation and never counts. The evidence column is why the weight differs.",
   );
-  return lines.join("\n");
-}
-
-function renderProjection(
-  monthlySavings: number,
-  months: number,
-  incidentCost: number,
-): string {
-  const totalProjected = monthlySavings * months;
-  const incidentsPrevented = Math.round(totalProjected / incidentCost);
-  const lines: string[] = [
-    "",
-    "SAVINGS PROJECTION",
-    "==================",
-    "",
-    `Monthly savings estimate:  $${monthlySavings.toLocaleString()}`,
-    `Projection period:        ${months} months`,
-    `Projected total savings:  $${totalProjected.toLocaleString()}`,
-    `Incidents prevented:      ~${incidentsPrevented} (at $${incidentCost.toLocaleString()}/incident)`,
-    "",
-  ];
+  lines.push(
+    "- A rule with no measured FP rate is NOT assumed safe. It is unmeasured, and it says so.",
+  );
+  if (totalSavings !== null) {
+    lines.push(
+      `- Total expected cost across these findings: $${totalSavings.toLocaleString()}`,
+    );
+  }
   return lines.join("\n");
 }
 
@@ -134,11 +122,17 @@ function renderProjection(
  * Entry point for `mjolnir business-case`.
  *
  * Flags:
- *   --industry <type>    Industry cost profile (default/fintech/healthcare/...)
- *   --history <months>   Use git history for the last N months (estimates from
- *                        actual scan improvements, not projections)
- *   --projected <months> Show projected savings over N months
+ *   --incident-cost <n>  The cost of ONE false-green incident in your
+ *                        organisation. Until you supply it, no dollar
+ *                        figure is printed at all.
  *   --strict             Include quarantine-tier findings
+ *
+ * `--history` and `--projected` are GONE. Both promised arithmetic this
+ * tool cannot do: `--history` claimed to estimate from actual scan
+ * improvements while reading no history at all, and `--projected` divided
+ * the total by six and called the quotient a monthly rate. A flag that
+ * does not do what its help says is worse than no flag, because the help
+ * is the promise.
  */
 export async function runBusinessCaseCommand(
   argv: string[],
@@ -146,31 +140,41 @@ export async function runBusinessCaseCommand(
 ): Promise<number> {
   try {
     const target = argv.find((a) => !a.startsWith("-")) ?? ".";
-    const industryIdx = argv.indexOf("--industry");
-    const industry =
-      industryIdx !== -1 ? (argv[industryIdx + 1] ?? "default") : "default";
-    const historyIdx = argv.indexOf("--history");
-    const historyMonths =
-      historyIdx !== -1 ? Number.parseInt(argv[historyIdx + 1] ?? "", 10) : 0;
-    const projectedIdx = argv.indexOf("--projected");
-    const projectedMonths =
-      projectedIdx !== -1
-        ? Number.parseInt(argv[projectedIdx + 1] ?? "", 10)
-        : 0;
     const strict = argv.includes("--strict");
 
-    const historyProvided = historyIdx !== -1;
-    const projectedProvided = projectedIdx !== -1;
-    if (historyProvided && historyMonths < 0) {
-      (io.err ?? err)("--history requires a positive number of months");
-      return EXIT_INTERNAL;
-    }
-    if (projectedProvided && projectedMonths <= 0) {
-      (io.err ?? err)("--projected requires a positive number of months");
-      return EXIT_INTERNAL;
+    for (const gone of ["--industry", "--history", "--projected"]) {
+      if (argv.includes(gone)) {
+        (io.err ?? err)(
+          `${gone} is no longer accepted. ` +
+            (gone === "--industry"
+              ? "Incident costs are not industry defaults; pass --incident-cost <n> with a figure from your own incident history."
+              : gone === "--history"
+                ? "It read no history. Use `mjolnir impact --since <date>` for evidence-backed change data."
+                : "A projection is an arithmetic identity, not an estimate. Use `mjolnir trend` for measured history."),
+        );
+        return EXIT_USAGE;
+      }
     }
 
-    const incidentCost = INDUSTRY_COSTS[industry] ?? DEFAULT_INCIDENT_COST;
+    const costIdx = argv.indexOf("--incident-cost");
+    let incidentCost: number | null = null;
+    if (costIdx !== -1) {
+      const raw = argv[costIdx + 1];
+      const parsed = Number.parseInt(raw ?? "", 10);
+      if (
+        raw === undefined ||
+        raw.startsWith("-") ||
+        !Number.isFinite(parsed) ||
+        parsed <= 0
+      ) {
+        (io.err ?? err)(
+          "--incident-cost requires a positive number: the cost of one false-green incident.",
+        );
+        return EXIT_USAGE;
+      }
+      incidentCost = parsed;
+    }
+
     io.out(`Scanning ${target} ...`);
 
     const result = await runScan({
@@ -183,50 +187,41 @@ export async function runBusinessCaseCommand(
       strict,
     });
 
-    const savingsPerFinding = result.findings.map((f) => {
-      const fpRate = f.measuredFpRate ?? null;
-      const evidenceLevel = f.evidenceLevel ?? "E0";
-      const savings = expectedSavings(fpRate, evidenceLevel, incidentCost);
-      return {
-        ruleId: f.ruleId,
-        fpRate,
-        evidenceLevel,
-        expectedSavings: savings,
-      };
-    });
+    const savingsPerFinding = result.findings.map((f) => ({
+      ruleId: f.ruleId,
+      fpRate: f.measuredFpRate ?? null,
+      fpN: f.measuredFpN ?? null,
+      // Derived, never defaulted: a missing level is computed from the
+      // finding's own type and confidence (BW-101).
+      evidenceLevel: evidenceLevelOf(f),
+      expectedSavings:
+        incidentCost === null
+          ? null
+          : expectedSavings(
+              f.measuredFpRate ?? null,
+              evidenceLevelOf(f),
+              incidentCost,
+            ),
+    }));
 
-    const totalExpectedSavings = savingsPerFinding.reduce(
-      (sum, f) => sum + (f.expectedSavings ?? 0),
-      0,
-    );
-
-    io.out(
-      renderSummary(
-        savingsPerFinding,
-        incidentCost,
-        industry,
-        totalExpectedSavings,
-      ),
-    );
-
-    if (projectedMonths > 0) {
-      const monthlySavings = Math.round(totalExpectedSavings / 6);
-      io.out(renderProjection(monthlySavings, projectedMonths, incidentCost));
-    }
-
-    if (historyMonths > 0) {
-      io.out(
-        `\nHistorical analysis (last ${historyMonths} months):\n` +
-          "  NOTE: Historical incident costing requires CI log access.\n" +
-          "  Run `mjolnir impact --since ${historyMonths}.months.ago` for\n" +
-          "  evidence-backed impact data from git history.\n" +
-          "  Run `mjolnir release-report --since v${historyMonths}.0.0` for\n" +
-          "  release-quality trajectory.",
-      );
-    }
+    const totalExpectedSavings =
+      incidentCost === null
+        ? null
+        : savingsPerFinding.reduce(
+            (sum, f) => sum + (f.expectedSavings ?? 0),
+            0,
+          );
 
     io.out(
-      "\nThese are projections based on measured FP rates from the OSS corpus.",
+      renderSummary(savingsPerFinding, incidentCost, totalExpectedSavings),
+    );
+
+    io.out("");
+    io.out(
+      "The FP rates above are measured on the OSS corpus. The dollar column, if you",
+    );
+    io.out(
+      "asked for one, uses YOUR incident cost — Mjölnir does not estimate it.",
     );
     io.out("Run with --strict to also surface quarantine-tier findings.");
 

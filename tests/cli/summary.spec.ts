@@ -445,11 +445,16 @@ describe("step summary", () => {
     expect(md).not.toContain("<details open>🟡");
   });
 
-  it("renders the dimensions table and the text score bar", () => {
+  it("renders the dimensions table and the canonical score bar", () => {
     const md = renderStepSummary(report());
     expect(md).toContain("| Category | Score |");
     expect(md).toContain("| QA-TEST | 70/100 |");
-    expect(md).toMatch(/█+░+/);
+    // BW-105: this used to be a private colourless bar of █/░ only. It is
+    // now `scoreGauge` with the inert palette, so a score that is not 0 or
+    // 100 carries the head tick — 70 and 71 are no longer the same bar.
+    // No SGR escapes reach a Markdown file; the band is in words above.
+    expect(md).toMatch(/█+▓?░+/);
+    expect(md).not.toContain("\u001b[");
   });
 
   it("marks partial scans honestly", () => {

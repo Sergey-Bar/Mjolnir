@@ -266,9 +266,9 @@ test("parseTokens and resolve follow var() chains", () => {
 
 /* ---------------- G8: scoring extraction (ScoreExplainer feed) ---------------- */
 
-test("extractBands parses the real score-state.ts into the four bands", () => {
+test("extractBands parses the real presentation.ts into the four bands", () => {
   const src = readFileSync(
-    join(HERE, "..", "..", "src", "reporter", "score-state.ts"),
+    join(HERE, "..", "..", "src", "reporter", "presentation.ts"),
     "utf8",
   );
   const bands = extractBands(src);

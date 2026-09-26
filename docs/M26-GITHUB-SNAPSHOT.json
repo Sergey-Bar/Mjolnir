@@ -9,8 +9,8 @@
     "liveCount": 429,
     "disposition": "RECONCILED"
   },
-  "observedAt": "2026-09-25T09:39:29.872Z",
-  "baseSha": "d981ba356313ae8cea0538ca85c665e88b84c530",
+  "observedAt": "2026-09-26T07:42:20.971Z",
+  "baseSha": "cc5fcb8870d83d3661e2b31905981e46a2ac3dcd",
   "issues": [
     {
       "number": 646,
@@ -11563,6 +11563,94 @@
   ],
   "pullRequests": [
     {
+      "number": 660,
+      "title": "release: 4.0.0 software-only candidate",
+      "url": "https://github.com/Sergey-Bar/Mjolnir/pull/660",
+      "state": "closed",
+      "head_sha": "dd83dbbcf63438644e3eb5a8c07f9690956ca008",
+      "base_sha": "8c94319862b0bddb97372da36f87c7f79a5143e6",
+      "created_at": "2026-09-26T04:04:44Z",
+      "updated_at": "2026-09-26T04:37:55Z",
+      "merged_at": null
+    },
+    {
+      "number": 659,
+      "title": "fix(engine): bind identity, persist evidence, drop false greens",
+      "url": "https://github.com/Sergey-Bar/Mjolnir/pull/659",
+      "state": "open",
+      "head_sha": "f5908f24c921c85fbf62116e16ce4f31ed15bf58",
+      "base_sha": "563402b058e9a55a1e4fcdf153a2381a4ef8aefd",
+      "created_at": "2026-09-26T04:03:13Z",
+      "updated_at": "2026-09-26T04:03:25Z",
+      "merged_at": null
+    },
+    {
+      "number": 658,
+      "title": "ci: decouple release evidence from normal PR gate",
+      "url": "https://github.com/Sergey-Bar/Mjolnir/pull/658",
+      "state": "merged",
+      "head_sha": "41548d4e81c1315a37daec862a15b3da83fbc9dc",
+      "base_sha": "c603855efd3a77229c4cd353c8cdc3af4eb933c9",
+      "created_at": "2026-09-26T03:13:13Z",
+      "updated_at": "2026-09-26T03:35:38Z",
+      "merged_at": "2026-09-26T03:35:36Z"
+    },
+    {
+      "number": 657,
+      "title": "v6 Wave 0: repository truth baseline, census authority, claim ratchet",
+      "url": "https://github.com/Sergey-Bar/Mjolnir/pull/657",
+      "state": "open",
+      "head_sha": "2eb5729a358404338e168d8620662d8a1e33d451",
+      "base_sha": "c603855efd3a77229c4cd353c8cdc3af4eb933c9",
+      "created_at": "2026-09-25T22:16:06Z",
+      "updated_at": "2026-09-26T06:14:06Z",
+      "merged_at": null
+    },
+    {
+      "number": 656,
+      "title": "ci: normalize 4.0.0-rc.1 release gate",
+      "url": "https://github.com/Sergey-Bar/Mjolnir/pull/656",
+      "state": "merged",
+      "head_sha": "fadbef5062e999d7f6b36f306d998753c2daf01b",
+      "base_sha": "3c1e570e909777402b7be5f87bb71383e3ea673a",
+      "created_at": "2026-09-25T21:01:39Z",
+      "updated_at": "2026-09-25T21:21:09Z",
+      "merged_at": "2026-09-25T21:21:07Z"
+    },
+    {
+      "number": 655,
+      "title": "ci: normalize PR scan gate and RC install surfaces",
+      "url": "https://github.com/Sergey-Bar/Mjolnir/pull/655",
+      "state": "open",
+      "head_sha": "563402b058e9a55a1e4fcdf153a2381a4ef8aefd",
+      "base_sha": "3c1e570e909777402b7be5f87bb71383e3ea673a",
+      "created_at": "2026-09-25T20:50:01Z",
+      "updated_at": "2026-09-25T20:50:11Z",
+      "merged_at": null
+    },
+    {
+      "number": 654,
+      "title": "release: rebind 4.0.0-rc.1 candidate evidence",
+      "url": "https://github.com/Sergey-Bar/Mjolnir/pull/654",
+      "state": "merged",
+      "head_sha": "e01a8e0dd2aebf97546ec398259e95bb839526c3",
+      "base_sha": "5f5b893844cfe75e8f8c103b367708b0f6896c2a",
+      "created_at": "2026-09-25T19:01:21Z",
+      "updated_at": "2026-09-25T20:46:05Z",
+      "merged_at": "2026-09-25T20:46:03Z"
+    },
+    {
+      "number": 653,
+      "title": "release: 4.0.0-rc.1 candidate",
+      "url": "https://github.com/Sergey-Bar/Mjolnir/pull/653",
+      "state": "merged",
+      "head_sha": "2f44e703609f66bc651ed004a14c5d3221c5fb9d",
+      "base_sha": "d981ba356313ae8cea0538ca85c665e88b84c530",
+      "created_at": "2026-09-25T14:59:48Z",
+      "updated_at": "2026-09-25T18:26:45Z",
+      "merged_at": "2026-09-25T18:26:42Z"
+    },
+    {
       "number": 652,
       "title": "fix(release): retry npm registry propagation",
       "url": "https://github.com/Sergey-Bar/Mjolnir/pull/652",
@@ -14010,7 +14098,7 @@
     "diagnostics": [],
     "issue_count": 429,
     "milestone_count": 26,
-    "pull_request_count": 222,
+    "pull_request_count": 230,
     "duplicate_issue_numbers": [],
     "cross_milestone_issue_numbers": [],
     "counter_mismatches": [],

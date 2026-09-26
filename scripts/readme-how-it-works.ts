@@ -30,7 +30,7 @@ import {
   SURFACE,
   TEXT,
 } from "../src/brand/tokens.js";
-import { deriveScoreState } from "../src/reporter/score-state.js";
+import { deriveScoreState } from "../src/reporter/presentation.js";
 import { RULES } from "../src/rules/index.js";
 import { escapeXml, fontFaceCss as monoFaceCss } from "./readme-svg.js";
 

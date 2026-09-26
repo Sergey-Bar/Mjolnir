@@ -7,6 +7,7 @@
  */
 
 import type { Finding } from "../types.js";
+import { deriveScoreState } from "../reporter/presentation.js";
 
 export type WeightingStrategy = "worst-package" | "average" | "configurable";
 
@@ -32,14 +33,18 @@ export interface MonorepoAnalysisResult {
   blockerPackage?: string;
 }
 
-const WORTHY_THRESHOLD = 80;
-const NEEDS_WORK_THRESHOLD = 50;
-
+/**
+ * Package verdict, derived from the one ScoreState band model (BW-104).
+ * These two constants used to be a private copy of the band boundaries;
+ * the numeric vocabulary here is a different projection of the same bands
+ * — "pass" is trusted or forged, "warn" is warning, "fail" is critical or
+ * unmeasurable — so the boundaries are read, never retyped.
+ */
 function verdictOf(score: number | null): "pass" | "warn" | "fail" {
   if (score === null) return "fail";
-  if (score >= WORTHY_THRESHOLD) return "pass";
-  if (score >= NEEDS_WORK_THRESHOLD) return "warn";
-  return "fail";
+  const band = deriveScoreState(score).band;
+  if (band === "forged" || band === "trusted") return "pass";
+  return band === "warning" ? "warn" : "fail";
 }
 
 function hasBlocker(findings: readonly Finding[]): boolean {

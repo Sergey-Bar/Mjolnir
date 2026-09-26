@@ -31,7 +31,7 @@ import {
 import {
   deriveScoreState,
   type ScoreBand,
-} from "../src/reporter/score-state.js";
+} from "../src/reporter/presentation.js";
 import { escapeXml } from "./readme-svg.js";
 import { FONTS, fontPath } from "./video/fonts.js";
 

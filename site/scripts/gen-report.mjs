@@ -40,7 +40,7 @@ const ASSETS = join(REPO, "assets", "readme");
 const SRC = join(ASSETS, "terminal-hero.svg");
 const JSON_SRC = join(ASSETS, "demo-report.json");
 const SARIF_SRC = join(ASSETS, "demo-report.sarif");
-const MODEL_SRC = join(REPO, "src", "reporter", "score-state.ts");
+const MODEL_SRC = join(REPO, "src", "reporter", "presentation.ts");
 const SCORER_SRC = join(REPO, "src", "scorer", "scorer.ts");
 const BLOB = "https://github.com/Sergey-Bar/Mjolnir/blob/main/assets/readme/";
 const OUT_DIR = join(SITE, ".vitepress", "theme", "generated");
@@ -300,7 +300,7 @@ export function excerptSarif(text) {
 }
 
 /**
- * Extracts the score→band table from src/reporter/score-state.ts — the
+ * Extracts the score→band table from src/reporter/presentation.ts — the
  * model file is the single source of truth, so the site's verdict-band
  * ruler is parsed from it, never retyped. Each `score >= N` branch
  * contributes {min: N, verdict}; the final `return` (no threshold) is
@@ -316,7 +316,7 @@ export function extractBands(modelSource) {
   }
   if (bands.length === 0) {
     throw new Error(
-      "extractBands: no `score >= N` thresholds found in score-state.ts — " +
+      "extractBands: no `score >= N` thresholds found in presentation.ts — " +
         "deriveScoreState changed shape; re-sync the site's band parser.",
     );
   }
@@ -327,7 +327,7 @@ export function extractBands(modelSource) {
   const verdicts = [...afterLast.matchAll(/verdict:\s*"([A-Z ]+)"/g)];
   if (verdicts.length === 0) {
     throw new Error(
-      "extractBands: could not find the floor band's verdict in score-state.ts.",
+      "extractBands: could not find the floor band's verdict in presentation.ts.",
     );
   }
   bands.push({ min: 0, verdict: verdicts[verdicts.length - 1][1] });

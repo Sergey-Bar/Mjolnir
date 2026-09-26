@@ -13,6 +13,26 @@ export const GAP_STATUSES = [
   "regression",
   "deferred",
   "not-applicable",
+  /**
+   * BITTERSWEET `BW-001`. `fixed` was a status a row could simply be
+   * *written* as, with no revalidation behind it — and `GAP-M26-002` was
+   * written as `fixed` citing the very script that produced the artifacts
+   * it claimed to prove. The three revalidation classes below separate
+   * "someone says this is done" from "this was re-checked on this tree":
+   *
+   *   ALREADY_FIXED         — the revalidation command passes on the
+   *                           current tree, and the post-mortem line that
+   *                           fixed it is cited.
+   *   CONFIRMED_STILL_OPEN  — the revalidation command was run and the
+   *                           gap is still real. Equivalent to `open`.
+   *   STALE_UNVERIFIABLE    — no candidate-bound evidence exists in either
+   *                           direction, so nothing can be claimed. It is
+   *                           treated as BLOCKED, never as fixed: an
+   *                           unverifiable claim must not clear a gate.
+   */
+  "ALREADY_FIXED",
+  "CONFIRMED_STILL_OPEN",
+  "STALE_UNVERIFIABLE",
 ] as const;
 export const SUPPORT_DISPOSITIONS = [
   "TESTED",
@@ -29,6 +49,20 @@ export const EXTERNAL_EXECUTION_STATUSES = ["NOT_RUN", "RUN"] as const;
 export type GithubReconciliationState =
   (typeof GITHUB_RECONCILIATION_STATES)[number];
 export type GapStatus = (typeof GAP_STATUSES)[number];
+
+/**
+ * Does a gap count as cleared for the release-blocker gate?
+ *
+ * `ALREADY_FIXED` clears it — that is the point of the class, and it
+ * carries the revalidation that earned it. `STALE_UNVERIFIABLE` does NOT:
+ * an unverifiable claim must never be able to unblock a release, which is
+ * the whole failure the class was introduced to stop. `fixed` still
+ * clears it, but `claims:revalidate` downgrades any `fixed` row whose
+ * evidence does not hold, so the word alone is no longer enough.
+ */
+export function isGapCleared(record: { status?: unknown }): boolean {
+  return record.status === "fixed" || record.status === "ALREADY_FIXED";
+}
 export type SupportDisposition = (typeof SUPPORT_DISPOSITIONS)[number];
 export type ExternalValidationStatus =
   (typeof EXTERNAL_VALIDATION_STATUSES)[number];
@@ -155,10 +189,30 @@ export interface GapLedgerRecord {
   rollback_artifact: string;
   dependencies: string[];
   closure_evidence: GapClosureEvidence | null;
+  /**
+   * BITTERSWEET `BW-001`. The result of actually running
+   * `revalidation_command` against the working tree, with the commit it
+   * was run at. A `fixed` / `ALREADY_FIXED` row without one is a claim
+   * with no evidence, which `claims:revalidate` downgrades to BLOCKED.
+   */
+  revalidation?: GapRevalidation | null;
   disposition_reason?: string;
   release_consequence?: string;
   supersedes?: string | null;
   superseded_by?: string | null;
+}
+
+/** A revalidation that was actually run, at a named commit. */
+export interface GapRevalidation {
+  /** The command that was executed. */
+  command: string;
+  /** Its exit code. `0` is the only value that can support a fixed claim. */
+  exit_code: number;
+  /** The commit the command was run against — evidence must be bound to
+   *  code that is in this tree, not to a branch that was never merged. */
+  observed_at_base_sha: string;
+  /** What the run showed, in the present tense. Never the intended state. */
+  observed: string;
 }
 
 export interface SupportMatrixRecord {
@@ -1235,6 +1289,28 @@ function validateClosureEvidence(
   return valid;
 }
 
+/**
+ * BW-001: a revalidation block is only evidence if all four parts are
+ * present — the command that ran, the exit code it returned, the commit
+ * it ran against, and what was actually observed. A block missing the
+ * base SHA is the exact hole `GAP-M26-002` fell through: a PASS recorded
+ * with no way to tell which tree it described.
+ */
+function validateRevalidation(value: unknown): boolean {
+  if (!isRecord(value)) return false;
+  if (!isNonEmptyString(value.command)) return false;
+  if (normalizedExitCode(value) === undefined) return false;
+  if (!/^[0-9a-f]{40}$/.test(String(value.observed_at_base_sha))) return false;
+  return isNonEmptyString(value.observed);
+}
+
+/** A revalidation's exit code, or undefined when it is not an integer. */
+function normalizedExitCode(value: unknown): number | undefined {
+  if (!isRecord(value)) return undefined;
+  const code = value.exit_code;
+  return typeof code === "number" && Number.isInteger(code) ? code : undefined;
+}
+
 export function validateGapLedgerRecord(
   value: unknown,
 ): LedgerValidationResult {
@@ -1411,6 +1487,21 @@ export function validateGapLedgerRecord(
     );
   }
 
+  // BW-001: a row may not CLAIM a fix without a revalidation that was
+  // actually run against this tree. `fixed` used to be a word someone
+  // typed, and `GAP-M26-002` was typed `fixed` citing the script that
+  // produced the artifacts it claimed to prove.
+  if (isGapCleared(value) && !validateRevalidation(value.revalidation)) {
+    addDiagnostic(
+      diagnostics,
+      "FIX_WITHOUT_REVALIDATION",
+      "$.revalidation",
+      `status "${String(value.status)}" requires a revalidation block: the ` +
+        `revalidation_command, its exit code, the commit it ran at, and what ` +
+        `it observed. A fixed claim with no revalidation is a claim, not a fact.`,
+    );
+  }
+
   for (const key of ["supersedes", "superseded_by"] as const) {
     if (key in value && value[key] !== null) {
       if (!isNonEmptyString(value[key]) || !GAP_ID_PATTERN.test(value[key])) {
@@ -1484,6 +1575,31 @@ export function validateGapLedgerRecord(
         "UNRUN_CLOSURE",
         "$.closure_evidence.result",
         "a closed record requires an observed closure result",
+      );
+    }
+  }
+
+  // BW-001: `ALREADY_FIXED` says "this was re-checked", so the revalidation
+  // block IS its closure evidence and `closure_evidence` is optional.
+  //
+  // The alternative — demanding both — was rejected deliberately: it makes
+  // two evidence fields with overlapping meaning, which is a second thing
+  // to maintain and a second thing to drift. `revalidation` is a strict
+  // superset (command, exit code, commit, observation) so nothing is lost,
+  // except one more field per closed row.
+  if (value.status === "ALREADY_FIXED" && value.closure_evidence === null) {
+    const observation = isRecord(value.revalidation)
+      ? value.revalidation.observed
+      : undefined;
+    if (
+      typeof observation === "string" &&
+      (normalizedExitCode(value.revalidation) ?? 0) !== 0
+    ) {
+      addDiagnostic(
+        diagnostics,
+        "UNRUN_CLOSURE",
+        "$.revalidation.exit_code",
+        "ALREADY_FIXED requires a revalidation that returned 0; this one did not",
       );
     }
   }
@@ -1595,7 +1711,7 @@ export function validateGapLedger(value: unknown): LedgerValidationResult {
     if (isRecord(record)) {
       records.push(record);
       if (
-        record.status !== "fixed" &&
+        !isGapCleared(record) &&
         (record.severity === "release-blocker" ||
           record.disposition === "release-blocking")
       ) {

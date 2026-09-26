@@ -104,9 +104,12 @@ describe("the five questions (WI-5 acceptance)", () => {
     expect(out).toContain("TRUST VERDICT");
     // The rung line renders the SUMMARY level (L2 — the stamped summary
     // is part of the fixture); the L4 finding's corroboration surfaces
-    // in WHY ("1 corroborated") and TOP TRUST RISKS ("[run executed]").
+    // in WHY ("1 corroborated") and in the TOP TRUST RISKS evidence
+    // descriptor. BW-102: the descriptor is the terminal's full one, so
+    // the level, the kind, the measured FP rate, the sample size, the
+    // trust rung and what runtime vouched for all render together.
     expect(out).toContain("L2");
-    expect(out).toContain("[run executed]");
+    expect(out).toContain("runtime: test executed");
   });
 
   it("2. can I trust it — CONFIDENCE renders the measurement", () => {
@@ -122,8 +125,8 @@ describe("the five questions (WI-5 acceptance)", () => {
 
   it("4. what supports it — TOP TRUST RISKS with evidence tags", () => {
     expect(out).toContain("TOP TRUST RISKS");
-    expect(out).toContain("[run executed]");
-    expect(out).toContain("[deterministic]");
+    expect(out).toContain("E2 · deterministic");
+    expect(out).toContain("runtime: test executed");
   });
 
   it("5. what next — NEXT ACTION names a concrete command", () => {
@@ -352,7 +355,7 @@ describe("P8 coverage — the remaining arms of the hero render", () => {
       }),
       STATIC_OPTS,
     );
-    expect(out).toContain("[deterministic]");
+    expect(out).toContain("E2 · deterministic");
   });
 
   it("pattern tag renders for E1 non-corroborated findings", () => {
@@ -369,7 +372,7 @@ describe("P8 coverage — the remaining arms of the hero render", () => {
       }),
       STATIC_OPTS,
     );
-    expect(out).toContain("[pattern]");
+    expect(out).toContain("E1 · heuristic");
   });
 
   it("run-executed tag renders for file/test-level corroboration", () => {
@@ -390,6 +393,6 @@ describe("P8 coverage — the remaining arms of the hero render", () => {
       }),
       STATIC_OPTS,
     );
-    expect(out).toContain("[run executed]");
+    expect(out).toContain("runtime: test executed");
   });
 });

@@ -19,7 +19,7 @@
  *
  * PURITY. Pure data. No I/O, no rendering, no environment access, no
  * imports, no logic. Consumers convert (hex → ANSI triplet, hex → CSS)
- * themselves. Same reason `score-state.ts` is pure: it makes the whole
+ * themselves. Same reason `presentation.ts` is pure: it makes the whole
  * thing golden-testable and safe to ship inside the npm package, where
  * it costs a few hundred bytes and replaces values the package already
  * carried anyway.
@@ -129,7 +129,7 @@ export const STATUS = {
 
 /**
  * The four ScoreState bands plus the unmeasured state. Band thresholds
- * and runes live in `src/reporter/score-state.ts`, which stays free of
+ * and runes live in `src/reporter/presentation.ts`, which stays free of
  * colour — it emits a palette KEY and each surface resolves it here.
  *
  * `unmeasured` is steel-dim on purpose. UNKNOWN is a legitimate answer,

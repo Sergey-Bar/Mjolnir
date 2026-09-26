@@ -176,7 +176,7 @@ export async function buildVarsCss(): Promise<string> {
 ${palette}
 
   /* ---- semantic: verdict, evidence, trust ----
-   * Score colors follow the ScoreState model (src/reporter/score-state.ts):
+   * Score colors follow the ScoreState model (src/reporter/presentation.ts):
    * critical 0-49 / warning 50-79 / trusted 80-99 / forged 100. Green is
    * not a score color; --mj-ok survives for non-score success only.
    * Trust L0-L2 are static (steel ramp) and L3-L5 require a real run

@@ -25,9 +25,12 @@ import { appendFileSync, existsSync } from "node:fs";
 import type { Finding, ScanResult } from "../types.js";
 import type { Output } from "../cli.js";
 import { usageErrorMessage } from "../cli.js";
-import { sanitizeData } from "../reporter/theme.js";
-import { deriveScoreState, headlineFor } from "../reporter/score-state.js";
-import { verdictFor } from "../reporter/terminal.js";
+import { palette, sanitizeData, scoreGauge } from "../reporter/theme.js";
+import {
+  deriveScoreState,
+  headlineFor,
+  verdictFor,
+} from "../reporter/presentation.js";
 import {
   renderAnnotations,
   truncateMessage,
@@ -55,9 +58,14 @@ import {
 } from "./report-io.js";
 export { errorText };
 
-function scoreBar(score: number, width = 20): string {
-  const filled = Math.round((score / 100) * width);
-  return `${"█".repeat(filled)}${"░".repeat(Math.max(0, width - filled))}`;
+/**
+ * The score bar. BW-105: the canonical gauge with the inert palette — the
+ * job summary is a Markdown file, so it takes the gauge's geometry (bar +
+ * head tick) and none of its SGR escapes, while the band is carried in
+ * words on the line above.
+ */
+function scoreBar(score: number): string {
+  return scoreGauge(score, palette(false), 20);
 }
 
 /** Markdown step summary. Pure over (result, options) — testable. */

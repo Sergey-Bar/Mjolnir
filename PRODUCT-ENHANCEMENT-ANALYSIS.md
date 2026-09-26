@@ -1,6 +1,15 @@
 # Mjölnir (mjolnir-qa) — Comprehensive Product Enhancement Analysis
 
 > Prepared 2026-09-20 · Architect-level analysis across 4 stakeholder personas
+>
+> **SUPERSEDED-BY: BITTERSWEET** (`.kilo/plans/1790403797753-mjolnir-5-0-ui-functionality-reporting-roadmap.md`)
+>
+> The "all 16 features shipped" claims in sections X and XI were audited against the
+> working tree on 2026-09-26. **Six of the sixteen do not hold** — four shipped a
+> capability different from the one described, and two shipped fabricated values.
+> This document is kept as the record of what was believed on 2026-09-20, because
+> deleting it would destroy the only evidence that the belief was wrong.
+> **Read section XII before citing anything in here.**
 
 ---
 
@@ -635,3 +644,68 @@ _All Wave 2 (6 features) and Wave 3 (6 features, 1 already done) implemented. Ty
 | **Manager** | `mjolnir enterprise` — Deployment config, SSO guide, compliance templates (SOC2/HIPAA/PCI-DSS) | ✅ Shipped | `src/commands/enterprise.ts` |
 | **Manager** | `mjolnir maturity` — Quality maturity assessment across 4 dimensions                           | ✅ Shipped | `src/commands/maturity.ts`   |
 | **QA Eng**  | Interactive Triage Wizard (from Wave 1 plan) — already implemented                             | ✅ Shipped | `src/forensics/triage.ts`    |
+
+---
+
+## XII. AUDIT 2026-09-26 — what "shipped" actually meant
+
+This section was added after a source-read audit of every row in sections X and XI
+against the working tree at `cc5fcb88`. It exists because a document that says
+"shipped" sixteen times and is wrong six times is worse than no document: a reader
+skips the claim and inherits the error.
+
+**Verdict scale**
+
+| Verdict                | Meaning                                                            |
+| ---------------------- | ------------------------------------------------------------------ |
+| `HOLDS`                | The claim is accurate against the tree.                            |
+| `DIFFERENT CAPABILITY` | Something shipped under this name, but not what the row describes. |
+| `FABRICATED VALUES`    | The command printed numbers or artifacts it never measured.        |
+| `NOT SHIPPED`          | The named file or verb is not in the tree.                         |
+
+### Section X — Wave 1
+
+| Feature as described                                                                                        | Verdict                | What is actually true                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| ----------------------------------------------------------------------------------------------------------- | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `release-report` — GO/CONDITIONAL GO/NO-GO with hygiene, flaky, CI integrity, debt analysis                 | `DIFFERENT CAPABILITY` | It did hardcode `hygieneFixed: 0`, `hygieneIntroduced: 0`, `newTestsAdded: 0`, `newTestsWithoutAssertions: 0` and `flakyAtLastRelease: 0` and printed them as measured figures beside a trend mark, and it ignored `partial`, so a truncated scan could reach GO. Those are now `null` / "not measured" and GO requires a complete scan. The verdict exists; the honesty did not.                                                                                                                                 |
+| `business-case` — `--industry`, `--history`, `--projected`, dynamic industry cost model                     | `FABRICATED VALUES`    | `--industry` selected from a table of invented incident costs (fintech $50 000, healthcare $100 000, …) with no source, and printed the product as "Expected Savings". `--history` promised "estimates from actual scan improvements" and read no history at all. `--projected` divided the total by six and called the quotient a monthly rate. **Fixed 2026-09-26:** the cost table is gone; a dollar figure requires `--incident-cost`, so the number is the reader's. The three flags now exit with a reason. |
+| npm plugin loader — `loadNpmPlugins()`, `generatePluginScaffold()`                                          | `NOT SHIPPED`          | `src/plugins/npm-loader.ts` does not exist in the tree.                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| `mjolnir triage --interactive` — arrow-key selection, category filter, evidence toggle, accept/defer/reject | `HOLDS`                | Interactive mode is real (`src/forensics/triage.ts`, lines 315/323/379). The V5 audit wrongly classified this as a stub; `PRODUCT-ENHANCEMENT-ANALYSIS.md` was the honest document.                                                                                                                                                                                                                                                                                                                               |
+
+### Section XI — Waves 2 and 3
+
+| Feature as described                                                                           | Verdict                | What is actually true                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| ---------------------------------------------------------------------------------------------- | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `report playwright` — Playwright-compatible JSON report from scan results                      | `DIFFERENT CAPABILITY` | A Playwright report describes tests that were EXECUTED. A static scan executed nothing, and the old version presented findings as `suites`/`tests` with a `passed` status — on a clean scan it published "0 tests, all passed", which a Playwright consumer reads as a green test run. The execution block is now empty and says so.                                                                                                                                                                                                                                       |
+| Incremental cache with content-addressed I/O at `.mjolnir/cache/`                              | `NOT SHIPPED`          | `src/commands/scan-cache.ts` does not exist.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| `mjolnir trend` — quality trend tracking, record/show/diff, JSONL storage                      | `HOLDS`                | `src/commands/trend.ts` present and tested.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| `mjolnir exec-report` — KPI grid, risk assessment, recommendations                             | `HOLDS`                | `src/commands/exec-report.ts` present and tested.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| `mjolnir policy` — init/validate/check, team templates, gate validation                        | `HOLDS`                | `src/commands/policy.ts` present and tested.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| `mjolnir quarantine` — deterministic proposals                                                 | `DIFFERENT CAPABILITY` | It derived a proposal from a STATIC scan by inventing an attempt count from severity (3 for an error, 2 for a warning), printed "Quarantines updated." after changing nothing, and printed hardcoded zeros as measured statistics. It now refuses without runtime evidence. "Deterministic" was true; "proposals" were invented.                                                                                                                                                                                                                                           |
+| `mjolnir analyze --cross-file`                                                                 | `HOLDS`                | `src/commands/analyze.ts` present and tested.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| `mjolnir ci-adapter` — GitHub Actions, GitLab CI, Jenkins                                      | `HOLDS`                | `src/commands/ci-adapter.ts` present and tested; generated files are asserted by tests.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `mjolnir dashboard` — HTML team quality dashboard                                              | `DIFFERENT CAPABILITY` | Shipped, but it embedded `new Date()` in the visible body, so two runs over an unchanged repository produced different bytes and the artifact could never be diffed in review. It also split score bands at 60 while the terminal split at 80, so a score the terminal called UNWORTHY rendered amber here. **Fixed 2026-09-26:** `--deterministic` omits the timestamp, it is recorded as `<meta>` metadata, and the band comes from the one registry.                                                                                                                    |
+| `mjolnir enterprise` — deployment config, SSO guide, compliance templates (SOC2/HIPAA/PCI-DSS) | `FABRICATED VALUES`    | It wrote a config declaring `"authentication": "sso-saml"` (there is no server, no session, no SAML implementation), an SSO guide instructing readers to add an `sso` block to `mjolnir.config.json` that nothing reads, and three auditor-facing compliance templates mapping controls to "SSO/SAML integration", a "built-in scan audit trail" and a "privacy scan" — none of which is a Mjölnir feature. **Fixed 2026-09-26:** `sso` and `compliance` now refuse and write nothing; `config` emits a capability manifest whose `notProvided` list records the absences. |
+| `mjolnir maturity` — quality maturity assessment across 4 dimensions                           | `DIFFERENT CAPABILITY` | It emitted an "Overall: Optimizing (87/100)" assessment derived from whether three files happened to exist, with hardcoded dimension scores (75/70/65/30) and a `ruleCount = 79` fallback invented when a catalog could not be read. It now reports the presence of named QA artifacts and says a signal is not a score.                                                                                                                                                                                                                                                   |
+| Interactive Triage Wizard (Wave 3 row)                                                         | `HOLDS`                | Same real feature as the section X row. Duplicated across both tables.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+
+### Counts
+
+The "9999/9999" and "10054/10054" test counts are stale and were never a gate. The
+suite currently runs 10 932 tests. A test count in a status document is the one
+number that is guaranteed wrong by the time anyone reads it, so it is recorded here
+as approximate rather than restated as fact.
+
+### What this audit changes about how the document should be used
+
+Sections I to IX remain a persona analysis and are not audited here. Sections X and
+XI are a **record of intent, not a release note**. The release note is
+`CHANGELOG.md`; the release gate is `npm run certify`.
+
+Three of the four classes of error here have the same root cause, and it is not
+carelessness: a table with a "Status" column invites filling the column in.
+Nothing checked whether the file existed, whether the command did what the row
+said, or whether the numbers were measured. The gates added in the BITTERSWEET
+release (`npm run report:honesty`, `npm run thresholds:parity`, `npm run
+claims:revalidate`, `npm run verbs:budget`) exist because each one of those three
+errors is now a build failure rather than a documentation defect.
