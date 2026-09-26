@@ -28,27 +28,21 @@
   "generatedAt": "2026-09-26",
   "identity": {
     "state": "WORKING_CANDIDATE",
-    "baseSha": "26db7734c97600a3287131e8d86dc4b8b8e6583b",
+    "baseSha": "700c9a845d66692516a07211fa25c8d879294cf3",
     "candidateSha": null,
     "version": "4.0.0-rc.1",
     "packageSha256": "86f25406fdae2933c0d4d0c6103c0b058a000d2e0eaf3294ee889e52c4a9a0ca",
     "lockfileSha256": "ddc729c2b004b6c6d6b13d2fff9c1e84c5fabec2da9978a66ab421e715bab644",
     "workingTreeSha256": "2c20ef06a23e9b4bbf218ad2f31bd5c1e9c2a27f35052e12401b8bedd4a3d03b",
-    "changedPathCount": 15,
+    "changedPathCount": 9,
     "supportEnvelope": "self-hosted; hosted services require explicit consent and separate proof",
     "worktreeInventory": {
       "changedPaths": [
         "CHANGELOG.md",
-        "docs/BLAST-RADIUS-AUDIT.md",
         "package-lock.json",
         "package.json",
         "src/cli.ts",
-        "src/engine/cross-file-analysis.ts",
-        "src/engine/dependency-graph.ts",
-        "src/mcp/stdio.ts",
-        "tests/engine/dependency-graph.spec.ts",
-        "tests/engine/standalone-integration.spec.ts",
-        "tests/milestone-10.spec.ts"
+        "src/mcp/stdio.ts"
       ],
       "untrackedPaths": [
         "kilo.json",
@@ -59,20 +53,14 @@
     },
     "dirtyFiles": [
       "CHANGELOG.md",
-      "docs/BLAST-RADIUS-AUDIT.md",
       "kilo.json",
       "package-lock.json",
       "package.json",
       "scripts/sentry-release.mjs",
       "src/cli.ts",
-      "src/engine/cross-file-analysis.ts",
-      "src/engine/dependency-graph.ts",
       "src/integrations/sentry.ts",
       "src/mcp/stdio.ts",
-      "tests/engine/dependency-graph.spec.ts",
-      "tests/engine/standalone-integration.spec.ts",
-      "tests/integrations/sentry-opt-in.spec.ts",
-      "tests/milestone-10.spec.ts"
+      "tests/integrations/sentry-opt-in.spec.ts"
     ]
   },
   "claimRegistry": {
