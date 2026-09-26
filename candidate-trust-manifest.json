@@ -28,38 +28,19 @@
   "generatedAt": "2026-09-26",
   "identity": {
     "state": "WORKING_CANDIDATE",
-    "baseSha": "d72f1302ee959aa65067c40778f8b24d08a1e8ca",
+    "baseSha": "b1ba981897f780eec82589f3576244ed626a22ce",
     "candidateSha": null,
     "version": "4.0.0-rc.1",
     "packageSha256": "395cab535b162cd8cc164387dc3bd015b80635f46d325d012601ed01a126a0ec",
-    "lockfileSha256": "ddc729c2b004b6c6d6b13d2fff9c1e84c5fabec2da9978a66ab421e715bab644",
-    "workingTreeSha256": "af9f703cd396177668db2ef13e8eafc1c7f95a2329db442d01fe4d9854591279",
-    "changedPathCount": 8,
+    "lockfileSha256": "ce39ec040e9a6df0e89362496ca49b60a88837c257fe1f86b8da92798a36cf9d",
+    "workingTreeSha256": "2b62ce43f94d0de9187c582fe2b825b53007a95239abcd66543e68697a5ba2be",
+    "changedPathCount": 0,
     "supportEnvelope": "self-hosted; hosted services require explicit consent and separate proof",
     "worktreeInventory": {
-      "changedPaths": [
-        "CHANGELOG.md",
-        "package-lock.json",
-        "src/cli.ts",
-        "src/mcp/stdio.ts"
-      ],
-      "untrackedPaths": [
-        "kilo.json",
-        "scripts/sentry-release.mjs",
-        "src/integrations/sentry.ts",
-        "tests/integrations/sentry-opt-in.spec.ts"
-      ]
+      "changedPaths": [],
+      "untrackedPaths": []
     },
-    "dirtyFiles": [
-      "CHANGELOG.md",
-      "kilo.json",
-      "package-lock.json",
-      "scripts/sentry-release.mjs",
-      "src/cli.ts",
-      "src/integrations/sentry.ts",
-      "src/mcp/stdio.ts",
-      "tests/integrations/sentry-opt-in.spec.ts"
-    ]
+    "dirtyFiles": []
   },
   "claimRegistry": {
     "path": "docs/claim-registry.json",
