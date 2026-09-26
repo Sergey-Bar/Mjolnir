@@ -174,7 +174,7 @@ export function checkRuleQuality(): QualityCheck {
   };
 }
 
-function main(): void {
+async function main(): Promise<void> {
   const check = checkRuleQuality();
   // The unpublished-artifact report is written so the skeleton gap list is
   // a reviewable artifact rather than a console string.
@@ -191,7 +191,9 @@ function main(): void {
       2,
     ) + "\n",
   );
-  void prettify(path);
+  // Awaited: writing a formatted artifact without waiting for the format is
+  // a race that `npm run lint` will lose, and the linter is the right one.
+  await prettify(path);
   console.log(
     JSON.stringify(
       {
@@ -210,5 +212,7 @@ function main(): void {
 }
 
 if (isMainModule(import.meta.url)) {
-  main();
+  // Awaited so the process does not exit before the artifact is formatted
+  // on disk. A floating promise here is a race with `npm run lint`.
+  await main();
 }
