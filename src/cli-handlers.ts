@@ -79,7 +79,8 @@ import {
   MILESTONE_MESSAGES,
 } from "./commands/stats.js";
 import { renderPrComment } from "./commands/pr-comment.js";
-import { errorText, loadSavedReport } from "./commands/report-io.js";
+import { loadSavedReport } from "./commands/report-io.js";
+import { errorMessage } from "./cli-io.js";
 import { runInit, renderInit, tryReadPackageJson } from "./commands/init.js";
 import { renderPwRunSummary, summarizePwRun } from "./commands/pw-report.js";
 import { planAndApplyFixes, renderFixReport } from "./commands/fix.js";
@@ -729,7 +730,7 @@ export async function runPrCommentCommand(
       );
       return EXIT_CLEAN;
     } catch (err) {
-      io.err(`error: cannot read ${fromPath}: ${errorText(err)}`);
+      io.err(`error: cannot read ${fromPath}: ${errorMessage(err)}`);
       return EXIT_USAGE;
     }
   }

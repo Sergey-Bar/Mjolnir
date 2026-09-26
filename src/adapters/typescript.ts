@@ -20,6 +20,7 @@ import type { Workspace } from "../discovery/workspace.js";
 import { getProject, parseTsFile } from "../engine/ts-ast.js";
 import { computeCodeText } from "../engine/code-text.js";
 import { recordDegradation } from "../engine/degradation-ledger.js";
+import { runRuleIsolated } from "../engine/shared-run-rules.js";
 import {
   frameworkFilterApplies,
   type FrameworkInfo,
@@ -244,13 +245,11 @@ export const typescriptAdapter: LanguageAdapter = {
         budget.onExceeded();
         return;
       }
-      try {
-        for (const f of rule.run(enriched)) {
-          emit(f, rule.id, rule.category);
-        }
-      } catch (error) {
-        // Crash isolation (§25) — counted and debuggable (R-9).
-        onCrash?.(rule.id, error);
+      // Crash isolation (§25) — counted and debuggable (R-9), in one place.
+      const produced = runRuleIsolated(rule, enriched, onCrash);
+      if (produced === null) continue;
+      for (const f of produced) {
+        emit(f, rule.id, rule.category);
       }
     }
   },

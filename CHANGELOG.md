@@ -107,7 +107,31 @@ once shipped, so this file is the record of what changed between versions.
 
 ### Fixed
 
-- **A rule that crashes is no longer certified as a rule that stayed silent.**
+- **One error derivation, one `isRecord`, one crash-isolation path.** The tree
+  carried `isRecord` eight times (seven byte-identical), error rendering four
+  times under two names, and crash isolation seven times — and the copies
+  disagreed, which is the only reason any of this mattered. `String(obj)`
+  renders `[object Object]`, so the two _thinner_ error helpers turned a real
+  Node failure shape like `throw { code: "EISDIR" }` into a message naming
+  nothing — in a doctor detail, an MCP tool result and a `summary` line
+  respectively. The richer body survived the collapse, and
+  `isRecord` — the predicate every JSON reader uses to decide "this is an
+  object I may index into", which is a question a hostile saved report gets
+  to ask — is now the exported one in `src/lib/safe-json.ts`. The four
+  adapters' duplicated `try { rule.run } catch { onCrash }` is now
+  `runRuleIsolated`, because that block is what the `rulesCrashed` count is
+  built on and seven copies mean seven chances to lose it.
+  The per-adapter _filter chain_ and budget check were deliberately **not**
+  folded into the existing `runRulesShared`: the TypeScript adapter injects
+  an AST, framework tags, a lazy `codeText` getter, config-only gating and
+  `configGateMatches`, and it _aborts the whole file_ on budget exhaustion
+  where `runRulesShared` only skips one rule. Routing every adapter through
+  it as written would have silently changed which rules run — the exact
+  unmeasured claim this program exists to delete.
+  `tests/contract/single-error-helper.spec.ts` holds the counts at one, and
+  pins the object arm so a future "simplification" cannot drop it.
+
+- **A crashed rule is no longer certified as a rule that stayed silent.**
   The doc generator caught a rule THROW while running it against its own
   must-not-fire fixture and returned `null`; the caller read that as
   `fired: false` and committed, into a generated doc page and the

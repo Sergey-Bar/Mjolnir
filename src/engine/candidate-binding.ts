@@ -20,6 +20,7 @@ import { join } from "node:path";
 
 import type { CandidateBinding } from "../types.js";
 import { resolveGitPath } from "../scope/git-resolve.js";
+import { isRecord } from "../lib/safe-json.js";
 
 export const CANDIDATE_MANIFEST_PATH = "candidate-trust-manifest.json";
 
@@ -33,10 +34,6 @@ export type RepositoryBinding = {
   tree?: string;
   lockfile?: string;
 };
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
 
 function sha256File(path: string): string | undefined {
   try {

@@ -7,27 +7,27 @@ contract enforces: **every external import in src/ must belong to the
 allowlist**, and the shipped surface (adapters, rules, flags, formats, exit
 codes) must match this document exactly.
 
-## Inventory: 313 files, 67531 LOC
+## Inventory: 313 files, 67576 LOC
 
 | Area              | Files | LOC   |
 | ----------------- | ----- | ----- |
-| src/commands      | 43    | 13764 |
-| src/engine        | 50    | 12480 |
+| src/commands      | 43    | 13770 |
+| src/engine        | 50    | 12511 |
 | src/rules         | 88    | 11758 |
 | src/reporter      | 14    | 3528  |
-| src/(root)        | 7     | 3161  |
+| src/(root)        | 7     | 3186  |
 | src/forensics     | 17    | 3065  |
-| src/ledger        | 1     | 2782  |
+| src/ledger        | 1     | 2780  |
 | src/discovery     | 10    | 1794  |
 | src/integrations  | 12    | 1790  |
-| src/adapters      | 11    | 1764  |
+| src/adapters      | 11    | 1759  |
 | src/gaps          | 2     | 1390  |
 | src/frameworks    | 4     | 1336  |
 | src/release       | 7     | 1012  |
-| src/mcp           | 3     | 829   |
+| src/mcp           | 3     | 825   |
 | src/brand         | 3     | 807   |
 | src/plugins       | 4     | 715   |
-| src/store         | 2     | 671   |
+| src/store         | 2     | 665   |
 | src/bench         | 4     | 592   |
 | src/certification | 2     | 568   |
 | src/config        | 3     | 559   |
@@ -43,23 +43,23 @@ codes) must match this document exactly.
 
 ## Internal fan-in — top 15 (change-blast candidates)
 
-| Module                         | Importers |
-| ------------------------------ | --------- |
-| src/types                      | 134       |
-| src/rules/rule                 | 81        |
-| src/rules/shared/positions     | 62        |
-| src/reporter/ui                | 26        |
-| src/lib/fs-atomic              | 20        |
-| src/cli-io                     | 19        |
-| src/forensics/types            | 19        |
-| src/lib/compare                | 16        |
-| src/exit-codes                 | 16        |
-| src/engine/adapter             | 14        |
-| src/rules/index                | 13        |
-| src/reporter/presentation      | 13        |
-| src/discovery/ignores          | 11        |
-| src/engine/degradation-ledger  | 11        |
-| src/forensics/evidence-hygiene | 11        |
+| Module                        | Importers |
+| ----------------------------- | --------- |
+| src/types                     | 134       |
+| src/rules/rule                | 81        |
+| src/rules/shared/positions    | 62        |
+| src/reporter/ui               | 26        |
+| src/cli-io                    | 25        |
+| src/lib/fs-atomic             | 20        |
+| src/forensics/types           | 19        |
+| src/lib/safe-json             | 16        |
+| src/lib/compare               | 16        |
+| src/exit-codes                | 16        |
+| src/engine/adapter            | 14        |
+| src/rules/index               | 13        |
+| src/reporter/presentation     | 13        |
+| src/discovery/ignores         | 11        |
+| src/engine/degradation-ledger | 11        |
 
 ## External dependency allowlist (containment)
 

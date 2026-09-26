@@ -27,6 +27,7 @@ import { existsSync } from "node:fs";
 import { isAbsolute, join, relative, resolve } from "node:path";
 
 import { runScan } from "../engine/scan-pipeline.js";
+import { errorMessage } from "../cli-io.js";
 import { ENGINE_VERSION as CLI_VERSION } from "../engine/version.js";
 import { buildMachineContract } from "../engine/machine-contract.js";
 import { explainRule } from "../commands/explain.js";
@@ -536,11 +537,6 @@ export async function handleToolCall(call: McpToolCall): Promise<McpResponse> {
       },
     };
   }
-}
-
-/** Normalize any thrown value to a string (unit-tested both arms). */
-export function errorMessage(err: unknown): string {
-  return err instanceof Error ? err.message : String(err);
 }
 
 /** JSON-RPC request shape validation (strict — §21). */

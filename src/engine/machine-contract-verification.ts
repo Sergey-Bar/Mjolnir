@@ -21,6 +21,7 @@ import {
   type MachineCompleteness,
   type MachineContract,
 } from "./machine-contract.js";
+import { isRecord } from "../lib/safe-json.js";
 
 export type VerifiableMachineContract = Omit<
   MachineContract,
@@ -51,10 +52,6 @@ export interface ContractIntegrityCheck {
   name: string;
   status: "pass" | "fail" | "warn";
   detail: string;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function optionalDeepEqual(actual: unknown, expected: unknown): boolean {

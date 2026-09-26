@@ -42,14 +42,15 @@ const VALID_REASON_CODES: ReadonlySet<string> = new Set<StrategyReasonCode>([
 export type { MeasuredFp } from "../rules/measured-fp.generated.js";
 import type { MeasuredFp as MeasuredFpEntry } from "../rules/measured-fp.generated.js";
 
-/** Uniform error rendering for doctor details (Error or thrown-as-string). */
-export function errorText(e: unknown): string {
-  return e instanceof Error ? e.message : String(e);
-}
 import {
   declaredDetectorRevision,
   effectiveTier,
 } from "../rules/measurement.js";
+// The one error-to-message derivation. This file used to declare its own
+// `errorText`, byte-identical to two others; a doctor's entire value is that
+// its detail strings say what actually happened, so the helper that builds
+// them is the last place to have four copies.
+import { errorMessage } from "../cli-io.js";
 import { deriveEvidenceLevel } from "../types.js";
 import { capForTier } from "../engine/tier-policy.js";
 import { sectionHeader, plainContext } from "../reporter/ui.js";
@@ -354,7 +355,7 @@ export function checkTierEnforcement(
     // and invalid, which is a different failure than absent: still not
     // evaluable here, and still never rendered as pass (G2/22).
     return check("tier-enforcement", "inconclusive", [
-      `INCONCLUSIVE: live verdicts unreadable — ${errorText(e)} (owner ruling 2026-09-08, L4)`,
+      `INCONCLUSIVE: live verdicts unreadable — ${errorMessage(e)} (owner ruling 2026-09-08, L4)`,
     ]);
   }
   if (live.size > 0) {
@@ -608,7 +609,7 @@ export function checkRevisionIntegrity(
     current = computeDetectorHashes(rules, rulesDir);
   } catch (e) {
     return check("revision-integrity", "inconclusive", [
-      `INCONCLUSIVE: detector hash computation failed — ${errorText(e)}`,
+      `INCONCLUSIVE: detector hash computation failed — ${errorMessage(e)}`,
     ]);
   }
 
@@ -751,7 +752,7 @@ export function checkMeasurementConsistency(
       }
     } catch (e) {
       failures.push(
-        `sidecar unreadable/malformed: ${errorText(e)} — regenerate the measurement artifacts`,
+        `sidecar unreadable/malformed: ${errorMessage(e)} — regenerate the measurement artifacts`,
       );
     }
   } else {

@@ -225,12 +225,19 @@ describe("scan tool — canonical semantics through the transport", () => {
     expect(typeof res.error?.message).toBe("string");
   });
 
-  it("errorMessage normalizes Error and non-Error throws (both arms)", async () => {
-    const { errorMessage, serializeScan } =
-      await import("../../src/mcp/server.js");
+  it("errorMessage normalizes Error and non-Error throws (every arm)", async () => {
+    const { serializeScan } = await import("../../src/mcp/server.js");
+    // The single derivation now lives in src/cli-io.ts. `mcp/server.ts` used
+    // to declare its own copy, and it was one of the two THIN ones - the
+    // object arm rendered `[object Object]`, so a thrown `{ code: "EISDIR" }`
+    // crossed the MCP boundary naming nothing. The object arm is asserted
+    // here because this is a request/response boundary: whatever the tool
+    // returns is what the client sees.
+    const { errorMessage } = await import("../../src/cli-io.js");
     expect(errorMessage(new Error("boom"))).toBe("boom");
     expect(errorMessage("raw string")).toBe("raw string");
     expect(errorMessage(42)).toBe("42");
+    expect(errorMessage({ code: "EISDIR" })).toBe('{"code":"EISDIR"}');
     // Serialization queue: a rejecting work item doesn't poison the next.
     await expect(
       serializeScan(() => Promise.reject(new Error("first fails"))),

@@ -27,6 +27,7 @@ import { sharedWalk } from "../discovery/shared-walk.js";
 import { computeCodeText } from "../engine/code-text.js";
 import { parseJavaAst } from "../engine/tree-sitter-ast.js";
 import { recordDegradation } from "../engine/degradation-ledger.js";
+import { runRuleIsolated } from "../engine/shared-run-rules.js";
 import {
   frameworkFilterApplies,
   type FrameworkInfo,
@@ -166,13 +167,11 @@ export const javaAdapter: LanguageAdapter = {
         budget.onExceeded();
         return;
       }
-      try {
-        for (const f of rule.run(enriched)) {
-          emit(f, rule.id, rule.category);
-        }
-      } catch (error) {
-        // Crash isolation (§25) — counted and debuggable (R-9).
-        onCrash?.(rule.id, error);
+      // Crash isolation (§25) — counted and debuggable (R-9), in one place.
+      const produced = runRuleIsolated(rule, enriched, onCrash);
+      if (produced === null) continue;
+      for (const f of produced) {
+        emit(f, rule.id, rule.category);
       }
     }
   },

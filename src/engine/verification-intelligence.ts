@@ -3,6 +3,7 @@ import { basename, join, resolve } from "node:path";
 
 import { parseGitLabCi } from "../adapters/gitlab-ci.js";
 import { parseYamlGuarded } from "../discovery/yaml-guards.js";
+import { isRecord } from "../lib/safe-json.js";
 import type { Finding } from "../types.js";
 import {
   CLI_COMMAND_NAMES,
@@ -79,10 +80,6 @@ type WorkflowAnalysis = {
   hasCandidate: boolean;
   hasNonGatingCandidate: boolean;
 };
-
-function isRecord(value: unknown): value is RecordValue {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
 
 function conditionState(value: unknown): ConditionState {
   if (value === undefined || value === null || value === true) return "active";

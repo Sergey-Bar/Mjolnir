@@ -1,3 +1,5 @@
+import { isRecord } from "../lib/safe-json.js";
+
 export const M26_SCHEMA_VERSION = 1 as const;
 
 export const GITHUB_RECONCILIATION_STATES = [
@@ -339,10 +341,6 @@ const UNOWNED_VALUES = new Set([
   "none",
   "n/a",
 ]);
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
 
 function isNonEmptyString(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0;

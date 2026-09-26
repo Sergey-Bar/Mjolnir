@@ -37,17 +37,15 @@ const EVIDENCE_VALUES = new Set(["E0", "E1", "E2"]);
 // ladder about which levels exist rejects reports the engine itself produces.
 const TRUST_VALUES = new Set<string>(TRUST_ORDER);
 
-/** Human message for any thrown value — never "undefined"/"[object Object]". */
-export function errorText(err: unknown): string {
-  if (err instanceof Error) return err.message;
-  if (typeof err === "string") return err;
-  if (typeof err === "object" && err !== null) return JSON.stringify(err);
-  return String(err);
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
+// The one error-to-message derivation and the one `isRecord` in `src/`.
+// This file declared its own `errorText` — the RICHEST of the four copies,
+// the one that renders a non-Error object as JSON rather than
+// `[object Object]` — and its own `isRecord`, byte-identical to six others.
+// The richer body is what survived the collapse; the two thinner ones were
+// the defect. This is also the hostile-input reader, which is why that arm
+// mattered most here.
+import { errorMessage } from "../cli-io.js";
+import { isRecord } from "../lib/safe-json.js";
 
 function fail(message: string): never {
   throw new Error(message);
@@ -256,7 +254,7 @@ export function validateReportJson(text: string): ScanResult {
   try {
     parsed = JSON.parse(text);
   } catch (err) {
-    throw new Error(`not valid JSON (${errorText(err)})`, { cause: err });
+    throw new Error(`not valid JSON (${errorMessage(err)})`, { cause: err });
   }
   const doc = requireRecord(parsed, "the report is not an object");
   if (doc.schemaVersion !== 1) {

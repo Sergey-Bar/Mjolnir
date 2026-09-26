@@ -282,7 +282,7 @@ const ALLOWED_VALUE_RETURNS: ReadonlyArray<{
 }> = [
   {
     file: "engine/verification-intelligence.ts",
-    line: 604,
+    line: 601,
     direction: "fails-explicitly",
     reason:
       "Returns status: 'fail' with the parse error as the detail. The " +
@@ -291,7 +291,7 @@ const ALLOWED_VALUE_RETURNS: ReadonlyArray<{
   },
   {
     file: "engine/verification-intelligence.ts",
-    line: 638,
+    line: 635,
     direction: "fails-explicitly",
     reason:
       "Returns false, meaning 'this workflow has no blocking gate'. An " +
@@ -301,7 +301,7 @@ const ALLOWED_VALUE_RETURNS: ReadonlyArray<{
   },
   {
     file: "engine/candidate-binding.ts",
-    line: 79,
+    line: 76,
     direction: "fails-by-absence",
     reason:
       "Not a repository, or git is absent. Returning undefined is the whole " +
@@ -311,7 +311,7 @@ const ALLOWED_VALUE_RETURNS: ReadonlyArray<{
   },
   {
     file: "engine/candidate-binding.ts",
-    line: 44,
+    line: 41,
     direction: "fails-by-absence",
     reason:
       "A file whose sha256 cannot be computed contributes NO hash to the " +
@@ -321,7 +321,7 @@ const ALLOWED_VALUE_RETURNS: ReadonlyArray<{
   },
   {
     file: "engine/candidate-binding.ts",
-    line: 187,
+    line: 184,
     direction: "fails-by-absence",
     reason:
       "A candidate manifest that will not parse yields NO binding. The " +
@@ -428,7 +428,7 @@ const ALLOWED_VALUE_RETURNS: ReadonlyArray<{
   },
   {
     file: "adapters/github-actions.ts",
-    line: 127,
+    line: 126,
     direction: "fails-by-absence",
     reason:
       "readWorkflowSafe returns null for a file that is not there or cannot " +
@@ -606,11 +606,34 @@ function returnsAValue(body: string): boolean {
 
 /**
  * The counted sinks this codebase already has. `onCrash?.(` is the crash
- * isolation callback every adapter passes to `shared-run-rules`; `onSkipped`
- * and `onDiscoveryTruncated` are the discovery accounting seams. A catch
- * that routes a failure to one of these is counted, by construction.
+ * isolation callback every adapter passes to `shared-run-rules`;
+ * `onSkipped` and `onDiscoveryTruncated` are the discovery accounting seams.
+ * A catch that routes a failure to one of these is counted, by construction.
+ *
+ * The OPTIONAL-CALL form is the whole subtlety, and the first version got it
+ * wrong. The pattern read `\b(on[A-Z]\w*)\s*(?:\?\s*)?\(`, which does not
+ * match `onCrash?.(`: that is `onCrash` + the single token `?.` + `(`, and
+ * the pattern had no `\.` between them. So every `onCrash?.(` sink in the
+ * tree went UNRECOGNIZED and the violation list filled with sites that were
+ * in fact correctly counted. An invariant that cries wolf is an invariant
+ * nobody enables, so `COUNTED_SINK_RECOGNISES_ITSELF` below is not
+ * belt-and-braces — it is the part that makes the rest of this file credible.
  */
-const COUNTED_SINK = /\b(on[A-Z]\w*|options\.on\w*|hooks\.\w+)\s*(?:\?\s*)?\(/;
+const COUNTED_SINK =
+  /\b(?:on[A-Z]\w*|options\.on\w*|hooks\.\w+)\s*(?:\?\.\s*)?\(/;
+
+/**
+ * Every sink call shape this codebase actually uses. If a new one appears and
+ * this list is not extended, the real spec will go quiet about it — so the
+ * list is asserted rather than assumed.
+ */
+const COUNTED_SINK_RECOGNISES_ITSELF: ReadonlyArray<[string, string]> = [
+  ["direct call", "onCrash(rule.id, error)"],
+  ["optional call", "onCrash?.(rule.id, error)"],
+  ["direct call on a namespace", "options.onSkipped('stat-failed')"],
+  ["optional call on a namespace", "options.onDiscoveryTruncated?.()"],
+  ["nested namespace", "hooks.onIgnored(path)"],
+];
 
 const files = listSourceFiles(SRC_ROOT)
   .map((full) => ({
@@ -679,6 +702,28 @@ describe("W1.1 invariant: no detection-path catch hands its caller a clean defau
         ["fails-explicitly", "fails-by-absence", "reducing"],
         `${entry.file}:${entry.line} must name one of the three honest directions`,
       ).toContain(entry.direction);
+    }
+  });
+
+  it("the counted-sink pattern actually recognises the sinks it claims to", () => {
+    const blind: string[] = [];
+    for (const [shape, call] of COUNTED_SINK_RECOGNISES_ITSELF) {
+      if (!COUNTED_SINK.test(`\n  ${call};\n`)) blind.push(shape);
+    }
+    expect(
+      blind,
+      "COUNTED_SINK does not match these call shapes: " +
+        `${blind.join(", ")}. A sink the pattern cannot see is a counted ` +
+        "degradation this spec would report as uncounted, which is worse " +
+        "than no spec at all.",
+    ).toEqual([]);
+  });
+
+  it("the counted-sink pattern does not match an unrelated call", () => {
+    // The other half. A pattern loose enough to accept anything returns no
+    // violations ever, which looks exactly like a passing spec.
+    for (const call of ["emit(f, id)", "record(a)", "console.log(x)"]) {
+      expect(COUNTED_SINK.test(`\n  ${call};\n`)).toBe(false);
     }
   });
 
