@@ -17,12 +17,13 @@ import { join } from "node:path";
 import { sharedWalk } from "../discovery/shared-walk.js";
 import { detectFrameworks as detectFrameworksLegacy } from "../discovery/frameworks.js";
 import type { Workspace } from "../discovery/workspace.js";
-import { parseTsFile } from "../engine/ts-ast.js";
+import { getProject, parseTsFile } from "../engine/ts-ast.js";
 import { computeCodeText } from "../engine/code-text.js";
 import {
   frameworkFilterApplies,
   type FrameworkInfo,
   type LanguageAdapter,
+  type ParsedAst,
   type ParsedFile,
   type ScanContext,
   type UniversalRule,
@@ -132,10 +133,47 @@ export const typescriptAdapter: LanguageAdapter = {
     });
   },
 
+  /**
+   * The ONE AST seam (plan V5-021).
+   *
+   * This adapter used to parse inside `runRules`, on the synchronous path,
+   * while Java and C# exposed the async `parseAst` hook. Two seams meant two
+   * sets of consequences, both of them bad:
+   *
+   *   - the pipeline computes `wantsAst` as `adapter.parseAst !== undefined`,
+   *     so a TypeScript file never took the AST path through the pipeline at
+   *     all, and its parse failures were invisible to the pipeline's
+   *     fallback counters;
+   *   - nothing called `dispose()` for the ts-morph path, so a scan held
+   *     every parsed SourceFile for its whole lifetime.
+   *
+   * Parsing now happens here, once, through the same contract every other
+   * adapter uses. `dispose()` drops this file's SourceFile from the shared
+   * project; ts-morph caches per file path, so removing it is what keeps
+   * memory proportional to one file rather than to the whole scan.
+   */
+  parseAst(file: ParsedFile): ParsedAst | undefined {
+    const sourceFile = parseTsFile(file);
+    if (sourceFile === undefined) return undefined;
+    return {
+      ast: sourceFile,
+      dispose: () => {
+        try {
+          getProject().removeSourceFile(sourceFile);
+        } catch {
+          // Disposal is best-effort: a file already evicted (or a project
+          // reset by another test) is not a failure of the scan.
+        }
+      },
+    };
+  },
+
   runRules(rules, file, emit, onCrash, budget) {
-    // Phase 3: populate the AST seam once per file; rules that opt in use
-    // it via getTsSourceFile, everything else stays on the regex path.
-    const withAst: ParsedFile = { ...file, ast: parseTsFile(file) };
+    // The AST arrives on the seam. A direct caller that did not go through the
+    // pipeline gets one parsed here so the adapter behaves identically either
+    // way — the alternative is a rule that only works on one of two paths.
+    const withAst: ParsedFile =
+      file.ast === undefined ? { ...file, ast: parseTsFile(file) } : file;
     // Phase 5 (§15.1): per-file framework tags from the file's own
     // import lines. Empty when the file imports nothing framework-y —
     // filtering is then OPEN for every rule (unknown ≠ skip).
