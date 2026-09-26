@@ -1,0 +1,198 @@
+{
+  "schemaVersion": 1,
+  "artifact": "framework-matrix",
+  "generatedBy": "npm run docs:capability",
+  "projectionOf": "mjolnir-capability-registry",
+  "axis": "framework",
+  "observedAt": "2026-09-26",
+  "baseSha": "933371fe224f3adb3c150e29c4de73ede3a7e00a",
+  "rowCount": 10,
+  "rows": [
+    {
+      "framework": "playwright",
+      "entityType": "E2E_FRAMEWORK",
+      "inventoryMaturity": "F4",
+      "supportStatus": "OFFICIAL_PARTIAL",
+      "capabilityId": "test.framework.playwright",
+      "maturity": "M2",
+      "rules": [
+        "QA-PW-002",
+        "QA-PW-003",
+        "QA-PW-004",
+        "QA-PW-101",
+        "QA-PW-102",
+        "QA-PW-113",
+        "QA-PW-117",
+        "QA-PW-121",
+        "QA-PW-122",
+        "QA-PW-124",
+        "QA-PW-104",
+        "QA-PW-116",
+        "QA-PW-125",
+        "QA-PW-115",
+        "QA-PW-140",
+        "QA-PW-123",
+        "QA-PW-141",
+        "QA-PW-142",
+        "QA-PW-143",
+        "QA-PW-144",
+        "QA-PW-146",
+        "QA-PW-147"
+      ],
+      "validatedVersions": ["1.44", "1.45", "1.46", "1.47", "1.48"]
+    },
+    {
+      "framework": "jest",
+      "entityType": "TEST_FRAMEWORK",
+      "inventoryMaturity": "F3",
+      "supportStatus": "OFFICIAL_PARTIAL",
+      "capabilityId": "test.framework.jest",
+      "maturity": "M2",
+      "rules": [
+        "QA-JV-104",
+        "QA-JV-107",
+        "QA-JV-101",
+        "QA-JV-102",
+        "QA-JV-103",
+        "QA-JV-105",
+        "QA-JV-106",
+        "QA-JV-109"
+      ],
+      "validatedVersions": ["29", "30"]
+    },
+    {
+      "framework": "vitest",
+      "entityType": "TEST_FRAMEWORK",
+      "inventoryMaturity": "F3",
+      "supportStatus": "OFFICIAL_PARTIAL",
+      "capabilityId": "test.framework.vitest",
+      "maturity": "M2",
+      "rules": [
+        "QA-JV-104",
+        "QA-JV-107",
+        "QA-JV-101",
+        "QA-JV-102",
+        "QA-JV-103",
+        "QA-JV-105",
+        "QA-JV-106",
+        "QA-JV-109"
+      ],
+      "validatedVersions": ["1.6", "2.0", "2.1"]
+    },
+    {
+      "framework": "pytest",
+      "entityType": "TEST_FRAMEWORK",
+      "inventoryMaturity": "F2",
+      "supportStatus": "OFFICIAL_PARTIAL",
+      "capabilityId": "test.framework.pytest",
+      "maturity": "M2",
+      "rules": [
+        "QA-PY-003",
+        "QA-PY-005",
+        "QA-PY-002",
+        "QA-PY-012",
+        "QA-PY-001",
+        "QA-PY-007",
+        "QA-PY-009",
+        "QA-PY-004",
+        "QA-PY-011",
+        "QA-PY-101",
+        "QA-PY-103",
+        "QA-PY-105",
+        "QA-PY-106",
+        "QA-PY-107",
+        "QA-PY-108",
+        "QA-PY-104"
+      ],
+      "validatedVersions": ["7.4", "8.0", "8.1", "8.2", "8.3"]
+    },
+    {
+      "framework": "junit",
+      "entityType": "TEST_FRAMEWORK",
+      "inventoryMaturity": "F2",
+      "supportStatus": "OFFICIAL_PARTIAL",
+      "capabilityId": "test.framework.junit",
+      "maturity": "M2",
+      "rules": [
+        "QA-TEST-001",
+        "QA-TEST-002",
+        "QA-TEST-003",
+        "QA-TEST-004",
+        "QA-TEST-006",
+        "QA-TEST-010"
+      ],
+      "validatedVersions": ["5.10", "5.11"]
+    },
+    {
+      "framework": "nunit",
+      "entityType": "TEST_FRAMEWORK",
+      "inventoryMaturity": "F2",
+      "supportStatus": "OFFICIAL_PARTIAL",
+      "capabilityId": "test.framework.nunit",
+      "maturity": "M2",
+      "rules": [
+        "QA-TEST-001",
+        "QA-TEST-002",
+        "QA-TEST-003",
+        "QA-TEST-004",
+        "QA-TEST-006",
+        "QA-TEST-010"
+      ],
+      "validatedVersions": ["3.14", "4.2"]
+    },
+    {
+      "framework": "xunit",
+      "entityType": "TEST_FRAMEWORK",
+      "inventoryMaturity": "F2",
+      "supportStatus": "OFFICIAL_PARTIAL",
+      "capabilityId": "test.framework.xunit",
+      "maturity": "M2",
+      "rules": [
+        "QA-TEST-001",
+        "QA-TEST-002",
+        "QA-TEST-003",
+        "QA-TEST-004",
+        "QA-TEST-006",
+        "QA-TEST-010"
+      ],
+      "validatedVersions": ["2.9"]
+    },
+    {
+      "framework": "cypress",
+      "entityType": "E2E_FRAMEWORK",
+      "inventoryMaturity": "F2",
+      "supportStatus": "EXPERIMENTAL",
+      "capabilityId": "test.framework.cypress",
+      "maturity": "M2",
+      "rules": ["QA-CYP-001", "QA-CYP-002", "QA-CYP-003"],
+      "validatedVersions": ["13"]
+    },
+    {
+      "framework": "selenium",
+      "entityType": "AUTOMATION_LIBRARY",
+      "inventoryMaturity": "F1",
+      "supportStatus": "EXPERIMENTAL",
+      "capabilityId": "test.framework.selenium",
+      "maturity": "M2",
+      "rules": [],
+      "validatedVersions": ["4.20", "4.21", "4.22", "4.23", "4.24", "4.25"]
+    },
+    {
+      "framework": "testng",
+      "entityType": "TEST_FRAMEWORK",
+      "inventoryMaturity": "F1",
+      "supportStatus": "EXPERIMENTAL",
+      "capabilityId": "test.framework.testng",
+      "maturity": "M2",
+      "rules": [
+        "QA-TEST-001",
+        "QA-TEST-002",
+        "QA-TEST-003",
+        "QA-TEST-004",
+        "QA-TEST-006",
+        "QA-TEST-010"
+      ],
+      "validatedVersions": ["7.10", "7.11"]
+    }
+  ]
+}

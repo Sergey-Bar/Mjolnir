@@ -7,15 +7,15 @@ contract enforces: **every external import in src/ must belong to the
 allowlist**, and the shipped surface (adapters, rules, flags, formats, exit
 codes) must match this document exactly.
 
-## Inventory: 332 files, 95284 LOC
+## Inventory: 334 files, 96324 LOC
 
 | Area             | Files | LOC   |
 | ---------------- | ----- | ----- |
-| src/engine       | 55    | 24458 |
-| src/commands     | 44    | 13415 |
+| src/engine       | 55    | 24459 |
+| src/commands     | 45    | 13640 |
 | src/rules        | 88    | 11758 |
-| src/(root)       | 8     | 3608  |
-| src/v6           | 5     | 3456  |
+| src/v6           | 6     | 4264  |
+| src/(root)       | 8     | 3614  |
 | src/reporter     | 15    | 3366  |
 | src/forensics    | 17    | 3065  |
 | src/governance   | 1     | 2744  |
@@ -53,13 +53,13 @@ codes) must match this document exactly.
 | src/rules/rule                  | 82        |
 | src/rules/shared/positions      | 62        |
 | src/reporter/ui                 | 26        |
+| src/cli-io                      | 21        |
 | src/lib/fs-atomic               | 20        |
-| src/cli-io                      | 20        |
 | src/forensics/types             | 20        |
 | src/exit-codes                  | 17        |
+| src/rules/index                 | 15        |
 | src/engine/adapter              | 14        |
-| src/rules/index                 | 14        |
-| src/rules/measured-fp.generated | 12        |
+| src/rules/measured-fp.generated | 13        |
 | src/discovery/ignores           | 11        |
 | src/engine/scan-pipeline        | 11        |
 | src/forensics/evidence-hygiene  | 11        |
@@ -69,8 +69,8 @@ codes) must match this document exactly.
 
 | Dependency         | Files importing it |
 | ------------------ | ------------------ |
-| node:fs            | 71                 |
-| node:path          | 67                 |
+| node:fs            | 72                 |
+| node:path          | 68                 |
 | node:crypto        | 25                 |
 | ts-morph           | 7                  |
 | node:url           | 4                  |

@@ -1,0 +1,207 @@
+{
+  "schemaVersion": 1,
+  "artifact": "domain-coverage",
+  "generatedBy": "npm run docs:capability",
+  "projectionOf": "mjolnir-capability-registry",
+  "axis": "domain",
+  "observedAt": "2026-09-26",
+  "baseSha": "933371fe224f3adb3c150e29c4de73ede3a7e00a",
+  "rowCount": 13,
+  "rows": [
+    {
+      "domain": "Accessibility domain",
+      "capabilityId": "qa.domain.accessibility",
+      "maturity": "M1",
+      "nextLevelGap": {
+        "target": "M2_IMPLEMENTED",
+        "missing": [
+          "implementation exists",
+          "unit tests for the implementation"
+        ],
+        "owner": "qa-owner",
+        "revisitTrigger": "capability qa.domain.accessibility gains evidence for its next level"
+      },
+      "covered": true
+    },
+    {
+      "domain": "API contracts",
+      "capabilityId": "qa.domain.api",
+      "maturity": "M1",
+      "nextLevelGap": {
+        "target": "M2_IMPLEMENTED",
+        "missing": [
+          "implementation exists",
+          "unit tests for the implementation"
+        ],
+        "owner": "qa-owner",
+        "revisitTrigger": "capability qa.domain.api gains evidence for its next level"
+      },
+      "covered": true
+    },
+    {
+      "domain": "Browser domain",
+      "capabilityId": "qa.domain.browser",
+      "maturity": "M1",
+      "nextLevelGap": {
+        "target": "M2_IMPLEMENTED",
+        "missing": [
+          "implementation exists",
+          "unit tests for the implementation"
+        ],
+        "owner": "qa-owner",
+        "revisitTrigger": "capability qa.domain.browser gains evidence for its next level"
+      },
+      "covered": true
+    },
+    {
+      "domain": "Exploratory testing and observability",
+      "capabilityId": "qa.domain.exploratory-observability",
+      "maturity": "M1",
+      "nextLevelGap": {
+        "target": "M2_IMPLEMENTED",
+        "missing": [
+          "implementation exists",
+          "unit tests for the implementation"
+        ],
+        "owner": "qa-owner",
+        "revisitTrigger": "capability qa.domain.exploratory-observability gains evidence for its next level"
+      },
+      "covered": true
+    },
+    {
+      "domain": "Integration-test domain",
+      "capabilityId": "qa.domain.integration",
+      "maturity": "M1",
+      "nextLevelGap": {
+        "target": "M2_IMPLEMENTED",
+        "missing": [
+          "implementation exists",
+          "unit tests for the implementation"
+        ],
+        "owner": "qa-owner",
+        "revisitTrigger": "capability qa.domain.integration gains evidence for its next level"
+      },
+      "covered": true
+    },
+    {
+      "domain": "Mobile domain",
+      "capabilityId": "qa.domain.mobile",
+      "maturity": "M1",
+      "nextLevelGap": {
+        "target": "M2_IMPLEMENTED",
+        "missing": [
+          "implementation exists",
+          "unit tests for the implementation"
+        ],
+        "owner": "qa-owner",
+        "revisitTrigger": "capability qa.domain.mobile gains evidence for its next level"
+      },
+      "covered": true
+    },
+    {
+      "domain": "Performance domain",
+      "capabilityId": "qa.domain.performance",
+      "maturity": "M1",
+      "nextLevelGap": {
+        "target": "M2_IMPLEMENTED",
+        "missing": [
+          "implementation exists",
+          "unit tests for the implementation"
+        ],
+        "owner": "qa-owner",
+        "revisitTrigger": "capability qa.domain.performance gains evidence for its next level"
+      },
+      "covered": true
+    },
+    {
+      "domain": "Release evidence",
+      "capabilityId": "qa.domain.release-evidence",
+      "maturity": "M1",
+      "nextLevelGap": {
+        "target": "M2_IMPLEMENTED",
+        "missing": [
+          "implementation exists",
+          "unit tests for the implementation"
+        ],
+        "owner": "qa-owner",
+        "revisitTrigger": "capability qa.domain.release-evidence gains evidence for its next level"
+      },
+      "covered": true
+    },
+    {
+      "domain": "Requirements intelligence",
+      "capabilityId": "qa.domain.requirements",
+      "maturity": "M1",
+      "nextLevelGap": {
+        "target": "M2_IMPLEMENTED",
+        "missing": [
+          "implementation exists",
+          "unit tests for the implementation"
+        ],
+        "owner": "qa-owner",
+        "revisitTrigger": "capability qa.domain.requirements gains evidence for its next level"
+      },
+      "covered": true
+    },
+    {
+      "domain": "Risk intelligence",
+      "capabilityId": "qa.domain.risk",
+      "maturity": "M1",
+      "nextLevelGap": {
+        "target": "M2_IMPLEMENTED",
+        "missing": [
+          "implementation exists",
+          "unit tests for the implementation"
+        ],
+        "owner": "qa-owner",
+        "revisitTrigger": "capability qa.domain.risk gains evidence for its next level"
+      },
+      "covered": true
+    },
+    {
+      "domain": "Security testing domain",
+      "capabilityId": "qa.domain.security",
+      "maturity": "M1",
+      "nextLevelGap": {
+        "target": "M2_IMPLEMENTED",
+        "missing": [
+          "implementation exists",
+          "unit tests for the implementation"
+        ],
+        "owner": "qa-owner",
+        "revisitTrigger": "capability qa.domain.security gains evidence for its next level"
+      },
+      "covered": true
+    },
+    {
+      "domain": "Test-design intelligence",
+      "capabilityId": "qa.domain.test-design",
+      "maturity": "M1",
+      "nextLevelGap": {
+        "target": "M2_IMPLEMENTED",
+        "missing": [
+          "implementation exists",
+          "unit tests for the implementation"
+        ],
+        "owner": "qa-owner",
+        "revisitTrigger": "capability qa.domain.test-design gains evidence for its next level"
+      },
+      "covered": true
+    },
+    {
+      "domain": "Unit-test domain",
+      "capabilityId": "qa.domain.unit",
+      "maturity": "M1",
+      "nextLevelGap": {
+        "target": "M2_IMPLEMENTED",
+        "missing": [
+          "implementation exists",
+          "unit tests for the implementation"
+        ],
+        "owner": "qa-owner",
+        "revisitTrigger": "capability qa.domain.unit gains evidence for its next level"
+      },
+      "covered": true
+    }
+  ]
+}

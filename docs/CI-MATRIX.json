@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "artifact": "ci-matrix",
+  "generatedBy": "npm run docs:capability",
+  "projectionOf": "mjolnir-capability-registry",
+  "axis": "ci-provider",
+  "observedAt": "2026-09-26",
+  "baseSha": "933371fe224f3adb3c150e29c4de73ede3a7e00a",
+  "rowCount": 4,
+  "rows": [
+    {
+      "provider": "github-actions",
+      "capabilityId": "ci.provider.github-actions",
+      "maturity": "M2",
+      "rules": [
+        "QA-CI-001",
+        "QA-CI-002",
+        "QA-CI-007",
+        "QA-CI-005",
+        "QA-CI-008",
+        "QA-CI-009",
+        "QA-CI-010",
+        "QA-CI-013",
+        "QA-CI-014"
+      ],
+      "adapter": "src/adapters/github-actions.ts",
+      "blocksAxes": ["CI Integrity", "False-Green Detection"]
+    },
+    {
+      "provider": "azure-pipelines",
+      "capabilityId": "ci.provider.azure-pipelines",
+      "maturity": "M2",
+      "rules": [
+        "QA-CI-001",
+        "QA-CI-002",
+        "QA-CI-007",
+        "QA-CI-005",
+        "QA-CI-008",
+        "QA-CI-009",
+        "QA-CI-010",
+        "QA-CI-013",
+        "QA-CI-014"
+      ],
+      "adapter": "src/adapters/azure-pipelines.ts",
+      "blocksAxes": ["CI Integrity", "False-Green Detection"]
+    },
+    {
+      "provider": "jenkins",
+      "capabilityId": "ci.provider.jenkins",
+      "maturity": "M2",
+      "rules": [
+        "QA-CI-001",
+        "QA-CI-002",
+        "QA-CI-007",
+        "QA-CI-005",
+        "QA-CI-008",
+        "QA-CI-009",
+        "QA-CI-010",
+        "QA-CI-013",
+        "QA-CI-014"
+      ],
+      "adapter": "src/adapters/jenkins.ts",
+      "blocksAxes": ["CI Integrity", "False-Green Detection"]
+    },
+    {
+      "provider": "gitlab-ci",
+      "capabilityId": "ci.provider.gitlab-ci",
+      "maturity": "M2",
+      "rules": [
+        "QA-CI-001",
+        "QA-CI-002",
+        "QA-CI-007",
+        "QA-CI-005",
+        "QA-CI-008",
+        "QA-CI-009",
+        "QA-CI-010",
+        "QA-CI-013",
+        "QA-CI-014"
+      ],
+      "adapter": "src/adapters/gitlab-ci.ts",
+      "blocksAxes": ["CI Integrity", "False-Green Detection"]
+    }
+  ]
+}

@@ -2,7 +2,7 @@
 
 **Generated — do not edit by hand.** Regenerate: `npm run docs:v6-inventory`.
 
-Baseline commit `fc1fa4788766edabb3d771dacb195f9870d7409b` · package version `4.0.0-rc.1` · published stable `3.0.0`.
+Baseline commit `933371fe224f3adb3c150e29c4de73ede3a7e00a` · package version `4.0.0-rc.1` · published stable `3.0.0`.
 
 This is the truth baseline v6 is built on. It is deliberately blunt: the
 interesting part of a current-state inventory is what the product _cannot_
@@ -30,14 +30,14 @@ demonstrate, not what it contains.
 | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
 | Package version                 | `4.0.0-rc.1`                                                                                                                            | `package.json`                      |
 | Published stable                | `3.0.0`                                                                                                                                 | `package.json`                      |
-| Source files (`src/**.ts`)      | 324                                                                                                                                     | derived                             |
-| Test specs (`tests/**.spec.ts`) | 643                                                                                                                                     | derived                             |
+| Source files (`src/**.ts`)      | 326                                                                                                                                     | derived                             |
+| Test specs (`tests/**.spec.ts`) | 644                                                                                                                                     | derived                             |
 | Live rules                      | 79                                                                                                                                      | `src/rules/index.ts`                |
 | Retired rule ids (preserved)    | 22                                                                                                                                      | `RETIRED_RULE_IDS`                  |
 | Rules with a valid measurement  | 74                                                                                                                                      | `MEASURED_FP` + `detectorRev`       |
 | Rule tiers                      | **core** 24 · **extended** 21 · **quarantine** 34                                                                                       | `effectiveTier`                     |
 | Adapters                        | 11 (azure-pipelines, csharp, exit-code-integrity, github-actions, gitlab-ci, index, java, jenkins, python, typescript, workflow-bypass) | `src/adapters`                      |
-| Commands                        | 44                                                                                                                                      | `src/commands`                      |
+| Commands                        | 45                                                                                                                                      | `src/commands`                      |
 | Frameworks in the inventory     | 14                                                                                                                                      | `FRAMEWORK_INVENTORY`               |
 | CI providers                    | 6                                                                                                                                       | `CI_PROVIDER_IDS`                   |
 | QA domain records               | 13                                                                                                                                      | `QA_DOMAIN_RECORDS`                 |
@@ -51,7 +51,7 @@ demonstrate, not what it contains.
 
 - `src/rules/` — 88
 - `src/engine/` — 55
-- `src/commands/` — 44
+- `src/commands/` — 45
 - `src/forensics/` — 17
 - `src/reporter/` — 15
 - `src/adapters/` — 11

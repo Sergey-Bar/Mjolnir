@@ -182,6 +182,22 @@ export const HELP_ENTRIES: HelpEntry[] = [
     examples: ["mjolnir explain QA-TEST-001", "mjolnir rules --unmeasured"],
   },
   {
+    verb: "capability",
+    summary:
+      "the capability registry: every capability at the maturity the machine can prove",
+    usage:
+      "mjolnir capability [--json] [--kind <k>] [--maturity M0..M5] [--id <substring>]",
+    // No --set and no --promote, and that absence is the contract:
+    // maturity is derived from evidence (ADR 0001), so this verb shows and
+    // checks. A verb that could raise a level would be a verb that could
+    // lie about one.
+    examples: [
+      "mjolnir capability",
+      "mjolnir capability --maturity M2",
+      "mjolnir capability --json > registry.json",
+    ],
+  },
+  {
     verb: "rules",
     summary:
       "rule catalog + empirical-measurement stats/health (md/json/stats/health)",
@@ -527,6 +543,7 @@ const GROUPS: Array<{ title: string; verbs: string[] }> = [
       "trust-trend",
       "evidence-graph",
       "framework-maturity",
+      "capability",
       "suppression-gate",
       "business-case",
       "release-report",

@@ -34,6 +34,7 @@ export const CLI_COMMAND_NAMES = [
   "doctor",
   "release-trust",
   "rules",
+  "capability",
   "explain",
   "doctor:playwright",
   "why",

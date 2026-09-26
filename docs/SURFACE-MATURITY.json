@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "artifact": "surface-maturity",
+  "generatedBy": "npm run docs:capability",
+  "projectionOf": "mjolnir-capability-registry",
+  "axis": "surface",
+  "observedAt": "2026-09-26",
+  "baseSha": "933371fe224f3adb3c150e29c4de73ede3a7e00a",
+  "rowCount": 6,
+  "rows": [
+    {
+      "surface": "cli",
+      "state": "PRESENT",
+      "maturity": "M1",
+      "capabilities": [],
+      "nextLevelGap": null
+    },
+    {
+      "surface": "github-action",
+      "state": "PRESENT",
+      "maturity": "M1",
+      "capabilities": [],
+      "nextLevelGap": null
+    },
+    {
+      "surface": "mcp",
+      "state": "PRESENT",
+      "maturity": "M1",
+      "capabilities": [],
+      "nextLevelGap": null
+    },
+    {
+      "surface": "vscode",
+      "state": "ABSENT",
+      "maturity": "M0",
+      "capabilities": [],
+      "nextLevelGap": {
+        "target": "M1_DECLARED",
+        "missing": ["the vscode surface does not exist yet"],
+        "owner": "surface-convergence",
+        "revisitTrigger": "the vscode surface ships"
+      }
+    },
+    {
+      "surface": "github-app",
+      "state": "ABSENT",
+      "maturity": "M0",
+      "capabilities": [],
+      "nextLevelGap": {
+        "target": "M1_DECLARED",
+        "missing": ["the github-app surface does not exist yet"],
+        "owner": "surface-convergence",
+        "revisitTrigger": "the github-app surface ships"
+      }
+    },
+    {
+      "surface": "dashboard",
+      "state": "PROVISIONAL",
+      "maturity": "M1",
+      "capabilities": [],
+      "nextLevelGap": null
+    }
+  ]
+}

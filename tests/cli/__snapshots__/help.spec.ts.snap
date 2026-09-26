@@ -114,6 +114,8 @@ Subcommands — Maintenance:
     build and query the verification evidence graph
   framework-maturity [--framework <name>] [--json]
     track framework maturity levels, especially Playwright F4→F5
+  capability [--json] [--kind <k>] [--maturity M0..M5] [--id <substring>]
+    the capability registry: every capability at the maturity the machine can prove
   suppression-gate [path] [--policy <file>] [--json]
     enforce suppression policy governance gate
   business-case [path] [--industry <profile>] [--history <months>] [--projected
@@ -343,6 +345,10 @@ Subcommands — Maintenance:
   framework-maturity [--framework <name>] [--json]
     track framework maturity levels, especially Playwright
     F4→F5
+  capability [--json] [--kind <k>] [--maturity M0..M5] [--id
+  <substring>]
+    the capability registry: every capability at the
+    maturity the machine can prove
   suppression-gate [path] [--policy <file>] [--json]
     enforce suppression policy governance gate
   business-case [path] [--industry <profile>] [--history

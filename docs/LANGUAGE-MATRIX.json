@@ -1,0 +1,353 @@
+{
+  "schemaVersion": 1,
+  "artifact": "language-matrix",
+  "generatedBy": "npm run docs:capability",
+  "projectionOf": "mjolnir-capability-registry",
+  "axis": "language",
+  "observedAt": "2026-09-26",
+  "baseSha": "933371fe224f3adb3c150e29c4de73ede3a7e00a",
+  "rowCount": 1,
+  "rows": [
+    {
+      "language": "typescript",
+      "capabilities": [
+        {
+          "capabilityId": "test.framework.cypress",
+          "name": "cypress",
+          "kind": "test-framework",
+          "owner": "framework-inventory",
+          "maturity": "M2",
+          "rules": ["QA-CYP-001", "QA-CYP-002", "QA-CYP-003"],
+          "adapter": "src/adapters/typescript.ts",
+          "proof": {
+            "status": "LOCAL_PROVEN",
+            "artifact": "docs/FP-AUDIT.md#QA-CYP-001",
+            "digest": null,
+            "observedAt": "2026-09-26",
+            "authority": "framework-inventory"
+          },
+          "nextLevelGap": {
+            "target": "M3_FIXTURE_VERIFIED",
+            "missing": [
+              "positive + negative + boundary + adversarial fixtures pass deterministically in CI"
+            ],
+            "owner": "framework-inventory",
+            "revisitTrigger": "capability test.framework.cypress gains evidence for its next level"
+          },
+          "blocksAxes": ["Discovery"]
+        },
+        {
+          "capabilityId": "test.framework.jest",
+          "name": "jest",
+          "kind": "test-framework",
+          "owner": "framework-inventory",
+          "maturity": "M2",
+          "rules": [
+            "QA-JV-104",
+            "QA-JV-107",
+            "QA-JV-101",
+            "QA-JV-102",
+            "QA-JV-103",
+            "QA-JV-105",
+            "QA-JV-106",
+            "QA-JV-109"
+          ],
+          "adapter": "src/adapters/typescript.ts",
+          "proof": {
+            "status": "LOCAL_PROVEN",
+            "artifact": "docs/FP-AUDIT.md#QA-JV-104",
+            "digest": null,
+            "observedAt": "2026-09-26",
+            "authority": "framework-inventory"
+          },
+          "nextLevelGap": {
+            "target": "M3_FIXTURE_VERIFIED",
+            "missing": [
+              "positive + negative + boundary + adversarial fixtures pass deterministically in CI"
+            ],
+            "owner": "framework-inventory",
+            "revisitTrigger": "capability test.framework.jest gains evidence for its next level"
+          },
+          "blocksAxes": ["Discovery"]
+        },
+        {
+          "capabilityId": "test.framework.junit",
+          "name": "junit",
+          "kind": "test-framework",
+          "owner": "framework-inventory",
+          "maturity": "M2",
+          "rules": [
+            "QA-TEST-001",
+            "QA-TEST-002",
+            "QA-TEST-003",
+            "QA-TEST-004",
+            "QA-TEST-006",
+            "QA-TEST-010"
+          ],
+          "adapter": "src/adapters/java.ts",
+          "proof": {
+            "status": "LOCAL_PROVEN",
+            "artifact": "docs/FP-AUDIT.md#QA-TEST-001",
+            "digest": null,
+            "observedAt": "2026-09-26",
+            "authority": "framework-inventory"
+          },
+          "nextLevelGap": {
+            "target": "M3_FIXTURE_VERIFIED",
+            "missing": [
+              "positive + negative + boundary + adversarial fixtures pass deterministically in CI"
+            ],
+            "owner": "framework-inventory",
+            "revisitTrigger": "capability test.framework.junit gains evidence for its next level"
+          },
+          "blocksAxes": ["Discovery"]
+        },
+        {
+          "capabilityId": "test.framework.nunit",
+          "name": "nunit",
+          "kind": "test-framework",
+          "owner": "framework-inventory",
+          "maturity": "M2",
+          "rules": [
+            "QA-TEST-001",
+            "QA-TEST-002",
+            "QA-TEST-003",
+            "QA-TEST-004",
+            "QA-TEST-006",
+            "QA-TEST-010"
+          ],
+          "adapter": "src/adapters/csharp.ts",
+          "proof": {
+            "status": "LOCAL_PROVEN",
+            "artifact": "docs/FP-AUDIT.md#QA-TEST-001",
+            "digest": null,
+            "observedAt": "2026-09-26",
+            "authority": "framework-inventory"
+          },
+          "nextLevelGap": {
+            "target": "M3_FIXTURE_VERIFIED",
+            "missing": [
+              "positive + negative + boundary + adversarial fixtures pass deterministically in CI"
+            ],
+            "owner": "framework-inventory",
+            "revisitTrigger": "capability test.framework.nunit gains evidence for its next level"
+          },
+          "blocksAxes": ["Discovery"]
+        },
+        {
+          "capabilityId": "test.framework.playwright",
+          "name": "playwright",
+          "kind": "test-framework",
+          "owner": "framework-inventory",
+          "maturity": "M2",
+          "rules": [
+            "QA-PW-002",
+            "QA-PW-003",
+            "QA-PW-004",
+            "QA-PW-101",
+            "QA-PW-102",
+            "QA-PW-113",
+            "QA-PW-117",
+            "QA-PW-121",
+            "QA-PW-122",
+            "QA-PW-124",
+            "QA-PW-104",
+            "QA-PW-116",
+            "QA-PW-125",
+            "QA-PW-115",
+            "QA-PW-140",
+            "QA-PW-123",
+            "QA-PW-141",
+            "QA-PW-142",
+            "QA-PW-143",
+            "QA-PW-144",
+            "QA-PW-146",
+            "QA-PW-147"
+          ],
+          "adapter": "src/adapters/typescript.ts",
+          "proof": {
+            "status": "LOCAL_PROVEN",
+            "artifact": "docs/FP-AUDIT.md#QA-PW-002",
+            "digest": null,
+            "observedAt": "2026-09-26",
+            "authority": "framework-inventory"
+          },
+          "nextLevelGap": {
+            "target": "M3_FIXTURE_VERIFIED",
+            "missing": [
+              "positive + negative + boundary + adversarial fixtures pass deterministically in CI"
+            ],
+            "owner": "framework-inventory",
+            "revisitTrigger": "capability test.framework.playwright gains evidence for its next level"
+          },
+          "blocksAxes": ["Discovery"]
+        },
+        {
+          "capabilityId": "test.framework.pytest",
+          "name": "pytest",
+          "kind": "test-framework",
+          "owner": "framework-inventory",
+          "maturity": "M2",
+          "rules": [
+            "QA-PY-003",
+            "QA-PY-005",
+            "QA-PY-002",
+            "QA-PY-012",
+            "QA-PY-001",
+            "QA-PY-007",
+            "QA-PY-009",
+            "QA-PY-004",
+            "QA-PY-011",
+            "QA-PY-101",
+            "QA-PY-103",
+            "QA-PY-105",
+            "QA-PY-106",
+            "QA-PY-107",
+            "QA-PY-108",
+            "QA-PY-104"
+          ],
+          "adapter": "src/adapters/python.ts",
+          "proof": {
+            "status": "LOCAL_PROVEN",
+            "artifact": "docs/FP-AUDIT.md#QA-PY-003",
+            "digest": null,
+            "observedAt": "2026-09-26",
+            "authority": "framework-inventory"
+          },
+          "nextLevelGap": {
+            "target": "M3_FIXTURE_VERIFIED",
+            "missing": [
+              "positive + negative + boundary + adversarial fixtures pass deterministically in CI"
+            ],
+            "owner": "framework-inventory",
+            "revisitTrigger": "capability test.framework.pytest gains evidence for its next level"
+          },
+          "blocksAxes": ["Discovery"]
+        },
+        {
+          "capabilityId": "test.framework.selenium",
+          "name": "selenium",
+          "kind": "test-runner",
+          "owner": "framework-inventory",
+          "maturity": "M2",
+          "rules": [],
+          "adapter": "src/adapters/typescript.ts",
+          "proof": {
+            "status": "BLOCKED",
+            "artifact": null,
+            "digest": null,
+            "observedAt": null,
+            "authority": "NONE"
+          },
+          "nextLevelGap": {
+            "target": "M3_FIXTURE_VERIFIED",
+            "missing": [
+              "positive + negative + boundary + adversarial fixtures pass deterministically in CI"
+            ],
+            "owner": "framework-inventory",
+            "revisitTrigger": "capability test.framework.selenium gains evidence for its next level"
+          },
+          "blocksAxes": ["Discovery"]
+        },
+        {
+          "capabilityId": "test.framework.testng",
+          "name": "testng",
+          "kind": "test-framework",
+          "owner": "framework-inventory",
+          "maturity": "M2",
+          "rules": [
+            "QA-TEST-001",
+            "QA-TEST-002",
+            "QA-TEST-003",
+            "QA-TEST-004",
+            "QA-TEST-006",
+            "QA-TEST-010"
+          ],
+          "adapter": "src/adapters/java.ts",
+          "proof": {
+            "status": "LOCAL_PROVEN",
+            "artifact": "docs/FP-AUDIT.md#QA-TEST-001",
+            "digest": null,
+            "observedAt": "2026-09-26",
+            "authority": "framework-inventory"
+          },
+          "nextLevelGap": {
+            "target": "M3_FIXTURE_VERIFIED",
+            "missing": [
+              "positive + negative + boundary + adversarial fixtures pass deterministically in CI"
+            ],
+            "owner": "framework-inventory",
+            "revisitTrigger": "capability test.framework.testng gains evidence for its next level"
+          },
+          "blocksAxes": ["Discovery"]
+        },
+        {
+          "capabilityId": "test.framework.vitest",
+          "name": "vitest",
+          "kind": "test-framework",
+          "owner": "framework-inventory",
+          "maturity": "M2",
+          "rules": [
+            "QA-JV-104",
+            "QA-JV-107",
+            "QA-JV-101",
+            "QA-JV-102",
+            "QA-JV-103",
+            "QA-JV-105",
+            "QA-JV-106",
+            "QA-JV-109"
+          ],
+          "adapter": "src/adapters/typescript.ts",
+          "proof": {
+            "status": "LOCAL_PROVEN",
+            "artifact": "docs/FP-AUDIT.md#QA-JV-104",
+            "digest": null,
+            "observedAt": "2026-09-26",
+            "authority": "framework-inventory"
+          },
+          "nextLevelGap": {
+            "target": "M3_FIXTURE_VERIFIED",
+            "missing": [
+              "positive + negative + boundary + adversarial fixtures pass deterministically in CI"
+            ],
+            "owner": "framework-inventory",
+            "revisitTrigger": "capability test.framework.vitest gains evidence for its next level"
+          },
+          "blocksAxes": ["Discovery"]
+        },
+        {
+          "capabilityId": "test.framework.xunit",
+          "name": "xunit",
+          "kind": "test-framework",
+          "owner": "framework-inventory",
+          "maturity": "M2",
+          "rules": [
+            "QA-TEST-001",
+            "QA-TEST-002",
+            "QA-TEST-003",
+            "QA-TEST-004",
+            "QA-TEST-006",
+            "QA-TEST-010"
+          ],
+          "adapter": "src/adapters/csharp.ts",
+          "proof": {
+            "status": "LOCAL_PROVEN",
+            "artifact": "docs/FP-AUDIT.md#QA-TEST-001",
+            "digest": null,
+            "observedAt": "2026-09-26",
+            "authority": "framework-inventory"
+          },
+          "nextLevelGap": {
+            "target": "M3_FIXTURE_VERIFIED",
+            "missing": [
+              "positive + negative + boundary + adversarial fixtures pass deterministically in CI"
+            ],
+            "owner": "framework-inventory",
+            "revisitTrigger": "capability test.framework.xunit gains evidence for its next level"
+          },
+          "blocksAxes": ["Discovery"]
+        }
+      ]
+    }
+  ]
+}

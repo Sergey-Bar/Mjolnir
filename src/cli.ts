@@ -499,6 +499,7 @@ import { runWhyCommand } from "./commands/why.js";
 import { runHandoffCommand } from "./commands/handoff.js";
 import { runInstallCommand } from "./commands/install-agents.js";
 import { runTrustReportCommand } from "./commands/trust-report.js";
+import { runCapabilityCommand } from "./commands/capability.js";
 import { runReleaseTrustCommand } from "./commands/release-trust.js";
 import { runBusinessCaseCommand } from "./commands/business-case.js";
 import { runReleaseReportCommand } from "./commands/release-report.js";
@@ -594,6 +595,11 @@ export async function main(
     mutation: (a, o) => runMutationCommand(a, o),
     badge: (a, o) => runBadgeCommand(a, o),
     "trust-report": (a, o) => runTrustReportCommand(a, o),
+    // Wave 1: the registry is inspectable, and deliberately not editable.
+    // There is no --set and no --promote, because maturity is derived from
+    // evidence (ADR 0001) — a verb that could raise a level would be a verb
+    // that could lie about one.
+    capability: (a, o) => runCapabilityCommand(a, o),
     debt: (a, o) => runDebtCommand(a, o),
     impact: (a, o) => runImpactCommand(a, o),
     "business-case": (a, o) => runBusinessCaseCommand(a, o),
