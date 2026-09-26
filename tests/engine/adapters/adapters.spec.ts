@@ -83,6 +83,30 @@ describe("typescriptAdapter", () => {
     expect(typescriptAdapter.isTestFile("a/src.ts")).toBe(false);
   });
 
+  it("claims Node-native TypeScript test extensions", () => {
+    // `mts` and `cts` are TypeScript's Node-native ESM/CJS extensions. They
+    // were missing from TEST_FILE_RE, and a test file in either was not
+    // merely mis-scored — it was never scanned. Reproduced with two
+    // byte-identical hard-sleep tests, one `.spec.ts` and one `.spec.mts`:
+    // discovered 1, unrecognized 1, and the `.mts` copy produced no finding
+    // whatsoever. The reader had nothing to distrust, because nothing was
+    // there.
+    //
+    // PW_CONFIG_RE already accepted `cts` four lines away; the config regex
+    // knew about these extensions and the test-file regex did not.
+    for (const name of [
+      "a/b.test.mts",
+      "a/b.spec.mts",
+      "a/b.test.cts",
+      "a/b.spec.cts",
+    ]) {
+      expect(typescriptAdapter.isTestFile(name), name).toBe(true);
+    }
+    // Still not a blanket: a source file in the same extensions is not a test.
+    expect(typescriptAdapter.isTestFile("a/b.mts")).toBe(false);
+    expect(typescriptAdapter.isTestFile("a/b.cts")).toBe(false);
+  });
+
   it("detects frameworks from workspace root", () => {
     writeFileSync(
       join(dir, "package.json"),

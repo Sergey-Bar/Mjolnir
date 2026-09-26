@@ -29,8 +29,37 @@ import {
   type UniversalRule,
 } from "../engine/adapter.js";
 
+/**
+ * `.test.` / `.spec.` filenames, plus the Cypress `.cy.` convention.
+ *
+ * `mts` and `cts` are TypeScript's Node-native ESM/CJS extensions. They were
+ * missing here, and the omission was invisible in the worst way — not a wrong
+ * answer, but an ABSENCE.
+ *
+ * Reproduced: a repo containing two byte-identical tests, one at
+ * `tests/control.spec.ts` and one at `tests/slow.spec.mts`, each with a
+ * `QA-TEST-004` hard sleep:
+ *
+ *   discovered: 1, analyzed: 1, unrecognized: 1, scopeVerdict: "PARTIAL"
+ *
+ * The `.ts` test produced the finding. The `.mts` test produced nothing at
+ * all — it was never scanned, so every rule that could have caught it was
+ * silent on it, with no finding, no low-evidence note, and no indication that
+ * a test file had been skipped. A test scanner that cannot see a whole file
+ * extension has a false green that is invisible by construction: the reader
+ * has nothing to distrust, because there is nothing there.
+ *
+ * The corroboration that this was an oversight rather than a decision sits
+ * four lines below: PW_CONFIG_RE already accepted `cts`. The config regex knew
+ * about the Node-native extensions; the test-file regex did not.
+ *
+ * `discovery/scan-adapters.ts:isUnrecognizedSourceCandidate` already counted
+ * these paths as uncovered surface, so the scope accounting had been reporting
+ * the hole the whole time — it was being read as a known limitation rather than
+ * as a defect.
+ */
 const TEST_FILE_RE =
-  /\.(?:test|spec)\.(?:js|jsx|ts|tsx|mjs|cjs)$|\.cy\.(?:js|jsx|ts|tsx)$/;
+  /\.(?:test|spec)\.(?:js|jsx|ts|tsx|mjs|cjs|mts|cts)$|\.cy\.(?:js|jsx|ts|tsx)$/;
 const PW_CONFIG_RE = /^playwright\.config\.(?:ts|js|mjs|cts)$/;
 // Audit C4: configOnly rules may declare configFiles the ADAPTER must be
 // able to discover. QA-CYP-003 declared ^cypress\.config\.(?:js|ts|mjs)$
