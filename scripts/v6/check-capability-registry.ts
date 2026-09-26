@@ -38,9 +38,33 @@ export interface RegistryCheck {
   facts: Record<string, unknown>;
 }
 
-/** Key-order-independent JSON, so the comparison is about values. */
+/**
+ * Key-order-independent JSON with **provenance stripped**, so the
+ * comparison is about values a reader would act on.
+ *
+ * `baseSha` and `observedAt` are excluded on purpose. They are real
+ * provenance and they belong in the artifact, but they are a function of
+ * the commit rather than of the registry — so comparing them means the
+ * artifact can *never* match a gate that also reads HEAD, and every
+ * commit would report drift. That is the clock-in-the-artifact mistake the
+ * census already made once (ADR 0010, the base registry / field view
+ * split). Drift means a *claim* changed, not that a commit moved.
+ */
 export function stringifyStable(text: string): string {
-  return JSON.stringify(sortKeys(JSON.parse(text) as unknown));
+  return JSON.stringify(sortKeys(stripProvenance(JSON.parse(text) as unknown)));
+}
+
+const PROVENANCE_KEYS = new Set(["baseSha", "observedAt", "generatedBy"]);
+
+function stripProvenance(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(stripProvenance);
+  if (typeof value !== "object" || value === null) return value;
+  const out: Record<string, unknown> = {};
+  for (const [key, entry] of Object.entries(value as Record<string, unknown>)) {
+    if (PROVENANCE_KEYS.has(key)) continue;
+    out[key] = stripProvenance(entry);
+  }
+  return out;
 }
 
 function sortKeys(value: unknown): unknown {
