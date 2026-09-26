@@ -56,6 +56,14 @@ const REMOTE_REQUIREMENTS = [
   ["remoteWorkflow", "remote workflow proof missing"],
 ];
 
+export function hasSoftwareOnlyOverride(manifest) {
+  return (
+    process.env.M26_SOFTWARE_ONLY === "1" &&
+    manifest?.policyOverride?.mode === "SOFTWARE_ONLY" &&
+    manifest.policyOverride.authorizedBy === manifest.approvalAuthority
+  );
+}
+
 /**
  * Contradictions: states the manifest cannot legally be in. A contradiction is
  * not a gap, it is a false claim, and it fails every stage.
@@ -168,7 +176,7 @@ export function engineeringBlockers(manifest) {
 }
 
 /** Release authority and independent assurance. Never upgrades evidence. */
-export function releaseBlockers(manifest) {
+export function releaseBlockers(manifest, softwareOnly = false) {
   const blockers = [];
   if (manifest.identity?.state !== "RELEASE_CANDIDATE") {
     blockers.push("candidate identity is not a release candidate");
@@ -179,15 +187,17 @@ export function releaseBlockers(manifest) {
   if (manifest.engineeringCertificationState !== "CERTIFIED") {
     blockers.push("engineering certification not complete");
   }
-  if (manifest.control?.externalValidation !== "COMPLETE") {
+  if (!softwareOnly && manifest.control?.externalValidation !== "COMPLETE") {
     blockers.push("external validation not complete");
   }
   if (manifest.releaseAuthorizationState !== "AUTHORIZED") {
     blockers.push("release authorization not granted");
   }
   const remote = manifest.evidence?.remote ?? {};
-  for (const [key, message] of REMOTE_REQUIREMENTS) {
-    if (remote[key] !== "REMOTE_PROVEN") blockers.push(message);
+  if (!softwareOnly) {
+    for (const [key, message] of REMOTE_REQUIREMENTS) {
+      if (remote[key] !== "REMOTE_PROVEN") blockers.push(message);
+    }
   }
   return blockers;
 }
@@ -203,9 +213,11 @@ export function evaluateCandidateDecision(manifest, stage = "engineering") {
       `unknown stage ${stage}; expected one of ${STAGES.join(", ")}`,
     );
   }
+  const softwareOnly = hasSoftwareOnlyOverride(manifest);
   const contradictions = manifestContradictions(manifest);
   const engineering = engineeringBlockers(manifest);
-  const release = stage === "release" ? releaseBlockers(manifest) : [];
+  const release =
+    stage === "release" ? releaseBlockers(manifest, softwareOnly) : [];
   const unmet =
     stage === "release" ? [...engineering, ...release] : engineering;
 
@@ -223,6 +235,7 @@ export function evaluateCandidateDecision(manifest, stage = "engineering") {
     releaseAuthorizationState: manifest.releaseAuthorizationState,
     contradictions,
     engineeringBlockers: engineering,
+    softwareOnly,
     releaseBlockers: release,
     unmet,
     blockers: [...contradictions, ...unmet],

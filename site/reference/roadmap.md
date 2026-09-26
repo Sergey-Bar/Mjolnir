@@ -12,7 +12,7 @@ entry condition.
 
 ## Where Mjölnir is now
 
-- **v4.0.0-rc.1 — current release candidate.** Published 3.0.0 remains the
+- **v4.0.0 — current release candidate.** Published 3.0.0 remains the
   stable line; the candidate is gated by the release-readiness record.
   <!-- census:total-rules -->79 rules<!-- /census:total-rules -->,
   <!-- census:measured -->74<!-- /census:measured --> of them carrying a

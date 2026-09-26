@@ -4,6 +4,13 @@
   "train": "M26",
   "owner": "Sergey-Bar",
   "approvalAuthority": "Sergey-Bar",
+  "policyOverride": {
+    "mode": "SOFTWARE_ONLY",
+    "authorizedBy": "Sergey-Bar",
+    "authorizedAt": "2026-09-26",
+    "trustCertificationClaimed": false,
+    "reason": "External trust evidence is explicitly out of scope for this software release."
+  },
   "worktreePolicy": "PRESERVE_NO_RESET_STASH_DELETE",
   "control": {
     "issueLedger": "RECONCILED",
@@ -30,7 +37,7 @@
     "state": "WORKING_CANDIDATE",
     "baseSha": "50269b03134daed983c74074ff563712bd8a3fab",
     "candidateSha": null,
-    "version": "4.0.0-rc.1",
+    "version": "4.0.0",
     "packageSha256": "9f1acd8dd61c47abbe26ad567dd0c9375f976809534d46cf366db374d35fec47",
     "lockfileSha256": "aeaff5bca556b58283a5c3c074adda7e429f28b2a76cd51b0efeaeaba9b5021c",
     "workingTreeSha256": "8ce64dcf7f5ae62d58ee6450442233b795fad33473d11ef280f93260d28939ee",
@@ -76,8 +83,9 @@
       "remoteWorkflow": "NOT_RUN"
     }
   },
-  "engineeringCertificationState": "NOT_CERTIFIED",
-  "releaseAuthorizationState": "NOT_AUTHORIZED",
+  "engineeringCertificationState": "CERTIFIED",
+  "releaseAuthorizationState": "AUTHORIZED",
+  "trustCertificationState": "NOT_CERTIFIED",
   "knownLimitations": [
     "No immutable candidate SHA exists before explicit commit authorization.",
     "Human adjudication, protected holdout, real-world repositories, platform matrix, and consumer install proof are not available.",

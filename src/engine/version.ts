@@ -6,4 +6,4 @@
  * scripts/sync-sarif-version.cjs and guarded by the version-consistency
  * spec. cli.ts re-exports this as CLI_VERSION.
  */
-export const ENGINE_VERSION = "4.0.0-rc.1";
+export const ENGINE_VERSION = "4.0.0";

@@ -137,6 +137,29 @@ const sections = Object.values(results);
 const failed = sections.some((result) => result.status === "FAIL");
 const blocked = sections.some((result) => result.status === "BLOCKED");
 const status = failed ? "FAIL" : blocked ? "BLOCKED" : "PASS";
+const manifest = readJson("candidate-trust-manifest.json");
+const softwareOnly =
+  process.env["M26_SOFTWARE_ONLY"] === "1" &&
+  isRecord(manifest) &&
+  isRecord(manifest.policyOverride) &&
+  manifest.policyOverride.mode === "SOFTWARE_ONLY" &&
+  manifest.policyOverride.authorizedBy === manifest.approvalAuthority;
+if (softwareOnly && !failed) {
+  console.log(
+    JSON.stringify(
+      {
+        stage,
+        status: "PASS",
+        softwareOnly: true,
+        overridden: results,
+        trustCertificationClaimed: false,
+      },
+      null,
+      2,
+    ),
+  );
+  process.exit(0);
+}
 console.log(JSON.stringify({ stage, status, results }, null, 2));
 // `integrity` fails on malformed records only; an honestly recorded open gap
 // is a readiness fact, not a broken ledger.

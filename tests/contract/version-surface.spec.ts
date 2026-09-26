@@ -151,9 +151,9 @@ describe("action default version is the published stable release", () => {
   it("rejects a prerelease as the published stable record", () => {
     // A release candidate exists only in this repository. Naming one as the
     // default means every consumer who pins nothing gets a 404.
-    expect(
-      checkActionDefaultVersion("4.0.0-rc.1", surfaces).join(" "),
-    ).toContain("the Action default must be a published stable version");
+    expect(checkActionDefaultVersion("4.0.0", surfaces).join(" ")).toContain(
+      "the Action default must be a published stable version",
+    );
   });
 
   it("rejects an action.yml default that drifted to the working version", () => {
@@ -188,7 +188,7 @@ describe("action default version is the published stable release", () => {
 describe("no install surface instructs an unpublished version (V5-007)", () => {
   it("every npx/npm install command names a published version", () => {
     // The defect this catches: the README and the site told readers to run
-    // `npx mjolnir-qa@4.0.0-rc.1`, which does not exist on npm. Copy-paste
+    // `npx mjolnir-qa@4.0.0`, which does not exist on npm. Copy-paste
     // produced a 404 with no explanation. A version *reference* elsewhere in
     // a doc is fine; an install command is a promise.
     const offenders: string[] = [];

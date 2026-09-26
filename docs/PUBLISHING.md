@@ -169,7 +169,7 @@ No additional lifecycle hook may be added without an equivalent row explaining w
 - migration: [`MIGRATION-3.0.0.md`](MIGRATION-3.0.0.md)
 - rollback: [`ROLLBACK-3.0.0.md`](ROLLBACK-3.0.0.md)
 - `3.0.0` is already published; do not republish or retag it for the current working tree.
-- current working candidate: `4.0.0-rc.1`; it has no authorized tag or release mutation.
+- current working candidate: `4.0.0`; it has no authorized tag or release mutation.
 - `npm run release:decision` is the machine-readable final decision gate.
 - npm `latest` is **3.0.0** after this stable promotion; package publication does not imply Trust certification.
 - registry evidence: [`mjolnir-qa@3.0.0`](https://www.npmjs.com/package/mjolnir-qa/v/3.0.0) and npm attestations.

@@ -1,6 +1,6 @@
 {
   "name": "mjolnir-qa",
-  "version": "4.0.0-rc.1",
+  "version": "4.0.0",
   "publishedStable": "3.0.0",
   "description": "Mjölnir — the Verification Trust Engine for QA. Audits test suites and CI pipelines, reports a worthiness score and prioritized findings.",
   "type": "module",

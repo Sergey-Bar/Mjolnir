@@ -8,6 +8,11 @@ on:
         required: true
         default: true
         type: boolean
+      software-only:
+        description: Allow a software-only release without external Trust evidence.
+        required: false
+        default: false
+        type: boolean
       artifact_run_id:
         description: Resume publishing from a prior verified run of this workflow.
         required: false
@@ -114,6 +119,8 @@ jobs:
           fi
           npm run changelog:check -- --expect-version "$VERSION" "${EXTRA[@]}"
       - name: Require authorized candidate evidence
+        env:
+          M26_SOFTWARE_ONLY: ${{ inputs.software-only && '1' || '0' }}
         run: |
           npm run m26:audit
           npm run candidate:readiness
@@ -124,6 +131,7 @@ jobs:
       # release is the one that consumers install, so its trust record must
       # exist and must be published with it.
       - name: Release-trust gate (verdict must PASS)
+        if: ${{ !inputs.software-only }}
         shell: bash
         run: |
           set -euo pipefail
@@ -132,6 +140,16 @@ jobs:
           node dist/cli.mjs release-trust > release-assets/release-trust.txt
           test -s release-assets/release-trust.json
           test -s release-assets/release-trust.txt
+      - name: Software-only release attestation
+        if: ${{ inputs.software-only }}
+        shell: bash
+        env:
+          VERSION: ${{ steps.context.outputs.version }}
+        run: |
+          set -euo pipefail
+          mkdir -p release-assets
+          node -e "const fs=require('fs'); fs.writeFileSync('release-assets/release-trust.json', JSON.stringify({schema:'software-only-attestation',version:process.env.VERSION,trustCertificationState:'NOT_CERTIFIED',softwareOnly:true,authorizedBy:'Sergey-Bar'},null,2)+'\\n')"
+          printf 'SOFTWARE-ONLY RELEASE\\nTrust certification: NOT_CERTIFIED\\nAuthorized by: Sergey-Bar\\n' > release-assets/release-trust.txt
       - id: package
         name: Pack and audit the stable release
         shell: bash

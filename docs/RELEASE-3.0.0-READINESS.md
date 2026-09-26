@@ -1,7 +1,7 @@
 # Mjölnir 3.0.0 Release Readiness
 
 **Decision owner:** Sergey-Bar
-**Target:** `3.0.0` major line (published) and `4.0.0-rc.1` next candidate
+**Target:** `3.0.0` major line (published) and `4.0.0` next candidate
 **Audit date:** 2026-09-25
 **Current decision:** **DO NOT PUBLISH YET**
 
@@ -29,7 +29,7 @@ Current candidate state:
 - Corpus regression: held for human review
 
 The published line is `3.0.0`; the current working candidate is
-`4.0.0-rc.1`. This report covers both: the historical 3.0 identity and the
+`4.0.0`. This report covers both: the historical 3.0 identity and the
 release decision for the next major line. The existing `v3.0.0` release is
 immutable and must not be republished or retagged. The next candidate is not
 authorized until every gate below passes.

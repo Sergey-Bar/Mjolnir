@@ -97,7 +97,7 @@ registry, never typed by hand. The same picture as a poster:
 
 ## Release status
 
-The published line is `3.0.0`; this working tree is the `4.0.0-rc.1`
+The published line is `3.0.0`; this working tree is the `4.0.0`
 candidate. `3.0.0` must not be republished or retagged. The M26–M50 program is
 tracked in
 [`docs/ROADMAP.yaml`](docs/ROADMAP.yaml); provisional capability contracts

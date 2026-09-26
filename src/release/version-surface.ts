@@ -96,7 +96,7 @@ export function checkVersionSurfaceEnvelope(
   //
   //   INSTALL surfaces tell a reader what to run. That must be a version that
   //   EXISTS on the registry. While the candidate is an RC the working version
-  //   is not published, so every `npx mjolnir-qa@4.0.0-rc.1` in the README
+  //   is not published, so every `npx mjolnir-qa@4.0.0` in the README
   //   and the site is an instruction that fails with a 404 on copy-paste.
   const installVersion =
     typeof publishedStable === "string" ? publishedStable : version;

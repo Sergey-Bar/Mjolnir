@@ -26,6 +26,8 @@ process.stdout.write(
       decision.engineeringBlockers.length === 0
         ? "IMPLEMENTATION_READY_CANDIDATE_COMMIT_NOT_AUTHORIZED"
         : "IMPLEMENTATION_BLOCKED",
+    softwareOnly: decision.softwareOnly,
+    trustCertificationClaimed: false,
     blockers: decision.blockers,
     manifest: readCandidateManifest(root).manifestId,
   })}\n`,

@@ -11,7 +11,7 @@ once shipped, so this file is the record of what changed between versions.
 
 ## [Unreleased]
 
-## [4.0.0-rc.1] — 2026-09-25
+## [4.0.0] — 2026-09-26
 
 ### Breaking changes
 
