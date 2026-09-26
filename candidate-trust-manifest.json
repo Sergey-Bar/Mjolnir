@@ -28,33 +28,19 @@
   "generatedAt": "2026-09-26",
   "identity": {
     "state": "WORKING_CANDIDATE",
-    "baseSha": "e0748992a4cad276c7d99c6320f5e45772dd5e6c",
+    "baseSha": "8f37f33096628e5703f109fe6298713b6881fc4b",
     "candidateSha": null,
     "version": "4.0.0-rc.1",
     "packageSha256": "63fdbd1db06da2ae59467b13c78ad9828b6201e19c2f55a41d222dabda08f006",
     "lockfileSha256": "aeaff5bca556b58283a5c3c074adda7e429f28b2a76cd51b0efeaeaba9b5021c",
     "workingTreeSha256": "1277dcbf18322c0ec0d6f752e997262815bfb601e80baacf1ee46431a945c4ec",
-    "changedPathCount": 6,
+    "changedPathCount": 0,
     "supportEnvelope": "self-hosted; hosted services require explicit consent and separate proof",
     "worktreeInventory": {
-      "changedPaths": [
-        "docs/QA-IR-PARITY.json",
-        "package.json",
-        "scripts/v6/check-qa-ir-parity.ts",
-        "src/v6/qa-ir-parity.ts",
-        "src/v6/qa-ir.ts",
-        "tests/v6/qa-ir.spec.ts"
-      ],
+      "changedPaths": [],
       "untrackedPaths": []
     },
-    "dirtyFiles": [
-      "docs/QA-IR-PARITY.json",
-      "package.json",
-      "scripts/v6/check-qa-ir-parity.ts",
-      "src/v6/qa-ir-parity.ts",
-      "src/v6/qa-ir.ts",
-      "tests/v6/qa-ir.spec.ts"
-    ]
+    "dirtyFiles": []
   },
   "claimRegistry": {
     "path": "docs/claim-registry.json",
