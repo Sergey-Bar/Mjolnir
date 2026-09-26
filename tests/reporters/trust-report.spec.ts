@@ -18,6 +18,7 @@ import {
   trustReasons,
 } from "../../src/reporter/trust-report.js";
 import { renderTerminal } from "../../src/reporter/terminal.js";
+import { classifyTrust } from "../../src/engine/trust-classification.js";
 import type { Finding, ScanResult } from "../../src/types.js";
 
 function finding(overrides: Partial<Finding>): Finding {
@@ -176,24 +177,45 @@ describe("--classic escape hatch", () => {
 });
 
 describe("derived facts — deterministic, canonical-derived", () => {
-  it("trustHeadline bands are deterministic over (level, confidence)", () => {
+  it("trustHeadline renders the ONE classification rather than deciding", () => {
+    // The headline no longer computes a verdict from (level, confidence) —
+    // it renders `classifyTrust()`'s answer. So it takes the classification
+    // and there is nothing left for it to get wrong.
+    const r = result({});
+    const s = r.trustSummary;
+    if (s === undefined) throw new Error("fixture missing summary");
+    const classification = classifyTrust(r, s);
+    expect(trustHeadline(s, classification)).toBe(
+      trustHeadline(s, classifyTrust(r, { ...s, confidence: s.confidence })),
+    );
+    expect(trustHeadline(s, classification).length).toBeGreaterThan(0);
+  });
+
+  it("a caller with no classification gets the conservative reading", () => {
+    // The old signature let any surface pass a bare summary and get a verdict
+    // derived from the level alone. Absent a determination there is nothing to
+    // render, and the honest output says so rather than guessing upward.
     const s = result({}).trustSummary;
     if (s === undefined) throw new Error("fixture missing summary");
-    expect(trustHeadline({ ...s, level: "L5", confidence: 0.9 })).toContain(
-      "trust them",
+    expect(trustHeadline({ ...s, level: "L5", confidence: 0.9 })).toBe(
+      "Trust could not be established for this run.",
     );
-    expect(trustHeadline({ ...s, level: "L5", confidence: 0.3 })).toContain(
-      "incomplete",
-    );
-    expect(trustHeadline({ ...s, level: "L3", confidence: 0.9 })).toContain(
-      "solid",
-    );
-    expect(trustHeadline({ ...s, level: "L2", confidence: 0.9 })).toContain(
-      "uncorroborated",
-    );
-    expect(trustHeadline({ ...s, level: "L1", confidence: 0.2 })).toContain(
-      "leads, not verdicts",
-    );
+  });
+
+  it("an incomplete scan is never reported as a verdict, at any level", () => {
+    // The precondition is checked before the level, so no level can talk its
+    // way past it.
+    const partial = result({ partial: true });
+    const s = partial.trustSummary;
+    if (s === undefined) throw new Error("fixture missing summary");
+    const classification = classifyTrust(partial, {
+      ...s,
+      level: "L5",
+      confidence: 0.99,
+    });
+    expect(classification.claim).toBe("INCOMPLETE");
+    expect(classification.licensesClean).toBe(false);
+    expect(trustHeadline(s, classification)).toContain("did not finish");
   });
 
   it("topTrustRisks: corroborated > deterministic > advisory-excluded, deterministic order", () => {

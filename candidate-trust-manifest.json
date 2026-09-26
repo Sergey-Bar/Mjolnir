@@ -28,30 +28,45 @@
   "generatedAt": "2026-09-26",
   "identity": {
     "state": "WORKING_CANDIDATE",
-    "baseSha": "2863eaaa2534b243783d50cf92bb92705be2255a",
+    "baseSha": "e533f19b8a93de8e2db739efe0963e664922a9ab",
     "candidateSha": null,
     "version": "4.0.0-rc.1",
     "packageSha256": "a5c845c7c57504d647281eda9017030a42686d737a44c3369da98e1a38260c01",
     "lockfileSha256": "aeaff5bca556b58283a5c3c074adda7e429f28b2a76cd51b0efeaeaba9b5021c",
-    "workingTreeSha256": "741e2901715183fe20490d43624086c0c1cfc281d36a7f07b810ac48cb6ee75f",
-    "changedPathCount": 6,
+    "workingTreeSha256": "aeb1aafaa58ef55d673d311e6601e281cfad3ed7e8b0a30fe34798f79796a987",
+    "changedPathCount": 12,
     "supportEnvelope": "self-hosted; hosted services require explicit consent and separate proof",
     "worktreeInventory": {
-      "changedPaths": ["docs/BLAST-RADIUS-AUDIT.md", "package.json"],
+      "changedPaths": [
+        "docs/BLAST-RADIUS-AUDIT.md",
+        "src/commands/milestone.ts",
+        "src/commands/report-io.ts",
+        "src/engine/trust-summary.ts",
+        "src/reporter/trust-report.ts",
+        "tests/contract/mvp-golden/harness.spec.ts",
+        "tests/contract/schema-contract.spec.ts",
+        "tests/engine/trust-proximity.spec.ts",
+        "tests/reporters/trust-report.spec.ts"
+      ],
       "untrackedPaths": [
-        "scripts/refresh-generated.mjs",
-        "src/certification/language-manifest.ts",
-        "src/certification/state-machine.ts",
-        "tests/certification/state-machine.spec.ts"
+        "src/engine/trust-classification.ts",
+        "tests/contract/trust-ladder-single-source.spec.ts",
+        "tests/engine/trust-classification.spec.ts"
       ]
     },
     "dirtyFiles": [
       "docs/BLAST-RADIUS-AUDIT.md",
-      "package.json",
-      "scripts/refresh-generated.mjs",
-      "src/certification/language-manifest.ts",
-      "src/certification/state-machine.ts",
-      "tests/certification/state-machine.spec.ts"
+      "src/commands/milestone.ts",
+      "src/commands/report-io.ts",
+      "src/engine/trust-classification.ts",
+      "src/engine/trust-summary.ts",
+      "src/reporter/trust-report.ts",
+      "tests/contract/mvp-golden/harness.spec.ts",
+      "tests/contract/schema-contract.spec.ts",
+      "tests/contract/trust-ladder-single-source.spec.ts",
+      "tests/engine/trust-classification.spec.ts",
+      "tests/engine/trust-proximity.spec.ts",
+      "tests/reporters/trust-report.spec.ts"
     ]
   },
   "claimRegistry": {

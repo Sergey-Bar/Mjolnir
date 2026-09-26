@@ -20,6 +20,8 @@
 
 import type { Finding, ScanResult, TrustSummary } from "../types.js";
 import { isAdvisoryFinding } from "../types.js";
+import type { TrustClassification } from "../engine/trust-classification.js";
+import { classifyTrust } from "../engine/trust-classification.js";
 import { TRUST_RUNGS } from "../brand/symbols.js";
 import { palette, shouldColorize, shouldUseAscii } from "./theme.js";
 import { sectionHeader, type UiContext } from "./ui.js";
@@ -65,28 +67,44 @@ const TRUST_LABELS: Record<string, string> = Object.fromEntries(
 );
 
 /**
- * The human verdict line derived from the measurement. Deterministic
- * mapping from (level, confidence) bands — a measurement-derived label,
- * never a new verdict enum (plan §3/§36: no new global enums).
+ * The human verdict line, rendered from the ONE determination.
+ *
+ * This used to be a band mapping over (level, confidence) living here, in the
+ * reporter — engine knowledge in a presentation layer, which is how a second
+ * surface ends up disagreeing with the first. The decision now lives in
+ * `src/engine/trust-classification.ts` and every surface renders the same
+ * answer; this function only chooses words.
  */
-export function trustHeadline(s: TrustSummary): string {
-  if (s.level === "L5" || s.level === "L4") {
-    return s.confidence >= 0.75
-      ? "Run evidence backs these findings — trust them."
-      : "Run evidence exists, but the scan was incomplete — verify the gaps.";
+export function trustHeadline(
+  s: TrustSummary,
+  classification?: TrustClassification,
+): string {
+  const claim = classification?.claim;
+  if (claim !== undefined) {
+    switch (claim) {
+      case "RUN_EVIDENCE_BACKS_FINDINGS":
+        return s.confidence >= 0.75
+          ? "Run evidence backs these findings — trust them."
+          : "Run evidence exists, but the scan was incomplete — verify the gaps.";
+      case "RUNTIME_CORROBORATED":
+        return s.confidence >= 0.75
+          ? "The relevant files executed — solid static + runtime signal."
+          : "Files executed, evidence is thin — treat findings as leads.";
+      case "DETERMINISTIC_STATIC":
+        return "Deterministic static analysis — trustworthy, uncorroborated by a run.";
+      case "THIN_STATIC_SIGNAL":
+        return "Static signal only, incomplete analysis — treat as leads, not verdicts.";
+      case "NO_EVIDENCE":
+        return "Static signal only, with no runtime evidence — treat as an observation, not a verdict.";
+      case "INCOMPLETE":
+        return "The analysis did not finish — it proves nothing about the surface it did not reach.";
+      default:
+        break;
+    }
   }
-  if (s.level === "L3") {
-    return s.confidence >= 0.75
-      ? "The relevant files executed — solid static + runtime signal."
-      : "Files executed, evidence is thin — treat findings as leads.";
-  }
-  if (s.level === "L0") {
-    return "Static signal only, with no runtime evidence — treat as an observation, not a verdict.";
-  }
-  if (s.confidence >= 0.75) {
-    return "Deterministic static analysis — trustworthy, uncorroborated by a run.";
-  }
-  return "Static signal only, incomplete analysis — treat as leads, not verdicts.";
+  // No classification supplied: fall back to the conservative reading rather
+  // than to an optimistic one.
+  return "Trust could not be established for this run.";
 }
 
 /** WHY THIS VERDICT — evidence-backed reasons, each from a real field. */
@@ -204,9 +222,12 @@ export function renderTrustReport(
   };
 
   // ── 1. TRUST VERDICT ────────────────────────────────────────────────
+  // The classification is computed HERE, once, and the headline renders it.
+  // Every other surface calls the same function; none of them re-derives it.
+  const classification = classifyTrust(result, s);
   lines.push(sectionHeader("TRUST VERDICT", ui));
   lines.push(`  ${p.accent(TRUST_LABELS[s.level] ?? s.level)}`);
-  lines.push(`  ${trustHeadline(s)}`);
+  lines.push(`  ${trustHeadline(s, classification)}`);
   lines.push("");
 
   // ── 2. Can I trust the result? ─────────────────────────────────────

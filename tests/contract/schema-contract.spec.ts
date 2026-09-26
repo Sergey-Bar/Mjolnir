@@ -37,6 +37,7 @@ import {
   SEVERITY_ORDER,
   type Finding,
   type ScanResult,
+  TRUST_ORDER,
 } from "../../src/types.js";
 
 const CONFIDENCE_VALUES = ["high", "medium", "low"];
@@ -96,7 +97,7 @@ function assertScanResultShape(r: ScanResult): void {
   // its values must obey the published formula bounds (docs/SCORING.md).
   if (r.trustSummary !== undefined) {
     const t = r.trustSummary;
-    expect(["L0", "L1", "L2", "L3", "L4", "L5"]).toContain(t.level);
+    expect(TRUST_ORDER as readonly string[]).toContain(t.level);
     for (const [k, v] of Object.entries({
       confidence: t.confidence,
       evidenceCoverage: t.evidenceCoverage,

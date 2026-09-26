@@ -11,7 +11,12 @@
  */
 
 import { existsSync, readFileSync, statSync } from "node:fs";
-import { RULE_CATEGORIES, SEVERITY_ORDER, type ScanResult } from "../types.js";
+import {
+  RULE_CATEGORIES,
+  SEVERITY_ORDER,
+  TRUST_ORDER,
+  type ScanResult,
+} from "../types.js";
 
 const MAX_REPORT_BYTES = 32 * 1024 * 1024;
 const MAX_FINDINGS = 10_000;
@@ -28,7 +33,9 @@ const QA_IMPACT_VALUES = new Set([
   "HYGIENE",
 ]);
 const EVIDENCE_VALUES = new Set(["E0", "E1", "E2"]);
-const TRUST_VALUES = new Set(["L0", "L1", "L2", "L3", "L4", "L5"]);
+// Derived from the ladder, not re-listed: a validator that disagrees with the
+// ladder about which levels exist rejects reports the engine itself produces.
+const TRUST_VALUES = new Set<string>(TRUST_ORDER);
 
 /** Human message for any thrown value — never "undefined"/"[object Object]". */
 export function errorText(err: unknown): string {
