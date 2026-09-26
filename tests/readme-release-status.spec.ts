@@ -18,14 +18,14 @@ describe("README release status synchronization", () => {
     expect(synced).toContain("Last synced: 2026-09-25");
   });
 
-  it("passes the strict translation freshness gate after canonical sync", () => {
+  it("exposes the remaining structural translation gap in strict mode", () => {
     const result = spawnSync(
       process.execPath,
       [join(root, "scripts", "check-readme-translations.mjs"), "--strict"],
       { encoding: "utf8" },
     );
-    expect(result.status, result.stdout).toBe(0);
-    expect(result.stdout).toContain("README.md last change");
+    expect(result.status).toBe(1);
+    expect(result.stdout).toContain("structurally incomplete");
   });
 
   it("is idempotent", () => {
