@@ -55,6 +55,19 @@ once shipped, so this file is the record of what changed between versions.
 
 ### Added
 
+- **Opt-in Sentry crash reporting.** Set `SENTRY_DSN` and the CLI and the MCP
+  stdio server report their own fatal errors — release-tagged as
+  `mjolnir-qa@<version>`, tagged by surface, and nothing else: no user data
+  (`sendDefaultPii: false`), no traced spans (`tracesSampleRate: 0`), no
+  findings or file contents. With no DSN the SDK is never even imported, so the
+  default install gains no dependency, no startup cost, and no network call. A
+  tool that reads private repositories must not phone home on its own, so the
+  DSN is the only switch. `@sentry/node` is an OPTIONAL peer dependency for the
+  same reason: ~1.5 MB that nothing in a code scanner needs. Capture points are
+  the two existing top-level catch blocks rather than `uncaughtException` /
+  `unhandledRejection` handlers, which would have changed the frozen exit-code
+  contract. `npm run sentry:release` creates the release and uploads source maps
+  (the build now emits them; the published tarball still excludes them).
 - `npm run report:honesty` — no surface may print a zero for a measurement that
   may be absent. Four reviewed exceptions are recorded for computation inputs,
   each with a reason and a follow-up.

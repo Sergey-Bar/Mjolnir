@@ -17,10 +17,23 @@
  */
 
 import { runStdioTransport } from "./transport.js";
+import {
+  captureInternalError,
+  flushSentry,
+  initSentry,
+} from "../integrations/sentry.js";
+
+void initSentry();
 
 void runStdioTransport(process.stdin, process.stdout)
   .then(() => process.exit(0))
-  .catch((err) => {
+  .catch(async (err) => {
+    // This is the long-lived surface, so it is the one where a crash
+    // report is worth real money: the transport loop can die mid-session
+    // with a client's request in flight. Flush BEFORE the message, and
+    // never on stdout — stdout is the JSON-RPC channel.
+    captureInternalError(err, "mcp");
+    await flushSentry();
     process.stderr.write(
       `mjolnir mcp fatal: ${err instanceof Error ? err.message : err}\n`,
     );
