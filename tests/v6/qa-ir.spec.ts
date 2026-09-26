@@ -263,15 +263,19 @@ describe("QA-IR — the dimensions are all derivable", () => {
   });
 
   it("rates specificity by whether anything is actually compared", () => {
+    // `specificity` is `Record<string, number>`, so the read is
+    // `number | undefined` under `noUncheckedIndexedAccess`. An absent
+    // dimension is a bug in the model, and the assertion says so rather
+    // than comparing `undefined` and quietly passing.
     const specific = canonicalize(
       normalize({ dialect: "ts", assertionLabels: ["toBe"] }),
-    );
+    ).dimensions.specificity;
     const vacuous = canonicalize(
       normalize({ dialect: "ts", assertionLabels: ["toBeTruthy"] }),
-    );
-    expect(specific.dimensions.specificity).toBeGreaterThan(
-      vacuous.dimensions.specificity,
-    );
+    ).dimensions.specificity;
+    expect(specific).toBeDefined();
+    expect(vacuous).toBeDefined();
+    expect(specific as number).toBeGreaterThan(vacuous as number);
   });
 });
 
