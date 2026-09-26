@@ -18,6 +18,7 @@ import type { LocatorClass, SelectorRisk } from "./selector-health-types.js";
 export type { LocatorClass, SelectorRisk } from "./selector-health-types.js";
 import { LOCATOR_RISK } from "./selector-health-types.js";
 import { sectionHeader, plainContext } from "../reporter/ui.js";
+import { compareCodePoints } from "../lib/compare.js";
 
 const ui = plainContext();
 
@@ -209,9 +210,12 @@ export function computeSelectorHealth(
 
   walk(root);
   // Bug-audit L9: score ties kept filesystem order — output differed
-  // byte-wise per machine. Deterministic tiebreaker: path.
+  // byte-wise per machine. Deterministic tiebreaker: path, in CODE-UNIT
+  // order. A locale-aware collation would re-open L9 on any machine whose
+  // ambient locale is not English, which is exactly the class of bug the
+  // finding was about.
   return specs.sort(
-    (a, b) => a.score - b.score || a.file.localeCompare(b.file),
+    (a, b) => a.score - b.score || compareCodePoints(a.file, b.file),
   ); // weakest first
 }
 

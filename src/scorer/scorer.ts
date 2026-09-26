@@ -13,6 +13,7 @@ import {
   type Finding,
   type RuleCategory,
 } from "../types.js";
+import { compareCodePoints } from "../lib/compare.js";
 
 /**
  * Stamp the honest evidence level on every finding (Honesty Core Phase 1).
@@ -88,8 +89,11 @@ export function computeDimensions(findings: Finding[]): DimensionScore[] {
     // the lookup is always defined.
     dim.score = Math.max(0, 100 - (deductions.get(dim.category) as number));
   }
+  // Code-unit order: this array is serialized into the machine-contract
+  // digest, so a locale-dependent collation would give one score order on a
+  // de_DE machine and another on an en-US one for the same findings.
   return [...byCategory.values()].sort((a, b) =>
-    a.category.localeCompare(b.category),
+    compareCodePoints(a.category, b.category),
   );
 }
 

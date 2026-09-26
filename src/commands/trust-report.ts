@@ -47,6 +47,7 @@ import { loadSavedReportStrict, type LoadedReport } from "./report-io.js";
 import { writeFileAtomic } from "../lib/fs-atomic.js";
 import { sanitizeErrorText } from "../forensics/evidence-hygiene.js";
 import { sanitizeForMarkdown } from "../integrations/github/evidence-sanitization.js";
+import { compareCodePoints } from "../lib/compare.js";
 
 export const TRUST_REPORT_MD = "mjolnir-trust-report.md";
 export const TRUST_REPORT_JSON = "mjolnir-trust-report.json";
@@ -150,7 +151,7 @@ export function buildArtifactIdentity(
     commit: commit ?? null,
     detectorRevisions: [...revisions.entries()]
       .map(([ruleId, detectorRevision]) => ({ ruleId, detectorRevision }))
-      .sort((a, b) => a.ruleId.localeCompare(b.ruleId)),
+      .sort((a, b) => compareCodePoints(a.ruleId, b.ruleId)),
     evidenceInventory: {
       totalFindings: result.findings.length,
       corroborated,

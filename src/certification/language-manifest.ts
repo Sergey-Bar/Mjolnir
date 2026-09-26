@@ -22,6 +22,7 @@ import {
   type CertificationState,
   type Regression,
 } from "./state-machine.js";
+import { compareLocalized, DISPLAY_LOCALE } from "../lib/compare.js";
 
 export interface LanguageCapability {
   /** The inventory id, so the manifest speaks the same vocabulary (V5-024). */
@@ -201,9 +202,16 @@ export function languagesAtLeast(
   state: CertificationState,
   manifest: readonly LanguageCapability[] = LANGUAGE_MANIFEST,
 ): LanguageCapability[] {
-  return manifest
-    .filter((entry) => isAtLeast(entry.state, state))
-    .sort((a, b) => b.state.localeCompare(a.state));
+  return (
+    manifest
+      .filter((entry) => isAtLeast(entry.state, state))
+      // Pinned to "en" rather than the ambient default: this is a
+      // human-readable certification table, so the state ladder should read in
+      // a natural order — but a machine with a different default locale must
+      // still get the same table, because the README's language-support
+      // section is generated from it and committed.
+      .sort((a, b) => compareLocalized(DISPLAY_LOCALE)(b.state, a.state))
+  );
 }
 
 /**

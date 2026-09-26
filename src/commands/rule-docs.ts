@@ -28,6 +28,7 @@ import {
 import { computeCodeText } from "../engine/code-text.js";
 import { getAntiPatternContent } from "./anti-pattern-catalog.js";
 import { firstFixtureFile } from "./fixture-example.js";
+import { compareCodePoints } from "../lib/compare.js";
 
 export interface RuleDocExample {
   finding?: Omit<Finding, "ruleId" | "category">;
@@ -265,7 +266,7 @@ export function renderRuleDocMd(data: RuleDocData): string {
     lines.push("| Repo | Occurrences |");
     lines.push("|---|---|");
     for (const [repo, count] of occurrences.sort((a, b) =>
-      a[0].localeCompare(b[0]),
+      compareCodePoints(a[0], b[0]),
     )) {
       lines.push(`| ${repo} | ${count} |`);
     }
@@ -317,7 +318,7 @@ export function renderRuleDocsIndexMd(
     "| ID | Title | Severity |",
     "|---|---|---|",
   ];
-  const sorted = [...rules].sort((a, b) => a.id.localeCompare(b.id));
+  const sorted = [...rules].sort((a, b) => compareCodePoints(a.id, b.id));
   for (const r of sorted) {
     lines.push(
       `| [${r.id}](./${r.id}.md) | ${escapeMdCell(r.title)} | ${r.severity} |`,

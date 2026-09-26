@@ -11,6 +11,11 @@
  */
 
 import type { Finding, EvidenceLevel } from "../types.js";
+import {
+  compareCodePoints,
+  compareLocalized,
+  DISPLAY_LOCALE,
+} from "../lib/compare.js";
 
 export type CorrelationStrength = "NONE" | "SUPPORTING" | "STRONG";
 
@@ -110,7 +115,10 @@ export function correlateFindings(
 
   const rootCauseGroups = groupByRootCause(findings);
   for (const [rootCause, group] of Array.from(rootCauseGroups.entries()).sort(
-    (a, b) => a[0].localeCompare(b[0]),
+    // Pinned to "en": the root cause is a human-readable LABEL rendered as a
+    // heading, so it should read naturally — but the same table has to come
+    // out on a machine whose ambient locale is not English.
+    (a, b) => compareLocalized(DISPLAY_LOCALE)(a[0], b[0]),
   )) {
     if (group.length < 2) continue;
     const findingIds = group.map((f) => f.findingId ?? f.ruleId);
@@ -125,7 +133,7 @@ export function correlateFindings(
 
   const fileGroups = groupByFile(findings);
   for (const [file, group] of Array.from(fileGroups.entries()).sort((a, b) =>
-    a[0].localeCompare(b[0]),
+    compareCodePoints(a[0], b[0]),
   )) {
     if (group.length < 2) continue;
     const alreadyConvergent = new Set<string>();

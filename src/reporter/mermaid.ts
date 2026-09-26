@@ -19,6 +19,7 @@ import { TINT, type DiagramTint } from "../brand/tokens.js";
 import { deriveScoreState } from "./presentation.js";
 
 import type { DimensionScore, ScanResult, Severity } from "../types.js";
+import { compareCodePoints } from "../lib/compare.js";
 
 function sanitizeId(raw: string): string {
   // Mermaid node IDs can't contain most punctuation — collapse anything
@@ -78,7 +79,7 @@ export function renderMermaid(result: ScanResult): string {
 
   // Frameworks layer — sorted for determinism, "unknown" called out
   // honestly rather than omitted (matches the honesty core elsewhere).
-  const frameworks = [...result.frameworks].sort((a, b) => a.localeCompare(b));
+  const frameworks = [...result.frameworks].sort(compareCodePoints);
   if (frameworks.length === 0) {
     const fwId = "FW_unknown";
     lines.push(`  ${rootId} --> ${fwId}["Frameworks: UNKNOWN"]`);
@@ -93,7 +94,7 @@ export function renderMermaid(result: ScanResult): string {
   // from every framework node (a category can serve multiple frameworks
   // — e.g. QA-TEST applies regardless of which framework was detected).
   const dimensions = [...result.dimensions].sort((a, b) =>
-    a.category.localeCompare(b.category),
+    compareCodePoints(a.category, b.category),
   );
   const styleAssignments: Array<{ id: string; cls: string }> = [];
 
