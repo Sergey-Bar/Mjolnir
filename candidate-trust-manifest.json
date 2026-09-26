@@ -28,23 +28,21 @@
   "generatedAt": "2026-09-26",
   "identity": {
     "state": "WORKING_CANDIDATE",
-    "baseSha": "fa510762860b6a43ea418ca5fa4ea58877e2756d",
+    "baseSha": "3a4075c1ebd0bc0ddfee14a8c15c7291627835fc",
     "candidateSha": null,
     "version": "4.0.0-rc.1",
     "packageSha256": "86f25406fdae2933c0d4d0c6103c0b058a000d2e0eaf3294ee889e52c4a9a0ca",
     "lockfileSha256": "ddc729c2b004b6c6d6b13d2fff9c1e84c5fabec2da9978a66ab421e715bab644",
     "workingTreeSha256": "88af977a04fd11205ea3f8ad1f14f94e6f8c8a00224e27bed2e76b143aaa38f0",
-    "changedPathCount": 11,
+    "changedPathCount": 9,
     "supportEnvelope": "self-hosted; hosted services require explicit consent and separate proof",
     "worktreeInventory": {
       "changedPaths": [
-        ".github/workflows/mjolnir.yml",
         "CHANGELOG.md",
         "package-lock.json",
         "package.json",
         "src/cli.ts",
-        "src/mcp/stdio.ts",
-        "tests/integrations/pr-workflow.spec.ts"
+        "src/mcp/stdio.ts"
       ],
       "untrackedPaths": [
         "kilo.json",
@@ -54,7 +52,6 @@
       ]
     },
     "dirtyFiles": [
-      ".github/workflows/mjolnir.yml",
       "CHANGELOG.md",
       "kilo.json",
       "package-lock.json",
@@ -63,7 +60,6 @@
       "src/cli.ts",
       "src/integrations/sentry.ts",
       "src/mcp/stdio.ts",
-      "tests/integrations/pr-workflow.spec.ts",
       "tests/integrations/sentry-opt-in.spec.ts"
     ]
   },
