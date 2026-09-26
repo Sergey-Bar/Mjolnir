@@ -247,4 +247,27 @@ describe("no install surface instructs an unpublished version (V5-007)", () => {
       expect(text, path).not.toMatch(/mjolnir-qa@[^\s"`]+\s+sem/);
     }
   });
+
+  it("no Markdown install surface has an unbalanced backtick after a rewrite", () => {
+    // The three lines the bulk rewrite mangled all lost exactly one closing
+    // backtick, which renders as broken Markdown rather than as an error.
+    //
+    // Scoped to Markdown on purpose: `action.yml` and `smithery.yaml` carry
+    // backticks in YAML comments where a stray one is cosmetic and
+    // pre-existing. Code fences also legitimately carry odd counts.
+    const offenders: string[] = [];
+    for (const path of INSTALL_SURFACE_PATHS.filter((p) => p.endsWith(".md"))) {
+      const text = readFileSync(join(ROOT, path), "utf8");
+      text.split(/\r?\n/).forEach((line, index) => {
+        if (/^\s*```/.test(line)) return;
+        if ((line.match(/`/g) ?? []).length % 2 === 1) {
+          offenders.push(`${path}:${index + 1}: ${line.trim().slice(0, 80)}`);
+        }
+      });
+    }
+    expect(
+      offenders,
+      `unbalanced backticks — a version rewrite swallowed a delimiter:\n${offenders.join("\n")}`,
+    ).toEqual([]);
+  });
 });

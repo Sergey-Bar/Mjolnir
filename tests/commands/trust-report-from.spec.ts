@@ -20,6 +20,25 @@ import { join } from "node:path";
 import { runTrustReportCommand } from "../../src/commands/trust-report.js";
 import type { ScanResult } from "../../src/types.js";
 
+/**
+ * A machine-anchored identity (plan V5-012).
+ *
+ * Every rendering test below exercises a VERIFIED report. Without this the
+ * fixtures are legacy artifacts with no run identity, and since V5-012 the
+ * command correctly reports them as OPEN and exits 2 — which is the point, and
+ * is asserted separately in the "legacy report" cases rather than papered over
+ * by deleting those assertions.
+ */
+const RUN_IDENTITY = {
+  scanId: "s".repeat(64),
+  inputFingerprint: "i".repeat(64),
+  rulesDigest: "r".repeat(64),
+  configFingerprint: "c".repeat(64),
+  engineVersion: "4.0.0-rc.1",
+  commit: "a".repeat(40),
+  boundLinks: ["input", "rules", "config", "engine", "commit"] as const,
+};
+
 const result = (overrides: Partial<ScanResult> = {}): ScanResult => ({
   schemaVersion: 1,
   partial: false,
@@ -43,6 +62,15 @@ const result = (overrides: Partial<ScanResult> = {}): ScanResult => ({
     inconclusiveRate: 0,
     provisionalRuleIds: [],
     ceilingReasons: [],
+  },
+  runIdentity: {
+    scanId: RUN_IDENTITY.scanId,
+    inputFingerprint: RUN_IDENTITY.inputFingerprint,
+    rulesDigest: RUN_IDENTITY.rulesDigest,
+    configFingerprint: RUN_IDENTITY.configFingerprint,
+    engineVersion: RUN_IDENTITY.engineVersion,
+    commit: RUN_IDENTITY.commit,
+    boundLinks: ["input", "rules", "config", "engine", "commit"],
   },
   ...overrides,
 });

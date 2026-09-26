@@ -7,14 +7,14 @@ contract enforces: **every external import in src/ must belong to the
 allowlist**, and the shipped surface (adapters, rules, flags, formats, exit
 codes) must match this document exactly.
 
-## Inventory: 327 files, 91828 LOC
+## Inventory: 332 files, 93597 LOC
 
 | Area             | Files | LOC   |
 | ---------------- | ----- | ----- |
-| src/engine       | 55    | 24458 |
-| src/commands     | 44    | 13415 |
+| src/engine       | 58    | 25148 |
+| src/commands     | 44    | 13576 |
 | src/rules        | 88    | 11758 |
-| src/(root)       | 8     | 3608  |
+| src/(root)       | 8     | 3726  |
 | src/reporter     | 15    | 3366  |
 | src/forensics    | 17    | 3065  |
 | src/governance   | 1     | 2744  |
@@ -22,10 +22,10 @@ codes) must match this document exactly.
 | src/frameworks   | 6     | 2653  |
 | src/detectors    | 1     | 2564  |
 | src/plugins      | 6     | 2295  |
+| src/discovery    | 10    | 1745  |
 | src/agent        | 1     | 1726  |
-| src/discovery    | 10    | 1689  |
 | src/adapters     | 11    | 1677  |
-| src/integrations | 11    | 1548  |
+| src/integrations | 11    | 1621  |
 | src/benchmark    | 3     | 1433  |
 | src/gaps         | 2     | 1390  |
 | src/qa           | 1     | 1285  |
@@ -35,6 +35,7 @@ codes) must match this document exactly.
 | src/mutation     | 6     | 836   |
 | src/mcp          | 3     | 816   |
 | src/brand        | 3     | 807   |
+| src/store        | 2     | 671   |
 | src/config       | 3     | 540   |
 | src/scorer       | 3     | 533   |
 | src/traceability | 2     | 441   |
@@ -48,11 +49,11 @@ codes) must match this document exactly.
 
 | Module                          | Importers |
 | ------------------------------- | --------- |
-| src/types                       | 134       |
+| src/types                       | 137       |
 | src/rules/rule                  | 82        |
 | src/rules/shared/positions      | 62        |
 | src/reporter/ui                 | 26        |
-| src/lib/fs-atomic               | 20        |
+| src/lib/fs-atomic               | 21        |
 | src/cli-io                      | 20        |
 | src/forensics/types             | 20        |
 | src/exit-codes                  | 17        |
@@ -68,13 +69,13 @@ codes) must match this document exactly.
 
 | Dependency         | Files importing it |
 | ------------------ | ------------------ |
-| node:fs            | 69                 |
-| node:path          | 65                 |
-| node:crypto        | 25                 |
+| node:fs            | 72                 |
+| node:path          | 68                 |
+| node:crypto        | 27                 |
 | ts-morph           | 7                  |
 | node:url           | 4                  |
+| node:child_process | 4                  |
 | node:os            | 3                  |
-| node:child_process | 3                  |
 | web-tree-sitter    | 3                  |
 | yaml               | 2                  |
 | node:process       | 2                  |

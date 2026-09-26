@@ -38,7 +38,7 @@ import { errorMessage, type Output } from "../cli-io.js";
 import { pct } from "../lib/format.js";
 import { evidenceTag } from "../reporter/evidence-tag.js";
 import { currentCommit } from "../lib/git-utils.js";
-import { loadSavedReport } from "./report-io.js";
+import { loadSavedReportStrict, type LoadedReport } from "./report-io.js";
 import { writeFileAtomic } from "../lib/fs-atomic.js";
 import { sanitizeErrorText } from "../forensics/evidence-hygiene.js";
 import { sanitizeForMarkdown } from "../integrations/github/evidence-sanitization.js";
@@ -573,12 +573,22 @@ export async function runTrustReportCommand(
       io.err("error: --commit requires the run's HEAD sha");
       return 10;
     }
-    let scan: ScanResult;
+    let loaded: LoadedReport;
     try {
-      scan = loadSavedReport(resolve(fromPath));
+      loaded = loadSavedReportStrict(resolve(fromPath));
     } catch (err) {
       io.err(`error: cannot read ${fromPath}: ${errorMessage(err)}`);
       return 10;
+    }
+    const scan = loaded.result;
+    // V5-012: the trust report is a trust CLAIM, so it states how much the
+    // underlying artifact may be believed. A report with no machine-anchored
+    // identity is history, not proof, and the rendered artifact says so
+    // instead of implying a verified run.
+    if (loaded.trust.state !== "VERIFIED") {
+      io.err(
+        `warning: ${loaded.trust.reason} The trust report below describes an OPEN artifact.`,
+      );
     }
     if (
       commitArg &&
@@ -593,10 +603,12 @@ export async function runTrustReportCommand(
     if (commitArg && scan.runIdentity) {
       scan.runIdentity = { ...scan.runIdentity, commit: commitArg };
     }
+    // The trust state travels with the rendered artifacts, so a consumer
+    // reading only the JSON cannot mistake an OPEN import for a verified run.
     const md = renderTrustReportMarkdown(scan, fromPath, commitArg ?? null);
     if (argv.includes("--stdout")) {
       io.out(md);
-      return 0;
+      return loaded.trust.state === "VERIFIED" ? 0 : 2;
     }
     try {
       const outPath = resolve(dirname(fromPath), TRUST_REPORT_MD);

@@ -49,8 +49,10 @@ describe("action.yml Trust Report consumption (WI-9, plan §13)", () => {
     expect(ACTION.inputs["trust-artifact"]?.default).toBe("false");
   });
 
-  it("exposes the trust-report-file output", () => {
-    expect(ACTION.outputs?.["trust-report-file"]).toBeDefined();
+  it("exposes the trust report file output", () => {
+    // Underscore, not hyphen: `trust-report-file` is unreadable in an
+    // expression, so a consumer of it silently reads nothing.
+    expect(ACTION.outputs?.["trust_report_file"]).toBeDefined();
   });
 
   it("renders from a saved JSON report, never a second gate scan", () => {

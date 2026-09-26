@@ -359,6 +359,7 @@ describe("README Node version matches package.json engines", () => {
 describe("public version and install docs match the current package line", () => {
   const pkg = JSON.parse(readFileSync(join(ROOT, "package.json"), "utf8")) as {
     version: string;
+    publishedStable?: string;
   };
   const major = pkg.version.split(".")[0];
   const publishing = readFileSync(join(ROOT, "docs", "PUBLISHING.md"), "utf8");
@@ -389,8 +390,14 @@ describe("public version and install docs match the current package line", () =>
     expect(publishing).not.toMatch(/`?latest`?\s+is\s+\*\*(?:0|1)\./);
   });
 
-  it("public action examples use the published major and exact package version", () => {
+  it("public action examples use the published major and the published version", () => {
+    // An install command that names an unpublished version is an instruction
+    // that 404s on copy-paste. While the candidate is a release candidate the
+    // public install surfaces must name `publishedStable`; the working version
+    // belongs in IDENTITY prose (the roadmap, PUBLISHING.md), not in a command
+    // a reader is meant to run.
     const actionMajor = pkg.version.includes("-") ? "3" : major;
+    const installVersion = pkg.publishedStable ?? pkg.version;
     for (const [name, text] of [
       ["docs/DISTRIBUTION-KIT.md", distribution],
       ["site/guide/getting-started.md", gettingStarted],
@@ -398,15 +405,20 @@ describe("public version and install docs match the current package line", () =>
       expect(text, `${name} should use the published action major`).toContain(
         `Sergey-Bar/Mjolnir@v${actionMajor}`,
       );
-      expect(text, `${name} should show the exact package pin`).toContain(
-        `mjolnir-qa@${pkg.version}`,
+      expect(text, `${name} should show the exact published pin`).toContain(
+        `mjolnir-qa@${installVersion}`,
       );
+      if (installVersion !== pkg.version) {
+        expect(
+          text,
+          `${name} must not instruct installing the unpublished ${pkg.version}`,
+        ).not.toContain(`mjolnir-qa@${pkg.version}`);
+      }
       expect(
         text,
         `${name} must not keep stale pre-2.0 action pins`,
       ).not.toMatch(/Sergey-Bar\/Mjolnir@v(?:0|1)(?:\b|\.)/);
     }
-    expect(distribution).toContain(`with: version: ${pkg.version}`);
   });
 
   it("roadmap and publishing docs do not present pre-2.0 lines as current public state", () => {

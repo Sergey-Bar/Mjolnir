@@ -353,11 +353,16 @@ describe("ci-install action template agrees with the real action.yml", () => {
     }
   });
 
-  it("the enforcing template pins an exact mjolnir-qa version (never floating)", () => {
+  it("the enforcing template never floats the version", () => {
+    // The template used to pin `version: ${CLI_VERSION}` — the working
+    // version, which is not on npm while the candidate is a release
+    // candidate, so a generated workflow could not install what it asked for.
+    // The input is now omitted and the Action's own default (the published
+    // stable) applies, which is the one value that always resolves.
     for (const gate of ["error", "warning"] as GateLevel[]) {
       const text = ACTION_TEMPLATE(gate);
-      expect(text).toMatch(/version: \d+\.\d+\.\d+/);
-      expect(text).not.toContain("@latest");
+      expect(text, gate).not.toContain("@latest");
+      expect(text, gate).not.toMatch(/version: \d+\.\d+\.\d+/);
     }
   });
 });
