@@ -5,5 +5,7 @@
   },
   "totalFindings": 7,
   "testDeclarationCount": 167,
-  "partial": false
+  "partial": false,
+  "schemaVersion": 1,
+  "sourceRevision": "79aa5b126fdd951aab2263c8201b52aeb5f2a43c"
 }

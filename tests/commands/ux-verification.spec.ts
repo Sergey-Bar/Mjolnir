@@ -353,22 +353,61 @@ describe("CI-ADAPTER (SDET-4)", () => {
 });
 
 describe("ENTERPRISE (QM-4)", () => {
-  it("generates deployment config", () => {
+  // The three tests these replace asserted only the EXIT CODE and never
+  // looked at a file, so a command that wrote fabricated SSO and
+  // compliance artifacts passed them. An artifact generator's test has to
+  // read the artifact.
+
+  it("emits a capability manifest that records what is NOT provided", () => {
     const dir = makeTempDir();
     const code = runEnterpriseCommand(["config", dir], { out, err });
     expect(code).toBe(EXIT_CLEAN);
+
+    const manifest = JSON.parse(
+      readFileSync(join(dir, "capability-manifest.json"), "utf8"),
+    ) as {
+      runtimeDependencies: number;
+      network: string;
+      notProvided: string[];
+      verified: string[];
+    };
+    expect(manifest.runtimeDependencies).toBe(0);
+    expect(manifest.network).toContain("none");
+    // The absence list is the deliverable: an operator filling in a
+    // deployment questionnaire needs to know what is missing.
+    expect(manifest.notProvided.join(" ")).toMatch(/SSO/);
+    expect(manifest.notProvided.join(" ")).toMatch(/compliance/i);
+    // And nothing may claim the SSO deployment that used to be invented.
+    expect(
+      readFileSync(join(dir, "capability-manifest.json"), "utf8"),
+    ).not.toContain("sso-saml");
     rmSync(dir, { recursive: true, force: true });
   });
-  it("generates SSO guide", () => {
+
+  it("refuses to write an SSO guide, and explains why", () => {
     const dir = makeTempDir();
     const code = runEnterpriseCommand(["sso", dir], { out, err });
-    expect(code).toBe(EXIT_CLEAN);
+    expect(code).toBe(EXIT_USAGE);
+    // The guide told readers to add an `sso` block to mjolnir.config.json
+    // — a key nothing reads. It must not be written at all.
+    expect(existsSync(join(dir, "sso-setup.md"))).toBe(false);
+    expect(err.mock.calls.flat().join("\n")).toContain(
+      "no artifact will be written",
+    );
     rmSync(dir, { recursive: true, force: true });
   });
-  it("generates compliance templates", () => {
+
+  it("refuses to write compliance templates mapped to capabilities that do not exist", () => {
     const dir = makeTempDir();
     const code = runEnterpriseCommand(["compliance", dir], { out, err });
-    expect(code).toBe(EXIT_CLEAN);
+    expect(code).toBe(EXIT_USAGE);
+    for (const framework of ["soc2", "hipaa", "pci-dss"]) {
+      expect(
+        existsSync(join(dir, `${framework}-compliance.md`)),
+        framework,
+      ).toBe(false);
+    }
+    expect(err.mock.calls.flat().join("\n")).toContain("auditor");
     rmSync(dir, { recursive: true, force: true });
   });
 });

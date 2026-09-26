@@ -602,6 +602,36 @@ async function scanRepo(dir: string): Promise<CorpusScanEntry> {
   };
 }
 
+/**
+ * Stamp provenance onto an EXISTING baseline, changing nothing else.
+ *
+ * `--refresh-provenance` used to queue `toBaselineEntry(current)` — a fresh
+ * entry built from the current scan. That quietly did more than it claimed:
+ * it overwrote `testDeclarationCount` with a newly measured value (580 → 621
+ * on pallets-click, a 7% move) and dropped the recorded `partial` flag. The
+ * run then printed "Counts were NOT accepted", which by then was not true.
+ *
+ * `testDeclarationCount` is documented as calibration CONTEXT rather than a
+ * lock, so overwriting it is defensible on its own — but doing it inside a
+ * flag whose whole promise is "provenance only" is how a measurement gets
+ * laundered into a baseline by someone who believed they were only stamping
+ * a version number.
+ *
+ * So this takes the baseline as recorded and adds exactly two fields. Every
+ * measured value survives untouched, which is what makes the zero-drift
+ * precondition (`countDrifts.length === 0`) sufficient to run it unattended.
+ */
+function withRefreshedProvenance(
+  baseline: BaselineEntry,
+  current: CorpusScanEntry,
+): BaselineEntry {
+  return {
+    ...baseline,
+    schemaVersion: 1,
+    sourceRevision: current.sourceRevision ?? "",
+  };
+}
+
 function toBaselineEntry(current: CorpusScanEntry): BaselineEntry {
   return {
     schemaVersion: 1,
@@ -844,7 +874,8 @@ async function main(): Promise<number> {
       if (review.provenanceFailure && review.countDrifts.length === 0) {
         pendingUpdates.push({
           name: repo.name,
-          entry: toBaselineEntry(current),
+          // Provenance only — the recorded measurements stay as they are.
+          entry: withRefreshedProvenance(baseline, current),
         });
       }
     } else if (update) {
@@ -858,6 +889,38 @@ async function main(): Promise<number> {
     rmSync(CACHE_DIR, { recursive: true, force: true });
   } catch {
     /* stale .cache is harmless */
+  }
+
+  /**
+   * Provenance migration runs BEFORE the failure gates, and that ordering is
+   * the whole point.
+   *
+   * `--refresh-provenance` used to write its pending updates after the
+   * completeness and regression checks had already returned 1. So the flag
+   * could only ever succeed when nothing needed migrating — a deadlock: 26
+   * legacy baselines were reported `schemaVersion=missing`, and the tool
+   * that exists to fix them could not write a single one while they were
+   * outstanding. Every operator would read "refresh provenance" and get
+   * "Baseline update rejected; no files were written."
+   *
+   * Writing first is safe because the migration is not an acceptance: a
+   * baseline is queued only when its provenance is missing AND its counts
+   * are byte-identical to the current measurement (`countDrifts.length === 0`).
+   * A repo whose rule counts moved is deliberately left alone, so this can
+   * never launder an unverified FP change into a baseline.
+   *
+   * `--update` keeps the old ordering. It DOES accept new measurements, so
+   * it must not write while the run is failing for an unrelated reason.
+   */
+  if (refreshProvenance && pendingUpdates.length > 0) {
+    for (const pending of pendingUpdates) {
+      writeBaseline(pending.name, pending.entry);
+    }
+    console.log(
+      `Provenance migrated for ${pendingUpdates.length} baseline(s) whose rule ` +
+        `counts are unchanged. Counts were NOT accepted: a baseline whose counts ` +
+        `moved is still listed above and still needs a human.`,
+    );
   }
 
   if (!only) {
@@ -901,7 +964,11 @@ async function main(): Promise<number> {
   }
 
   if (regressed) {
-    if (update || refreshProvenance) {
+    if (refreshProvenance) {
+      console.error(
+        "Provenance migration ran, but corpus drift or orphans still require review.",
+      );
+    } else if (update) {
       console.error("Baseline update rejected; no files were written.");
     } else {
       console.error(
@@ -911,12 +978,21 @@ async function main(): Promise<number> {
     return 1;
   }
 
-  if (update || refreshProvenance) {
+  if (refreshProvenance) {
+    if (pendingUpdates.length > 0) {
+      console.log(
+        `Provenance migrated for ${pendingUpdates.length} baseline(s); the run is otherwise clean.`,
+      );
+    }
+    return 0;
+  }
+
+  if (update) {
     for (const pending of pendingUpdates) {
       writeBaseline(pending.name, pending.entry);
     }
     console.log(
-      `Baseline updated after review (${pendingUpdates.length} files${refreshProvenance ? "; provenance-only mode" : ""}).`,
+      `Baseline updated after review (${pendingUpdates.length} files).`,
     );
     return 0;
   }

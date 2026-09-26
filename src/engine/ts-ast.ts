@@ -17,7 +17,14 @@ import type { ParsedFile } from "./adapter.js";
 // compiler's program across files.
 let project: Project | null = null;
 
-function getProject(): Project {
+/**
+ * The shared ts-morph project.
+ *
+ * Exported so an adapter's `dispose()` can evict the file it parsed: ts-morph
+ * caches by file path, so without eviction a long scan holds every parsed
+ * SourceFile until the process exits (plan V5-021).
+ */
+export function getProject(): Project {
   if (!project) {
     project = new Project({
       useInMemoryFileSystem: true,

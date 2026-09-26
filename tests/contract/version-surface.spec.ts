@@ -73,18 +73,12 @@ describe("version surface envelope", () => {
     expect(violations.join(" ")).not.toContain("DISTRIBUTION-KIT.md");
   });
 
-  it("reports a mutable @latest and an install surface drifted to the working version", () => {
-    const driftedInstall = {
-      ...surfaces,
-      "README.md": (surfaces["README.md"] ?? "").replace(
-        `mjolnir-qa@${publishedStable}`,
-        `mjolnir-qa@${version}`,
-      ),
-    };
+  it("reports a mutable @latest", () => {
+    // The `@latest` rule is unconditional, so it holds on any version shape.
     const violations = checkVersionSurfaceEnvelope(
       version,
       {
-        ...driftedInstall,
+        ...surfaces,
         "smithery.yaml": (surfaces["smithery.yaml"] ?? "").replace(
           `mjolnir-qa@${publishedStable}`,
           "mjolnir-qa@latest",
@@ -95,10 +89,49 @@ describe("version surface envelope", () => {
     expect(violations).toEqual(
       expect.arrayContaining([
         expect.stringContaining("mutable mjolnir-qa@latest is forbidden"),
-        expect.stringContaining("not published"),
       ]),
     );
-    expect(violations.join(" ")).toContain("README.md");
+  });
+
+  it("reports an install surface naming a working version that is not published", () => {
+    // The other rule is conditional on the working version differing from
+    // the published one — and on a stable release they are the SAME STRING,
+    // so the branch is correctly inert. Deriving the fixture from the repo's
+    // own `version` therefore tested nothing: it could not produce the
+    // violation, and the assertion was on a result the guard had already
+    // excluded.
+    //
+    // Both sides are now passed in explicitly, so the rule is exercised
+    // whatever version the repository happens to be on.
+    const UNPUBLISHED_WORKING = "9.9.9";
+    expect(UNPUBLISHED_WORKING).not.toBe(publishedStable);
+    const violations = checkVersionSurfaceEnvelope(
+      UNPUBLISHED_WORKING,
+      {
+        ...surfaces,
+        "README.md": (surfaces["README.md"] ?? "").replace(
+          `mjolnir-qa@${publishedStable}`,
+          `mjolnir-qa@${UNPUBLISHED_WORKING}`,
+        ),
+      },
+      publishedStable,
+    );
+    expect(violations).toEqual(
+      expect.arrayContaining([expect.stringContaining("not published")]),
+    );
+  });
+
+  it("does not report a stable release's own version as unpublished", () => {
+    // The inverse, and the reason the guard exists. On a stable release
+    // `mjolnir-qa@<version>` in an install surface is the CORRECT
+    // instruction — that version is what is on the registry — and flagging
+    // it would fail every legitimate install line in the README.
+    const violations = checkVersionSurfaceEnvelope(
+      publishedStable,
+      surfaces,
+      publishedStable,
+    );
+    expect(violations.join(" ")).not.toContain("not published");
   });
 
   it("synchronizes every mutable literal without changing source consumers", () => {
@@ -157,16 +190,27 @@ describe("action default version is the published stable release", () => {
   });
 
   it("rejects an action.yml default that drifted to the working version", () => {
+    // The drifted value is spelled out rather than derived by swapping
+    // `publishedStable` for `version`. On a stable release those two are the
+    // SAME STRING, so the swap replaced a value with itself, produced no
+    // drift, and the test asserted against an empty result — it could not
+    // fail, and it claimed to prove the drift check works.
+    const driftedTo = version === publishedStable ? "9.9.9" : version;
     const drifted = {
       ...surfaces,
       "action.yml": (surfaces["action.yml"] ?? "").replace(
         `default: "${publishedStable}"`,
-        `default: "${version}"`,
+        `default: "${driftedTo}"`,
       ),
     };
+    // Guard the guard: if this did not actually change the file, the
+    // assertion below would be vacuous again.
+    expect(drifted["action.yml"]).not.toBe(surfaces["action.yml"] ?? "");
     expect(
       checkActionDefaultVersion(publishedStable, drifted).join(" "),
-    ).toContain(`version default is ${version}, expected the published stable`);
+    ).toContain(
+      `version default is ${driftedTo}, expected the published stable`,
+    );
   });
 
   it("rejects a malformed published stable record", () => {
@@ -246,5 +290,28 @@ describe("no install surface instructs an unpublished version (V5-007)", () => {
       const text = result.surfaces[path] ?? "";
       expect(text, path).not.toMatch(/mjolnir-qa@[^\s"`]+\s+sem/);
     }
+  });
+
+  it("no Markdown install surface has an unbalanced backtick after a rewrite", () => {
+    // The three lines the bulk rewrite mangled all lost exactly one closing
+    // backtick, which renders as broken Markdown rather than as an error.
+    //
+    // Scoped to Markdown on purpose: `action.yml` and `smithery.yaml` carry
+    // backticks in YAML comments where a stray one is cosmetic and
+    // pre-existing. Code fences also legitimately carry odd counts.
+    const offenders: string[] = [];
+    for (const path of INSTALL_SURFACE_PATHS.filter((p) => p.endsWith(".md"))) {
+      const text = readFileSync(join(ROOT, path), "utf8");
+      text.split(/\r?\n/).forEach((line, index) => {
+        if (/^\s*```/.test(line)) return;
+        if ((line.match(/`/g) ?? []).length % 2 === 1) {
+          offenders.push(`${path}:${index + 1}: ${line.trim().slice(0, 80)}`);
+        }
+      });
+    }
+    expect(
+      offenders,
+      `unbalanced backticks — a version rewrite swallowed a delimiter:\n${offenders.join("\n")}`,
+    ).toEqual([]);
   });
 });

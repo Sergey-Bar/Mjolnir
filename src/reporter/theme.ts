@@ -11,8 +11,8 @@
  *
  * Symbols always accompany color (color-blind safe, R11).
  *
- * Score-state colors come from ScoreState (score-state.ts) — the single
- * source of truth shared with the badge and (P2) the web.
+ * Score-state colors come from ScoreState (presentation.ts) — the single
+ * source of truth shared with the badge, the dashboard and the site.
  *
  * Terminal robustness (Master-Stabilization-Plan Sprint 5 Task 22):
  * box-drawing/gauge helpers accept an explicit width so callers can
@@ -23,7 +23,7 @@
 
 import { BRAND, SCORE, STATUS, TEXT } from "../brand/tokens.js";
 
-import { deriveScoreState, type ScoreBand } from "./score-state.js";
+import { deriveScoreState, type ScoreBand } from "./presentation.js";
 
 /**
  * `"#RRGGBB"` → the `[r, g, b]` triplet the SGR truecolor emitter needs.
@@ -267,7 +267,7 @@ export function scoreGauge(
   ascii = false,
 ): string {
   const filled = Math.round((score / 100) * width);
-  const color = gaugeColor(score, p);
+  const color = gaugeColorForBand(deriveScoreState(score).band, p);
   if (ascii) {
     return color("#".repeat(filled)) + ".".repeat(Math.max(0, width - filled));
   }
@@ -277,20 +277,6 @@ export function scoreGauge(
     color(head) +
     "░".repeat(width - filled);
   return bar;
-}
-
-/** Horizontal meter for per-category scores (0–100). */
-export function meter(
-  score: number,
-  p: Palette,
-  width = 20,
-  ascii = false,
-): string {
-  return scoreGauge(score, p, width, ascii);
-}
-
-function gaugeColor(score: number, p: Palette): (s: string) => string {
-  return gaugeColorForBand(deriveScoreState(score).band, p);
 }
 
 /**

@@ -6,12 +6,29 @@
  * language. Rules declare which adapters they apply to.
  *
  * Parse-stage status (Verification Trust Evolution Plan Phase 0.5, §10):
- * an async parse stage now sits between discovery and rule execution.
- * The TypeScript adapter parses via ts-morph behind the
- * `ParsedFile.ast` seam (`src/engine/ts-ast.ts`); Java/C# parse via the
- * awaited `parseAst` hook backed by `src/engine/tree-sitter-ast.ts`
- * (defect D1 closed — previously dead code). Python and GitHub Actions
- * remain regex/YAML-over-text and declare no `parseAst`.
+ * an async parse stage sits between discovery and rule execution.
+ *
+ * THERE IS ONE AST SEAM (plan V5-021). Every adapter that has a grammar
+ * exposes it here: TypeScript via ts-morph, Java, C# and Python via the
+ * tree-sitter grammars in `src/engine/tree-sitter-ast.ts`. An earlier version
+ * of this comment described TypeScript as parsing "behind the `ParsedFile.ast`
+ * seam" while the others used the awaited hook — and the code matched the
+ * comment: the TypeScript adapter parsed inside `runRules`, so
+ *
+ *   - the pipeline's `wantsAst` test (`adapter.parseAst !== undefined`) was
+ *     false for every TypeScript file, and a TypeScript parse failure was
+ *     invisible to the pipeline's fallback counters; and
+ *   - nothing called `dispose()` on the ts-morph path, so a scan retained
+ *     every parsed SourceFile for its whole lifetime.
+ *
+ * The same comment also claimed Python declared no `parseAst`. That was wrong
+ * — Python parses through tree-sitter and had declared the hook all along. The
+ * conformance spec now pins which adapters have a grammar, so the two claims
+ * cannot drift apart again.
+ *
+ * The CI-workflow adapters have no grammar and declare no `parseAst` at all,
+ * and the pipeline counts their files as regex-mode honestly rather than
+ * implying a parse that never happened.
  */
 
 import type { Finding } from "../types.js";
@@ -112,8 +129,21 @@ export interface LanguageAdapter {
    * Contract: resolve to a ParsedAst on success, `undefined` when this
    * adapter has no AST layer (or parsing failed — rules fall back to the
    * regex path either way). Never throws.
+   *
+   * May return the result directly as well as a promise: the ts-morph path
+   * (plan V5-021) is synchronous, and forcing it to allocate a promise per
+   * file would be a cost the shared seam has no business imposing. The
+   * pipeline awaits either form.
+   *
+   * Declared as a PROPERTY, not a method signature. A method signature
+   * promises a `this` binding that no adapter uses, and it makes every
+   * consumer that reads `adapter.parseAst` trip the unbound-method rule —
+   * which is a lint error that gets suppressed rather than a design that
+   * gets fixed, so the shape has to say what it means.
    */
-  parseAst?(file: ParsedFile): Promise<ParsedAst | undefined>;
+  parseAst?: (
+    file: ParsedFile,
+  ) => ParsedAst | undefined | Promise<ParsedAst | undefined>;
   /**
    * Run all rules this adapter hosts against one file. `onCrash` is
    * invoked when a rule throws (audit R-9) — the crash is still

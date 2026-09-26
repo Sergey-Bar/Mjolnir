@@ -11,7 +11,12 @@
  */
 
 import { existsSync, readFileSync, statSync } from "node:fs";
-import { RULE_CATEGORIES, SEVERITY_ORDER, type ScanResult } from "../types.js";
+import {
+  RULE_CATEGORIES,
+  SEVERITY_ORDER,
+  TRUST_ORDER,
+  type ScanResult,
+} from "../types.js";
 
 const MAX_REPORT_BYTES = 32 * 1024 * 1024;
 const MAX_FINDINGS = 10_000;
@@ -28,7 +33,9 @@ const QA_IMPACT_VALUES = new Set([
   "HYGIENE",
 ]);
 const EVIDENCE_VALUES = new Set(["E0", "E1", "E2"]);
-const TRUST_VALUES = new Set(["L0", "L1", "L2", "L3", "L4", "L5"]);
+// Derived from the ladder, not re-listed: a validator that disagrees with the
+// ladder about which levels exist rejects reports the engine itself produces.
+const TRUST_VALUES = new Set<string>(TRUST_ORDER);
 
 /** Human message for any thrown value — never "undefined"/"[object Object]". */
 export function errorText(err: unknown): string {
@@ -330,4 +337,153 @@ export function loadSavedReport(reportPath: string): ScanResult {
 /** True when the report file exists (callers own the not-found message). */
 export function reportExists(reportPath: string): boolean {
   return existsSync(reportPath);
+}
+
+/**
+ * How much a saved report can be trusted (plan V5-012, G-V5-034).
+ *
+ * The report JSON has always been validated for SHAPE. What it was never
+ * validated for is IDENTITY: a structurally perfect report produced by a
+ * different tree, a different commit, or a different candidate loaded exactly
+ * like a fresh one, and every trust conclusion drawn from it was attributed to
+ * whatever machine happened to read the file.
+ *
+ * The states, in descending order of what they license:
+ *
+ *   VERIFIED — the report carries a machine-anchored run identity and, when the
+ *             caller supplied an expected identity, it matches. Replayable.
+ *   UNBOUND  — a current-format report with no run identity. Readable, but no
+ *             claim about which build produced it.
+ *   OPEN     — a legacy report, or one whose identity is absent. Replayable as
+ *             HISTORY, never as proof. This is the state that must never be
+ *             upgraded: importing a legacy artifact cannot increase trust
+ *             (Trust Constitution law 12 — provenance is not conferred by
+ *             import).
+ */
+export type SavedReportTrust =
+  | {
+      state: "VERIFIED";
+      scanId: string;
+      commit?: string;
+      candidateManifestId?: string;
+    }
+  | { state: "UNBOUND"; reason: string }
+  | { state: "OPEN"; reason: string };
+
+/** What the caller believes the current identity to be. */
+export interface ExpectedIdentity {
+  scanId?: string;
+  commit?: string;
+  candidateManifestId?: string;
+}
+
+function identityOf(result: ScanResult): Record<string, unknown> | undefined {
+  const identity = result.runIdentity;
+  return isRecord(identity) ? identity : undefined;
+}
+
+/**
+ * Classify a loaded report. Pure — it reads the report and the caller's
+ * expectation, touches nothing else.
+ *
+ * `expected` is optional on purpose: a caller with no expectation still gets an
+ * honest classification, it just cannot detect a cross-identity read.
+ */
+export function classifySavedReport(
+  result: ScanResult,
+  expected?: ExpectedIdentity,
+): SavedReportTrust {
+  const identity = identityOf(result);
+  if (identity === undefined) {
+    return {
+      state: "OPEN",
+      reason:
+        "report carries no run identity — it predates machine-anchored identity, or was written by hand. Usable as history, not as proof.",
+    };
+  }
+  const scanId = identity["scanId"];
+  if (typeof scanId !== "string" || scanId.length === 0) {
+    return {
+      state: "OPEN",
+      reason: "run identity has no scanId — the identity is unusable.",
+    };
+  }
+  const commit =
+    typeof identity["commit"] === "string" ? identity["commit"] : undefined;
+  const candidate = identity["candidate"];
+  const candidateManifestId =
+    isRecord(candidate) && typeof candidate["manifestId"] === "string"
+      ? candidate["manifestId"]
+      : undefined;
+
+  if (expected !== undefined) {
+    if (expected.scanId !== undefined && expected.scanId !== scanId) {
+      return {
+        state: "OPEN",
+        reason: `report was produced by a different run (${scanId}) than the current one (${expected.scanId})`,
+      };
+    }
+    if (expected.commit !== undefined && expected.commit !== commit) {
+      return {
+        state: "OPEN",
+        reason: `report was produced against commit ${commit ?? "unknown"}, not ${expected.commit}`,
+      };
+    }
+    if (
+      expected.candidateManifestId !== undefined &&
+      expected.candidateManifestId !== candidateManifestId
+    ) {
+      return {
+        state: "OPEN",
+        reason: `report is bound to candidate ${candidateManifestId ?? "none"}, not ${expected.candidateManifestId}`,
+      };
+    }
+  }
+
+  return {
+    state: "VERIFIED",
+    scanId,
+    ...(commit !== undefined ? { commit } : {}),
+    ...(candidateManifestId !== undefined ? { candidateManifestId } : {}),
+  };
+}
+
+export interface LoadedReport {
+  result: ScanResult;
+  trust: SavedReportTrust;
+  path: string;
+}
+
+/**
+ * Load a saved report AND classify it.
+ *
+ * `loadSavedReport` stays for callers that genuinely only need the parse; the
+ * trust-aware path is here so that no consumer reaches a report's contents
+ * without having been told how much they may believe.
+ */
+export function loadSavedReportStrict(
+  reportPath: string,
+  expected?: ExpectedIdentity,
+): LoadedReport {
+  const result = loadSavedReport(reportPath);
+  return {
+    result,
+    trust: classifySavedReport(result, expected),
+    path: reportPath,
+  };
+}
+
+/**
+ * Fail unless a saved report is VERIFIED.
+ *
+ * For the callers whose output IS a trust claim — a release verdict, a
+ * published proof, a badge. Refusing is the whole point: a command that can
+ * render "OPEN" as a pass has reintroduced the defect at a higher layer.
+ */
+export function requireVerifiedReport(
+  loaded: LoadedReport,
+  onUnverified: (trust: SavedReportTrust) => string,
+): void {
+  if (loaded.trust.state === "VERIFIED") return;
+  fail(onUnverified(loaded.trust));
 }

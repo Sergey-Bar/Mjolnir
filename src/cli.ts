@@ -47,6 +47,11 @@ import {
   renderVerbHelp,
   hasVerbHelp,
 } from "./commands/help.js";
+import {
+  captureInternalError,
+  flushSentry,
+  initSentry,
+} from "./integrations/sentry.js";
 import { loadSuppressions, renderSuppressions } from "./config/suppressions.js";
 import { ConfigValidationError } from "./config/config.js";
 import { ciInstall, type GateLevel } from "./integrations/ci-install.js";
@@ -747,10 +752,17 @@ export function isEntryPoint(): boolean {
 }
 
 if (isEntryPoint()) {
+  // Opt-in crash reporting: a no-op unless SENTRY_DSN is set, and it never
+  // touches the exit-code contract below — a lost report must not change
+  // the code CI reads.
+  await initSentry();
   try {
     process.exitCode = await main();
   } catch (err) {
+    captureInternalError(err, "cli");
     internalErrorMessage(err, (s) => process.stderr.write(s + "\n"), false);
     process.exitCode = EXIT_INTERNAL;
+  } finally {
+    await flushSentry();
   }
 }

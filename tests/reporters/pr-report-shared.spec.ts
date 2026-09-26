@@ -271,7 +271,12 @@ describe("renderConfidenceTable", () => {
     expect(text).toContain("| Measured FP (fired) | n/a |");
   });
 
-  it("defaults test counts to 0 when undefined", () => {
+  it("says the counts were never measured, rather than defaulting to 0", () => {
+    // BW-103. This asserted "| Tests analyzed | 0 in 0 files |" — a zero
+    // is a CLAIM that the count was taken and found nothing, which is a
+    // different statement from "nobody measured". The PR comment and the
+    // trust report are the same run seen by two readers; they used to
+    // disagree about whether a measurement existed.
     const {
       testDeclarationCount: _tdc,
       testFileCount: _tfc,
@@ -279,7 +284,19 @@ describe("renderConfidenceTable", () => {
     } = result();
     const lines = renderConfidenceTable(restResult, summary);
     const text = lines.join("\n");
-    expect(text).toContain("| Tests analyzed | 0 in 0 files |");
+    expect(text).toContain("| Tests analyzed | unknown — not measured |");
+    expect(text).not.toContain("0 in 0 files");
+  });
+
+  it("reports each missing half independently instead of filling it in", () => {
+    const { testFileCount: _tfc, ...noFiles } = result();
+    expect(renderConfidenceTable(noFiles, summary).join("\n")).toContain(
+      "in unknown files",
+    );
+    const { testDeclarationCount: _tdc, ...noDecls } = result();
+    expect(renderConfidenceTable(noDecls, summary).join("\n")).toContain(
+      "unknown — not measured in",
+    );
   });
 });
 

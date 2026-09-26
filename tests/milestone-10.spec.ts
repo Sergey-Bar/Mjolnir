@@ -47,7 +47,29 @@ describe("Milestone 10 — Cross-File Analysis Engine", () => {
     const result = analyzeCrossFileSignals(files, [], ".");
     expect(result.signals).toBeDefined();
     expect(result.dependencyGraphSize).toBeDefined();
-    expect(result.reachableFilesCount).toBeDefined();
+    // This used to be `reachableFilesCount`, asserted only `toBeDefined()` —
+    // which passed while the value was the INPUT SIZE echoed back, printed
+    // downstream as "Reachable files: 2". Asserting a fabricated constant
+    // locked it in. What is asserted now is that the report says so when it
+    // resolved nothing.
+    expect(result.reachability).toBeDefined();
+    expect(result.reachability.resolvedAny).toBe(false);
+    expect(result.reachability.reachable).toEqual([]);
+    expect(result.reachability.unresolvedStarts).toEqual([
+      "a.spec.ts",
+      "b.spec.ts",
+    ]);
+  });
+
+  it("the rendered report never presents an untraced count as reachable files", () => {
+    // The user-visible form of the same defect.
+    const files = [{ path: "a.spec.ts", text: "test('a', () => {})" }];
+    const rendered = renderCrossFileAnalysis(
+      analyzeCrossFileSignals(files, [], "."),
+    );
+    expect(rendered).toContain("not resolved");
+    expect(rendered).toContain("not evidence of a traversal");
+    expect(rendered).not.toMatch(/Reachable files: 1\b/);
   });
 
   it("uses the supplied target root for dependency analysis", () => {

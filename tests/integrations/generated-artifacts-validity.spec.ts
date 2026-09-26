@@ -81,8 +81,13 @@ describe("`ci install` gate script semantics (bug-audit H2b/H2c — executed, no
    * is a standalone `node -e` script; here it is executed for real against
    * fixture scan results, asserting the exact contract:
    *   clean → 0 · errors → 1 · warnings-only → 1 iff gate=warning ·
-   *   partial → always 0 (a truncated scan must never block) ·
+   *   partial → 1 at every gate (an incomplete scan is not a pass) ·
    *   missing mjolnir.json → 1 (a crashed scan must never pass).
+   *
+   * The partial row used to assert 0 with the rationale "a truncated scan
+   * must never block". That is the withdrawn V5-002 semantics: the
+   * unanalyzed surface is exactly where an unknown blocking finding lives,
+   * so a partial result is INCONCLUSIVE, not a pass. See docs/VERSIONING.md.
    */
   const GATE_CASES: Array<{
     name: string;
@@ -115,14 +120,22 @@ describe("`ci install` gate script semantics (bug-audit H2b/H2c — executed, no
       expected: { error: 0, warning: 1 },
     },
     {
-      name: "a partial scan never blocks either gate",
+      name: "a partial scan fails both gates, findings or not",
+      // Law 11: a complete empty result may be clean; an INCOMPLETE empty
+      // result is inconclusive. Two cases, same verdict — otherwise the gate
+      // is only reacting to the findings and not to the incompleteness.
       result: {
         partial: true,
         findings: [
           { severity: "error", ruleId: "QA-PW-101", file: "a.ts", line: 1 },
         ],
       },
-      expected: { error: 0, warning: 0 },
+      expected: { error: 1, warning: 1 },
+    },
+    {
+      name: "a partial scan with zero findings still fails",
+      result: { partial: true, findings: [] },
+      expected: { error: 1, warning: 1 },
     },
     {
       name: "findings missing severity are ignored, not crashed on",

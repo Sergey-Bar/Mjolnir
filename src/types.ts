@@ -350,6 +350,67 @@ export interface DimensionScore {
 
 export type AnalysisStatus = "complete" | "partial";
 
+/**
+ * The normalized per-test runtime evidence record as it appears in a report
+ * (plan V5-011). Structurally the `EvidenceRecord` from
+ * `src/engine/evidence-core.ts`, restated here so the report schema does not
+ * depend on an engine module's internals — the wire shape is a contract.
+ */
+export interface EvidenceRecordShape {
+  source: string;
+  artifact: string;
+  file: string;
+  title: string;
+  line?: number;
+  status: {
+    final: string;
+    failed: boolean;
+    retried: boolean;
+    passedOnRetry: boolean;
+    skipped: boolean;
+    timedOut: boolean;
+  };
+  attempts: number;
+  durationMs: number;
+  errors: string[];
+  attachments: string[];
+  provenance: { core: string; ingest: string };
+}
+
+/**
+ * Candidate binding (plan V5-010).
+ *
+ * The immutable identity of the release candidate a run was produced against.
+ * It is what makes a claim replayable: "this verdict belongs to candidate
+ * X, built from commit Y with lockfile Z" can be re-checked; "this verdict
+ * belongs to whatever was on the machine" cannot.
+ *
+ * Every field is required. A partial binding is worse than none, because a
+ * consumer cannot tell which link is missing — so an unbound run omits the
+ * whole object rather than filling in what it has.
+ */
+export interface CandidateBinding {
+  /** The candidate manifest's own id. */
+  manifestId: string;
+  /** WORKING_CANDIDATE | RELEASE_CANDIDATE. */
+  state: "WORKING_CANDIDATE" | "RELEASE_CANDIDATE";
+  /**
+   * The immutable commit this candidate is bound to, or null for a working
+   * candidate — which by definition has no commit yet.
+   */
+  candidateSha: string | null;
+  /** The commit the candidate was branched from. */
+  baseSha: string;
+  /** sha256 of package.json as published for the candidate. */
+  packageSha256: string;
+  /** sha256 of the lockfile as published for the candidate. */
+  lockfileSha256: string;
+  /** Who owns the candidate. "UNASSIGNED" is a real, reportable value. */
+  owner: string;
+  /** NOT_AUTHORIZED | AUTHORIZED. Never inferred from evidence. */
+  releaseAuthorizationState: "NOT_AUTHORIZED" | "AUTHORIZED";
+}
+
 export interface ScanResult {
   schemaVersion: typeof SCHEMA_VERSION;
   /** False when budget expired or files were skipped (§18.3). */
@@ -492,6 +553,38 @@ export interface ScanResult {
     scoringModelVersion?: string;
     frameworkSupportMatrixVersion?: string;
     commit?: string;
+    /** The worktree tree hash the run was bound to, when known. */
+    tree?: string;
+    /** The lockfile digest the run was bound to, when known. */
+    lockfile?: string;
+    /**
+     * Which identity links this run actually bound (plan V5-010). Derived, not
+     * asserted by each consumer: a claim is replayable only when every link it
+     * depends on is present.
+     *
+     * OPTIONAL on purpose. The machine contract is v1 additive-only, so a
+     * report written before this field existed has none, and a reader that
+     * required it would reject exactly the older artifacts it must tolerate.
+     * Absence means "produced by a build that did not record bindings" — never
+     * "bound to everything".
+     */
+    boundLinks?: Array<
+      | "input"
+      | "rules"
+      | "config"
+      | "engine"
+      | "commit"
+      | "tree"
+      | "lockfile"
+      | "candidate"
+    >;
+    /**
+     * The release candidate this run is bound to (plan V5-010). Absent for an
+     * ordinary scan of a working tree — a run is not a release candidate, and
+     * saying otherwise would let a local scan stand in for authorized
+     * evidence.
+     */
+    candidate?: CandidateBinding;
   };
   /**
    * Evidence Graph (R4c): the chain-law links (VERDICT ← EVIDENCE ←
@@ -508,6 +601,31 @@ export interface ScanResult {
       configFingerprint: string;
       engineVersion: string;
     };
+    /** The release candidate the verdict belongs to, when bound (V5-010). */
+    candidate?: { manifestId: string; candidateSha: string | null };
+  };
+  /**
+   * The normalized evidence core (plan V5-011).
+   *
+   * Present whenever the run ingested a runtime report. `records` is the
+   * canonical, deterministically-ordered set that every downstream consumer
+   * reads — before this, the core was computed and discarded inside the
+   * pipeline, so a re-derivation had to re-parse the report and could disagree
+   * with the verdict it was supposed to explain.
+   *
+   * Empty `records` with a null `artifact` means no runtime evidence was
+   * found, which is different from a run that found an empty report.
+   */
+  evidence?: {
+    records: Array<EvidenceRecordShape>;
+    counts: {
+      total: number;
+      failed: number;
+      flaky: number;
+      skipped: number;
+      timedOut: number;
+    };
+    artifact: string | null;
   };
   /**
    * Local incremental cache report (Beta-to-Stable plan, M5.2). Present

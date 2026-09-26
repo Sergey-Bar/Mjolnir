@@ -13,7 +13,11 @@ import {
   deriveTrustLevel,
   stampRuntimeCorroboration,
 } from "../../src/engine/runtime-corroboration.js";
-import type { Finding, RuntimeCorroboration } from "../../src/types.js";
+import {
+  TRUST_ORDER,
+  type Finding,
+  type RuntimeCorroboration,
+} from "../../src/types.js";
 import type { ForensicsReport } from "../../src/forensics/types.js";
 
 describe("TI-016: runtime proximity ≠ automatic promotion", () => {
@@ -197,7 +201,9 @@ describe("TI-016: runtime proximity ≠ automatic promotion", () => {
     });
 
     it("L0 < L1 < L2 < L3 < L4 < L5 ordering is respected", () => {
-      const order = ["L0", "L1", "L2", "L3", "L4", "L5"];
+      // The real ladder, not a copy: an ordering assertion against a private
+      // list keeps passing after the ladder changes.
+      const order = [...TRUST_ORDER];
       const levels = [
         deriveTrustLevel({
           evidenceLevel: "E0",

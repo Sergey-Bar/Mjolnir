@@ -1,0 +1,19 @@
+{
+  "product": "mjolnir-qa",
+  "version": "4.0.0",
+  "shape": "zero-runtime-dependency local CLI",
+  "network": "none — no telemetry, no hosted service, no sync",
+  "runtimeDependencies": 0,
+  "verified": [
+    "local-only execution (tests/contract/privacy-network-isolation.spec.ts)",
+    "versioned threat + data-flow model (npm run enterprise:threat-model)",
+    "deterministic machine contract, drift-locked (contractVersion 1)"
+  ],
+  "notProvided": [
+    "SSO / SAML / OIDC — no server, no session, no identity provider integration",
+    "hosted control plane, multi-tenant sync, or audit-log service",
+    "compliance certification or auditor-facing control mapping",
+    "air-gapped installation or offline recovery drill (see GAP-M26-015)"
+  ],
+  "unsupportedRequests": "docs/M26-SUPPORT-MATRIX.json records each of these as an explicit BLOCKED cell rather than a plan."
+}

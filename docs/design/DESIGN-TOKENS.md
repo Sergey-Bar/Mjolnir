@@ -72,7 +72,7 @@ Non-score status. `ok` is never a score colour.
 
 ### score
 
-The ScoreState bands. Thresholds and runes live in `src/reporter/score-state.ts`.
+The ScoreState bands. Thresholds and runes live in `src/reporter/presentation.ts`.
 
 | Token              | Value     |                         |
 | ------------------ | --------- | ----------------------- |

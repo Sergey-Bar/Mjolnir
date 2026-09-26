@@ -96,7 +96,19 @@ describe("root action.yml (Marketplace surface) is locked", () => {
     ) as { version: string; publishedStable: string };
     expect(action.inputs["version"]?.default).toBe(pkg.publishedStable);
     expect(pkg.publishedStable).not.toContain("-");
-    expect(pkg.publishedStable).not.toBe(ENGINE_VERSION);
+    // The Action default is the last PUBLISHED stable, so it must not name
+    // the working tree's build. While this repository was a release
+    // candidate those were different strings and this was a real assertion.
+    // On a stable release `publishedStable` IS the working version, and the
+    // requirement is expressed by the two assertions above — the default
+    // equals the published record, and that record is not a prerelease.
+    // Asserting they differ would demand that a published release lie about
+    // its own version.
+    if (pkg.version.includes("-")) {
+      expect(pkg.publishedStable).not.toBe(ENGINE_VERSION);
+    } else {
+      expect(pkg.version).toBe(pkg.publishedStable);
+    }
   });
 
   it("rejects an unpublished pinned version before the scan, with a reason", () => {
@@ -353,11 +365,16 @@ describe("ci-install action template agrees with the real action.yml", () => {
     }
   });
 
-  it("the enforcing template pins an exact mjolnir-qa version (never floating)", () => {
+  it("the enforcing template never floats the version", () => {
+    // The template used to pin `version: ${CLI_VERSION}` — the working
+    // version, which is not on npm while the candidate is a release
+    // candidate, so a generated workflow could not install what it asked for.
+    // The input is now omitted and the Action's own default (the published
+    // stable) applies, which is the one value that always resolves.
     for (const gate of ["error", "warning"] as GateLevel[]) {
       const text = ACTION_TEMPLATE(gate);
-      expect(text).toMatch(/version: \d+\.\d+\.\d+/);
-      expect(text).not.toContain("@latest");
+      expect(text, gate).not.toContain("@latest");
+      expect(text, gate).not.toMatch(/version: \d+\.\d+\.\d+/);
     }
   });
 });

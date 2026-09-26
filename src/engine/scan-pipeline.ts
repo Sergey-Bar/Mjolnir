@@ -28,6 +28,12 @@ import {
 import { deriveCompletion } from "./completion.js";
 import { buildTrustSummary } from "./trust-summary.js";
 import { buildEvidenceGraph, buildRunIdentity } from "./run-identity.js";
+import {
+  createExecutor,
+  executeFiles,
+  type FileOutcome,
+} from "./file-executor.js";
+import { bindRepository, readCandidateBinding } from "./candidate-binding.js";
 import { ENGINE_VERSION } from "./version.js";
 import {
   TRUST_MODEL_VERSION,
@@ -65,7 +71,11 @@ import type {
   LanguageAdapter,
 } from "./adapter.js";
 import { stampRuntimeCorroboration } from "./runtime-corroboration.js";
-import { buildEvidenceRecords } from "./evidence-core.js";
+import {
+  buildEvidenceRecords,
+  countEvidence,
+  type EvidenceRecord,
+} from "./evidence-core.js";
 import { classifyProvenance, computeAgenticProfile } from "./provenance.js";
 import { releaseTreeSitterResources } from "./tree-sitter-ast.js";
 import { resetTsMorphProject } from "./ts-ast.js";
@@ -620,8 +630,6 @@ export async function runFileAnalysisPhase(
       skippedFiles++;
       continue;
     }
-    let fileBudgetExceeded = false;
-    let fileRuleFailed = false;
     const relPath = relative(workspace.root, path).replaceAll("\\", "/");
     if (!isCiAdapter) {
       const langMap: Record<
@@ -655,90 +663,153 @@ export async function runFileAnalysisPhase(
       identity(wantsAst ? "ast" : "regex"),
     );
     const cachedFindings = cache.lookup(cacheKey);
-    if (cachedFindings) {
-      for (const f of cachedFindings) findings.push(f);
-      analyzed++;
-      continue;
-    }
-    hooks.onProgress?.({
-      phase: "parse",
-      done: scanned,
-      total: testFiles.length,
-      detail: relPath,
-    });
-    const parsedFile: ParsedFile = { path: relPath, text };
-    let parsed: ParsedAst | undefined;
-    const findingsStart = findings.length;
-    try {
-      if (adapter.parseAst && wantsAst) {
-        hooks.onProgress?.({
-          phase: "rules",
-          done: scanned,
-          total: testFiles.length,
-          detail: relPath,
-        });
-        parsed = await adapter.parseAst(parsedFile);
-      }
-      const actualMode: "ast" | "regex" = parsed ? "ast" : "regex";
-      if (wantsAst && actualMode === "regex") {
-        parseFallbacks++;
-        cacheKey = fileCacheKey(rulesDigest, text, identity(actualMode));
-        const fallbackFindings = cache.lookup(cacheKey);
-        if (fallbackFindings) {
-          for (const f of fallbackFindings) findings.push(f);
-          analyzed++;
-          continue;
+
+    // V5-020: the per-file analysis now goes through the FileExecutor seam.
+    // This is the boundary that made the execution strategy untestable before:
+    // the parse, the rule run, the containment and the cache write all happen
+    // behind `execute`, so a different strategy is a different executor object
+    // rather than an edit to the pipeline.
+    //
+    // The outer loop still walks files sequentially because the accumulators it
+    // maintains (declaration counts, provenance, the truncation flags) are
+    // per-file observations in file order. The ANALYSIS is what the seam owns,
+    // and the seam guarantees it returns findings in input order and contains a
+    // failure to the file that caused it.
+    const executor = createExecutor(
+      "sequential",
+      1,
+      async (job): Promise<FileOutcome> => {
+        if (job.cacheHit !== undefined) {
+          return {
+            path: job.path,
+            status: "CACHE_HIT",
+            findings: [...job.cacheHit],
+            parseFallback: false,
+          };
         }
-      }
-      const fileForRules: ParsedFile = parsed
-        ? { ...parsedFile, ast: parsed.ast }
-        : parsedFile;
-      adapter.runRules(
-        activeRules,
-        fileForRules,
-        (f, ruleId, category) => {
-          if (!isValidFindingRecord(f)) {
-            fileRuleFailed = true;
-            onRuleCrash?.(
-              ruleId,
-              relPath,
-              new Error(
-                `malformed finding record rejected (severity/line/message must be present, severity ∈ error|warning|info): ${JSON.stringify(f)}`,
-              ),
-            );
-            return;
+        let parseFallback = false;
+        let fileRuleFailed = false;
+        let fileBudgetExceeded = false;
+        let parsedAst: ParsedAst | undefined;
+        try {
+          if (adapter.parseAst && job.wantsAst) {
+            hooks.onProgress?.({
+              phase: "rules",
+              done: scanned,
+              total: testFiles.length,
+              detail: job.path,
+            });
+            parsedAst = await adapter.parseAst({
+              path: job.path,
+              text: job.text,
+            });
           }
-          findings.push({ ...f, ruleId, category } as Finding);
-        },
-        (ruleId, error) => {
-          fileRuleFailed = true;
-          onRuleCrash?.(ruleId, relPath, error);
-        },
+          const actualMode: "ast" | "regex" = parsedAst ? "ast" : "regex";
+          if (job.wantsAst && actualMode === "regex") {
+            parseFallback = true;
+            parseFallbacks++;
+            cacheKey = fileCacheKey(
+              rulesDigest,
+              job.text,
+              identity(actualMode),
+            );
+            const fallbackFindings = cache.lookup(cacheKey);
+            if (fallbackFindings) {
+              return {
+                path: job.path,
+                status: "CACHE_HIT",
+                findings: [...fallbackFindings],
+                parseFallback: true,
+              };
+            }
+          }
+          const fileForRules: ParsedFile = parsedAst
+            ? { path: job.path, text: job.text, ast: parsedAst.ast }
+            : { path: job.path, text: job.text };
+          const produced: Finding[] = [];
+          adapter.runRules(
+            activeRules,
+            fileForRules,
+            (f, ruleId, category) => {
+              if (!isValidFindingRecord(f)) {
+                fileRuleFailed = true;
+                onRuleCrash?.(
+                  ruleId,
+                  job.path,
+                  new Error(
+                    `malformed finding record rejected (severity/line/message must be present, severity ∈ error|warning|info): ${JSON.stringify(f)}`,
+                  ),
+                );
+                return;
+              }
+              produced.push({ ...f, ruleId, category } as Finding);
+            },
+            (ruleId, error) => {
+              fileRuleFailed = true;
+              onRuleCrash?.(ruleId, job.path, error);
+            },
+            {
+              deadline: Math.min(
+                deadline,
+                Date.now() + LIMITS.maxFileAnalysisMs,
+              ),
+              onExceeded: () => {
+                rulesPartial = true;
+                skippedFiles++;
+                truncationReasons.add("file-budget");
+                fileBudgetExceeded = true;
+              },
+            },
+          );
+          if (!fileRuleFailed && !fileBudgetExceeded) analyzed++;
+          if (!fileRuleFailed) {
+            cache.store(cacheKey, produced, fileBudgetExceeded);
+          }
+          return {
+            path: job.path,
+            status: "OK",
+            findings: produced,
+            parseFallback,
+          };
+        } catch {
+          // Containment, not propagation: a file that fails to analyze is
+          // counted, and the run continues. The executor turns a THROW into a
+          // FAILED outcome; the counters below are what keep the failure
+          // visible in the report.
+          if (job.wantsAst) parseFallbacks++;
+          skippedFiles++;
+          parseFailed++;
+          return {
+            path: job.path,
+            status: "FAILED",
+            findings: [],
+            parseFallback,
+          };
+        } finally {
+          parsedAst?.dispose();
+        }
+      },
+    );
+
+    const outcomes = await executeFiles(
+      [
         {
-          deadline: Math.min(deadline, Date.now() + LIMITS.maxFileAnalysisMs),
-          onExceeded: () => {
-            rulesPartial = true;
-            skippedFiles++;
-            truncationReasons.add("file-budget");
-            fileBudgetExceeded = true;
-          },
+          path: relPath,
+          text,
+          wantsAst,
+          ...(cachedFindings !== undefined ? { cacheHit: cachedFindings } : {}),
         },
-      );
-      if (!fileRuleFailed && !fileBudgetExceeded) analyzed++;
-      if (!fileRuleFailed) {
-        cache.store(
-          cacheKey,
-          findings.slice(findingsStart),
-          fileBudgetExceeded,
-        );
+      ],
+      executor,
+    );
+    const outcome = outcomes[0];
+    if (outcome?.status === "CACHE_HIT" || outcome?.status === "OK") {
+      // Findings are appended in the executor's (input) order, which for a
+      // single-job batch is the file order the loop is already walking.
+      for (const f of outcome.findings) findings.push(f);
+      if (cachedFindings !== undefined && outcome.status === "CACHE_HIT") {
+        analyzed++;
       }
-    } catch {
-      // intentional: parse/analysis failure — counted via skippedFiles/parseFailed, never fatal
-      if (wantsAst) parseFallbacks++;
-      skippedFiles++;
-      parseFailed++;
-    } finally {
-      parsed?.dispose();
     }
   }
 
@@ -761,6 +832,12 @@ export interface PostScanResult {
   frameworks: ReturnType<typeof detectFrameworks>;
   runtimeReportPath: string | undefined;
   runtimeIncomplete: boolean;
+  /**
+   * The normalized evidence core (V5-011). Persisted rather than discarded,
+   * so every post-ingest projection reads records instead of re-parsing a
+   * report that may have changed underneath it.
+   */
+  evidenceRecords: EvidenceRecord[];
   /** Aggregate forensic classifications from the ingested runtime report. */
   forensicVerdicts: ForensicVerdictSummary | undefined;
   config: ReturnType<typeof loadConfig>["config"];
@@ -873,9 +950,17 @@ export function applyPostScanProcessing(
     discoveredReport !== undefined &&
     discoveredReport.report.analysisComplete !== true;
   let forensicVerdicts: ForensicVerdictSummary | undefined;
+  // V5-011 (G-V5-031): these records used to be built and thrown away on the
+  // floor, so the normalized evidence core existed only as a throwaway value
+  // while corroboration re-derived the same facts from the raw report. They
+  // are persisted on the result and consumed from here on.
+  let evidenceRecords: EvidenceRecord[] = [];
   if (discoveredReport && discoveredReport.report.analysisComplete === true) {
     try {
-      buildEvidenceRecords(discoveredReport.report, discoveredReport.path);
+      evidenceRecords = buildEvidenceRecords(
+        discoveredReport.report,
+        discoveredReport.path,
+      );
       stampRuntimeCorroboration(
         findings,
         discoveredReport.report,
@@ -884,9 +969,11 @@ export function applyPostScanProcessing(
       forensicVerdicts = summarizeForensicVerdicts(discoveredReport.report);
     } catch {
       /* corrupt report — no runtime evidence */
+      evidenceRecords = [];
     }
   }
   return {
+    evidenceRecords,
     testDeclarationCount,
     scopeInfo,
     suppressionCount,
@@ -927,6 +1014,7 @@ export interface AssembleScanResultInput {
   frameworks: ReturnType<typeof detectFrameworks>;
   runtimeReportPath: string | undefined;
   runtimeIncomplete?: boolean;
+  evidenceRecords?: EvidenceRecord[];
   forensicVerdicts: ForensicVerdictSummary | undefined;
   config: ReturnType<typeof loadConfig>["config"];
   fileProvenance: Array<{
@@ -1108,6 +1196,14 @@ export function assembleScanResult(o: AssembleScanResultInput): ScanResult {
       : {}),
     identityIncomplete,
   });
+  // The repository binding (V5-010). Before this, `commit` was declared on
+  // RunIdentity for the project's whole life and never populated: a run could
+  // not be traced to the tree it analysed, so two runs over identical bytes
+  // from different commits shared an identity. All of it is optional — a scan
+  // outside a repository is a legitimate scan, and its identity must not
+  // claim a binding it does not have.
+  const repository = bindRepository(o.scanRoot.root);
+  const candidate = readCandidateBinding(o.scanRoot.root);
   const runIdentity = buildRunIdentity({
     files: inputSnapshot,
     rules: [...o.REVISION_BY_RULE_ID.entries()].map(
@@ -1120,8 +1216,20 @@ export function assembleScanResult(o: AssembleScanResultInput): ScanResult {
     scoringModelVersion: SCORING_MODEL_VERSION,
     frameworkSupportMatrixVersion: FRAMEWORK_SUPPORT_MATRIX_VERSION,
     evidenceSchemaVersions: [EVIDENCE_SCHEMA_VERSION],
+    ...repository,
+    ...(candidate !== null ? { candidate } : {}),
   });
-  const evidenceGraph = buildEvidenceGraph({ runId: runIdentity });
+  const evidenceGraph = buildEvidenceGraph({
+    runId: runIdentity,
+    ...(candidate !== null
+      ? {
+          candidate: {
+            manifestId: candidate.manifestId,
+            candidateSha: candidate.candidateSha,
+          },
+        }
+      : {}),
+  });
   const hasTests = o.testFileCount > 0 && o.testDeclarationCount > 0;
   const suiteInvalidatedBy = [
     ...new Set(
@@ -1141,6 +1249,15 @@ export function assembleScanResult(o: AssembleScanResultInput): ScanResult {
     scopeIntegrity,
     runIdentity,
     evidenceGraph,
+    // V5-011: the normalized evidence core is persisted, not discarded. It is
+    // the input to `finalizeScanResult`, which re-derives the trust
+    // projections after ingest — so a re-derivation reads records rather than
+    // re-parsing a report that may have changed underneath it.
+    evidence: {
+      records: o.evidenceRecords ?? [],
+      counts: countEvidence(o.evidenceRecords ?? []),
+      artifact: o.runtimeReportPath ?? null,
+    },
     score: finalScore,
     ...(hasTests ? {} : { reason: "no-tests-found" as const }),
     frameworks: o.frameworks.frameworks,

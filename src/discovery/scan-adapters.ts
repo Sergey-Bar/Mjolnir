@@ -117,9 +117,41 @@ export function discoverAllTestFiles(
   });
 }
 
+/**
+ * Would ignoring this file have removed it from the scanned surface?
+ *
+ * The bug this fixes, reproduced: a repo containing a real test file plus
+ * `vendor.min.js` and `pnpm-lock.yaml` reported
+ *
+ *   discovered: 1, analyzed: 1, ignored: 2, scopeVerdict: "PARTIAL"
+ *
+ * Every discovered test file HAD been analyzed. The surface was complete. But
+ * DEFAULT_IGNORES matches minified bundles and lockfiles, and the ignored
+ * counter accepted any path with a source extension — so a minified bundle and
+ * a lockfile downgraded a finished scan to "unverified".
+ *
+ * That is not a conservative bias, it is a broken signal. The terminal tells
+ * the reader "some files were not analyzed, so the surface is unverified" —
+ * which was false. And because minified bundles and lockfiles exist in
+ * essentially every real repository, a PROVEN scan was unreachable in
+ * practice, so the corpus regression guard failed 23 of 37 repositories on
+ * exactly this. A gate that cannot pass teaches people to ignore it.
+ *
+ * The asymmetry is the tell. `isUnrecognizedSourceCandidate` below applies a
+ * test-relevance test before counting a file; this one did not. Both count
+ * against the same verdict, so both must ask the same question.
+ *
+ * An ignored file that IS a test file still downgrades the verdict. That is
+ * the case the honesty law exists for, and this does not touch it.
+ */
 function isScopeRelevantIgnored(path: string): boolean {
   const name = path.replaceAll("\\", "/").split("/").pop() ?? path;
-  return /\.(?:[cm]?[jt]sx?|py|java|cs|ya?ml|min\.js)$/i.test(name);
+  if (!/\.(?:[cm]?[jt]sx?|py|java|cs|ya?ml|min\.js)$/i.test(name)) {
+    return false;
+  }
+  // Would a shipped adapter have claimed this as a test file had it not been
+  // ignored? If not, ignoring it removed nothing from the scanned surface.
+  return isKnownTestFile(path);
 }
 
 function isUnrecognizedSourceCandidate(path: string): boolean {

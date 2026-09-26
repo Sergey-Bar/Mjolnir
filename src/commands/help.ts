@@ -301,17 +301,6 @@ export const HELP_ENTRIES: HelpEntry[] = [
     examples: ["mjolnir mcp"],
   },
   {
-    verb: "business-case",
-    summary:
-      "estimate measured false-positive risk and projected savings (advisory)",
-    usage:
-      "mjolnir business-case [path] [--industry <profile>] [--history <months>] [--projected <months>] [--strict]",
-    examples: [
-      "mjolnir business-case . --industry fintech",
-      "mjolnir business-case . --projected 12",
-    ],
-  },
-  {
     verb: "release-report",
     summary: "release readiness verdict: GO, CONDITIONAL GO, or NO-GO",
     usage: "mjolnir release-report [path] [--since <ref>] [--history <json>]",
@@ -372,13 +361,25 @@ export const HELP_ENTRIES: HelpEntry[] = [
   {
     verb: "enterprise",
     summary:
-      "generate self-hosted deployment and compliance templates (prototype)",
-    usage: "mjolnir enterprise <config|sso|compliance> [output-dir]",
+      "capability manifest for deployment review — records what this product does NOT provide (no server, no SSO, no hosted tier, no compliance packet)",
+    usage: "mjolnir enterprise config [output-dir]",
     examples: ["mjolnir enterprise config ./enterprise-output"],
+    next: "sso and compliance subcommands were removed in 4.0 — they wrote artifacts describing capabilities Mjölnir does not have. Read the manifest's `notProvided` list instead.",
+  },
+  {
+    verb: "business-case",
+    summary:
+      "measured false-positive rates per finding; a cost figure only with --incident-cost",
+    usage: "mjolnir business-case [path] [--incident-cost <n>] [--strict]",
+    examples: [
+      "mjolnir business-case .",
+      "mjolnir business-case . --incident-cost 25000",
+    ],
+    next: "Mjölnir will not estimate the cost of a false-green incident for you — that number has to come from your own incident history.",
   },
   {
     verb: "maturity",
-    summary: "assess quality maturity or display maturity levels",
+    summary: "presence of named QA artifacts (a signal, not a maturity score)",
     usage: "mjolnir maturity <assess|levels> [path]",
     examples: ["mjolnir maturity assess .", "mjolnir maturity levels"],
   },

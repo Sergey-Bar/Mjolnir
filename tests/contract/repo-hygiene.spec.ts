@@ -283,7 +283,14 @@ describe("smithery.yaml descriptor sync", () => {
     // A descriptor whose version field is right but whose npx args point at an
     // unpublished build installs a different package than the one it advertises.
     expect(smitheryYaml).toContain(`mjolnir-qa@${pkg.publishedStable}`);
-    expect(smitheryYaml).not.toContain(`mjolnir-qa@${pkg.version}`);
+    // Only meaningful while the two differ. On a stable release they are the
+    // same string, and asserting both would make the test unsatisfiable — it
+    // would demand the descriptor contain `mjolnir-qa@4.0.0` and forbid it in
+    // the next line. The intent is "never name an UNPUBLISHED build", and on a
+    // stable release there is no unpublished build to name.
+    if (pkg.publishedStable !== pkg.version) {
+      expect(smitheryYaml).not.toContain(`mjolnir-qa@${pkg.version}`);
+    }
   });
 
   it("names every tool in the MCP catalog in its description", async () => {

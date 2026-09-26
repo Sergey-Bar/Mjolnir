@@ -16,6 +16,7 @@
  */
 
 import { TINT, type DiagramTint } from "../brand/tokens.js";
+import { deriveScoreState } from "./presentation.js";
 
 import type { DimensionScore, ScanResult, Severity } from "../types.js";
 
@@ -39,9 +40,13 @@ function classDef(name: string, tint: DiagramTint): string {
   return `  classDef ${name} fill:${tint.fill},stroke:${tint.stroke},color:${tint.text};`;
 }
 
+/** Band → the Mermaid class name that paints it. BW-104: this used to
+ *  re-declare the 80/50 boundaries, so the diagram could colour a
+ *  dimension the terminal called UNWORTHY. It now asks the one model. */
 function dimensionStyleClass(dim: DimensionScore): string {
-  if (dim.score >= 80) return "healthy";
-  if (dim.score >= 50) return "warn";
+  const band = deriveScoreState(dim.score).band;
+  if (band === "forged" || band === "trusted") return "healthy";
+  if (band === "warning") return "warn";
   return "critical";
 }
 

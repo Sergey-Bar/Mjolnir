@@ -16,7 +16,7 @@ jobs:
       security-events: write
       pull-requests: write
     steps:
-      - run: npx mjolnir-qa@3.0.0 --format sarif > mjolnir.sarif
+      - run: npx mjolnir-qa@4.0.0 --format sarif > mjolnir.sarif
       - uses: github/codeql-action/upload-sarif@v3
         with:
     sarif_file: mjolnir.sarif
@@ -28,7 +28,7 @@ diff annotations:
 ```yaml
 mjolnir:
   image: node:22
-  script: npx --yes mjolnir-qa@3.0.0 . --scope changed --format codequality
+  script: npx --yes mjolnir-qa@4.0.0 . --scope changed --format codequality
     > gl-code-quality-report.json
   artifacts:
     reports:

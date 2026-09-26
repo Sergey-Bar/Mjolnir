@@ -17,6 +17,8 @@
 
 import { createHash } from "node:crypto";
 
+import type { CandidateBinding } from "../types.js";
+
 export interface RunIdentityInput {
   /** The discovered input snapshot: repo-relative path + byte size + content hash. */
   files: Array<{ path: string; size: number; hash?: string }>;
@@ -26,6 +28,18 @@ export interface RunIdentityInput {
   config: unknown;
   /** The engine version (src/engine/version.ts). */
   engineVersion: string;
+  /** The git commit the analysed tree was at, when the run is repo-bound. */
+  commit?: string | undefined;
+  /** The git tree hash of the analysed worktree, when known. */
+  tree?: string | undefined;
+  /** sha256 of the lockfile the run resolved against, when known. */
+  lockfile?: string | undefined;
+  /**
+   * The release candidate this run belongs to. Omit for an ordinary scan: a
+   * local run is not a candidate, and binding it to one would let a working
+   * tree's verdict stand in for authorized evidence.
+   */
+  candidate?: CandidateBinding | undefined;
   /** Content hash of the discovered runtime report, when present. */
   reportDigest?: string | undefined;
   /** Trust model version (src/engine/contract-versions.ts). */
@@ -57,8 +71,35 @@ export interface RunIdentity {
   trustModelVersion?: string;
   scoringModelVersion?: string;
   frameworkSupportMatrixVersion?: string;
+  /** The analysed commit. Populated since V5-010; previously declared, never set. */
   commit?: string;
+  /** The analysed worktree's tree hash. */
+  tree?: string;
+  /** The lockfile digest the run resolved against. */
+  lockfile?: string;
+  /** The release candidate this run is bound to, when it is one. */
+  candidate?: CandidateBinding;
+  /**
+   * The chain links this identity actually binds. A claim is only replayable
+   * when every link it depends on is present, so this is derived rather than
+   * left to each consumer to guess.
+   *
+   * Optional in the TYPE so that reports written before this field existed
+   * still parse (the machine contract is additive-only). `buildRunIdentity`
+   * always sets it; absence means "written by an older build".
+   */
+  boundLinks?: RunIdentityLink[];
 }
+
+export type RunIdentityLink =
+  | "input"
+  | "rules"
+  | "config"
+  | "engine"
+  | "commit"
+  | "tree"
+  | "lockfile"
+  | "candidate";
 
 function sha256(text: string): string {
   return createHash("sha256").update(text).digest("hex");
@@ -106,6 +147,24 @@ export function buildRunIdentity(input: RunIdentityInput): RunIdentity {
     engineVersion: input.engineVersion,
   };
   if (input.reportDigest) verdictInputs.reportDigest = input.reportDigest;
+  // The repository binding (V5-010). These are verdict-affecting: the same
+  // file contents built from a different commit, or resolved against a
+  // different lockfile, are not the same run and must not share an identity.
+  // `commit` was declared on RunIdentity for its whole life and never set,
+  // which is G-V5-033: the identity claimed a binding it did not carry.
+  if (input.commit !== undefined) verdictInputs.commit = input.commit;
+  if (input.tree !== undefined) verdictInputs.tree = input.tree;
+  if (input.lockfile !== undefined) verdictInputs.lockfile = input.lockfile;
+  if (input.candidate !== undefined) {
+    verdictInputs.candidate = {
+      manifestId: input.candidate.manifestId,
+      state: input.candidate.state,
+      candidateSha: input.candidate.candidateSha,
+      baseSha: input.candidate.baseSha,
+      packageSha256: input.candidate.packageSha256,
+      lockfileSha256: input.candidate.lockfileSha256,
+    };
+  }
   if (input.trustModelVersion !== undefined) {
     verdictInputs.trustModelVersion = input.trustModelVersion;
   }
@@ -132,12 +191,19 @@ export function buildRunIdentity(input: RunIdentityInput): RunIdentity {
       input.historicalEvidenceFingerprint;
   }
   const scanId = sha256(canonical(verdictInputs));
+  const boundLinks: RunIdentityLink[] = ["input", "rules", "config", "engine"];
+  if (input.commit !== undefined) boundLinks.push("commit");
+  if (input.tree !== undefined) boundLinks.push("tree");
+  if (input.lockfile !== undefined) boundLinks.push("lockfile");
+  if (input.candidate !== undefined) boundLinks.push("candidate");
+
   return {
     scanId,
     inputFingerprint,
     rulesDigest,
     configFingerprint,
     engineVersion: input.engineVersion,
+    boundLinks,
     ...(input.trustModelVersion !== undefined
       ? { trustModelVersion: input.trustModelVersion }
       : {}),
@@ -147,6 +213,10 @@ export function buildRunIdentity(input: RunIdentityInput): RunIdentity {
     ...(input.frameworkSupportMatrixVersion !== undefined
       ? { frameworkSupportMatrixVersion: input.frameworkSupportMatrixVersion }
       : {}),
+    ...(input.commit !== undefined ? { commit: input.commit } : {}),
+    ...(input.tree !== undefined ? { tree: input.tree } : {}),
+    ...(input.lockfile !== undefined ? { lockfile: input.lockfile } : {}),
+    ...(input.candidate !== undefined ? { candidate: input.candidate } : {}),
   };
 }
 
@@ -172,6 +242,14 @@ export interface EvidenceGraph {
   chain: EvidenceGraphNode[];
   /** The bound run identity when the execution was machine-anchored. */
   runId?: RunIdentity;
+  /**
+   * The release candidate the verdict belongs to, when the run is bound to
+   * one. Kept OUT of the chain links so the chain-law order stays
+   * byte-stable for existing consumers, but present on the graph so a run
+   * with no candidate is visible as a local observation rather than
+   * release evidence.
+   */
+  candidate?: { manifestId: string; candidateSha: string | null };
 }
 
 /**
@@ -187,6 +265,8 @@ export function buildEvidenceGraph(parts: {
   fixture?: string;
   /** Reproduction pointer, e.g. the baseline commit — when known. */
   reproduction?: string;
+  /** The release candidate this run belongs to, when it is one. */
+  candidate?: { manifestId: string; candidateSha: string | null };
 }): EvidenceGraph {
   const chain: EvidenceGraphNode[] = [
     { link: "verdict" },
@@ -224,5 +304,13 @@ export function buildEvidenceGraph(parts: {
   return {
     chain,
     ...(parts.runId !== undefined ? { runId: parts.runId } : {}),
+    ...(parts.candidate !== undefined
+      ? {
+          candidate: {
+            manifestId: parts.candidate.manifestId,
+            candidateSha: parts.candidate.candidateSha,
+          },
+        }
+      : {}),
   };
 }

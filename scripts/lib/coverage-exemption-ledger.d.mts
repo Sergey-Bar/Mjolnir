@@ -27,6 +27,7 @@ export const LEDGER_PATH: string;
 export const COVERAGE_CONFIG_PATH: string;
 export function committedExclusions(root: string): string[];
 export function productionImporters(root: string, targetPath: string): string[];
+export function shippedReachableModules(root: string): Set<string>;
 export function readLedger(root: string): CoverageExemptionLedger;
 export function validateCoverageExemptionLedger(
   root: string,

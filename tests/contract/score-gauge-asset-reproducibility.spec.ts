@@ -15,7 +15,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { buildScoreGaugeSvg } from "../../scripts/generate-readme-score-gauge.js";
-import { deriveScoreState } from "../../src/reporter/score-state.js";
+import { deriveScoreState } from "../../src/reporter/presentation.js";
 
 const ROOT = join(import.meta.dirname, "..", "..");
 const SVG_PATH = join(ROOT, "assets", "readme", "score-gauge.svg");

@@ -116,9 +116,8 @@ Subcommands — Maintenance:
     track framework maturity levels, especially Playwright F4→F5
   suppression-gate [path] [--policy <file>] [--json]
     enforce suppression policy governance gate
-  business-case [path] [--industry <profile>] [--history <months>] [--projected
-  <months>] [--strict]
-    estimate measured false-positive risk and projected savings (advisory)
+  business-case [path] [--incident-cost <n>] [--strict]
+    measured false-positive rates per finding; a cost figure only with --incident-cost
   release-report [path] [--since <ref>] [--history <json>]
     release readiness verdict: GO, CONDITIONAL GO, or NO-GO
   report [path] [--output <file>]                 generate a Playwright-compatible
@@ -133,10 +132,12 @@ Subcommands — Maintenance:
                                                   explicit findings
   dashboard [path] [--output <file>]              generate a self-contained quality
                                                   dashboard HTML artifact
-  enterprise <config|sso|compliance> [output-dir]
-    generate self-hosted deployment and compliance templates (prototype)
-  maturity <assess|levels> [path]                 assess quality maturity or display
-                                                  maturity levels
+  enterprise config [output-dir]                  capability manifest for deployment
+                                                  review — records what this product
+                                                  does NOT provide (no server, no SSO,
+                                                  no hosted tier, no compliance packet)
+  maturity <assess|levels> [path]                 presence of named QA artifacts (a
+                                                  signal, not a maturity score)
 
 Subcommands — Meta:
   rules [--md] [--unmeasured|--measured] [--external] | [--stats] | [--health]
@@ -345,10 +346,9 @@ Subcommands — Maintenance:
     F4→F5
   suppression-gate [path] [--policy <file>] [--json]
     enforce suppression policy governance gate
-  business-case [path] [--industry <profile>] [--history
-  <months>] [--projected <months>] [--strict]
-    estimate measured false-positive risk and projected
-    savings (advisory)
+  business-case [path] [--incident-cost <n>] [--strict]
+    measured false-positive rates per finding; a cost figure
+    only with --incident-cost
   release-report [path] [--since <ref>] [--history <json>]
     release readiness verdict: GO, CONDITIONAL GO, or NO-GO
   report [path] [--output <file>]                 generate a
@@ -381,13 +381,22 @@ Subcommands — Maintenance:
                                                   quality
                                                   dashboard HTML
                                                   artifact
-  enterprise <config|sso|compliance> [output-dir]
-    generate self-hosted deployment and compliance templates
-    (prototype)
-  maturity <assess|levels> [path]                 assess quality
-                                                  maturity or
-                                                  display maturity
-                                                  levels
+  enterprise config [output-dir]                  capability
+                                                  manifest for
+                                                  deployment
+                                                  review — records
+                                                  what this
+                                                  product does NOT
+                                                  provide (no
+                                                  server, no SSO,
+                                                  no hosted tier,
+                                                  no compliance
+                                                  packet)
+  maturity <assess|levels> [path]                 presence of
+                                                  named QA
+                                                  artifacts (a
+                                                  signal, not a
+                                                  maturity score)
 
 Subcommands — Meta:
   rules [--md] [--unmeasured|--measured] [--external] |

@@ -1,0 +1,11 @@
+{
+  "$schema": "https://kilo.ai/schema/kilo.json",
+  "mcp": {
+    "sentry": {
+      "type": "remote",
+      "url": "https://mcp.sentry.dev/mcp/sergeybar",
+      "enabled": true,
+      "timeout": 30000
+    }
+  }
+}

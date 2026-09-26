@@ -10,6 +10,7 @@
 import type { ScanResult, Finding } from "../types.js";
 import type { ForensicsReport } from "../forensics/types.js";
 import { sectionHeader, plainContext } from "../reporter/ui.js";
+import { deriveScoreState } from "../reporter/presentation.js";
 
 const ui = plainContext();
 
@@ -112,9 +113,17 @@ export function buildHandover(
   }
 
   // 🟢 Areas with no findings — likely safe starting points.
+  //
+  // BW-104: the "no findings AND a high score" gate used to type its own
+  // `>= 90`, a fourth band boundary no other surface shared — so a 92
+  // read as a solid foundation here and merely `trusted` in the terminal.
+  // The onboarding hint is really asking "is this a high-trust band?", so
+  // it now asks the one model instead of re-deciding what high means.
   const allKnownFiles = new Set(scan.findings.map((f) => f.file));
   const cleanHint =
-    allKnownFiles.size === 0 && scan.score !== null && scan.score >= 90;
+    allKnownFiles.size === 0 &&
+    scan.score !== null &&
+    deriveScoreState(scan.score).band === "trusted";
   if (cleanHint || scan.findings.length === 0) {
     sections.push({
       heading: "🟢 Solid foundation",
@@ -124,18 +133,35 @@ export function buildHandover(
     });
   }
 
+  // The onboarding summary is a TRUST CLAIM about a suite, and a claim
+  // needs its denominator. `forensics?.flakyTests ?? 0` treated "no run
+  // report was ingested" as "zero flaky tests were found", so a static-
+  // only scan of a genuinely flaky suite printed "Welcome aboard — the
+  // suite is in good shape." Absence of evidence is not evidence of
+  // absence, and the summary line is exactly where a new hire reads it.
+  const flakyFromRuntime = forensics === null ? null : forensics.flakyTests;
   const totalIssues =
-    fakeGreen.length +
-    flaky.length +
-    ciTrust.length +
-    (forensics?.flakyTests ?? 0);
+    fakeGreen.length + flaky.length + ciTrust.length + (flakyFromRuntime ?? 0);
+
+  if (flakyFromRuntime === null) {
+    sections.push({
+      heading: "⚠ Not measured — no runtime evidence",
+      items: [
+        "No run report was ingested, so flakiness, retries and real pass/fail outcomes are UNKNOWN here. " +
+          "Run `mjolnir forensics <results-dir>` (or point this at a test-results directory) before treating this suite as green.",
+        "Everything above is static analysis only (trust L0–L2): it can show a pattern, never confirm a test ran.",
+      ],
+    });
+  }
 
   return {
     sections,
     summaryLine:
-      totalIssues === 0
-        ? "Welcome aboard — the suite is in good shape."
-        : `${totalIssues} thing${totalIssues === 1 ? "" : "s"} to know about before your first release sign-off.`,
+      totalIssues > 0
+        ? `${totalIssues} thing${totalIssues === 1 ? "" : "s"} to know about before your first release sign-off.`
+        : flakyFromRuntime === null
+          ? "Static analysis found nothing — but no runtime evidence was ingested, so this is NOT a statement that the suite is in good shape."
+          : "Welcome aboard — the suite is in good shape.",
   };
 }
 

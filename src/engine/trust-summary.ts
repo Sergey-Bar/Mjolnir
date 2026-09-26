@@ -29,7 +29,10 @@ import type {
   TrustLevel,
   TrustSummary,
 } from "../types.js";
-import { isAdvisoryFinding } from "../types.js";
+// The ladder itself, not a second copy of it. Four modules used to re-list
+// ["L0".."L5"] literally; adding a rung meant finding all four, and a missed
+// one silently reported the wrong level rather than failing.
+import { isAdvisoryFinding, TRUST_ORDER } from "../types.js";
 import { deriveTrustLevel } from "./runtime-corroboration.js";
 import { MEASURED_FP } from "../rules/measured-fp.generated.js";
 
@@ -40,14 +43,13 @@ import { MEASURED_FP } from "../rules/measured-fp.generated.js";
  * empty scan is an observation, not a proof).
  */
 export function summaryTrustLevel(findings: readonly Finding[]): TrustLevel {
-  const order: readonly TrustLevel[] = ["L0", "L1", "L2", "L3", "L4", "L5"];
   let best = 0;
   for (const f of findings) {
     const t = f.trustLevel ?? "L2";
-    const idx = order.indexOf(t);
+    const idx = TRUST_ORDER.indexOf(t);
     if (idx > best) best = idx;
   }
-  return order[best] as TrustLevel;
+  return TRUST_ORDER[best] as TrustLevel;
 }
 
 /**
@@ -59,7 +61,7 @@ export function summaryTrustLevel(findings: readonly Finding[]): TrustLevel {
  */
 function trustRung(f: Finding): number {
   const t = f.trustLevel ?? deriveTrustLevel(f);
-  return ["L0", "L1", "L2", "L3", "L4", "L5"].indexOf(t);
+  return TRUST_ORDER.indexOf(t);
 }
 
 /**

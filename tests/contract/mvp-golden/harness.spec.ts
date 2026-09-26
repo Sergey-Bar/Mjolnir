@@ -16,6 +16,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { runScan } from "../../../src/cli.js";
+import { TRUST_ORDER } from "../../../src/types.js";
 import { renderTrustReport } from "../../../src/reporter/trust-report.js";
 import { runForensics } from "../../../src/forensics/run.js";
 import { workflowRows } from "../../../src/forensics/triage.js";
@@ -161,7 +162,7 @@ describe("golden harness stage 1 — same evidence, same verdict", () => {
       expect(out).toContain(s.level);
     }
     // The rendered report must never invent a level absent from JSON:
-    expect(["L0", "L1", "L2", "L3", "L4", "L5"]).toContain(s?.level ?? "L0");
+    expect(TRUST_ORDER as readonly string[]).toContain(s?.level ?? "L0");
   });
 
   it("determinism: two scans of the same corpus produce identical findings", async () => {
