@@ -7,59 +7,56 @@ contract enforces: **every external import in src/ must belong to the
 allowlist**, and the shipped surface (adapters, rules, flags, formats, exit
 codes) must match this document exactly.
 
-## Inventory: 327 files, 91828 LOC
+## Inventory: 311 files, 66818 LOC
 
-| Area             | Files | LOC   |
-| ---------------- | ----- | ----- |
-| src/engine       | 55    | 24458 |
-| src/commands     | 44    | 13415 |
-| src/rules        | 88    | 11758 |
-| src/(root)       | 8     | 3608  |
-| src/reporter     | 15    | 3366  |
-| src/forensics    | 17    | 3065  |
-| src/governance   | 1     | 2744  |
-| src/ledger       | 1     | 2660  |
-| src/frameworks   | 6     | 2653  |
-| src/detectors    | 1     | 2564  |
-| src/plugins      | 6     | 2295  |
-| src/agent        | 1     | 1726  |
-| src/discovery    | 10    | 1689  |
-| src/adapters     | 11    | 1677  |
-| src/integrations | 11    | 1548  |
-| src/benchmark    | 3     | 1433  |
-| src/gaps         | 2     | 1390  |
-| src/qa           | 1     | 1285  |
-| src/bench        | 5     | 1068  |
-| src/release      | 7     | 1012  |
-| src/research     | 1     | 995   |
-| src/mutation     | 6     | 836   |
-| src/mcp          | 3     | 816   |
-| src/brand        | 3     | 807   |
-| src/config       | 3     | 540   |
-| src/scorer       | 3     | 533   |
-| src/traceability | 2     | 441   |
-| src/scope        | 2     | 427   |
-| src/playwright   | 2     | 312   |
-| src/lib          | 5     | 306   |
-| src/trust        | 2     | 232   |
-| src/anti-gaming  | 2     | 169   |
+| Area              | Files | LOC   |
+| ----------------- | ----- | ----- |
+| src/commands      | 43    | 13545 |
+| src/engine        | 49    | 12138 |
+| src/rules         | 88    | 11758 |
+| src/reporter      | 14    | 3527  |
+| src/(root)        | 7     | 3134  |
+| src/forensics     | 17    | 3065  |
+| src/ledger        | 1     | 2782  |
+| src/integrations  | 12    | 1790  |
+| src/discovery     | 10    | 1777  |
+| src/adapters      | 11    | 1744  |
+| src/gaps          | 2     | 1390  |
+| src/frameworks    | 4     | 1336  |
+| src/release       | 7     | 1012  |
+| src/mcp           | 3     | 829   |
+| src/brand         | 3     | 807   |
+| src/plugins       | 4     | 715   |
+| src/store         | 2     | 671   |
+| src/bench         | 4     | 592   |
+| src/certification | 2     | 560   |
+| src/config        | 3     | 540   |
+| src/scorer        | 3     | 533   |
+| src/mutation      | 5     | 496   |
+| src/traceability  | 2     | 441   |
+| src/scope         | 2     | 427   |
+| src/playwright    | 2     | 328   |
+| src/lib           | 5     | 306   |
+| src/trust         | 2     | 232   |
+| src/benchmark     | 2     | 174   |
+| src/anti-gaming   | 2     | 169   |
 
 ## Internal fan-in — top 15 (change-blast candidates)
 
 | Module                          | Importers |
 | ------------------------------- | --------- |
 | src/types                       | 134       |
-| src/rules/rule                  | 82        |
+| src/rules/rule                  | 81        |
 | src/rules/shared/positions      | 62        |
 | src/reporter/ui                 | 26        |
 | src/lib/fs-atomic               | 20        |
-| src/cli-io                      | 20        |
-| src/forensics/types             | 20        |
-| src/exit-codes                  | 17        |
+| src/cli-io                      | 19        |
+| src/forensics/types             | 19        |
+| src/exit-codes                  | 16        |
 | src/engine/adapter              | 14        |
 | src/rules/index                 | 13        |
+| src/reporter/presentation       | 13        |
 | src/discovery/ignores           | 11        |
-| src/engine/scan-pipeline        | 11        |
 | src/forensics/evidence-hygiene  | 11        |
 | src/rules/measured-fp.generated | 11        |
 | src/engine/ts-ast               | 10        |
@@ -68,17 +65,17 @@ codes) must match this document exactly.
 
 | Dependency         | Files importing it |
 | ------------------ | ------------------ |
-| node:fs            | 69                 |
-| node:path          | 65                 |
-| node:crypto        | 25                 |
+| node:fs            | 70                 |
+| node:path          | 66                 |
+| node:crypto        | 15                 |
 | ts-morph           | 7                  |
 | node:url           | 4                  |
+| node:child_process | 4                  |
 | node:os            | 3                  |
-| node:child_process | 3                  |
 | web-tree-sitter    | 3                  |
 | yaml               | 2                  |
 | node:process       | 2                  |
-| node:util          | 2                  |
+| node:util          | 1                  |
 | node:zlib          | 1                  |
 | node:buffer        | 1                  |
 | node:readline      | 1                  |

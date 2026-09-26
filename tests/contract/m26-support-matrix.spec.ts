@@ -255,8 +255,16 @@ describe("M26 support matrix contract", () => {
         .length,
     };
 
+    // The declared counts must match the cells, and the cells must match the
+    // declared counts. Asserting a hard-coded triple as well was a SECOND copy
+    // of the data — the same mistake as re-listing the trust ladder — and it
+    // meant every legitimate disposition change needed two edits in two files,
+    // with the failure mode being a stale number nobody notices.
     expect(counts).toEqual(matrix.counts);
-    expect(counts).toEqual({ tested: 90, not_applicable: 2, blocked: 44 });
+    expect(
+      counts.tested + counts.not_applicable + counts.blocked,
+      "every cell must be exactly one of the three dispositions",
+    ).toBe(matrix.cells.length);
 
     for (const cell of matrix.cells) {
       expect(cell.schemaVersion).toBe(1);

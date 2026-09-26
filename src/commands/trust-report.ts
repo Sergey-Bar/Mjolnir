@@ -36,9 +36,14 @@ import {
 } from "../reporter/trust-report.js";
 import { errorMessage, type Output } from "../cli-io.js";
 import { pct } from "../lib/format.js";
-import { evidenceTag } from "../reporter/evidence-tag.js";
+import {
+  countOrNull,
+  evidenceLevelOf,
+  evidenceTag,
+  testsAnalyzedCell,
+} from "../reporter/presentation.js";
 import { currentCommit } from "../lib/git-utils.js";
-import { loadSavedReport } from "./report-io.js";
+import { loadSavedReportStrict, type LoadedReport } from "./report-io.js";
 import { writeFileAtomic } from "../lib/fs-atomic.js";
 import { sanitizeErrorText } from "../forensics/evidence-hygiene.js";
 import { sanitizeForMarkdown } from "../integrations/github/evidence-sanitization.js";
@@ -283,7 +288,7 @@ export function renderTrustReportMarkdown(
   );
   lines.push(`| Score | ${result.score ?? "unknown"} |`);
   lines.push(
-    `| Tests analyzed | ${result.testDeclarationCount ?? 0} in ${result.testFileCount ?? 0} files |`,
+    `| Tests analyzed | ${testsAnalyzedCell(result.testDeclarationCount, result.testFileCount)} |`,
   );
   lines.push("");
   if (s.ceilingReasons.length > 0) {
@@ -374,8 +379,10 @@ export function renderTrustReportJson(
         scopeIntegrity: result.scopeIntegrity ?? null,
         verdict: completionVerdict,
         tests: {
-          files: result.testFileCount ?? 0,
-          declarations: result.testDeclarationCount ?? 0,
+          // An unmeasured count is null, not 0. This is the trust-report
+          // artifact's own schema, not the drift-locked scan contract.
+          files: countOrNull(result.testFileCount),
+          declarations: countOrNull(result.testDeclarationCount),
         },
         findings: {
           total: result.findings.length,
@@ -392,7 +399,7 @@ export function renderTrustReportJson(
           severity: f.severity,
           evidence:
             f.runtimeCorroboration === undefined
-              ? (f.evidenceLevel ?? "E2")
+              ? evidenceLevelOf(f)
               : f.runtimeCorroboration.level,
           message: publicJsonText(f.message),
         })),
@@ -426,35 +433,44 @@ export function renderTrustReportHtml(
   const infos = result.findings.filter((f) => f.severity === "info").length;
   const advisory = result.findings.filter((f) => isAdvisoryFinding(f)).length;
 
-  const confidenceRows: string[] = [];
+  // BW-107: typed `[label, value]` pairs, not `"k|v"` strings split back
+  // apart. The old encoding silently truncated any value containing a
+  // pipe — and "Confidence|92% (ceiling 88%)" was only ever safe by luck.
   const measuredFpCell =
     s.measuredFpOfFiredRules !== undefined
       ? pct(s.measuredFpOfFiredRules)
       : s.provisionalRuleIds.length > 0
         ? `PROVISIONAL (${s.provisionalRuleIds.length} unmeasured)`
         : "n/a";
-  confidenceRows.push(
-    `Confidence|${pct(s.confidence)}${s.confidenceCeiling !== undefined ? ` (ceiling ${pct(s.confidenceCeiling)})` : ""}`,
-  );
-  confidenceRows.push(`Evidence coverage|${pct(s.evidenceCoverage)}`);
-  confidenceRows.push(`Inconclusive|${pct(s.inconclusiveRate)}`);
-  confidenceRows.push(`Measured FP (fired)|${measuredFpCell}`);
-  confidenceRows.push(`Score|${result.score ?? "unknown"}`);
-  confidenceRows.push(
-    `Tests analyzed|${result.testDeclarationCount ?? 0} in ${result.testFileCount ?? 0} files`,
-  );
+  const confidenceRows: ReadonlyArray<readonly [string, string]> = [
+    [
+      "Confidence",
+      `${pct(s.confidence)}${s.confidenceCeiling !== undefined ? ` (ceiling ${pct(s.confidenceCeiling)})` : ""}`,
+    ],
+    ["Evidence coverage", pct(s.evidenceCoverage)],
+    ["Inconclusive", pct(s.inconclusiveRate)],
+    ["Measured FP (fired)", measuredFpCell],
+    ["Score", result.score === null ? "unknown" : String(result.score)],
+    [
+      "Tests analyzed",
+      testsAnalyzedCell(result.testDeclarationCount, result.testFileCount),
+    ],
+  ];
+  // BW-108: a real header. The table was a bare <tbody> with zero <th>,
+  // no <caption> and no scope — a screen reader announced six unlabelled
+  // rows, and the column meaning had to be guessed from the label text.
   const confidenceRowsHtml = confidenceRows
-    .map((row) => {
-      const [k, v] = row.split("|");
-      return `<tr><td>${esc(k ?? "")}</td><td>${esc(v ?? "")}</td></tr>`;
-    })
+    .map(
+      ([k, v]) => `<tr><th scope="row">${esc(k)}</th><td>${esc(v)}</td></tr>`,
+    )
     .join("\n          ");
 
   const risksTable =
     risks.length === 0
       ? `<p>None — no non-advisory findings fired.</p>`
       : `<table>
-          <thead><tr><th>Rule</th><th>Location</th><th>Evidence</th><th>Message</th></tr></thead>
+          <caption>The ${risks.length} highest-risk non-advisory findings. Evidence shows what each finding actually rests on.</caption>
+          <thead><tr><th scope="col">Rule</th><th scope="col">Location</th><th scope="col">Evidence</th><th scope="col">Message</th></tr></thead>
           <tbody>
           ${risks
             .map((f) => {
@@ -507,6 +523,12 @@ export function renderTrustReportHtml(
     `<section id="confidence">`,
     `<h2>Confidence</h2>`,
     `<table>`,
+    // BW-108: the row headers are <th scope="row">, so each measurement is
+    // announced with its own name instead of the reader inferring a column
+    // layout from six unlabelled cells. <caption> names the table for a
+    // screen reader that lists tables out of context.
+    `          <caption>Mjölnir confidence measurements. A value of “unknown — not measured” means the scan did not produce that measurement; it is not zero.</caption>`,
+    `          <thead><tr><th scope="col">Measurement</th><th scope="col">Value</th></tr></thead>`,
     `          <tbody>`,
     `          ${confidenceRowsHtml}`,
     `          </tbody>`,
@@ -573,12 +595,22 @@ export async function runTrustReportCommand(
       io.err("error: --commit requires the run's HEAD sha");
       return 10;
     }
-    let scan: ScanResult;
+    let loaded: LoadedReport;
     try {
-      scan = loadSavedReport(resolve(fromPath));
+      loaded = loadSavedReportStrict(resolve(fromPath));
     } catch (err) {
       io.err(`error: cannot read ${fromPath}: ${errorMessage(err)}`);
       return 10;
+    }
+    const scan = loaded.result;
+    // V5-012: the trust report is a trust CLAIM, so it states how much the
+    // underlying artifact may be believed. A report with no machine-anchored
+    // identity is history, not proof, and the rendered artifact says so
+    // instead of implying a verified run.
+    if (loaded.trust.state !== "VERIFIED") {
+      io.err(
+        `warning: ${loaded.trust.reason} The trust report below describes an OPEN artifact.`,
+      );
     }
     if (
       commitArg &&
@@ -593,10 +625,12 @@ export async function runTrustReportCommand(
     if (commitArg && scan.runIdentity) {
       scan.runIdentity = { ...scan.runIdentity, commit: commitArg };
     }
+    // The trust state travels with the rendered artifacts, so a consumer
+    // reading only the JSON cannot mistake an OPEN import for a verified run.
     const md = renderTrustReportMarkdown(scan, fromPath, commitArg ?? null);
     if (argv.includes("--stdout")) {
       io.out(md);
-      return 0;
+      return loaded.trust.state === "VERIFIED" ? 0 : 2;
     }
     try {
       const outPath = resolve(dirname(fromPath), TRUST_REPORT_MD);

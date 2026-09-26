@@ -81,10 +81,14 @@ describe("--from argument arms (frozen usage errors)", () => {
 });
 
 describe("artifact renderers on a BARE result (fallbacks stay honest)", () => {
-  it("md renders an unknown score and zero-count lines without fabricating", () => {
+  it("md renders an unknown score and says the counts were never measured", () => {
     const md = renderTrustReportMarkdown(bareResult(), "bare-repo");
     expect(md).toContain("| Score | unknown |");
-    expect(md).toContain("| Tests analyzed | 0 in 0 files |");
+    // BW-103: this used to assert "| Tests analyzed | 0 in 0 files |" —
+    // a zero is a claim that the count was taken and found nothing. A
+    // bare result never measured it, so the cell must say so.
+    expect(md).toContain("| Tests analyzed | unknown — not measured |");
+    expect(md).not.toContain("0 in 0 files");
     expect(md).toContain("## Artifact integrity");
   });
 
@@ -215,7 +219,7 @@ describe("terminal reporter ranking and label arms", () => {
     expect(nextAction(withRisk)).toContain("mjolnir explain QA-PW-009");
   });
 
-  it("renderTrustReport: bare result ⇒ L2 fallback label, none-fired arm, zero counts", () => {
+  it("renderTrustReport: bare result ⇒ L2 fallback label, none-fired arm, unmeasured counts", () => {
     const text = renderTrustReport(bareResult(), {
       isTTY: false,
       verbose: false,
@@ -224,11 +228,13 @@ describe("terminal reporter ranking and label arms", () => {
     });
     expect(text).toContain("L2 ·");
     expect(text).toContain("none fired — nothing to weight");
-    expect(text).toContain("tests analyzed      0 declaration(s) in 0 file(s)");
+    // BW-103: a bare result never measured a declaration, so it says so.
+    // "0 declaration(s) in 0 file(s)" claimed the count was taken.
+    expect(text).toContain("tests analyzed      unknown — not measured");
     expect(text).toContain("none — no non-advisory findings fired");
   });
 
-  it("renderTrustReport: evidence labels cover every arm (run corroborated / executed / deterministic / pattern)", () => {
+  it("renderTrustReport: the evidence descriptor covers every arm (BW-102)", () => {
     const result = bareResult({
       findings: [
         mk("QA-PW-101", { level: "defect" }, "E2"),
@@ -243,10 +249,15 @@ describe("terminal reporter ranking and label arms", () => {
       width: 80,
       ascii: true,
     });
-    expect(text).toContain("[run corroborated]");
-    expect(text).toContain("[run executed]");
-    expect(text).toContain("[deterministic]");
-    expect(text).toContain("[pattern]");
+    // The canonical descriptor is the terminal's: level · kind, plus the
+    // measured false-positive rate, sample size, trust rung, and what the
+    // runtime report vouched for. The four bare words it replaced could
+    // not distinguish an E2 with n=14 measured from an E1 shipping on
+    // assumption.
+    expect(text).toContain("E2 · deterministic");
+    expect(text).toContain("E1 · heuristic");
+    expect(text).toContain("runtime: defect corroborated");
+    expect(text).toContain("runtime: file executed");
   });
 
   it("renderTrustReport: an out-of-table level renders its raw value (label fallback)", () => {

@@ -7,5 +7,7 @@
     "QA-PW-144": 1
   },
   "totalFindings": 5,
-  "partial": false
+  "partial": false,
+  "schemaVersion": 1,
+  "sourceRevision": "f1257a5a67aff872f947fae274759f7d54853862"
 }

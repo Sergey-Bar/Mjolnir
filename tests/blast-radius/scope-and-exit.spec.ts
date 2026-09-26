@@ -84,13 +84,45 @@ describe("Scope Integrity — scopeVerdict tracks claimed vs analyzed", () => {
     expect(r.scopeIntegrity?.reasons?.join(" ")).toContain("parseFailed");
   });
 
-  it("PARTIAL with ignored reason on an ignore-heavy repo (matcher-excluded files)", async () => {
+  it("PROVEN when the only ignored files were never test files", async () => {
+    // This test used to assert the opposite, and the change is deliberate.
+    //
+    // The old rule counted ANY matcher-excluded file with a source extension,
+    // so a minified bundle (`**/*.min.js`) and `pnpm-lock.yaml` downgraded a
+    // finished scan. Reproduced: a repo with one real test file plus those two
+    // files reported `discovered: 1, analyzed: 1, ignored: 2, PARTIAL` — every
+    // discovered test file HAD been analyzed, and the terminal still told the
+    // reader "some files were not analyzed, so the surface is unverified".
+    //
+    // That message is false, and it is the product's most safety-critical one.
+    // The product's scope is TEST FILES; a minified bundle is not a test file
+    // and never would be discovered as one. The old counting also made PROVEN
+    // unreachable for essentially every real repository, so the corpus
+    // regression guard failed 23 of 37 on exactly this — and a gate that
+    // cannot pass is not conservative, it is non-functional.
+    //
+    // So the ignored counter now asks the same question the unrecognized
+    // counter already asked: would an adapter have claimed this as a test file?
     const root = makeRoot({
       "a.spec.ts": "it('x', () => { expect(1).toBe(1); });\n",
-      // The matcher's file-pattern ignore (**/*.min.js) — counted at the
-      // walk (dirSkips are the adapters' own traversal convention and are
-      // a different accounting class).
       "vendored.min.js": "module.exports = 1;\n",
+      "pnpm-lock.yaml": "lockfileVersion: 9\n",
+    });
+    const r = await scan(root);
+    expect(r.scopeIntegrity?.analyzed).toBe(r.scopeIntegrity?.discovered);
+    // Nothing was excluded FROM THE TEST SURFACE, so the surface is proven.
+    expect(r.scopeIntegrity?.ignored).toBe(0);
+    expect(r.scopeIntegrity?.scopeVerdict).toBe("PROVEN");
+  });
+
+  it("PARTIAL with ignored reason when an ignored file IS a test file", async () => {
+    // The other direction, and the one the honesty law exists for. An ignored
+    // test file means the user excluded a test, so the test surface genuinely
+    // was not covered — and the scan must say so rather than claim PROVEN.
+    const root = makeRoot({
+      "a.spec.ts": "it('x', () => { expect(1).toBe(1); });\n",
+      "excluded.spec.ts": "it('y', () => { expect(1).toBe(1); });\n",
+      ".mjolnirignore": "excluded.spec.ts\n",
     });
     const r = await scan(root);
     expect(r.scopeIntegrity?.ignored).toBeGreaterThanOrEqual(1);

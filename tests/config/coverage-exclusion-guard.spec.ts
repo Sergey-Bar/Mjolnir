@@ -21,14 +21,33 @@ import { describe, expect, it } from "vitest";
 import {
   committedExclusions,
   readLedger,
+  shippedReachableModules,
   validateCoverageExemptionLedger,
-} from "../../scripts/lib/coverage-exemption-ledger";
+  // Imported by its .mjs path so the typed declaration is used directly
+  // rather than through a re-export shim that can fall behind the module.
+} from "../../scripts/lib/coverage-exemption-ledger.mjs";
 
 const ROOT = join(import.meta.dirname, "..", "..");
 
 describe("coverage exclusion truth ledger (V5-000)", () => {
   it("passes its own gate: ledger, committed list, and import graph agree", () => {
     expect(validateCoverageExemptionLedger(ROOT)).toEqual([]);
+  });
+
+  it("the gate finishes fast enough to be trusted", () => {
+    // A guard that times out reports itself as a failure, and a guard people
+    // learn to ignore is worse than no guard. The first implementation
+    // re-walked the whole import graph once per ledger entry — O(entries ×
+    // tree) — and pushed this very suite past the 30 s per-test timeout while
+    // passing on its own. The budget is generous but far below that, so a
+    // return to per-entry walks fails here rather than intermittently in CI.
+    const started = Date.now();
+    validateCoverageExemptionLedger(ROOT);
+    const elapsed = Date.now() - started;
+    expect(
+      elapsed,
+      `the ledger gate took ${elapsed}ms — it must read the tree once per pass, not once per entry`,
+    ).toBeLessThan(10_000);
   });
 
   it("the ledger and the committed coverage exclude list are the same set, in order", () => {
@@ -70,6 +89,25 @@ describe("coverage exclusion truth ledger (V5-000)", () => {
         entry.shippedSurface && entry.classification !== "PERMANENT_STRUCTURAL",
     ).length;
     expect(debt).toBeLessThanOrEqual(ledger.policy.shippedSurfaceCeiling);
+  });
+
+  it("classifies by reachability from a shipped surface, not by having an importer", () => {
+    // The first version of this rule asked only "does anything import it?".
+    // That is wrong the moment one prototype imports another: a
+    // provider-capability contract consumed solely by an unwired census module
+    // acquires an importer and would be reclassified SHIPPED_SURFACE, quietly
+    // inflating the shipped-surface count with a file no user can reach.
+    const reachable = shippedReachableModules(ROOT);
+    expect(reachable.has("src/cli.ts")).toBe(true);
+    expect(reachable.has("src/mcp/server.ts")).toBe(true);
+    // A gate-only module is shipped surface: `certify` runs it every commit.
+    expect(reachable.has("src/ledger/m26-validators.ts")).toBe(true);
+    expect(reachable.has("src/release/version-surface.ts")).toBe(true);
+    // A contract nothing reaches is not.
+    expect(reachable.has("src/engine/m50-release-proof-contract.ts")).toBe(
+      false,
+    );
+    expect(reachable.has("src/agent/decision-receipt.ts")).toBe(false);
   });
 
   it("the ledger is a record of reality, not a claim: a misclassified entry fails", () => {

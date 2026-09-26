@@ -69,7 +69,7 @@ artifacts after the test step — including when it failed:
 
 - name: Flakiness forensics
   if: always()
-  run: npx mjolnir-qa@3.0.0 forensics ./test-results/
+  run: npx mjolnir-qa@4.0.0 forensics ./test-results/
 ```
 
 `if: always()` matters: the runs worth analysing are exactly the ones

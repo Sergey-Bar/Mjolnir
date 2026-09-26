@@ -1,7 +1,7 @@
 {
   "name": "mjolnir-qa",
-  "version": "4.0.0-rc.1",
-  "publishedStable": "3.0.0",
+  "version": "4.0.0",
+  "publishedStable": "4.0.0",
   "description": "Mjölnir — the Verification Trust Engine for QA. Audits test suites and CI pipelines, reports a worthiness score and prioritized findings.",
   "type": "module",
   "engines": {
@@ -16,18 +16,20 @@
   ],
   "files": [
     "dist",
+    "!dist/**/*.map",
     "README.md",
     "LICENSE",
     "CHANGELOG.md"
   ],
   "scripts": {
-    "build": "tsdown src/cli.ts --format esm --dts --out-dir dist && tsdown src/mcp/stdio.ts --format esm --out-dir dist/mcp && npm run build --workspaces --if-present",
+    "build": "tsdown src/cli.ts --format esm --dts --sourcemap --out-dir dist && tsdown src/mcp/stdio.ts --format esm --sourcemap --out-dir dist/mcp && npm run build --workspaces --if-present",
+    "sentry:release": "node scripts/sentry-release.mjs",
     "dev": "tsx src/cli.ts",
     "mcp": "node dist/mcp/stdio.mjs",
     "test": "vitest run",
     "test:integration": "vitest run tests/integrations",
     "test:mcp:parity": "vitest run tests/mcp/parity.spec.ts",
-    "frontier:contracts": "vitest run tests/agent/decision-receipt.spec.ts tests/bench/m48-scale-operating-model.spec.ts tests/benchmark/m47-false-green-benchmark.spec.ts tests/contract/change-intelligence.spec.ts tests/contract/framework-capability-envelope.spec.ts tests/contract/m33-m34-governance-assurance.spec.ts tests/contract/m35-plugin-sdk.spec.ts tests/contract/m45-detector-lifecycle.spec.ts tests/contract/version-surface.spec.ts tests/engine/m38-challenge-contract.spec.ts tests/engine/m39-simulation-contract.spec.ts tests/engine/m40-language-expansion-contract.spec.ts tests/engine/m43-system-of-systems.spec.ts tests/engine/m44-historical-intelligence.spec.ts tests/engine/m49-experience-parity-contract.spec.ts tests/engine/runtime-evidence-graph.spec.ts tests/frameworks/provider-capability-contract.spec.ts tests/frameworks/universal-pack-contract.spec.ts tests/ledger/m26-validators.spec.ts tests/mutation/failure-sensitivity.spec.ts tests/qa/domain-model.spec.ts tests/research/m46-reproducible-research-lab-contract.spec.ts tests/roadmap/roadmap.spec.ts tests/rules/registry-census.spec.ts",
+    "frontier:contracts": "vitest run tests/contract/boundary-law.spec.ts tests/contract/exit-matrix.spec.ts tests/contract/json-contract.spec.ts tests/contract/machine-contract.spec.ts tests/contract/schema-contract.spec.ts tests/contract/vitest-suite-boundaries.spec.ts tests/contract/certification.spec.ts tests/contract/evidence-voting.spec.ts tests/contract/presentation-trust.spec.ts tests/contract/release-trust-contract.spec.ts tests/contract/saved-report-trust.spec.ts tests/contract/trust-ladder-single-source.spec.ts tests/contract/mcp-workspace-boundary.spec.ts tests/contract/privacy-network-isolation.spec.ts tests/contract/census-drift.spec.ts tests/contract/m26-support-matrix.spec.ts tests/contract/quarantine-ledger.spec.ts tests/contract/docs-consistency.spec.ts tests/contract/framework-capability-envelope.spec.ts tests/contract/pack-audit.spec.ts tests/contract/readme-commands.spec.ts tests/contract/semantic-integrity.spec.ts tests/contract/version-surface.spec.ts",
     "test:release": "vitest run tests/release tests/commands/release-trust-arms.spec.ts tests/commands/release-trust-branch.spec.ts",
     "bench:scan": "tsx scripts/bench-scan.ts .mjolnir --files 300",
     "test:stress": "vitest run --config vitest.stress.config.ts && node tests/stress/soak.mjs && node tests/stress/concurrent.mjs",
@@ -37,6 +39,13 @@
     "audit:ci": "npm audit --audit-level=moderate && npm audit --workspaces --audit-level=moderate",
     "enterprise:threat-model": "node scripts/enterprise/validate-threat-model.mjs --model enterprise/threat-model.json --data-flow enterprise/data-flows.json --strict",
     "claims:check": "node scripts/check-claim-registry.mjs",
+    "report:honesty": "node scripts/check-report-honesty.mjs",
+    "thresholds:parity": "node scripts/check-threshold-parity.mjs",
+    "verbs:budget": "node scripts/check-verb-budget.mjs",
+    "artifact:deterministic": "vitest run tests/contract/artifact-determinism.spec.ts",
+    "claims:revalidate": "node scripts/revalidate-claims.mjs",
+    "script:paths": "node scripts/check-script-paths.mjs",
+    "lockfile:platforms": "node scripts/check-lockfile-platforms.mjs",
     "candidate:manifest:check": "node scripts/check-candidate-manifest.mjs",
     "candidate:manifest:update": "node scripts/update-candidate-manifest.mjs --write",
     "candidate:readiness": "node scripts/check-candidate-readiness.mjs",
@@ -47,8 +56,8 @@
     "lint": "eslint . --max-warnings=0 && prettier --check .",
     "format": "prettier --write .",
     "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.test.json && tsx scripts/typecheck-fixtures.ts",
-    "certify": "npm run build && npm run lint && npm run typecheck && npm run version:check && npm run enterprise:threat-model && npm run claims:check && npm run m26:integrity && npm run coverage:exemptions && npm run candidate:manifest:check && npm run candidate:decision:engineering && npm run docs:translations && npm run test && npx vitest run tests/contract/",
-    "certify:ci": "npm run build && npm run lint && npm run typecheck && npm run version:check && npm run enterprise:threat-model && npm run claims:check && npm run m26:integrity && npm run coverage:exemptions && npm run candidate:manifest:check && npm run candidate:decision:engineering && npm run docs:translations && npm run test:coverage:ci && npx vitest run tests/contract/",
+    "certify": "npm run build && npm run lint && npm run typecheck && npm run version:check && npm run enterprise:threat-model && npm run claims:check && npm run claims:revalidate && npm run report:honesty && npm run thresholds:parity && npm run script:paths && npm run lockfile:platforms && npm run verbs:budget && npm run m26:integrity && npm run coverage:exemptions && npm run candidate:manifest:check && npm run candidate:decision:engineering && npm run docs:translations && npm run test && npx vitest run tests/contract/",
+    "certify:ci": "npm run build && npm run lint && npm run typecheck && npm run version:check && npm run enterprise:threat-model && npm run claims:check && npm run claims:revalidate && npm run report:honesty && npm run thresholds:parity && npm run script:paths && npm run lockfile:platforms && npm run verbs:budget && npm run m26:integrity && npm run coverage:exemptions && npm run candidate:manifest:check && npm run candidate:decision:engineering && npm run docs:translations && npm run test:coverage:ci && npx vitest run tests/contract/",
     "ci-local": "npm run certify:ci && npm run test:property && npm run test:fuzz && npm run coverage:ratchet && npm run audit:ci && npm run brand:doctor && npm run brand:doctor:selftest && npm run brand:fonts:check && npm run site:doctor && npm run ci-local:parity",
     "verify:isolation": "node scripts/verify-remediation-isolation.mjs",
     "golden:update": "tsx tests/golden/gen.ts",
@@ -91,13 +100,15 @@
     "m26:integrity": "tsx scripts/check-m26-ledgers.ts --stage integrity",
     "m26:readiness": "npm run m26:audit && npm run candidate:readiness",
     "m26:github:sync": "node scripts/sync-m26-github.mjs",
+    "m26:gaps:revalidate": "tsx scripts/revalidate-gaps.mjs",
     "changelog:check": "tsx scripts/check-changelog.ts",
     "reporter:version-check": "tsx scripts/check-reporter-version.ts",
     "version:surface:check": "tsx scripts/check-version-surface.ts",
     "version:surface:sync": "tsx scripts/sync-version-surface.ts",
     "version:check": "npm run version:surface:check && npm run reporter:version-check && npm run changelog:check",
-    "release:verify": "npm run m26:audit && npm run version:check && npm run claims:check && npm run candidate:manifest:check && npm run candidate:decision:release && npm run candidate:readiness && npm run coverage:exemptions && npm run docs:roadmap:check && npm run enterprise:threat-model",
+    "release:verify": "tsx scripts/release-verify.ts",
     "self-scan": "node dist/cli.mjs .",
+    "ci:standard": "node scripts/check-ci-standard.mjs",
     "ci-local:parity": "node scripts/check-ci-local-parity.mjs",
     "test:property": "node scripts/check-property-runs.mjs && vitest run --config vitest.property.config.ts",
     "test:fuzz": "vitest run --config vitest.fuzz.config.ts",
@@ -111,7 +122,9 @@
     "brand:fonts:check": "tsx scripts/vendor-fonts.ts --check",
     "brand:marks": "tsx scripts/generate-brand-marks.ts",
     "brand:marks:update": "node scripts/update-mark-hashes.mjs",
-    "docs:regen": "npm run docs:rules && npm run fp-audit:generate && npm run docs:capability && npm run docs:counts && npm run docs:depth-adjudication && npm run docs:machine-contract && npm run brand:tokens && npm run golden:update && npm run docs:hero && npm run docs:demo && npm run docs:readme-brand && npm run detector-hashes:update"
+    "docs:regen": "npm run docs:rules && npm run fp-audit:generate && npm run docs:capability && npm run docs:counts && npm run docs:depth-adjudication && npm run docs:machine-contract && npm run brand:tokens && npm run golden:update && npm run docs:hero && npm run docs:demo && npm run docs:readme-brand && npm run detector-hashes:update",
+    "docs:refresh": "node scripts/refresh-generated.mjs",
+    "docs:refresh:check": "node scripts/refresh-generated.mjs --check"
   },
   "keywords": [
     "qa",
@@ -141,11 +154,20 @@
     "web-tree-sitter": "0.25.6",
     "yaml": "^2.5.0"
   },
+  "peerDependencies": {
+    "@sentry/node": "^11.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@sentry/node": {
+      "optional": true
+    }
+  },
   "devDependencies": {
     "@commitlint/cli": "^19.8.1",
     "@commitlint/config-conventional": "^19.8.1",
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.50.0",
+    "@sentry/node": "^11.0.0",
     "@types/node": "^26.4.0",
     "@vitest/coverage-istanbul": "^5.0.1",
     "axe-core": "^4.13.0",

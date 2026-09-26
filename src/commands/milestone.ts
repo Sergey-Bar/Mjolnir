@@ -22,7 +22,7 @@ import { ConfigValidationError } from "../config/config.js";
 import { loadSuppressions } from "../config/suppressions.js";
 import { parseJsonFile, isRecord } from "../lib/safe-json.js";
 import { writeFileAtomic } from "../lib/fs-atomic.js";
-import type { Finding, ScanResult } from "../types.js";
+import { TRUST_ORDER, type Finding, type ScanResult } from "../types.js";
 import {
   renderCrossFileAnalysis,
   analyzeCrossFileSignals,
@@ -560,7 +560,9 @@ function isValidFinding(value: unknown): boolean {
 function isValidTrustSummary(value: unknown): boolean {
   if (!isRecord(value)) return false;
   return (
-    ["L0", "L1", "L2", "L3", "L4", "L5"].includes(String(value.level)) &&
+    // Derived from the ladder: a validator that hard-codes the levels starts
+    // rejecting history the moment a rung is added.
+    (TRUST_ORDER as readonly string[]).includes(String(value.level)) &&
     isFiniteNumber(value.confidence) &&
     value.confidence >= 0 &&
     value.confidence <= 1 &&

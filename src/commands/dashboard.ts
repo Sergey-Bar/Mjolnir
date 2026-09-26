@@ -14,6 +14,19 @@ import { writeFileAtomic } from "../lib/fs-atomic.js";
 import { internalErrorMessage, type Output } from "../cli-io.js";
 import { decideClaim } from "../claim-evidence.js";
 import { EXIT_INTERNAL, EXIT_USAGE } from "../exit-codes.js";
+import { deriveScoreState } from "../reporter/presentation.js";
+import { SCORE, STATUS } from "../brand/tokens.js";
+
+/** Band → CSS colour, read from the brand tokens so the dashboard cannot
+ *  name a colour of its own. `trusted` is aurora-cyan, not green: green is
+ *  reserved for non-score success (the terminal's `Palette.ok`). */
+const BAND_HEX: Record<string, string> = {
+  critical: SCORE.critical,
+  warning: SCORE.warning,
+  trusted: SCORE.trusted,
+  forged: SCORE.forged,
+  unmeasured: SCORE.unmeasured,
+};
 
 export interface DashboardData {
   score: number | null;
@@ -35,7 +48,17 @@ export interface DashboardData {
     file: string;
     message: string;
   }>;
-  generatedAt: string;
+  /**
+   * Generation time, ISO-8601. RENDERED as document metadata and never
+   * as body text, and omitted entirely under `--deterministic`.
+   *
+   * BW-106: this used to be interpolated into the visible body as
+   * "Generated: <timestamp>", so two runs over an unchanged repository
+   * produced different bytes. `engine/machine-contract.ts` already
+   * excludes `durationMs` for exactly this reason — the HTML artifact
+   * now holds the same line.
+   */
+  generatedAt: string | null;
 }
 
 const FINDINGS_SHOWN_LIMIT = 100;
@@ -50,24 +73,30 @@ function escapeHtml(text: string): string {
 }
 
 function generateDashboardHtml(data: DashboardData): string {
-  const scoreColor =
-    data.score === null
-      ? "#888"
-      : data.score >= 80
-        ? "#22c55e"
-        : data.score >= 60
-          ? "#eab308"
-          : "#ef4444";
+  // BW-104: the band comes from the one registry, so the dashboard cannot
+  // disagree with the terminal about what 65 means. It used to split at 60
+  // — a score the terminal called UNWORTHY rendered amber here.
+  const scoreColor = BAND_HEX[deriveScoreState(data.score).band];
+
+  // Severity colours come from the brand tokens too. They used to be ad-hoc
+  // hex literals that matched nothing in the palette, so the dashboard's red
+  // was not the terminal's red.
+  const severityColor = (severity: string): string =>
+    severity === "error"
+      ? STATUS.error
+      : severity === "warning"
+        ? STATUS.warning
+        : STATUS.ok;
 
   const rows = data.findings
     .map(
       (f) =>
-        `<tr><td>${escapeHtml(f.ruleId)}</td><td><span style="color:${f.severity === "error" ? "#ef4444" : f.severity === "warning" ? "#eab308" : "#22c55e"}">${escapeHtml(f.severity)}</span></td><td>${escapeHtml(f.file)}</td><td>${escapeHtml(f.message)}</td></tr>`,
+        `<tr><td>${escapeHtml(f.ruleId)}</td><td><span style="color:${severityColor(f.severity)}">${escapeHtml(f.severity)}</span></td><td>${escapeHtml(f.file)}</td><td>${escapeHtml(f.message)}</td></tr>`,
     )
     .join("");
 
   const banner = data.partial
-    ? `<p style="color:#eab308;font-weight:600">PARTIAL ANALYSIS — the whole surface was not analyzed. These numbers describe the analyzed portion only.</p>`
+    ? `<p style="color:${STATUS.warning};font-weight:600">PARTIAL ANALYSIS — the whole surface was not analyzed. These numbers describe the analyzed portion only.</p>`
     : "";
   const truncation =
     data.findingsShown < data.totalFindings
@@ -80,6 +109,7 @@ function generateDashboardHtml(data: DashboardData): string {
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+${data.generatedAt === null ? "" : `<meta name="mjolnir-generated-at" content="${escapeHtml(data.generatedAt)}">\n`}<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Quality Dashboard</title>
 <style>
   body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; max-width: 960px; margin: 0 auto; padding: 2rem; background: #0a0a0a; color: #e5e5e5; }
@@ -96,18 +126,27 @@ function generateDashboardHtml(data: DashboardData): string {
 </head>
 <body>
 <h1>🔍 Quality Dashboard</h1>
-${banner}<p>Generated: ${escapeHtml(data.generatedAt)}</p>
-<div class="score">${data.score !== null ? data.score + "/100" : "N/A"}</div>
+${banner}${data.generatedAt === null ? `<p>Deterministic build — no generation timestamp is recorded, so this file is byte-identical for an unchanged repository.</p>` : ""}<div class="score">${data.score !== null ? data.score + "/100" : "N/A"}</div>
 <div class="kpi-grid">
   <div class="kpi"><div class="value">${data.totalFindings}</div><div class="label">Findings</div></div>
-  <div class="kpi"><div class="value" style="color:#ef4444">${data.errorCount}</div><div class="label">Errors</div></div>
-  <div class="kpi"><div class="value" style="color:#eab308">${data.warningCount}</div><div class="label">Warnings</div></div>
+  <div class="kpi"><div class="value" style="color:${STATUS.error}">${data.errorCount}</div><div class="label">Errors</div></div>
+  <div class="kpi"><div class="value" style="color:${STATUS.warning}">${data.warningCount}</div><div class="label">Warnings</div></div>
   <div class="kpi"><div class="value">${frameworkValue}</div><div class="label">Frameworks</div></div>
 </div>
 <h2>Findings</h2>
-${truncation}<table><thead><tr><th>Rule</th><th>Severity</th><th>File</th><th>Message</th></tr></thead><tbody>${rows}</tbody></table>
+${truncation}<table><caption>Findings on the analyzed surface, newest severity first. Capped at ${FINDINGS_SHOWN_LIMIT} rows.</caption><thead><tr><th scope="col">Rule</th><th scope="col">Severity</th><th scope="col">File</th><th scope="col">Message</th></tr></thead><tbody>${rows}</tbody></table>
 </body>
 </html>`;
+}
+
+/**
+ * The one HTML generator. Exported for the gates that must compare two
+ * renders without running a scan (`artifact:deterministic`), because a
+ * byte-comparison that needs a subprocess is a byte-comparison nobody
+ * runs.
+ */
+export function generateDashboardHtmlForTest(data: DashboardData): string {
+  return generateDashboardHtml(data);
 }
 
 export async function runDashboardCommand(
@@ -120,6 +159,11 @@ export async function runDashboardCommand(
     outputIdx !== -1
       ? (argv[outputIdx + 1] ?? "dashboard.html")
       : "dashboard.html";
+  // BW-106: --deterministic omits the generation timestamp entirely, so
+  // two runs over an unchanged repository produce byte-identical files and
+  // the artifact can be diffed in review. Default stays timestamped
+  // because "when was this generated" is real information.
+  const deterministic = argv.includes("--deterministic");
 
   if (!existsSync(target)) {
     io.err(`mjolnir dashboard: target does not exist: ${target}`);
@@ -164,7 +208,7 @@ export async function runDashboardCommand(
         file: f.file,
         message: f.message,
       })),
-      generatedAt: new Date().toISOString(),
+      generatedAt: deterministic ? null : new Date().toISOString(),
     };
 
     const html = generateDashboardHtml(data);

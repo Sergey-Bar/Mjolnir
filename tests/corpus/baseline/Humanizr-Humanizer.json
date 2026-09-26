@@ -6,5 +6,7 @@
     "QA-TEST-003": 1
   },
   "totalFindings": 22,
-  "partial": false
+  "partial": false,
+  "schemaVersion": 1,
+  "sourceRevision": "ffc2b77c0f30d2fb176875841424379319d0ae9b"
 }

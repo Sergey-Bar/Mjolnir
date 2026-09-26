@@ -71,6 +71,23 @@ const KNOWN_SUBCOMMANDS = [
   ),
 ];
 
+/**
+ * Verbs that are deliberately not in the README table, with the reason.
+ *
+ * A verb absent from the README is a promise the documentation does not
+ * make; a verb present in the README that the CLI does not dispatch is a
+ * promise the CLI does not keep. The original test only checked the
+ * second direction, which is why `diff` and `verify` could be shipped
+ * verbs with no README row and nothing failed.
+ */
+const DELIBERATELY_UNDOCUMENTED: ReadonlyMap<string, string> = new Map([
+  [
+    "scan",
+    "the default path — the README documents it as bare `mjolnir`, and the " +
+      "explicit spelling is a synonym, not a separate command worth a row",
+  ],
+]);
+
 describe("README command table", () => {
   const commands = extractReadmeCommands(README);
 
@@ -95,5 +112,43 @@ describe("README command table", () => {
         `a subcommand src/cli.ts's main() dispatches on — the README ` +
         `is promising a command that does not exist.`,
     ).toBe(true);
+  });
+});
+
+describe("the command surface is documented, not just implemented", () => {
+  const undocumented = CLI_COMMAND_NAMES.filter(
+    (verb) => !README.includes(`mjolnir ${verb}`),
+  );
+
+  it("every registered verb appears in the README, or has a recorded reason", () => {
+    const unexplained = undocumented.filter(
+      (verb) => !DELIBERATELY_UNDOCUMENTED.has(verb),
+    );
+    expect(
+      unexplained,
+      `These verbs are dispatchable but undocumented: ${unexplained.join(", ")}. ` +
+        `A verb nobody can discover is a verb nobody uses, and the cost of a ` +
+        `verb is a promise — the README is where the promise is made. Add a ` +
+        `row, or record a reason in DELIBERATELY_UNDOCUMENTED.`,
+    ).toEqual([]);
+  });
+
+  it("the recorded reasons have not gone stale", () => {
+    // A reason for a verb that IS now documented is a lie about a
+    // decision, so fail rather than let it linger.
+    const stale = [...DELIBERATELY_UNDOCUMENTED.keys()].filter((verb) =>
+      README.includes(`mjolnir ${verb}`),
+    );
+    expect(
+      stale,
+      `now documented; drop the exception: ${stale.join(", ")}`,
+    ).toEqual([]);
+  });
+
+  it("the verb count is under its ceiling", () => {
+    // The gate proper is `npm run verbs:budget`; this asserts the count the
+    // gate reads is the count the CLI actually dispatches, so a verb added
+    // to the manifest without a handler still trips the documentation test.
+    expect(CLI_COMMAND_NAMES.length).toBeLessThanOrEqual(50);
   });
 });

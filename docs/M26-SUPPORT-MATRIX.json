@@ -2,150 +2,2518 @@
   "schemaVersion": 1,
   "status": "RECONCILED",
   "counts": {
-    "tested": 90,
+    "tested": 65,
     "not_applicable": 2,
-    "blocked": 44
+    "blocked": 69
   },
   "promotion": {
     "status": "NOT_PROMOTED",
     "note": "RECONCILED classification is not release authorization; all BLOCKED cells remain release blockers."
   },
   "cells": [
-    {"schemaVersion":1,"cell_id":"MATRIX-SURFACE-CLI","axis":"surface","cell":"CLI command surface","disposition":"TESTED","owner":"qa-owner","evidence":["tests/cli/help.spec.ts","tests/e2e/journey-1-first-run.spec.ts"],"command":"npx vitest run tests/cli/help.spec.ts tests/e2e/journey-1-first-run.spec.ts","fixture":"tests/e2e/journey-1-first-run.spec.ts :: packed demo-repo first-run scan","observed_result":"PASS","resource_budget":"300s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-SURFACE-JSON","axis":"surface","cell":"JSON output surface","disposition":"TESTED","owner":"qa-owner","evidence":["tests/contract/json-contract.spec.ts","tests/commands/trust-report-json-arms.spec.ts"],"command":"npx vitest run tests/contract/json-contract.spec.ts tests/commands/trust-report-json-arms.spec.ts","fixture":"tests/contract/json-contract.spec.ts :: CLI and MCP JSON validity; tests/commands/trust-report-json-arms.spec.ts :: trust-report JSON arms","observed_result":"PASS","resource_budget":"180s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-SURFACE-SARIF","axis":"surface","cell":"SARIF output surface","disposition":"TESTED","owner":"qa-owner","evidence":["tests/reporter/sarif-compliance.spec.ts","tests/reporters/reporters.spec.ts"],"command":"npx vitest run tests/reporter/sarif-compliance.spec.ts tests/reporters/reporters.spec.ts","fixture":"tests/reporter/sarif-compliance.spec.ts :: schema-valid SARIF and severity mapping; tests/reporters/reporters.spec.ts :: reporter output contract","observed_result":"PASS","resource_budget":"180s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-SURFACE-TRUST-ARTIFACT","axis":"surface","cell":"Trust Artifact output surface","disposition":"TESTED","owner":"qa-owner","evidence":["tests/commands/artifact-integrity.spec.ts","tests/commands/release-trust-arms.spec.ts"],"command":"npx vitest run tests/commands/artifact-integrity.spec.ts tests/commands/release-trust-arms.spec.ts","fixture":"tests/commands/artifact-integrity.spec.ts :: stale, mismatched, and untrusted evidence must not produce release trust","observed_result":"PASS","resource_budget":"240s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-SURFACE-GITHUB-ACTION","axis":"surface","cell":"GitHub Action surface contract","disposition":"TESTED","owner":"qa-owner","evidence":["tests/integrations/action-surface.spec.ts","tests/engine/adapters/github-actions.spec.ts"],"command":"npx vitest run tests/integrations/action-surface.spec.ts tests/engine/adapters/github-actions.spec.ts","fixture":"tests/integrations/action-surface.spec.ts :: pinned v4 action, SHA, and permissions policy","observed_result":"PASS","resource_budget":"180s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-SURFACE-MCP","axis":"surface","cell":"MCP tool surface","disposition":"TESTED","owner":"qa-owner","evidence":["tests/contract/mcp-transport.spec.ts","tests/mcp/transport.spec.ts","tests/mcp/crash-containment.spec.ts"],"command":"npx vitest run tests/contract/mcp-transport.spec.ts tests/mcp/transport.spec.ts tests/mcp/crash-containment.spec.ts","fixture":"tests/contract/mcp-transport.spec.ts :: stdio framing, initialization, tools/list, and crash containment","observed_result":"PASS","resource_budget":"240s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-SURFACE-SITE-DOCS","axis":"surface","cell":"Site and documentation surface","disposition":"TESTED","owner":"qa-owner","evidence":["tests/contract/site-formats.spec.ts","tests/readme-translations.spec.ts"],"command":"npx vitest run tests/contract/site-formats.spec.ts tests/readme-translations.spec.ts","fixture":"tests/contract/site-formats.spec.ts :: README/docs links and supported locale references; tests/readme-translations.spec.ts :: README anchors","observed_result":"PASS","resource_budget":"180s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-SURFACE-PR-COMMENTS","axis":"surface","cell":"GitHub pull-request comment and job-summary surface","disposition":"TESTED","owner":"qa-owner","evidence":["tests/integrations/github/pr-comment-contract.spec.ts","tests/cli/pr-comment.spec.ts"],"command":"npx vitest run tests/integrations/github/pr-comment-contract.spec.ts tests/cli/pr-comment.spec.ts","fixture":"tests/integrations/github/pr-comment-contract.spec.ts :: bounded deterministic PR comment; tests/cli/pr-comment.spec.ts :: PR rendering arms","observed_result":"PASS","resource_budget":"240s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-SURFACE-CONFIG","axis":"surface","cell":"Configuration surface","disposition":"TESTED","owner":"qa-owner","evidence":["tests/config/config.spec.ts"],"command":"npx vitest run tests/config/config.spec.ts","fixture":"tests/config/config.spec.ts :: valid, expired, invalid, and symlinked config cases","observed_result":"PASS","resource_budget":"120s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-SURFACE-PLUGIN","axis":"surface","cell":"Plugin surface","disposition":"TESTED","owner":"qa-owner","evidence":["tests/contract/m35-plugin-sdk.spec.ts","tests/plugins/tier-isolation.spec.ts"],"command":"npx vitest run tests/contract/m35-plugin-sdk.spec.ts tests/plugins/tier-isolation.spec.ts","fixture":"tests/contract/m35-plugin-sdk.spec.ts :: malformed manifest and reserved-prefix rejection; disabled-by-default plugin","observed_result":"PASS","resource_budget":"240s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-SURFACE-CI-TEMPLATES","axis":"surface","cell":"CI and consumer install templates","disposition":"TESTED","owner":"qa-owner","evidence":["tests/integrations/ci-install-template.spec.ts","tests/integrations/stable-release-workflow.spec.ts"],"command":"npx vitest run tests/integrations/ci-install-template.spec.ts tests/integrations/stable-release-workflow.spec.ts","fixture":"tests/integrations/ci-install-template.spec.ts :: shared install template; tests/integrations/stable-release-workflow.spec.ts :: stable consumer workflow","observed_result":"PASS","resource_budget":"240s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-SURFACE-OPTIONAL-CONTROL-PLANE","axis":"surface","cell":"Optional hosted control-plane surface","disposition":"BLOCKED","owner":"qa-owner","evidence":["src/governance/m33-m34-contract.ts","tests/contract/m33-m34-governance-assurance.spec.ts","docs/M26-EXTERNAL-VALIDATION.json"],"command":"npx vitest run tests/contract/m33-m34-governance-assurance.spec.ts","fixture":"tests/contract/m33-m34-governance-assurance.spec.ts :: local provisional contract only","observed_result":"BLOCKED","blocked_reason":"M33/M34 defines a local provisional contract and marks the hosted organization pilot PENDING. No implemented service, real two-repository inheritance run, or candidate-bound external result exists.","revisit_trigger":"Hosted pilot implementation and two consented repositories with service-account audit evidence are available.","resource_budget":"external pilot","last_candidate":"mjolnir-working-candidate-001","source_issue_ids":["GAP-M26-013"]},
-    {"schemaVersion":1,"cell_id":"MATRIX-SURFACE-FUTURE-RUNNER","axis":"surface","cell":"Future fresh-command cross-surface runner","disposition":"BLOCKED","owner":"qa-owner","evidence":["docs/ROADMAP.yaml","scripts/check-m26-ledgers.ts"],"command":"none — no fresh-command runner exists","fixture":"Required fixture: one isolated command invocation per applicable surface/state combination, with per-combination exit and output capture","observed_result":"BLOCKED","blocked_reason":"The ledger validator checks declared records, but no runner executes one fresh command per matrix cell as required by the plan.","revisit_trigger":"A standalone matrix runner and generated execution ledger are committed and covered by a contract test.","resource_budget":"future implementation","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-INPUT-CLEAN","axis":"input-state","cell":"Clean input","disposition":"TESTED","owner":"qa-owner","evidence":["tests/reporters/empty-states.spec.ts","tests/engine/framework-inventory.spec.ts"],"command":"npx vitest run tests/reporters/empty-states.spec.ts tests/engine/framework-inventory.spec.ts","fixture":"tests/reporters/empty-states.spec.ts :: clean scan output; tests/engine/framework-inventory.spec.ts :: supported-framework discovery","observed_result":"PASS","resource_budget":"180s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-INPUT-EMPTY","axis":"input-state","cell":"Empty input","disposition":"TESTED","owner":"qa-owner","evidence":["tests/forensics/trace-arms.spec.ts","tests/reporters/empty-states.spec.ts"],"command":"npx vitest run tests/forensics/trace-arms.spec.ts tests/reporters/empty-states.spec.ts","fixture":"tests/forensics/trace-arms.spec.ts :: empty event array; tests/reporters/empty-states.spec.ts :: no-results states","observed_result":"PASS","resource_budget":"180s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-INPUT-MALFORMED","axis":"input-state","cell":"Malformed input across applicable surfaces","disposition":"TESTED","owner":"qa-owner","evidence":["tests/adversarial/adversarial-index.spec.ts","tests/lib/safe-json.spec.ts","tests/mcp/transport.spec.ts"],"command":"npx vitest run tests/adversarial/adversarial-index.spec.ts tests/lib/safe-json.spec.ts tests/mcp/transport.spec.ts","fixture":"Malformed source/report files, malformed JSON, and invalid JSON-RPC fixtures generated inside the three named specs","observed_result":"PASS","resource_budget":"300s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-INPUT-HOSTILE","axis":"input-state","cell":"Hostile input","disposition":"TESTED","owner":"qa-owner","evidence":["tests/adversarial/adversarial-index.spec.ts","tests/forensics/hostile-repo.spec.ts"],"command":"npx vitest run tests/adversarial/adversarial-index.spec.ts tests/forensics/hostile-repo.spec.ts","fixture":"Oversized, truncated, hostile-repository, malformed-report, and unsupported report fixtures generated by the named specs","observed_result":"PASS","resource_budget":"300s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-INPUT-STALE","axis":"input-state","cell":"Stale input and stale evidence","disposition":"TESTED","owner":"qa-owner","evidence":["tests/commands/artifact-integrity.spec.ts","tests/engine/runtime-evidence-graph.spec.ts","tests/engine/m40-language-expansion-contract.spec.ts"],"command":"npx vitest run tests/commands/artifact-integrity.spec.ts tests/engine/runtime-evidence-graph.spec.ts tests/engine/m40-language-expansion-contract.spec.ts","fixture":"Stale release artifact, stale runtime-evidence edge, and stale M40 language evidence fixtures","observed_result":"PASS","resource_budget":"300s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-INPUT-FOREIGN","axis":"input-state","cell":"Foreign evidence and provenance","disposition":"TESTED","owner":"qa-owner","evidence":["tests/engine/runtime-evidence-graph.spec.ts","tests/engine/m40-language-expansion-contract.spec.ts"],"command":"npx vitest run tests/engine/runtime-evidence-graph.spec.ts tests/engine/m40-language-expansion-contract.spec.ts","fixture":"Repository/run provenance mismatch and foreign M40 evidence fixtures","observed_result":"PASS","resource_budget":"240s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-INPUT-TRUNCATED","axis":"input-state","cell":"Truncated input","disposition":"TESTED","owner":"qa-owner","evidence":["tests/false-green/trace.spec.ts","tests/forensics/trace-arms.spec.ts","tests/engine/long-tail-arms.spec.ts"],"command":"npx vitest run tests/false-green/trace.spec.ts tests/forensics/trace-arms.spec.ts tests/engine/long-tail-arms.spec.ts","fixture":"Trace stream ending before after event, truncated trace arm, and unclosed JUnit testcase fixtures","observed_result":"PASS","resource_budget":"240s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-INPUT-DUPLICATE","axis":"input-state","cell":"Duplicate evidence and repeated records","disposition":"TESTED","owner":"qa-owner","evidence":["tests/engine/runtime-evidence-graph.spec.ts","tests/engine/m40-language-expansion-contract.spec.ts"],"command":"npx vitest run tests/engine/runtime-evidence-graph.spec.ts tests/engine/m40-language-expansion-contract.spec.ts","fixture":"Duplicate runtime evidence and duplicate M40 observation fixtures","observed_result":"PASS","resource_budget":"240s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-INPUT-CONFLICTING","axis":"input-state","cell":"Conflicting or contradictory evidence","disposition":"TESTED","owner":"qa-owner","evidence":["tests/engine/runtime-evidence-graph.spec.ts","tests/engine/m40-language-expansion-contract.spec.ts"],"command":"npx vitest run tests/engine/runtime-evidence-graph.spec.ts tests/engine/m40-language-expansion-contract.spec.ts","fixture":"Contradictory pass/fail runtime evidence and contradictory M40 observations","observed_result":"PASS","resource_budget":"240s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-INPUT-PARTIAL","axis":"input-state","cell":"Partial or incomplete scan input","disposition":"TESTED","owner":"qa-owner","evidence":["tests/blast-radius/scope-and-exit.spec.ts","tests/false-green/corpus.spec.ts","tests/engine/trust-summary.spec.ts"],"command":"npx vitest run tests/blast-radius/scope-and-exit.spec.ts tests/false-green/corpus.spec.ts tests/engine/trust-summary.spec.ts","fixture":"Deadline, skipped-file, missing, cancelled, and deliberately incomplete scan fixtures","observed_result":"PASS","resource_budget":"300s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-INPUT-HUGE","axis":"input-state","cell":"Huge input and resource limits","disposition":"TESTED","owner":"qa-owner","evidence":["tests/lib/fs-bounded.spec.ts","tests/forensics/file-target.spec.ts","tests/adversarial/adversarial-index.spec.ts"],"command":"npx vitest run tests/lib/fs-bounded.spec.ts tests/forensics/file-target.spec.ts tests/adversarial/adversarial-index.spec.ts","fixture":"Bounded file reads, six 20,000-testcase reports, and oversized filename inputs","observed_result":"PASS","resource_budget":"300s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-INPUT-BINARY","axis":"input-state","cell":"Binary input","disposition":"TESTED","owner":"qa-owner","evidence":["tests/e2e/determinism-binary.spec.ts","tests/adversarial/adversarial-index.spec.ts"],"command":"npx vitest run tests/e2e/determinism-binary.spec.ts tests/adversarial/adversarial-index.spec.ts","fixture":"Binary report contents and binary/oversized hostile inputs","observed_result":"PASS","resource_budget":"300s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-INPUT-UNICODE","axis":"input-state","cell":"Unicode paths and content","disposition":"TESTED","owner":"qa-owner","evidence":["tests/forensics/hostile-repo.spec.ts","tests/scope/git-edge-cases.spec.ts"],"command":"npx vitest run tests/forensics/hostile-repo.spec.ts tests/scope/git-edge-cases.spec.ts","fixture":"Unicode/NFC/NFD filenames, Unicode report content, and Git path edge cases","observed_result":"PASS","resource_budget":"300s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-INPUT-PATH-SYMLINK","axis":"input-state","cell":"Traversal, path escape, and symlink input","disposition":"TESTED","owner":"qa-owner","evidence":["tests/scope/workspace-containment.spec.ts","tests/lib/fs-bounded.spec.ts","tests/rules/cross-domain-regressions.spec.ts"],"command":"npx vitest run tests/scope/workspace-containment.spec.ts tests/lib/fs-bounded.spec.ts tests/rules/cross-domain-regressions.spec.ts","fixture":"Traversal, sibling-prefix, Windows drive, UNC, symlink, and junction escape fixtures","observed_result":"PASS","resource_budget":"300s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-INPUT-ARCHIVE","axis":"input-state","cell":"Archive input","disposition":"TESTED","owner":"qa-owner","evidence":["tests/false-green/trace.spec.ts","tests/forensics/trace-arms.spec.ts"],"command":"npx vitest run tests/false-green/trace.spec.ts tests/forensics/trace-arms.spec.ts","fixture":"Valid and malformed trace.zip inputs created by the named specs","observed_result":"PASS","resource_budget":"180s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-INPUT-GENERATED-VENDOR","axis":"input-state","cell":"Generated and vendor input","disposition":"TESTED","owner":"qa-owner","evidence":["tests/engine/discovery/ignores.spec.ts","tests/engine/monorepo-analysis.spec.ts"],"command":"npx vitest run tests/engine/discovery/ignores.spec.ts tests/engine/monorepo-analysis.spec.ts","fixture":"Nested node_modules, dist, build, generated, and vendored files in a monorepo","observed_result":"PASS","resource_budget":"180s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-INPUT-MONOREPO-MULTI-ROOT","axis":"input-state","cell":"Monorepo and multi-root input","disposition":"TESTED","owner":"qa-owner","evidence":["tests/engine/monorepo-analysis.spec.ts","tests/integrations/adapter-reporter-matrix.spec.ts"],"command":"npx vitest run tests/engine/monorepo-analysis.spec.ts tests/integrations/adapter-reporter-matrix.spec.ts","fixture":"Three-package monorepo, nested package scopes, and package-level verdicts","observed_result":"PASS","resource_budget":"240s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-LIFECYCLE-INSTALL","axis":"lifecycle","cell":"Install","disposition":"TESTED","owner":"qa-owner","evidence":["tests/integrations/registry-install.spec.ts","tests/cli/install.spec.ts"],"command":"npx vitest run tests/integrations/registry-install.spec.ts tests/cli/install.spec.ts","fixture":"npm pack, clean-HOME install, help, and version from the packed artifact","observed_result":"PASS","resource_budget":"300s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-LIFECYCLE-FIRST-RUN","axis":"lifecycle","cell":"First run","disposition":"TESTED","owner":"qa-owner","evidence":["tests/e2e/journey-1-first-run.spec.ts"],"command":"npx vitest run tests/e2e/journey-1-first-run.spec.ts","fixture":"Packed demo-repo first-run scan","observed_result":"PASS","resource_budget":"300s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-LIFECYCLE-SCAN","axis":"lifecycle","cell":"Scan","disposition":"TESTED","owner":"qa-owner","evidence":["tests/e2e/journey-1-first-run.spec.ts","tests/integrations/adapter-reporter-matrix.spec.ts"],"command":"npx vitest run tests/e2e/journey-1-first-run.spec.ts tests/integrations/adapter-reporter-matrix.spec.ts","fixture":"One finding across terminal, JSON, SARIF, and Mermaid surfaces","observed_result":"PASS","resource_budget":"300s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-LIFECYCLE-BASELINE","axis":"lifecycle","cell":"Baseline capture and comparison","disposition":"TESTED","owner":"qa-owner","evidence":["tests/e2e/journey-34-baseline-fix.spec.ts","tests/cli/baseline-diff.spec.ts"],"command":"npx vitest run tests/e2e/journey-34-baseline-fix.spec.ts tests/cli/baseline-diff.spec.ts","fixture":"Capture, fix, RESOLVED diff, new debt, and missing-baseline fixtures","observed_result":"PASS","resource_budget":"300s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-LIFECYCLE-INCREMENTAL","axis":"lifecycle","cell":"Incremental analysis","disposition":"TESTED","owner":"qa-owner","evidence":["tests/contract/incremental-equivalence.spec.ts","tests/engine/incremental-analysis.spec.ts"],"command":"npx vitest run tests/contract/incremental-equivalence.spec.ts tests/engine/incremental-analysis.spec.ts","fixture":"Incremental output must equal full output on positive and negative fixtures","observed_result":"PASS","resource_budget":"300s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-LIFECYCLE-CACHE","axis":"lifecycle","cell":"Cache hit and cache miss","disposition":"TESTED","owner":"qa-owner","evidence":["tests/engine/scan-cache.spec.ts"],"command":"npx vitest run tests/engine/scan-cache.spec.ts","fixture":"Changed rule digest, changed source digest, cache hit, and cache miss fixtures","observed_result":"PASS","resource_budget":"300s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-LIFECYCLE-SUPPRESSION","axis":"lifecycle","cell":"Suppression lifecycle","disposition":"TESTED","owner":"qa-owner","evidence":["tests/e2e/journey-5678-flows.spec.ts","tests/contract/quarantine-ledger.spec.ts"],"command":"npx vitest run tests/e2e/journey-5678-flows.spec.ts tests/contract/quarantine-ledger.spec.ts","fixture":"Active and expired suppression plus reason-bound quarantine fixtures","observed_result":"PASS","resource_budget":"300s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-LIFECYCLE-CANCELLATION","axis":"lifecycle","cell":"Cancellation","disposition":"TESTED","owner":"qa-owner","evidence":["tests/engine/analysis/parser-cancellation.spec.ts","tests/adversarial/adversarial-index.spec.ts"],"command":"npx vitest run tests/engine/analysis/parser-cancellation.spec.ts tests/adversarial/adversarial-index.spec.ts","fixture":"Pre-abort, abort during analysis, and cancellation cannot return complete","observed_result":"PASS","resource_budget":"240s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-LIFECYCLE-CRASH","axis":"lifecycle","cell":"Crash containment","disposition":"TESTED","owner":"qa-owner","evidence":["tests/mcp/crash-containment.spec.ts","tests/cli/crash-paths.spec.ts","tests/cli/error-paths.spec.ts"],"command":"npx vitest run tests/mcp/crash-containment.spec.ts tests/cli/crash-paths.spec.ts tests/cli/error-paths.spec.ts","fixture":"Parser, MCP handler, unwritable output, and internal-error fixtures","observed_result":"PASS","resource_budget":"300s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-LIFECYCLE-RECOVERY","axis":"lifecycle","cell":"Restart and recovery","disposition":"BLOCKED","owner":"qa-owner","evidence":["tests/engine/m39-simulation-contract.spec.ts","docs/ROADMAP.yaml"],"command":"none — no integrated interrupted-process restart test exists","fixture":"Required fixture: terminate a real scan at each write boundary, restart from persisted state, and prove no finding is lost or duplicated","observed_result":"BLOCKED","blocked_reason":"M39 has a provisional simulation and resumption contract, but M39 is not integrated. Atomic-write and stale-temp tests prove write safety, not end-to-end restart recovery.","revisit_trigger":"M39 is integrated and a kill-and-restart corpus is certified.","resource_budget":"600s per interrupted state","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-LIFECYCLE-UPDATE","axis":"lifecycle","cell":"Update","disposition":"BLOCKED","owner":"qa-owner","evidence":["docs/VERSIONING.md","tests/release/version-consistency.spec.ts"],"command":"none — no old-to-new installed upgrade fixture exists","fixture":"Required fixture: install previous approved release, create state, upgrade to candidate, and prove deterministic continuity","observed_result":"BLOCKED","blocked_reason":"Version constants and changelog surfaces are tested, but package upgrade behavior and state migration are not.","revisit_trigger":"Two approved consecutive releases and an automated upgrade compatibility test are available.","resource_budget":"600s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-LIFECYCLE-DOWNGRADE","axis":"lifecycle","cell":"Downgrade","disposition":"BLOCKED","owner":"qa-owner","evidence":["docs/VERSIONING.md"],"command":"none — no installed downgrade fixture exists","fixture":"Required fixture: install candidate, produce state, downgrade to every supported predecessor, and prove rejection or compatible recovery","observed_result":"BLOCKED","blocked_reason":"The versioning policy describes breaking changes but has no downgrade execution contract or fixture.","revisit_trigger":"A supported downgrade policy and predecessor/candidate matrix are approved.","resource_budget":"600s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-LIFECYCLE-DEPRECATION","axis":"lifecycle","cell":"Deprecation lifecycle","disposition":"BLOCKED","owner":"qa-owner","evidence":["docs/VERSIONING.md","tests/frameworks/universal-pack-contract.spec.ts"],"command":"none — contract states are tested, but no released deprecation transition is installed","fixture":"Required fixture: deprecated rule/flag/API in one release, warning in the next, and removal only after the documented window","observed_result":"BLOCKED","blocked_reason":"Universal-pack and framework contracts understand deprecated states, but no shipped public deprecation transition and consumer test exists.","revisit_trigger":"A public deprecation is introduced with old/new consumer fixtures and an approved removal version.","resource_budget":"300s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-LIFECYCLE-REMOVAL","axis":"lifecycle","cell":"Removal lifecycle","disposition":"BLOCKED","owner":"qa-owner","evidence":["docs/VERSIONING.md","src/frameworks/framework-inventory.ts"],"command":"none — no released removal fixture exists","fixture":"Required fixture: consumer upgrades from the release immediately before removal and demonstrates documented deterministic behavior","observed_result":"BLOCKED","blocked_reason":"Removal is planned in the versioning policy but no public capability has completed a release-to-removal lifecycle test.","revisit_trigger":"A concrete public item enters its approved removal window.","resource_budget":"300s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-OUTCOME-PASS","axis":"outcome","cell":"PASS outcome","disposition":"TESTED","owner":"qa-owner","evidence":["tests/engine/m40-language-expansion-contract.spec.ts","tests/reporters/empty-states.spec.ts"],"command":"npx vitest run tests/engine/m40-language-expansion-contract.spec.ts tests/reporters/empty-states.spec.ts","fixture":"Complete supported evidence returns PASS; clean output contains no synthetic failure","observed_result":"PASS","resource_budget":"180s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-OUTCOME-FINDING","axis":"outcome","cell":"Finding outcome","disposition":"TESTED","owner":"qa-owner","evidence":["tests/e2e/journey-1-first-run.spec.ts","tests/integrations/adapter-reporter-matrix.spec.ts"],"command":"npx vitest run tests/e2e/journey-1-first-run.spec.ts tests/integrations/adapter-reporter-matrix.spec.ts","fixture":"Focused-test finding and exit 1 across all current reporters","observed_result":"PASS","resource_budget":"300s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-OUTCOME-PARTIAL","axis":"outcome","cell":"PARTIAL outcome across reporting and verification surfaces","disposition":"TESTED","owner":"qa-owner","evidence":["tests/blast-radius/scope-and-exit.spec.ts","tests/false-green/corpus.spec.ts","tests/contract/semantic-integrity.spec.ts","tests/engine/trust-summary.spec.ts"],"command":"npx vitest run tests/blast-radius/scope-and-exit.spec.ts tests/false-green/corpus.spec.ts tests/contract/semantic-integrity.spec.ts tests/engine/trust-summary.spec.ts","fixture":"Deadline, skipped file, partial scan, partial rules, and incomplete trust-summary fixtures","observed_result":"PASS","resource_budget":"300s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-OUTCOME-INCONCLUSIVE","axis":"outcome","cell":"INCONCLUSIVE outcome","disposition":"TESTED","owner":"qa-owner","evidence":["tests/agent/verify-loop.spec.ts","tests/cli/baseline-diff.spec.ts","tests/contract/semantic-integrity.spec.ts"],"command":"npx vitest run tests/agent/verify-loop.spec.ts tests/cli/baseline-diff.spec.ts tests/contract/semantic-integrity.spec.ts","fixture":"Missing baseline, partial scan, and incomplete rules produce INCONCLUSIVE rather than clean","observed_result":"PASS","resource_budget":"240s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-OUTCOME-UNKNOWN","axis":"outcome","cell":"UNKNOWN outcome","disposition":"TESTED","owner":"qa-owner","evidence":["tests/engine/m40-language-expansion-contract.spec.ts","tests/e2e/journey-9-exit-codes.spec.ts"],"command":"npx vitest run tests/engine/m40-language-expansion-contract.spec.ts tests/e2e/journey-9-exit-codes.spec.ts","fixture":"Contradictory complete evidence and exit 2 for unavailable results","observed_result":"PASS","resource_budget":"240s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-OUTCOME-UNSUPPORTED","axis":"outcome","cell":"UNSUPPORTED outcome","disposition":"TESTED","owner":"qa-owner","evidence":["tests/engine/framework-inventory.spec.ts","tests/frameworks/provider-capability-contract.spec.ts","tests/engine/m40-language-expansion-contract.spec.ts"],"command":"npx vitest run tests/engine/framework-inventory.spec.ts tests/frameworks/provider-capability-contract.spec.ts tests/engine/m40-language-expansion-contract.spec.ts","fixture":"Explicitly unsupported GitLab provider and language-specific unsupported fixtures","observed_result":"PASS","resource_budget":"180s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-OUTCOME-ERROR","axis":"outcome","cell":"Error outcome","disposition":"TESTED","owner":"qa-owner","evidence":["tests/cli/crash-paths.spec.ts","tests/cli/error-paths.spec.ts"],"command":"npx vitest run tests/cli/crash-paths.spec.ts tests/cli/error-paths.spec.ts","fixture":"Internal failures map to exit 20 without unhandled rejection or stack leakage","observed_result":"PASS","resource_budget":"180s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-OUTCOME-TIMEOUT","axis":"outcome","cell":"Timeout outcome","disposition":"TESTED","owner":"qa-owner","evidence":["tests/forensics/triage-workflow.spec.ts","tests/engine/analysis/parser-cancellation.spec.ts"],"command":"npx vitest run tests/forensics/triage-workflow.spec.ts tests/engine/analysis/parser-cancellation.spec.ts","fixture":"Timeout and cancellation workflow fixtures","observed_result":"PASS","resource_budget":"240s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-OUTCOME-PERMISSION-DENIED","axis":"outcome","cell":"Permission-denied outcome","disposition":"TESTED","owner":"qa-owner","evidence":["tests/audit/audit-coverage-arms-6.spec.ts","tests/cli/crash-paths.spec.ts"],"command":"npx vitest run tests/audit/audit-coverage-arms-6.spec.ts tests/cli/crash-paths.spec.ts","fixture":"Unreadable directory and unwritable output fixtures; neither can produce a clean result","observed_result":"PASS","resource_budget":"240s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-OUTCOME-ROLLBACK-CANARY","axis":"outcome","cell":"Rollback and canary outcome","disposition":"BLOCKED","owner":"qa-owner","evidence":[".github/workflows/stable-release.yml","docs/M26-EXTERNAL-VALIDATION.json"],"command":"none — no real rollback or canary fixture exists","fixture":"Required fixture: immutable candidate A, candidate B with regression, staged consumer cohort, rollback, and post-rollback proof","observed_result":"BLOCKED","blocked_reason":"Local workflow contracts prove packaging and tag safety, but no canary cohort, rollback trigger, or post-rollback observation exists. EXT-M26-001 is validator-BLOCKED because result is missing.","revisit_trigger":"An authorized canary cohort and candidate-bound rollback evidence are complete.","resource_budget":"external release window","last_candidate":"mjolnir-working-candidate-001","source_issue_ids":["GAP-M26-012"]},
-    {"schemaVersion":1,"cell_id":"MATRIX-OUTCOME-CLEAN-CONSUMER","axis":"outcome","cell":"Clean-consumer outcome","disposition":"TESTED","owner":"qa-owner","evidence":["tests/integrations/registry-install.spec.ts","tests/contract/pack-audit.spec.ts"],"command":"npx vitest run tests/integrations/registry-install.spec.ts tests/contract/pack-audit.spec.ts","fixture":"Packed artifact installs and runs from a clean HOME; source and package contents match","observed_result":"PASS","resource_budget":"300s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-LANGUAGE-CURRENT-BEACHHEAD","axis":"language-framework","cell":"Current beachhead languages: javascript, typescript, python, java, csharp","disposition":"TESTED","owner":"qa-owner","evidence":["tests/engine/adapters/adapters.spec.ts","tests/engine/python-ast-branch.spec.ts","tests/engine/adapters/java-csharp.spec.ts","tests/jv-cs-l2-ast.spec.ts"],"command":"npx vitest run tests/engine/adapters/adapters.spec.ts tests/engine/python-ast-branch.spec.ts tests/engine/adapters/java-csharp.spec.ts tests/jv-cs-l2-ast.spec.ts","fixture":"TypeScript/JavaScript, Python, Java, and C# AST/parser fixtures","observed_result":"PASS","resource_budget":"300s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-LANGUAGE-FUTURE-CANDIDATES","axis":"language-framework","cell":"Future language candidates: kotlin, fsharp, vbnet, c, cpp, objectivec, swift, go, rust, ruby, php, scala, dart, groovy, shell, powershell, lua, perl, r, julia, elixir, erlang, haskell, clojure, ocaml, zig, fortran, cobol, abap, apex, plsql, tsql, sql, matlab, yaml, json, xml, toml, dockerfile, terraform, hcl, kubernetes, helm, cloudformation, ansible, azurearm, bicep","disposition":"BLOCKED","owner":"qa-owner","evidence":["src/engine/m40-language-expansion-contract.ts","tests/engine/m40-language-expansion-contract.spec.ts"],"command":"npx vitest run tests/engine/m40-language-expansion-contract.spec.ts","fixture":"Synthetic syntax/complexity/cross-file/runtime fixtures for every listed M40 language ID","observed_result":"BLOCKED","blocked_reason":"The test proves the M40 intake and anti-self-certification contract only. Every listed future language lacks a real adapter, real framework corpus, parser-tier conformance, and independent maintainer/adoption evidence.","revisit_trigger":"Language enters the actual adapter inventory with real syntax, semantic, cross-file, runtime, malformed, version, performance, privacy, and security fixtures.","resource_budget":"language-specific 600s minimum","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-FRAMEWORK-REGISTERED","axis":"language-framework","cell":"Registered framework inventory: playwright, jest, vitest, pytest, junit, nunit, xunit, cypress, selenium, testng, github-actions, azure-devops, jenkins, gitlab-ci","disposition":"TESTED","owner":"qa-owner","evidence":["tests/engine/framework-inventory.spec.ts","tests/integrations/adapter-reporter-matrix.spec.ts","tests/frameworks/provider-capability-contract.spec.ts"],"command":"npx vitest run tests/engine/framework-inventory.spec.ts tests/integrations/adapter-reporter-matrix.spec.ts tests/frameworks/provider-capability-contract.spec.ts","fixture":"Exact 14 framework IDs, maturity, support state, versions, key gaps, and explicit limitations","observed_result":"PASS","resource_budget":"300s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-FRAMEWORK-FUTURE-CANDIDATES","axis":"language-framework","cell":"Future framework candidates outside the 14-entry registry","disposition":"BLOCKED","owner":"qa-owner","evidence":["src/frameworks/framework-inventory.ts","tests/engine/framework-inventory.spec.ts"],"command":"none — no finite future-framework candidate registry exists","fixture":"Required fixture: every future framework enters FRAMEWORK_INVENTORY with stable ID, supported version, maturity, limitations, adapter/reporter fixtures, and certification state","observed_result":"BLOCKED","blocked_reason":"The current registry is finite at 14 entries, but the plan requires every future candidate. No admission ledger makes an unlisted future candidate explicitly tracked and testable.","revisit_trigger":"A finite future-framework intake ledger is added and cross-checked against FRAMEWORK_INVENTORY.","resource_budget":"600s per framework","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-CAPABILITY-STATE-CONTRACT","axis":"language-framework","cell":"Bounded state transitions: CANDIDATE, EXPERIMENTAL, DEGRADED, UNSUPPORTED, DEPRECATED","disposition":"TESTED","owner":"qa-owner","evidence":["tests/engine/m40-language-expansion-contract.spec.ts","tests/frameworks/universal-pack-contract.spec.ts"],"command":"npx vitest run tests/engine/m40-language-expansion-contract.spec.ts tests/frameworks/universal-pack-contract.spec.ts","fixture":"Each bounded state and its required limitations/failure reason","observed_result":"PASS","resource_budget":"300s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-CAPABILITY-EXTERNAL-CERTIFICATION","axis":"language-framework","cell":"CERTIFIED and TRUST_COMPLETE promotion","disposition":"BLOCKED","owner":"qa-owner","evidence":["src/engine/m40-language-expansion-contract.ts","tests/engine/m40-language-expansion-contract.spec.ts","docs/M26-EXTERNAL-VALIDATION.json"],"command":"none — no external certification runner exists","fixture":"Required external fixture: exact package SHA/version, repository/license/maintainer identity, support policy, real language/framework corpus, version matrix, performance, privacy, and security review","observed_result":"BLOCKED","blocked_reason":"Synthetic M40 evidence can reach CERTIFIED inside its own contract, while the same test proves it cannot self-certify for release. No independent package-bound evidence exists.","revisit_trigger":"Independent candidate-bound certification is accepted for the exact language/framework/version.","resource_budget":"external certification cycle","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-CI-GITHUB-ACTIONS","axis":"ci-release","cell":"GitHub Actions adapter and workflow contract","disposition":"TESTED","owner":"qa-owner","evidence":["tests/engine/adapters/github-actions.spec.ts","tests/integrations/action-surface.spec.ts"],"command":"npx vitest run tests/engine/adapters/github-actions.spec.ts tests/integrations/action-surface.spec.ts","fixture":"Checkout, setup-node, npm test, upload-artifact, SHA, and permissions policy","observed_result":"PASS","resource_budget":"180s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-CI-AZURE-DEVOPS","axis":"ci-release","cell":"Azure DevOps adapter contract","disposition":"TESTED","owner":"qa-owner","evidence":["tests/engine/adapters/azure-pipelines.spec.ts","tests/frameworks/provider-capability-contract.spec.ts"],"command":"npx vitest run tests/engine/adapters/azure-pipelines.spec.ts tests/frameworks/provider-capability-contract.spec.ts","fixture":"Azure trigger, jobs, task, and artifact syntax fixtures","observed_result":"PASS","resource_budget":"180s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-CI-JENKINS","axis":"ci-release","cell":"Jenkins adapter contract","disposition":"TESTED","owner":"qa-owner","evidence":["tests/engine/adapters/jenkins.spec.ts","tests/frameworks/provider-capability-contract.spec.ts"],"command":"npx vitest run tests/engine/adapters/jenkins.spec.ts tests/frameworks/provider-capability-contract.spec.ts","fixture":"Declarative pipeline parsing; executable Groovy explicitly unsupported","observed_result":"PASS","resource_budget":"180s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-CI-GITLAB-CANDIDATE","axis":"ci-release","cell":"GitLab CI candidate basic parser/template, not provider execution","disposition":"TESTED","owner":"qa-owner","evidence":["tests/adapters/gitlab-ci.spec.ts","tests/commands/ux-verification.spec.ts","tests/frameworks/provider-capability-contract.spec.ts"],"command":"npx vitest run tests/adapters/gitlab-ci.spec.ts tests/commands/ux-verification.spec.ts tests/frameworks/provider-capability-contract.spec.ts","fixture":"Bounded GitLab jobs/stages/fixtures parser and generated CI install template","observed_result":"PASS","resource_budget":"240s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-RELEASE-RC-CONTRACT","axis":"ci-release","cell":"Release-candidate workflow contract","disposition":"TESTED","owner":"qa-owner","evidence":["tests/integrations/release-workflow.spec.ts",".github/workflows/release.yml"],"command":"npx vitest run tests/integrations/release-workflow.spec.ts","fixture":"RC authorization, exact version, ci-local readiness, pack, and prerelease flag","observed_result":"PASS","resource_budget":"180s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-RELEASE-STABLE-CONTRACT","axis":"ci-release","cell":"Stable-release workflow contract","disposition":"TESTED","owner":"qa-owner","evidence":["tests/integrations/stable-release-workflow.spec.ts",".github/workflows/stable-release.yml"],"command":"npx vitest run tests/integrations/stable-release-workflow.spec.ts","fixture":"Latest candidate, tag verification, and stable npm publication contract","observed_result":"PASS","resource_budget":"180s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-RELEASE-DRY-RUN","axis":"ci-release","cell":"Release dry-run","disposition":"TESTED","owner":"qa-owner","evidence":["tests/integrations/release-workflow.spec.ts"],"command":"npx vitest run tests/integrations/release-workflow.spec.ts","fixture":"workflow_dispatch dry_run has no publish step or credentials","observed_result":"PASS","resource_budget":"180s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-RELEASE-RESUME-CONTRACT","axis":"ci-release","cell":"Release resume contract","disposition":"TESTED","owner":"qa-owner","evidence":["tests/integrations/stable-release-workflow.spec.ts",".github/workflows/stable-release.yml"],"command":"npx vitest run tests/integrations/stable-release-workflow.spec.ts","fixture":"workflow_dispatch resume job and gh release download reuse","observed_result":"PASS","resource_budget":"180s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-RELEASE-PROPAGATION-DELAY","axis":"ci-release","cell":"Registry and consumer propagation delay","disposition":"BLOCKED","owner":"qa-owner","evidence":["docs/VERSIONING.md","docs/M26-EXTERNAL-VALIDATION.json"],"command":"none — no external registry timing fixture exists","fixture":"Required fixture: publish one immutable candidate, query npm from two independent networks until installable, record timestamps, and prove documented delay","observed_result":"BLOCKED","blocked_reason":"The repository contains timing guidance but no candidate-bound observation. EXT-M26-001 is validator-BLOCKED because required result is missing.","revisit_trigger":"Independent registry observations and maximum propagation delay are recorded for the exact candidate.","resource_budget":"external observation window","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-RELEASE-IMMUTABLE-TAG","axis":"ci-release","cell":"Immutable release-tag contract","disposition":"TESTED","owner":"qa-owner","evidence":["tests/integrations/release-workflow.spec.ts","tests/integrations/stable-release-workflow.spec.ts"],"command":"npx vitest run tests/integrations/release-workflow.spec.ts tests/integrations/stable-release-workflow.spec.ts","fixture":"Existing tag must point to candidate; gh release is no-force","observed_result":"PASS","resource_budget":"180s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-RELEASE-ROLLBACK-CANARY","axis":"ci-release","cell":"Release rollback and canary","disposition":"BLOCKED","owner":"qa-owner","evidence":[".github/workflows/stable-release.yml","docs/M26-EXTERNAL-VALIDATION.json"],"command":"none — no canary or rollback execution exists","fixture":"Required fixture: two candidates, staged cohort, canary metrics, rollback authorization, and post-rollback installation evidence","observed_result":"BLOCKED","blocked_reason":"There is no canary workflow, rollback workflow, candidate cohort, or external rollback result.","revisit_trigger":"Canary and rollback playbooks plus candidate-bound execution evidence are approved.","resource_budget":"external release window","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-PLATFORM-NODE22-UBUNTU","axis":"platform","cell":"Node 22 on Ubuntu","disposition":"BLOCKED","owner":"qa-owner","evidence":[".github/workflows/ci.yml","docs/VERSIONING.md"],"command":"npm test","fixture":"Required fixture: .github/workflows/ci.yml on ubuntu-latest with node-version 22 and completed run artifact","observed_result":"BLOCKED","blocked_reason":"Workflow configuration is not execution evidence, and no current-SHA completed Ubuntu/Node 22 run artifact is linked.","revisit_trigger":"A successful current-SHA Ubuntu/Node 22 CI run and environment record are attached.","resource_budget":"30m per CI run","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-PLATFORM-NODE22-WINDOWS","axis":"platform","cell":"Node 22 on Windows","disposition":"BLOCKED","owner":"qa-owner","evidence":[".github/workflows/ci.yml","docs/VERSIONING.md"],"command":"npm test","fixture":"Required fixture: .github/workflows/ci.yml on windows-latest with node-version 22 and completed run artifact","observed_result":"BLOCKED","blocked_reason":"Windows is declared supported, but no candidate-bound CI artifact records OS, Node version, shell, and complete result.","revisit_trigger":"A successful current-SHA Windows/Node 22 CI run is attached.","resource_budget":"30m per CI run","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-PLATFORM-NODE22-MACOS","axis":"platform","cell":"Node 22 on macOS","disposition":"BLOCKED","owner":"qa-owner","evidence":[".github/workflows/ci.yml","docs/VERSIONING.md"],"command":"npm test","fixture":"Required fixture: .github/workflows/ci.yml on macos-latest with node-version 22 and completed run artifact","observed_result":"BLOCKED","blocked_reason":"macOS is declared supported, but no candidate-bound completed platform run exists.","revisit_trigger":"A successful current-SHA macOS/Node 22 CI run is attached.","resource_budget":"30m per CI run","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-PLATFORM-NODE24-UBUNTU","axis":"platform","cell":"Node 24 on Ubuntu","disposition":"BLOCKED","owner":"qa-owner","evidence":[".github/workflows/ci.yml","docs/VERSIONING.md"],"command":"npm test","fixture":"Required fixture: .github/workflows/ci.yml on ubuntu-latest with node-version 24 and completed run artifact","observed_result":"BLOCKED","blocked_reason":"Node 24 is declared supported, but no candidate-bound completed platform run exists.","revisit_trigger":"A successful current-SHA Ubuntu/Node 24 CI run is attached.","resource_budget":"30m per CI run","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-PLATFORM-NODE24-WINDOWS","axis":"platform","cell":"Node 24 on Windows","disposition":"NOT_APPLICABLE","owner":"qa-owner","evidence":["docs/VERSIONING.md"],"command":"none — outside declared support envelope","fixture":"Declared support matrix: Node 24 is Ubuntu-only; Windows support is Node 22","observed_result":"NA","not_applicable_rationale":"VERSIONING.md explicitly assigns Node 24 only to Ubuntu. This is a declared unsupported combination, not missing evidence.","revisit_trigger":"Published support policy adds Node 24 on Windows.","resource_budget":"not applicable","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-PLATFORM-NODE24-MACOS","axis":"platform","cell":"Node 24 on macOS","disposition":"NOT_APPLICABLE","owner":"qa-owner","evidence":["docs/VERSIONING.md"],"command":"none — outside declared support envelope","fixture":"Declared support matrix: Node 24 is Ubuntu-only; macOS support is Node 22","observed_result":"NA","not_applicable_rationale":"VERSIONING.md explicitly assigns Node 24 only to Ubuntu. This is a declared unsupported combination, not missing evidence.","revisit_trigger":"Published support policy adds Node 24 on macOS.","resource_budget":"not applicable","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-PLATFORM-SHELLS","axis":"platform","cell":"Supported shell behavior: Bash and PowerShell","disposition":"BLOCKED","owner":"qa-owner","evidence":[".github/workflows/ci.yml","tests/cli/flag-matrix.spec.ts"],"command":"npm test","fixture":"Required fixture: packed CLI install/help/scan/fail paths under native PowerShell and Bash on supported platforms","observed_result":"BLOCKED","blocked_reason":"Windows CI forces Git Bash, and tests simulate command behavior rather than certify native PowerShell execution.","revisit_trigger":"Native Bash and PowerShell jobs pass for the same candidate.","resource_budget":"30m per shell/platform lane","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-PLATFORM-LOCALE-TZ","axis":"platform","cell":"Locale and time-zone behavior","disposition":"BLOCKED","owner":"qa-owner","evidence":["tests/commands/artifact-integrity.spec.ts",".github/workflows/ci.yml"],"command":"npm test","fixture":"Required fixture: packed CLI under UTC, America/New_York, Europe/Berlin, en-US, and a non-UTF-8 locale with fixed timestamps","observed_result":"BLOCKED","blocked_reason":"Artifact freshness is unit-tested, but no cross-locale/time-zone execution or fixed-clock deterministic corpus exists.","revisit_trigger":"Locale/time-zone matrix passes with fixed-clock comparisons.","resource_budget":"30m per locale/time-zone lane","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-PLATFORM-PATH-SEPARATORS","axis":"platform","cell":"Path-separator normalization contract","disposition":"TESTED","owner":"qa-owner","evidence":["tests/cli/why.spec.ts","tests/scope/git-resolve.spec.ts"],"command":"npx vitest run tests/cli/why.spec.ts tests/scope/git-resolve.spec.ts","fixture":"Relative, nested, and Windows-style path-resolution fixtures","observed_result":"PASS","resource_budget":"180s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-PLATFORM-FILESYSTEM-EDGES","axis":"platform","cell":"Filesystem edge-case contract","disposition":"TESTED","owner":"qa-owner","evidence":["tests/scope/workspace-containment.spec.ts","tests/lib/fs-atomic-retry.spec.ts","tests/commands/trust-report.spec.ts"],"command":"npx vitest run tests/scope/workspace-containment.spec.ts tests/lib/fs-atomic-retry.spec.ts tests/commands/trust-report.spec.ts","fixture":"Drive, UNC, sibling, symlink, junction, EPERM/EACCES, stale temp, and long nested output fixtures","observed_result":"PASS","resource_budget":"300s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-PERMISSION-LOCAL-ZERO-NETWORK","axis":"permissions-network","cell":"Local zero-network source and dependency contract","disposition":"TESTED","owner":"qa-owner","evidence":["tests/contract/privacy-network-isolation.spec.ts","tests/contract/boundary-law.spec.ts","tests/commands/release-trust-arms.spec.ts"],"command":"npx vitest run tests/contract/privacy-network-isolation.spec.ts tests/contract/boundary-law.spec.ts tests/commands/release-trust-arms.spec.ts","fixture":"No telemetry, remote logging, network dependency, or network import; unsatisfied security/privacy blocks release trust","observed_result":"PASS","resource_budget":"240s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-PERMISSION-READ-ONLY-TOKEN","axis":"permissions-network","cell":"Read-only token contract","disposition":"TESTED","owner":"qa-owner","evidence":["tests/frameworks/provider-capability-contract.spec.ts","tests/integrations/action-surface.spec.ts"],"command":"npx vitest run tests/frameworks/provider-capability-contract.spec.ts tests/integrations/action-surface.spec.ts","fixture":"Contents read, token read-only, no write access, secrets unavailable","observed_result":"PASS","resource_budget":"180s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-PERMISSION-FORK-PR","axis":"permissions-network","cell":"Fork pull-request permission contract","disposition":"TESTED","owner":"qa-owner","evidence":["tests/frameworks/provider-capability-contract.spec.ts","tests/integrations/action-surface.spec.ts"],"command":"npx vitest run tests/frameworks/provider-capability-contract.spec.ts tests/integrations/action-surface.spec.ts","fixture":"Fork token is read-only, secrets unavailable, action contents permission is read","observed_result":"PASS","resource_budget":"180s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-PERMISSION-OPTIONAL-TELEMETRY","axis":"permissions-network","cell":"Optional telemetry decision and implementation","disposition":"BLOCKED","owner":"qa-owner","evidence":["tests/contract/privacy-network-isolation.spec.ts","docs/M26-EXTERNAL-VALIDATION.json"],"command":"npx vitest run tests/contract/privacy-network-isolation.spec.ts","fixture":"Current absence of telemetry is tested, but required owner decision is not externally recorded","observed_result":"BLOCKED","blocked_reason":"Code currently enforces no telemetry, but external evidence lacks an approved decision among none, opt-in, and out of scope. That is governance, not an inferred test result.","revisit_trigger":"qa-owner ratifies the telemetry decision; if opt-in, consented and revocation tests are added.","resource_budget":"180s plus governance review","last_candidate":"mjolnir-working-candidate-001","source_issue_ids":["GAP-M26-014"]},
-    {"schemaVersion":1,"cell_id":"MATRIX-PERMISSION-OPTIONAL-HOSTED-SYNC","axis":"permissions-network","cell":"Optional hosted synchronization","disposition":"BLOCKED","owner":"qa-owner","evidence":["src/governance/m33-m34-contract.ts","tests/contract/m33-m34-governance-assurance.spec.ts","docs/M26-EXTERNAL-VALIDATION.json"],"command":"npx vitest run tests/contract/m33-m34-governance-assurance.spec.ts","fixture":"Local policy defaults only; hosted service remains pending","observed_result":"BLOCKED","blocked_reason":"No hosted synchronization service, offline/conflict contract, or two-repository pilot exists. M34 marks the pilot pending.","revisit_trigger":"Hosted sync implementation plus offline, conflict, access, and recovery pilot evidence is available.","resource_budget":"external pilot","last_candidate":"mjolnir-working-candidate-001","source_issue_ids":["GAP-M26-016"]},
-    {"schemaVersion":1,"cell_id":"MATRIX-PERMISSION-AGENT-TOOL","axis":"permissions-network","cell":"Agent/MCP tool permission contract","disposition":"TESTED","owner":"qa-owner","evidence":["tests/contract/mcp-transport.spec.ts","tests/mcp/crash-containment.spec.ts","tests/agent/decision-receipt.spec.ts"],"command":"npx vitest run tests/contract/mcp-transport.spec.ts tests/mcp/crash-containment.spec.ts tests/agent/decision-receipt.spec.ts","fixture":"Bounded tool enumeration, no network imports, and rejected/redacted secret fields","observed_result":"PASS","resource_budget":"300s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-PERMISSION-SELF-HOSTED-AIR-GAPPED","axis":"permissions-network","cell":"Self-hosted and air-gapped operation","disposition":"BLOCKED","owner":"qa-owner","evidence":["src/commands/enterprise.ts","src/governance/m33-m34-contract.ts","docs/M26-EXTERNAL-VALIDATION.json"],"command":"none — no self-hosted or air-gapped deployment fixture exists","fixture":"Required fixture: offline package install, no network route, non-root service identity, local authority, credential rotation, and audit export","observed_result":"BLOCKED","blocked_reason":"CLI can generate enterprise configuration, but no complete local enterprise profile or real service-account pilot exists; M34 remains pending and EXT-M26-001 is validator-BLOCKED.","revisit_trigger":"Offline installation and least-privilege self-hosted pilot produce a candidate-bound result.","resource_budget":"external pilot","last_candidate":"mjolnir-working-candidate-001","source_issue_ids":["GAP-M26-015"]},
-    {"schemaVersion":1,"cell_id":"MATRIX-SECURITY-PROMPT-INJECTION","axis":"security-privacy","cell":"Prompt-injection resistance","disposition":"BLOCKED","owner":"qa-owner","evidence":["src/agent/decision-receipt.ts","tests/agent/decision-receipt.spec.ts"],"command":"none — no prompt-injection fixture exists","fixture":"Required fixture: untrusted finding, rule, test, and artifact text instructs scope change, suppression, secret disclosure, or tool use","observed_result":"BLOCKED","blocked_reason":"Current tests validate deterministic decision receipts and secret redaction, but no adversarial prompt-injection corpus exercises the agent boundary.","revisit_trigger":"Prompt-injection corpus spanning findings, source, rules, artifacts, MCP responses, and PR comments passes.","resource_budget":"300s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-SECURITY-TOOL-POISONING","axis":"security-privacy","cell":"Tool-poisoning resistance","disposition":"BLOCKED","owner":"qa-owner","evidence":["src/frameworks/provider-capability-contract.ts","tests/contract/mcp-transport.spec.ts"],"command":"none — no tool-poisoning fixture exists","fixture":"Required fixture: malicious tool descriptions, hidden parameters, instruction text, and poisoned tool results","observed_result":"BLOCKED","blocked_reason":"MCP transport and tool listing are tested, but no fixture treats tool metadata/results as hostile data or proves poisoned instructions cannot alter behavior.","revisit_trigger":"Tool metadata/result poisoning tests and an explicit untrusted-data policy are implemented.","resource_budget":"300s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-SECURITY-EXFILTRATION","axis":"security-privacy","cell":"Local exfiltration prevention contract","disposition":"TESTED","owner":"qa-owner","evidence":["tests/contract/privacy-network-isolation.spec.ts","tests/contract/boundary-law.spec.ts","tests/agent/decision-receipt.spec.ts"],"command":"npx vitest run tests/contract/privacy-network-isolation.spec.ts tests/contract/boundary-law.spec.ts tests/agent/decision-receipt.spec.ts","fixture":"No telemetry/network package or import; password/token/secret-bearing fields are rejected or redacted","observed_result":"PASS","resource_budget":"240s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-SECURITY-TRAVERSAL","axis":"security-privacy","cell":"Path traversal","disposition":"TESTED","owner":"qa-owner","evidence":["tests/scope/workspace-containment.spec.ts","tests/rules/cross-domain-regressions.spec.ts"],"command":"npx vitest run tests/scope/workspace-containment.spec.ts tests/rules/cross-domain-regressions.spec.ts","fixture":"Traversal, sibling-prefix, drive, UNC, symlink, and junction escape fixtures","observed_result":"PASS","resource_budget":"240s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-SECURITY-SYMLINK","axis":"security-privacy","cell":"Symlink escape","disposition":"TESTED","owner":"qa-owner","evidence":["tests/scope/workspace-containment.spec.ts","tests/config/config.spec.ts"],"command":"npx vitest run tests/scope/workspace-containment.spec.ts tests/config/config.spec.ts","fixture":"File and directory symlink/junction escapes and symlinked config rejection","observed_result":"PASS","resource_budget":"240s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-SECURITY-REDOS","axis":"security-privacy","cell":"ReDoS resistance","disposition":"TESTED","owner":"qa-owner","evidence":["tests/rules/redos-gate.spec.ts"],"command":"npx vitest run tests/rules/redos-gate.spec.ts","fixture":"Long runs, nested parentheses, Unicode strings, and locator-alternation bait across every registered rule","observed_result":"PASS","resource_budget":"180s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-SECURITY-RESOURCE-EXHAUSTION","axis":"security-privacy","cell":"Resource-exhaustion resistance","disposition":"TESTED","owner":"qa-owner","evidence":["tests/lib/fs-bounded.spec.ts","tests/rules/redos-gate.spec.ts","tests/bench/m48-scale-operating-model.spec.ts","tests/stress/scale-benchmark.spec.ts"],"command":"npx vitest run tests/lib/fs-bounded.spec.ts tests/rules/redos-gate.spec.ts tests/bench/m48-scale-operating-model.spec.ts","fixture":"Bounded file reads, pathological regex shapes, scale budgets, and recorded 3,000-file stress result","observed_result":"PASS","resource_budget":"300s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-SECURITY-SANDBOX-ESCAPE","axis":"security-privacy","cell":"Sandbox escape","disposition":"BLOCKED","owner":"qa-owner","evidence":["enterprise/threat-model.json","tests/plugins/tier-isolation.spec.ts"],"command":"none — no sandbox exists to test","fixture":"Required fixture: malicious plugin attempts filesystem, process, environment, network, and parent-process access from an OS-enforced sandbox","observed_result":"BLOCKED","blocked_reason":"The threat model explicitly states that plugins and MCP execute unsandboxed with full Node privileges. Tier checks are not an OS sandbox.","revisit_trigger":"A documented sandbox implementation and adversarial escape suite are added.","resource_budget":"600s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-SECURITY-SECRET-CANARY","axis":"security-privacy","cell":"Secret canary non-leakage","disposition":"TESTED","owner":"qa-owner","evidence":["tests/contract/pack-audit.spec.ts","tests/agent/decision-receipt.spec.ts","tests/contract/privacy-network-isolation.spec.ts"],"command":"npx vitest run tests/contract/pack-audit.spec.ts tests/agent/decision-receipt.spec.ts tests/contract/privacy-network-isolation.spec.ts","fixture":"Canary password/token fields, package contents, and no remote logging/telemetry","observed_result":"PASS","resource_budget":"240s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-SECURITY-UNTRUSTED-ARTIFACT","axis":"security-privacy","cell":"Untrusted artifact handling","disposition":"TESTED","owner":"qa-owner","evidence":["tests/commands/artifact-integrity.spec.ts","tests/engine/runtime-evidence-graph.spec.ts","tests/false-green/trace.spec.ts"],"command":"npx vitest run tests/commands/artifact-integrity.spec.ts tests/engine/runtime-evidence-graph.spec.ts tests/false-green/trace.spec.ts","fixture":"Digest, schema, signature, provenance mismatch, and malformed trace archive","observed_result":"PASS","resource_budget":"300s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-SECURITY-SUPPLY-CHAIN-SUBSTITUTION","axis":"security-privacy","cell":"Supply-chain substitution rejection contract","disposition":"TESTED","owner":"qa-owner","evidence":["tests/release/reproducibility.spec.ts","tests/release/provenance.spec.ts","tests/contract/pack-audit.spec.ts"],"command":"npx vitest run tests/release/reproducibility.spec.ts tests/release/provenance.spec.ts tests/contract/pack-audit.spec.ts","fixture":"Checked-in and freshly packed artifacts must have identical provenance and source/package parity","observed_result":"PASS","resource_budget":"300s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-DOMAIN-REQUIREMENTS","axis":"qa-sdet-domain","cell":"Requirements intelligence","disposition":"BLOCKED","owner":"qa-owner","evidence":["src/qa/domain-model.ts","tests/qa/domain-model.spec.ts"],"command":"npx vitest run tests/qa/domain-model.spec.ts","fixture":"Requirements record shape only","observed_result":"BLOCKED","blocked_reason":"The provisional model can represent requirements, but no requirements adapter, trace corpus, traceability generation, or independent certification exists.","revisit_trigger":"Requirements adapter, traceable fixture, external reviewer, and saturation evidence are integrated.","resource_budget":"600s plus external review","last_candidate":"mjolnir-working-candidate-001","source_issue_ids":["GAP-M26-006"]},
-    {"schemaVersion":1,"cell_id":"MATRIX-DOMAIN-RISK","axis":"qa-sdet-domain","cell":"Risk intelligence","disposition":"BLOCKED","owner":"qa-owner","evidence":["src/qa/domain-model.ts","tests/qa/domain-model.spec.ts"],"command":"npx vitest run tests/qa/domain-model.spec.ts","fixture":"Risk record shape only","observed_result":"BLOCKED","blocked_reason":"The provisional model can represent risk, but no risk-ingestion adapter, independent risk corpus, reviewer saturation, or operational risk decision is certified.","revisit_trigger":"Risk adapter and independently reviewed risk corpus are integrated.","resource_budget":"600s plus external review","last_candidate":"mjolnir-working-candidate-001","source_issue_ids":["GAP-M26-006"]},
-    {"schemaVersion":1,"cell_id":"MATRIX-DOMAIN-TEST-DESIGN","axis":"qa-sdet-domain","cell":"Test-design intelligence","disposition":"BLOCKED","owner":"qa-owner","evidence":["src/qa/domain-model.ts","tests/qa/domain-model.spec.ts"],"command":"npx vitest run tests/qa/domain-model.spec.ts","fixture":"Test-design record shape only","observed_result":"BLOCKED","blocked_reason":"Rule scaffolding and framework detection exist, but no integrated test-design adapter or independent certification selects and justifies tests across domains.","revisit_trigger":"Test-design adapter and reviewed requirements-to-tests corpus are integrated.","resource_budget":"600s plus external review","last_candidate":"mjolnir-working-candidate-001","source_issue_ids":["GAP-M26-007"]},
-    {"schemaVersion":1,"cell_id":"MATRIX-DOMAIN-UNIT","axis":"qa-sdet-domain","cell":"Unit-test domain","disposition":"TESTED","owner":"qa-owner","evidence":["tests/engine/adapters/framework-filter.spec.ts","tests/engine/adapters/java-csharp.spec.ts","tests/engine/framework-inventory.spec.ts"],"command":"npx vitest run tests/engine/adapters/framework-filter.spec.ts tests/engine/adapters/java-csharp.spec.ts tests/engine/framework-inventory.spec.ts","fixture":"Unit framework detection for Jest, Vitest, pytest, JUnit, TestNG, NUnit, xUnit, and MSTest","observed_result":"PASS","resource_budget":"240s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-DOMAIN-INTEGRATION","axis":"qa-sdet-domain","cell":"Integration-test domain","disposition":"TESTED","owner":"qa-owner","evidence":["tests/e2e/journey-1-first-run.spec.ts","tests/integrations/adapter-reporter-matrix.spec.ts"],"command":"npx vitest run tests/e2e/journey-1-first-run.spec.ts tests/integrations/adapter-reporter-matrix.spec.ts","fixture":"Packed binary scans a multi-package test tree and emits through all reporters","observed_result":"PASS","resource_budget":"300s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-DOMAIN-API","axis":"qa-sdet-domain","cell":"API contracts","disposition":"BLOCKED","owner":"qa-owner","evidence":["src/qa/domain-model.ts","tests/qa/domain-model.spec.ts"],"command":"npx vitest run tests/qa/domain-model.spec.ts","fixture":"API evidence record shape only","observed_result":"BLOCKED","blocked_reason":"The provisional model can represent API evidence, but no OpenAPI/AsyncAPI adapter, schema corpus, contract generation, or independent API certification exists.","revisit_trigger":"API adapter, real schema corpus, and external contract certification are integrated.","resource_budget":"900s plus external review","last_candidate":"mjolnir-working-candidate-001","source_issue_ids":["GAP-M26-008"]},
-    {"schemaVersion":1,"cell_id":"MATRIX-DOMAIN-BROWSER","axis":"qa-sdet-domain","cell":"Browser domain","disposition":"TESTED","owner":"qa-owner","evidence":["tests/contract/playwright-capabilities.spec.ts","tests/integrations/playwright-reporter-package.spec.ts","tests/engine/adapters/framework-filter.spec.ts"],"command":"npx vitest run tests/contract/playwright-capabilities.spec.ts tests/integrations/playwright-reporter-package.spec.ts tests/engine/adapters/framework-filter.spec.ts","fixture":"Playwright TypeScript/Python/Java capability boundaries and reporter package contract","observed_result":"PASS","resource_budget":"300s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-DOMAIN-MOBILE","axis":"qa-sdet-domain","cell":"Mobile domain","disposition":"BLOCKED","owner":"qa-owner","evidence":["src/qa/domain-model.ts","tests/qa/domain-model.spec.ts"],"command":"npx vitest run tests/qa/domain-model.spec.ts","fixture":"Mobile evidence record shape only","observed_result":"BLOCKED","blocked_reason":"The model has a mobile record kind, but no mobile framework inventory, adapter, real device/emulator corpus, or independent mobile certification exists.","revisit_trigger":"Mobile adapter, framework/device matrix, and independently reviewed corpus are integrated.","resource_budget":"1800s plus external review","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-DOMAIN-ACCESSIBILITY","axis":"qa-sdet-domain","cell":"Accessibility domain","disposition":"BLOCKED","owner":"qa-owner","evidence":["src/qa/domain-model.ts","tests/qa/domain-model.spec.ts","docs/M26-EXTERNAL-VALIDATION.json"],"command":"npx vitest run tests/qa/domain-model.spec.ts","fixture":"Accessibility evidence record shape only","observed_result":"BLOCKED","blocked_reason":"No accessibility scanner/adapter, keyboard/screen-reader corpus, assistive-technology run, or independent human/automated certification exists.","revisit_trigger":"Accessibility adapter, real repository corpus, and candidate-bound assistive-technology validation are available.","resource_budget":"900s plus external review","last_candidate":"mjolnir-working-candidate-001","source_issue_ids":["GAP-M26-009"]},
-    {"schemaVersion":1,"cell_id":"MATRIX-DOMAIN-PERFORMANCE","axis":"qa-sdet-domain","cell":"Performance domain","disposition":"BLOCKED","owner":"qa-owner","evidence":["src/qa/domain-model.ts","tests/bench/m48-scale-operating-model.spec.ts","tests/stress/scale-benchmark.spec.ts","tests/qa/domain-model.spec.ts"],"command":"npx vitest run tests/bench/m48-scale-operating-model.spec.ts tests/qa/domain-model.spec.ts","fixture":"Internal deterministic budgets and provisional performance-record shape","observed_result":"BLOCKED","blocked_reason":"Internal timing and memory budgets are tested, but no independent variance dataset, external performance adapter, or candidate-bound comparative result exists.","revisit_trigger":"Versioned independent performance corpus, variance methodology, and accepted result are attached.","resource_budget":"1800s plus external review","last_candidate":"mjolnir-working-candidate-001","source_issue_ids":["GAP-M26-010"]},
-    {"schemaVersion":1,"cell_id":"MATRIX-DOMAIN-SECURITY","axis":"qa-sdet-domain","cell":"Security testing domain","disposition":"BLOCKED","owner":"qa-owner","evidence":["src/qa/domain-model.ts","tests/qa/domain-model.spec.ts","docs/M26-EXTERNAL-VALIDATION.json"],"command":"npx vitest run tests/qa/domain-model.spec.ts","fixture":"Security evidence record shape only","observed_result":"BLOCKED","blocked_reason":"The product's own security tests do not certify a security-testing domain. No scanner inventory, normalized security adapter, independent corpus, or external security review exists.","revisit_trigger":"Security-domain adapter, scanner inventory, real-corpus validation, and independent claim review are integrated.","resource_budget":"1800s plus external review","last_candidate":"mjolnir-working-candidate-001","source_issue_ids":["GAP-M26-011"]},
-    {"schemaVersion":1,"cell_id":"MATRIX-DOMAIN-EXPLORATORY-OBSERVABILITY","axis":"qa-sdet-domain","cell":"Exploratory testing and observability","disposition":"BLOCKED","owner":"qa-owner","evidence":["src/qa/domain-model.ts","tests/qa/domain-model.spec.ts"],"command":"npx vitest run tests/qa/domain-model.spec.ts","fixture":"Exploratory/observability record shape only","observed_result":"BLOCKED","blocked_reason":"No exploratory-session, trace, log, or observability adapter integrates into the QA domain model, and no external practitioner validation exists.","revisit_trigger":"Privacy-reviewed observability adapter and reviewed exploratory-session corpus are integrated.","resource_budget":"900s plus external review","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-DOMAIN-RELEASE-EVIDENCE","axis":"qa-sdet-domain","cell":"Release evidence","disposition":"TESTED","owner":"qa-owner","evidence":["tests/engine/m50-release-proof-contract.spec.ts","tests/commands/release-trust-arms.spec.ts","tests/release/provenance.spec.ts"],"command":"npx vitest run tests/engine/m50-release-proof-contract.spec.ts tests/commands/release-trust-arms.spec.ts tests/release/provenance.spec.ts","fixture":"Release proof freshness, manifest, findings, verdict, and release trust invariants","observed_result":"PASS","resource_budget":"300s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-UX-BEGINNER","axis":"ux","cell":"Beginner UX","disposition":"TESTED","owner":"qa-owner","evidence":["tests/e2e/journey-1-first-run.spec.ts","tests/cli/help.spec.ts"],"command":"npx vitest run tests/e2e/journey-1-first-run.spec.ts tests/cli/help.spec.ts","fixture":"First-run output, help examples, and next-step guidance","observed_result":"PASS","resource_budget":"300s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-UX-EXPERT","axis":"ux","cell":"Expert UX","disposition":"TESTED","owner":"qa-owner","evidence":["tests/cli/flag-matrix.spec.ts","tests/cli/subcommands.spec.ts","tests/agent/decision-receipt.spec.ts"],"command":"npx vitest run tests/cli/flag-matrix.spec.ts tests/cli/subcommands.spec.ts tests/agent/decision-receipt.spec.ts","fixture":"Full recognized-flag matrix, subcommands, and machine-readable decision receipt","observed_result":"PASS","resource_budget":"300s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-UX-KEYBOARD-SCREEN-READER-AUTOMATED","axis":"ux","cell":"Keyboard/screen-reader automated semantics contract","disposition":"TESTED","owner":"qa-owner","evidence":["tests/engine/m49-experience-parity-contract.spec.ts","tests/cli/help.spec.ts"],"command":"npx vitest run tests/engine/m49-experience-parity-contract.spec.ts tests/cli/help.spec.ts","fixture":"Keyboard-screen-reader persona, accessibility states, non-PASS downgrade, and narrow-width text","observed_result":"PASS","resource_budget":"240s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-UX-KEYBOARD-SCREEN-READER-SESSION","axis":"ux","cell":"Keyboard and screen-reader user session","disposition":"BLOCKED","owner":"qa-owner","evidence":["tests/engine/m49-experience-parity-contract.spec.ts","docs/M26-EXTERNAL-VALIDATION.json"],"command":"npx vitest run tests/engine/m49-experience-parity-contract.spec.ts","fixture":"M49 validates state transitions but performs no actual assistive-technology session","observed_result":"BLOCKED","blocked_reason":"No real keyboard-only, NVDA/JAWS/VoiceOver, focus-order, or announcement corpus is present.","revisit_trigger":"A consented assistive-technology test script and candidate-bound session result are attached.","resource_budget":"external human validation","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-UX-ERROR-RECOVERY","axis":"ux","cell":"Error recovery UX","disposition":"TESTED","owner":"qa-owner","evidence":["tests/cli/crash-paths.spec.ts","tests/e2e/journey-5678-flows.spec.ts","tests/commands/ux-verification.spec.ts"],"command":"npx vitest run tests/cli/crash-paths.spec.ts tests/e2e/journey-5678-flows.spec.ts tests/commands/ux-verification.spec.ts","fixture":"Missing report, invalid config, unwritable output, and error guidance fixtures","observed_result":"PASS","resource_budget":"300s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-UX-LOCALIZATION","axis":"ux","cell":"Localization","disposition":"BLOCKED","owner":"qa-owner","evidence":["tests/engine/m49-experience-parity-contract.spec.ts","tests/readme-translations.spec.ts"],"command":"npx vitest run tests/engine/m49-experience-parity-contract.spec.ts tests/readme-translations.spec.ts","fixture":"Localization state shape and README structure only","observed_result":"BLOCKED","blocked_reason":"There is no localized CLI/report/PR surface, locale negotiation, translation-completeness test, or independent linguistic validation.","revisit_trigger":"A localized user-facing surface, translation catalog, and bilingual reviewer are added.","resource_budget":"600s plus linguistic review","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-UX-NO-FINDINGS","axis":"ux","cell":"No-findings UX","disposition":"TESTED","owner":"qa-owner","evidence":["tests/reporters/empty-states.spec.ts","tests/e2e/journey-34-baseline-fix.spec.ts"],"command":"npx vitest run tests/reporters/empty-states.spec.ts tests/e2e/journey-34-baseline-fix.spec.ts","fixture":"Clean terminal, JSON, SARIF, and CLI no-findings output","observed_result":"PASS","resource_budget":"240s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-UX-PARTIAL","axis":"ux","cell":"PARTIAL/INCONCLUSIVE UX","disposition":"TESTED","owner":"qa-owner","evidence":["tests/reporters/empty-states.spec.ts","tests/integrations/github/pr-comment-renderer.spec.ts","tests/commands/ux-verification.spec.ts"],"command":"npx vitest run tests/reporters/empty-states.spec.ts tests/integrations/github/pr-comment-renderer.spec.ts tests/commands/ux-verification.spec.ts","fixture":"PARTIAL/INCONCLUSIVE banners, partial PR analysis, and non-green UX guidance","observed_result":"PASS","resource_budget":"240s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-UX-HIGH-NOISE","axis":"ux","cell":"High-noise UX","disposition":"TESTED","owner":"qa-owner","evidence":["tests/reporters/next-actions.spec.ts","tests/rules/fp-audit-table.spec.ts","tests/rules/measured-fp.spec.ts"],"command":"npx vitest run tests/reporters/next-actions.spec.ts tests/rules/fp-audit-table.spec.ts tests/rules/measured-fp.spec.ts","fixture":"Prioritization, bounded next actions, FP evidence table, and measured FP classifications","observed_result":"PASS","resource_budget":"300s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-UX-ACCESSIBLE-PR","axis":"ux","cell":"Accessible pull-request output","disposition":"TESTED","owner":"qa-owner","evidence":["tests/integrations/github/pr-comment-contract.spec.ts","tests/integrations/github/pr-comment-renderer.spec.ts","tests/reporters/pr-comment-determinism.spec.ts","tests/integrations/action-surface.spec.ts"],"command":"npx vitest run tests/integrations/github/pr-comment-contract.spec.ts tests/integrations/github/pr-comment-renderer.spec.ts tests/reporters/pr-comment-determinism.spec.ts tests/integrations/action-surface.spec.ts","fixture":"Markdown headings, limitations, bounded body, deterministic output, and job-summary fallback","observed_result":"PASS","resource_budget":"240s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-UX-MOBILE-OUTPUT","axis":"ux","cell":"Mobile output surface","disposition":"BLOCKED","owner":"qa-owner","evidence":["docs/ROADMAP.yaml","docs/ROADMAP.yaml"],"command":"none — no mobile output surface or contract exists","fixture":"Required fixture: responsive output contract, narrow table degradation, touch navigation, and device accessibility validation","observed_result":"BLOCKED","blocked_reason":"The plan explicitly includes future PR/mobile UX, so this is applicable but unimplemented. Accessible PR Markdown is covered separately and does not satisfy mobile output.","revisit_trigger":"A mobile surface and responsive/accessibility contract are defined and implemented.","resource_budget":"900s plus device testing","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-GOV-OWNER","axis":"governance","cell":"Ownership","disposition":"TESTED","owner":"qa-owner","evidence":["tests/ledger/m26-validators.spec.ts","docs/M26-GAP-LEDGER.jsonl"],"command":"npx vitest run tests/ledger/m26-validators.spec.ts","fixture":"Named qa-owner required; UNOWNED rejected","observed_result":"PASS","resource_budget":"180s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-GOV-EXPIRY","axis":"governance","cell":"Expiry","disposition":"TESTED","owner":"qa-owner","evidence":["tests/e2e/journey-5678-flows.spec.ts","tests/config/config.spec.ts"],"command":"npx vitest run tests/e2e/journey-5678-flows.spec.ts tests/config/config.spec.ts","fixture":"Expired suppression is re-revealed end to end","observed_result":"PASS","resource_budget":"240s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-GOV-REVIEW","axis":"governance","cell":"Review and approval","disposition":"TESTED","owner":"qa-owner","evidence":["tests/agent/decision-receipt.spec.ts","tests/certification/candidate-manifest.spec.ts","tests/frameworks/universal-pack-contract.spec.ts"],"command":"npx vitest run tests/agent/decision-receipt.spec.ts tests/certification/candidate-manifest.spec.ts tests/frameworks/universal-pack-contract.spec.ts","fixture":"Invalid approval and missing evidence rejected; non-ready controls cannot be approved","observed_result":"PASS","resource_budget":"300s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-GOV-EXCEPTION","axis":"governance","cell":"Exception and suppression governance","disposition":"TESTED","owner":"qa-owner","evidence":["tests/e2e/journey-5678-flows.spec.ts","tests/contract/quarantine-ledger.spec.ts","tests/cli/flag-matrix.spec.ts"],"command":"npx vitest run tests/e2e/journey-5678-flows.spec.ts tests/contract/quarantine-ledger.spec.ts tests/cli/flag-matrix.spec.ts","fixture":"Reason-bound quarantine and suppression reason/expiry fixtures","observed_result":"PASS","resource_budget":"300s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-GOV-POLICY-INHERITANCE","axis":"governance","cell":"Policy inheritance","disposition":"BLOCKED","owner":"qa-owner","evidence":["src/governance/m33-m34-contract.ts","tests/contract/m33-m34-governance-assurance.spec.ts"],"command":"npx vitest run tests/contract/m33-m34-governance-assurance.spec.ts","fixture":"Local provisional defaults and policy validation only","observed_result":"BLOCKED","blocked_reason":"No real organization/repository parent-child policy inheritance run exists. M34 explicitly marks the hosted pilot pending.","revisit_trigger":"Two-repository service-account pilot proves parent policy, overrides, denial, and audit behavior.","resource_budget":"external pilot","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-GOV-CODEOWNERS","axis":"governance","cell":"CODEOWNERS integration","disposition":"BLOCKED","owner":"qa-owner","evidence":["src/governance/m33-m34-contract.ts","tests/contract/m33-m34-governance-assurance.spec.ts"],"command":"none — no CODEOWNERS fixture exists","fixture":"Required fixture: root/nested CODEOWNERS, inheritance, overrides, unmatched files, deleted owners, and provider review requests","observed_result":"BLOCKED","blocked_reason":"No CODEOWNERS parser, fixture, or provider review-request integration exists. M34 is a provisional local contract only.","revisit_trigger":"CODEOWNERS adapter and real provider review-request pilot are implemented.","resource_budget":"600s plus provider pilot","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-GOV-AUDIT","axis":"governance","cell":"Local audit decision-receipt contract","disposition":"TESTED","owner":"qa-owner","evidence":["tests/agent/decision-receipt.spec.ts","tests/contract/m33-m34-governance-assurance.spec.ts"],"command":"npx vitest run tests/agent/decision-receipt.spec.ts tests/contract/m33-m34-governance-assurance.spec.ts","fixture":"Verdict, reasons, evidence, policy, hash-bound receipt, and local audit-event schema","observed_result":"PASS","resource_budget":"300s","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-GOV-DELETION","axis":"governance","cell":"Deletion","disposition":"BLOCKED","owner":"qa-owner","evidence":["src/governance/m33-m34-contract.ts","tests/engine/m39-simulation-contract.spec.ts"],"command":"npx vitest run tests/engine/m39-simulation-contract.spec.ts","fixture":"Synthetic deletion request/status contract only","observed_result":"BLOCKED","blocked_reason":"The repository has provisional deletion fields, but no real repository or hosted-policy deletion execution, verification, or external result exists.","revisit_trigger":"A consented deletion execution produces before/after evidence and complete deletion status.","resource_budget":"external deletion cycle","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-GOV-EXPORT","axis":"governance","cell":"Export","disposition":"BLOCKED","owner":"qa-owner","evidence":["tests/engine/m39-simulation-contract.spec.ts","src/governance/m33-m34-contract.ts"],"command":"npx vitest run tests/engine/m39-simulation-contract.spec.ts","fixture":"Synthetic export contract only","observed_result":"BLOCKED","blocked_reason":"A provisional simulation can produce an export contract, but no real repository/service-account export, portability, redaction, or external delivery result exists.","revisit_trigger":"A real governed repository export is generated, verified, and accepted externally.","resource_budget":"external pilot","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-GOV-RETENTION","axis":"governance","cell":"Retention","disposition":"BLOCKED","owner":"qa-owner","evidence":["src/governance/m33-m34-contract.ts","tests/contract/m33-m34-governance-assurance.spec.ts","docs/M26-EXTERNAL-VALIDATION.json"],"command":"npx vitest run tests/contract/m33-m34-governance-assurance.spec.ts","fixture":"Local retention-field validation only","observed_result":"BLOCKED","blocked_reason":"No actual retention clock, purge job, backup expiry, deletion verification, or candidate-bound external consent/deletion evidence exists.","revisit_trigger":"Retention policy is executed end to end with purge and backup-expiry evidence.","resource_budget":"retention window","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-GOV-CONSENT","axis":"governance","cell":"Consent","disposition":"BLOCKED","owner":"qa-owner","evidence":["docs/M26-EXTERNAL-VALIDATION.json","tests/ledger/m26-validators.spec.ts","src/governance/m33-m34-contract.ts"],"command":"npx vitest run tests/ledger/m26-validators.spec.ts","fixture":"Candidate-bound consent metadata required; current external record lacks usable result","observed_result":"BLOCKED","blocked_reason":"The external ledger contains generic consent assertions but lacks the required result and candidate-bound cohort evidence. No runtime consent, withdrawal, or revocation workflow exists.","revisit_trigger":"Candidate-bound consented pilot with withdrawal/revocation evidence and a valid external result is accepted.","resource_budget":"external consent cycle","last_candidate":"mjolnir-working-candidate-001"},
-    {"schemaVersion":1,"cell_id":"MATRIX-GOV-SUPPORT","axis":"governance","cell":"Support ownership, SLA, and escalation","disposition":"BLOCKED","owner":"qa-owner","evidence":["docs/M26-EXTERNAL-VALIDATION.json","docs/M26-GITHUB-SNAPSHOT.json","package.json"],"command":"none — no support/SLA test exists","fixture":"Required fixture: named support owner, response targets, escalation path, redacted support bundle, and recorded support-request lifecycle","observed_result":"BLOCKED","blocked_reason":"The external record has no support requests, and the repository has no tested support/SLA contract or support-bundle fixture.","revisit_trigger":"A real support contract and test are added.","resource_budget":"300s plus support-owner review","last_candidate":"mjolnir-working-candidate-001","source_issue_ids":["GAP-M26-017"]}
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-SURFACE-CLI",
+      "axis": "surface",
+      "cell": "CLI command surface",
+      "disposition": "TESTED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/cli/help.spec.ts",
+        "tests/e2e/journey-1-first-run.spec.ts"
+      ],
+      "command": "npx vitest run tests/cli/help.spec.ts tests/e2e/journey-1-first-run.spec.ts",
+      "fixture": "tests/e2e/journey-1-first-run.spec.ts :: packed demo-repo first-run scan",
+      "observed_result": "PASS",
+      "resource_budget": "300s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-SURFACE-JSON",
+      "axis": "surface",
+      "cell": "JSON output surface",
+      "disposition": "TESTED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/contract/json-contract.spec.ts",
+        "tests/commands/trust-report-json-arms.spec.ts"
+      ],
+      "command": "npx vitest run tests/contract/json-contract.spec.ts tests/commands/trust-report-json-arms.spec.ts",
+      "fixture": "tests/contract/json-contract.spec.ts :: CLI and MCP JSON validity; tests/commands/trust-report-json-arms.spec.ts :: trust-report JSON arms",
+      "observed_result": "PASS",
+      "resource_budget": "180s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-SURFACE-SARIF",
+      "axis": "surface",
+      "cell": "SARIF output surface",
+      "disposition": "TESTED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/reporter/sarif-compliance.spec.ts",
+        "tests/reporters/reporters.spec.ts"
+      ],
+      "command": "npx vitest run tests/reporter/sarif-compliance.spec.ts tests/reporters/reporters.spec.ts",
+      "fixture": "tests/reporter/sarif-compliance.spec.ts :: schema-valid SARIF and severity mapping; tests/reporters/reporters.spec.ts :: reporter output contract",
+      "observed_result": "PASS",
+      "resource_budget": "180s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-SURFACE-TRUST-ARTIFACT",
+      "axis": "surface",
+      "cell": "Trust Artifact output surface",
+      "disposition": "TESTED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/commands/artifact-integrity.spec.ts",
+        "tests/commands/release-trust-arms.spec.ts"
+      ],
+      "command": "npx vitest run tests/commands/artifact-integrity.spec.ts tests/commands/release-trust-arms.spec.ts",
+      "fixture": "tests/commands/artifact-integrity.spec.ts :: stale, mismatched, and untrusted evidence must not produce release trust",
+      "observed_result": "PASS",
+      "resource_budget": "240s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-SURFACE-GITHUB-ACTION",
+      "axis": "surface",
+      "cell": "GitHub Action surface contract",
+      "disposition": "TESTED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/integrations/action-surface.spec.ts",
+        "tests/engine/adapters/github-actions.spec.ts"
+      ],
+      "command": "npx vitest run tests/integrations/action-surface.spec.ts tests/engine/adapters/github-actions.spec.ts",
+      "fixture": "tests/integrations/action-surface.spec.ts :: pinned v4 action, SHA, and permissions policy",
+      "observed_result": "PASS",
+      "resource_budget": "180s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-SURFACE-MCP",
+      "axis": "surface",
+      "cell": "MCP tool surface",
+      "disposition": "TESTED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/contract/mcp-transport.spec.ts",
+        "tests/mcp/transport.spec.ts",
+        "tests/mcp/crash-containment.spec.ts"
+      ],
+      "command": "npx vitest run tests/contract/mcp-transport.spec.ts tests/mcp/transport.spec.ts tests/mcp/crash-containment.spec.ts",
+      "fixture": "tests/contract/mcp-transport.spec.ts :: stdio framing, initialization, tools/list, and crash containment",
+      "observed_result": "PASS",
+      "resource_budget": "240s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-SURFACE-SITE-DOCS",
+      "axis": "surface",
+      "cell": "Site and documentation surface",
+      "disposition": "TESTED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/contract/site-formats.spec.ts",
+        "tests/readme-translations.spec.ts"
+      ],
+      "command": "npx vitest run tests/contract/site-formats.spec.ts tests/readme-translations.spec.ts",
+      "fixture": "tests/contract/site-formats.spec.ts :: README/docs links and supported locale references; tests/readme-translations.spec.ts :: README anchors",
+      "observed_result": "PASS",
+      "resource_budget": "180s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-SURFACE-PR-COMMENTS",
+      "axis": "surface",
+      "cell": "GitHub pull-request comment and job-summary surface",
+      "disposition": "TESTED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/integrations/github/pr-comment-contract.spec.ts",
+        "tests/cli/pr-comment.spec.ts"
+      ],
+      "command": "npx vitest run tests/integrations/github/pr-comment-contract.spec.ts tests/cli/pr-comment.spec.ts",
+      "fixture": "tests/integrations/github/pr-comment-contract.spec.ts :: bounded deterministic PR comment; tests/cli/pr-comment.spec.ts :: PR rendering arms",
+      "observed_result": "PASS",
+      "resource_budget": "240s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-SURFACE-CONFIG",
+      "axis": "surface",
+      "cell": "Configuration surface",
+      "disposition": "TESTED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/config/config.spec.ts"
+      ],
+      "command": "npx vitest run tests/config/config.spec.ts",
+      "fixture": "tests/config/config.spec.ts :: valid, expired, invalid, and symlinked config cases",
+      "observed_result": "PASS",
+      "resource_budget": "120s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-SURFACE-PLUGIN",
+      "axis": "surface",
+      "cell": "Plugin surface",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/plugins/tier-isolation.spec.ts",
+        "docs/RELEASE-TRAINS.md"
+      ],
+      "command": null,
+      "fixture": "No runnable evidence for this row",
+      "observed_result": "BLOCKED",
+      "resource_budget": "240s",
+      "last_candidate": "mjolnir-working-candidate-001",
+      "blocked_reason": "The evidence this row cited no longer exists.",
+      "revisit_trigger": "A runnable test is written for this capability."
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-SURFACE-CI-TEMPLATES",
+      "axis": "surface",
+      "cell": "CI and consumer install templates",
+      "disposition": "TESTED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/integrations/ci-install-template.spec.ts",
+        "tests/integrations/stable-release-workflow.spec.ts"
+      ],
+      "command": "npx vitest run tests/integrations/ci-install-template.spec.ts tests/integrations/stable-release-workflow.spec.ts",
+      "fixture": "tests/integrations/ci-install-template.spec.ts :: shared install template; tests/integrations/stable-release-workflow.spec.ts :: stable consumer workflow",
+      "observed_result": "PASS",
+      "resource_budget": "240s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-SURFACE-OPTIONAL-CONTROL-PLANE",
+      "axis": "surface",
+      "cell": "Optional hosted control-plane surface",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        "docs/M26-EXTERNAL-VALIDATION.json",
+        "docs/RELEASE-TRAINS.md"
+      ],
+      "command": null,
+      "fixture": "Scope decision, not an implementation",
+      "observed_result": "BLOCKED",
+      "blocked_reason": "M33/M34 defines a local provisional contract and marks the hosted organization pilot PENDING. No implemented service, real two-repository inheritance run, or candidate-bound external result exists.",
+      "revisit_trigger": "Hosted pilot implementation and two consented repositories with service-account audit evidence are available.",
+      "resource_budget": "external pilot",
+      "last_candidate": "mjolnir-working-candidate-001",
+      "source_issue_ids": [
+        "GAP-M26-013"
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-SURFACE-FUTURE-RUNNER",
+      "axis": "surface",
+      "cell": "Future fresh-command cross-surface runner",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        "docs/ROADMAP.yaml",
+        "scripts/check-m26-ledgers.ts"
+      ],
+      "command": "none — no fresh-command runner exists",
+      "fixture": "Required fixture: one isolated command invocation per applicable surface/state combination, with per-combination exit and output capture",
+      "observed_result": "BLOCKED",
+      "blocked_reason": "The ledger validator checks declared records, but no runner executes one fresh command per matrix cell as required by the plan.",
+      "revisit_trigger": "A standalone matrix runner and generated execution ledger are committed and covered by a contract test.",
+      "resource_budget": "future implementation",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-INPUT-CLEAN",
+      "axis": "input-state",
+      "cell": "Clean input",
+      "disposition": "TESTED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/reporters/empty-states.spec.ts",
+        "tests/engine/framework-inventory.spec.ts"
+      ],
+      "command": "npx vitest run tests/reporters/empty-states.spec.ts tests/engine/framework-inventory.spec.ts",
+      "fixture": "tests/reporters/empty-states.spec.ts :: clean scan output; tests/engine/framework-inventory.spec.ts :: supported-framework discovery",
+      "observed_result": "PASS",
+      "resource_budget": "180s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-INPUT-EMPTY",
+      "axis": "input-state",
+      "cell": "Empty input",
+      "disposition": "TESTED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/forensics/trace-arms.spec.ts",
+        "tests/reporters/empty-states.spec.ts"
+      ],
+      "command": "npx vitest run tests/forensics/trace-arms.spec.ts tests/reporters/empty-states.spec.ts",
+      "fixture": "tests/forensics/trace-arms.spec.ts :: empty event array; tests/reporters/empty-states.spec.ts :: no-results states",
+      "observed_result": "PASS",
+      "resource_budget": "180s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-INPUT-MALFORMED",
+      "axis": "input-state",
+      "cell": "Malformed input across applicable surfaces",
+      "disposition": "TESTED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/adversarial/adversarial-index.spec.ts",
+        "tests/lib/safe-json.spec.ts",
+        "tests/mcp/transport.spec.ts"
+      ],
+      "command": "npx vitest run tests/adversarial/adversarial-index.spec.ts tests/lib/safe-json.spec.ts tests/mcp/transport.spec.ts",
+      "fixture": "Malformed source/report files, malformed JSON, and invalid JSON-RPC fixtures generated inside the three named specs",
+      "observed_result": "PASS",
+      "resource_budget": "300s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-INPUT-HOSTILE",
+      "axis": "input-state",
+      "cell": "Hostile input",
+      "disposition": "TESTED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/adversarial/adversarial-index.spec.ts",
+        "tests/forensics/hostile-repo.spec.ts"
+      ],
+      "command": "npx vitest run tests/adversarial/adversarial-index.spec.ts tests/forensics/hostile-repo.spec.ts",
+      "fixture": "Oversized, truncated, hostile-repository, malformed-report, and unsupported report fixtures generated by the named specs",
+      "observed_result": "PASS",
+      "resource_budget": "300s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-INPUT-STALE",
+      "axis": "input-state",
+      "cell": "Stale input and stale evidence",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/commands/artifact-integrity.spec.ts",
+        "docs/RELEASE-TRAINS.md"
+      ],
+      "command": null,
+      "fixture": "No runnable evidence for this row",
+      "observed_result": "BLOCKED",
+      "resource_budget": "300s",
+      "last_candidate": "mjolnir-working-candidate-001",
+      "blocked_reason": "The evidence this row cited no longer exists.",
+      "revisit_trigger": "A runnable test is written for this capability."
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-INPUT-FOREIGN",
+      "axis": "input-state",
+      "cell": "Foreign evidence and provenance",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        "docs/RELEASE-TRAINS.md"
+      ],
+      "command": null,
+      "fixture": "No runnable evidence for this row",
+      "observed_result": "BLOCKED",
+      "resource_budget": "240s",
+      "last_candidate": "mjolnir-working-candidate-001",
+      "blocked_reason": "The evidence this row cited no longer exists.",
+      "revisit_trigger": "A runnable test is written for this capability."
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-INPUT-TRUNCATED",
+      "axis": "input-state",
+      "cell": "Truncated input",
+      "disposition": "TESTED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/false-green/trace.spec.ts",
+        "tests/forensics/trace-arms.spec.ts",
+        "tests/engine/long-tail-arms.spec.ts"
+      ],
+      "command": "npx vitest run tests/false-green/trace.spec.ts tests/forensics/trace-arms.spec.ts tests/engine/long-tail-arms.spec.ts",
+      "fixture": "Trace stream ending before after event, truncated trace arm, and unclosed JUnit testcase fixtures",
+      "observed_result": "PASS",
+      "resource_budget": "240s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-INPUT-DUPLICATE",
+      "axis": "input-state",
+      "cell": "Duplicate evidence and repeated records",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        "docs/RELEASE-TRAINS.md"
+      ],
+      "command": null,
+      "fixture": "No runnable evidence for this row",
+      "observed_result": "BLOCKED",
+      "resource_budget": "240s",
+      "last_candidate": "mjolnir-working-candidate-001",
+      "blocked_reason": "The evidence this row cited no longer exists.",
+      "revisit_trigger": "A runnable test is written for this capability."
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-INPUT-CONFLICTING",
+      "axis": "input-state",
+      "cell": "Conflicting or contradictory evidence",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        "docs/RELEASE-TRAINS.md"
+      ],
+      "command": null,
+      "fixture": "No runnable evidence for this row",
+      "observed_result": "BLOCKED",
+      "resource_budget": "240s",
+      "last_candidate": "mjolnir-working-candidate-001",
+      "blocked_reason": "The evidence this row cited no longer exists.",
+      "revisit_trigger": "A runnable test is written for this capability."
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-INPUT-PARTIAL",
+      "axis": "input-state",
+      "cell": "Partial or incomplete scan input",
+      "disposition": "TESTED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/blast-radius/scope-and-exit.spec.ts",
+        "tests/false-green/corpus.spec.ts",
+        "tests/engine/trust-summary.spec.ts"
+      ],
+      "command": "npx vitest run tests/blast-radius/scope-and-exit.spec.ts tests/false-green/corpus.spec.ts tests/engine/trust-summary.spec.ts",
+      "fixture": "Deadline, skipped-file, missing, cancelled, and deliberately incomplete scan fixtures",
+      "observed_result": "PASS",
+      "resource_budget": "300s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-INPUT-HUGE",
+      "axis": "input-state",
+      "cell": "Huge input and resource limits",
+      "disposition": "TESTED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/lib/fs-bounded.spec.ts",
+        "tests/forensics/file-target.spec.ts",
+        "tests/adversarial/adversarial-index.spec.ts"
+      ],
+      "command": "npx vitest run tests/lib/fs-bounded.spec.ts tests/forensics/file-target.spec.ts tests/adversarial/adversarial-index.spec.ts",
+      "fixture": "Bounded file reads, six 20,000-testcase reports, and oversized filename inputs",
+      "observed_result": "PASS",
+      "resource_budget": "300s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-INPUT-BINARY",
+      "axis": "input-state",
+      "cell": "Binary input",
+      "disposition": "TESTED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/e2e/determinism-binary.spec.ts",
+        "tests/adversarial/adversarial-index.spec.ts"
+      ],
+      "command": "npx vitest run tests/e2e/determinism-binary.spec.ts tests/adversarial/adversarial-index.spec.ts",
+      "fixture": "Binary report contents and binary/oversized hostile inputs",
+      "observed_result": "PASS",
+      "resource_budget": "300s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-INPUT-UNICODE",
+      "axis": "input-state",
+      "cell": "Unicode paths and content",
+      "disposition": "TESTED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/forensics/hostile-repo.spec.ts",
+        "tests/scope/git-edge-cases.spec.ts"
+      ],
+      "command": "npx vitest run tests/forensics/hostile-repo.spec.ts tests/scope/git-edge-cases.spec.ts",
+      "fixture": "Unicode/NFC/NFD filenames, Unicode report content, and Git path edge cases",
+      "observed_result": "PASS",
+      "resource_budget": "300s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-INPUT-PATH-SYMLINK",
+      "axis": "input-state",
+      "cell": "Traversal, path escape, and symlink input",
+      "disposition": "TESTED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/scope/workspace-containment.spec.ts",
+        "tests/lib/fs-bounded.spec.ts",
+        "tests/rules/cross-domain-regressions.spec.ts"
+      ],
+      "command": "npx vitest run tests/scope/workspace-containment.spec.ts tests/lib/fs-bounded.spec.ts tests/rules/cross-domain-regressions.spec.ts",
+      "fixture": "Traversal, sibling-prefix, Windows drive, UNC, symlink, and junction escape fixtures",
+      "observed_result": "PASS",
+      "resource_budget": "300s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-INPUT-ARCHIVE",
+      "axis": "input-state",
+      "cell": "Archive input",
+      "disposition": "TESTED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/false-green/trace.spec.ts",
+        "tests/forensics/trace-arms.spec.ts"
+      ],
+      "command": "npx vitest run tests/false-green/trace.spec.ts tests/forensics/trace-arms.spec.ts",
+      "fixture": "Valid and malformed trace.zip inputs created by the named specs",
+      "observed_result": "PASS",
+      "resource_budget": "180s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-INPUT-GENERATED-VENDOR",
+      "axis": "input-state",
+      "cell": "Generated and vendor input",
+      "disposition": "TESTED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/engine/discovery/ignores.spec.ts",
+        "tests/engine/monorepo-analysis.spec.ts"
+      ],
+      "command": "npx vitest run tests/engine/discovery/ignores.spec.ts tests/engine/monorepo-analysis.spec.ts",
+      "fixture": "Nested node_modules, dist, build, generated, and vendored files in a monorepo",
+      "observed_result": "PASS",
+      "resource_budget": "180s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-INPUT-MONOREPO-MULTI-ROOT",
+      "axis": "input-state",
+      "cell": "Monorepo and multi-root input",
+      "disposition": "TESTED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/engine/monorepo-analysis.spec.ts",
+        "tests/integrations/adapter-reporter-matrix.spec.ts"
+      ],
+      "command": "npx vitest run tests/engine/monorepo-analysis.spec.ts tests/integrations/adapter-reporter-matrix.spec.ts",
+      "fixture": "Three-package monorepo, nested package scopes, and package-level verdicts",
+      "observed_result": "PASS",
+      "resource_budget": "240s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-LIFECYCLE-INSTALL",
+      "axis": "lifecycle",
+      "cell": "Install",
+      "disposition": "TESTED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/integrations/registry-install.spec.ts",
+        "tests/cli/install.spec.ts"
+      ],
+      "command": "npx vitest run tests/integrations/registry-install.spec.ts tests/cli/install.spec.ts",
+      "fixture": "npm pack, clean-HOME install, help, and version from the packed artifact",
+      "observed_result": "PASS",
+      "resource_budget": "300s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-LIFECYCLE-FIRST-RUN",
+      "axis": "lifecycle",
+      "cell": "First run",
+      "disposition": "TESTED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/e2e/journey-1-first-run.spec.ts"
+      ],
+      "command": "npx vitest run tests/e2e/journey-1-first-run.spec.ts",
+      "fixture": "Packed demo-repo first-run scan",
+      "observed_result": "PASS",
+      "resource_budget": "300s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-LIFECYCLE-SCAN",
+      "axis": "lifecycle",
+      "cell": "Scan",
+      "disposition": "TESTED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/e2e/journey-1-first-run.spec.ts",
+        "tests/integrations/adapter-reporter-matrix.spec.ts"
+      ],
+      "command": "npx vitest run tests/e2e/journey-1-first-run.spec.ts tests/integrations/adapter-reporter-matrix.spec.ts",
+      "fixture": "One finding across terminal, JSON, SARIF, and Mermaid surfaces",
+      "observed_result": "PASS",
+      "resource_budget": "300s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-LIFECYCLE-BASELINE",
+      "axis": "lifecycle",
+      "cell": "Baseline capture and comparison",
+      "disposition": "TESTED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/e2e/journey-34-baseline-fix.spec.ts",
+        "tests/cli/baseline-diff.spec.ts"
+      ],
+      "command": "npx vitest run tests/e2e/journey-34-baseline-fix.spec.ts tests/cli/baseline-diff.spec.ts",
+      "fixture": "Capture, fix, RESOLVED diff, new debt, and missing-baseline fixtures",
+      "observed_result": "PASS",
+      "resource_budget": "300s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-LIFECYCLE-INCREMENTAL",
+      "axis": "lifecycle",
+      "cell": "Incremental analysis",
+      "disposition": "TESTED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/contract/incremental-equivalence.spec.ts",
+        "tests/engine/incremental-analysis.spec.ts"
+      ],
+      "command": "npx vitest run tests/contract/incremental-equivalence.spec.ts tests/engine/incremental-analysis.spec.ts",
+      "fixture": "Incremental output must equal full output on positive and negative fixtures",
+      "observed_result": "PASS",
+      "resource_budget": "300s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-LIFECYCLE-CACHE",
+      "axis": "lifecycle",
+      "cell": "Cache hit and cache miss",
+      "disposition": "TESTED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/engine/scan-cache.spec.ts"
+      ],
+      "command": "npx vitest run tests/engine/scan-cache.spec.ts",
+      "fixture": "Changed rule digest, changed source digest, cache hit, and cache miss fixtures",
+      "observed_result": "PASS",
+      "resource_budget": "300s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-LIFECYCLE-SUPPRESSION",
+      "axis": "lifecycle",
+      "cell": "Suppression lifecycle",
+      "disposition": "TESTED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/e2e/journey-5678-flows.spec.ts",
+        "tests/contract/quarantine-ledger.spec.ts"
+      ],
+      "command": "npx vitest run tests/e2e/journey-5678-flows.spec.ts tests/contract/quarantine-ledger.spec.ts",
+      "fixture": "Active and expired suppression plus reason-bound quarantine fixtures",
+      "observed_result": "PASS",
+      "resource_budget": "300s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-LIFECYCLE-CANCELLATION",
+      "axis": "lifecycle",
+      "cell": "Cancellation",
+      "disposition": "TESTED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/engine/analysis/parser-cancellation.spec.ts",
+        "tests/adversarial/adversarial-index.spec.ts"
+      ],
+      "command": "npx vitest run tests/engine/analysis/parser-cancellation.spec.ts tests/adversarial/adversarial-index.spec.ts",
+      "fixture": "Pre-abort, abort during analysis, and cancellation cannot return complete",
+      "observed_result": "PASS",
+      "resource_budget": "240s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-LIFECYCLE-CRASH",
+      "axis": "lifecycle",
+      "cell": "Crash containment",
+      "disposition": "TESTED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/mcp/crash-containment.spec.ts",
+        "tests/cli/crash-paths.spec.ts",
+        "tests/cli/error-paths.spec.ts"
+      ],
+      "command": "npx vitest run tests/mcp/crash-containment.spec.ts tests/cli/crash-paths.spec.ts tests/cli/error-paths.spec.ts",
+      "fixture": "Parser, MCP handler, unwritable output, and internal-error fixtures",
+      "observed_result": "PASS",
+      "resource_budget": "300s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-LIFECYCLE-RECOVERY",
+      "axis": "lifecycle",
+      "cell": "Restart and recovery",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        "docs/ROADMAP.yaml",
+        "docs/RELEASE-TRAINS.md"
+      ],
+      "command": null,
+      "fixture": "Scope decision, not an implementation",
+      "observed_result": "BLOCKED",
+      "blocked_reason": "M39 has a provisional simulation and resumption contract, but M39 is not integrated. Atomic-write and stale-temp tests prove write safety, not end-to-end restart recovery.",
+      "revisit_trigger": "M39 is integrated and a kill-and-restart corpus is certified.",
+      "resource_budget": "600s per interrupted state",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-LIFECYCLE-UPDATE",
+      "axis": "lifecycle",
+      "cell": "Update",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        "docs/VERSIONING.md",
+        "tests/release/version-consistency.spec.ts"
+      ],
+      "command": "none — no old-to-new installed upgrade fixture exists",
+      "fixture": "Required fixture: install previous approved release, create state, upgrade to candidate, and prove deterministic continuity",
+      "observed_result": "BLOCKED",
+      "blocked_reason": "Version constants and changelog surfaces are tested, but package upgrade behavior and state migration are not.",
+      "revisit_trigger": "Two approved consecutive releases and an automated upgrade compatibility test are available.",
+      "resource_budget": "600s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-LIFECYCLE-DOWNGRADE",
+      "axis": "lifecycle",
+      "cell": "Downgrade",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        "docs/VERSIONING.md"
+      ],
+      "command": "none — no installed downgrade fixture exists",
+      "fixture": "Required fixture: install candidate, produce state, downgrade to every supported predecessor, and prove rejection or compatible recovery",
+      "observed_result": "BLOCKED",
+      "blocked_reason": "The versioning policy describes breaking changes but has no downgrade execution contract or fixture.",
+      "revisit_trigger": "A supported downgrade policy and predecessor/candidate matrix are approved.",
+      "resource_budget": "600s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-LIFECYCLE-DEPRECATION",
+      "axis": "lifecycle",
+      "cell": "Deprecation lifecycle",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        "docs/VERSIONING.md",
+        "docs/RELEASE-TRAINS.md"
+      ],
+      "command": null,
+      "fixture": "Scope decision, not an implementation",
+      "observed_result": "BLOCKED",
+      "blocked_reason": "Universal-pack and framework contracts understand deprecated states, but no shipped public deprecation transition and consumer test exists.",
+      "revisit_trigger": "A public deprecation is introduced with old/new consumer fixtures and an approved removal version.",
+      "resource_budget": "300s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-LIFECYCLE-REMOVAL",
+      "axis": "lifecycle",
+      "cell": "Removal lifecycle",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        "docs/VERSIONING.md",
+        "src/frameworks/framework-inventory.ts"
+      ],
+      "command": "none — no released removal fixture exists",
+      "fixture": "Required fixture: consumer upgrades from the release immediately before removal and demonstrates documented deterministic behavior",
+      "observed_result": "BLOCKED",
+      "blocked_reason": "Removal is planned in the versioning policy but no public capability has completed a release-to-removal lifecycle test.",
+      "revisit_trigger": "A concrete public item enters its approved removal window.",
+      "resource_budget": "300s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-OUTCOME-PASS",
+      "axis": "outcome",
+      "cell": "PASS outcome",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/reporters/empty-states.spec.ts",
+        "docs/RELEASE-TRAINS.md"
+      ],
+      "command": null,
+      "fixture": "No runnable evidence for this row",
+      "observed_result": "BLOCKED",
+      "resource_budget": "180s",
+      "last_candidate": "mjolnir-working-candidate-001",
+      "blocked_reason": "The evidence this row cited no longer exists.",
+      "revisit_trigger": "A runnable test is written for this capability."
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-OUTCOME-FINDING",
+      "axis": "outcome",
+      "cell": "Finding outcome",
+      "disposition": "TESTED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/e2e/journey-1-first-run.spec.ts",
+        "tests/integrations/adapter-reporter-matrix.spec.ts"
+      ],
+      "command": "npx vitest run tests/e2e/journey-1-first-run.spec.ts tests/integrations/adapter-reporter-matrix.spec.ts",
+      "fixture": "Focused-test finding and exit 1 across all current reporters",
+      "observed_result": "PASS",
+      "resource_budget": "300s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-OUTCOME-PARTIAL",
+      "axis": "outcome",
+      "cell": "PARTIAL outcome across reporting and verification surfaces",
+      "disposition": "TESTED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/blast-radius/scope-and-exit.spec.ts",
+        "tests/false-green/corpus.spec.ts",
+        "tests/contract/semantic-integrity.spec.ts",
+        "tests/engine/trust-summary.spec.ts"
+      ],
+      "command": "npx vitest run tests/blast-radius/scope-and-exit.spec.ts tests/false-green/corpus.spec.ts tests/contract/semantic-integrity.spec.ts tests/engine/trust-summary.spec.ts",
+      "fixture": "Deadline, skipped file, partial scan, partial rules, and incomplete trust-summary fixtures",
+      "observed_result": "PASS",
+      "resource_budget": "300s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-OUTCOME-INCONCLUSIVE",
+      "axis": "outcome",
+      "cell": "INCONCLUSIVE outcome",
+      "disposition": "TESTED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/agent/verify-loop.spec.ts",
+        "tests/cli/baseline-diff.spec.ts",
+        "tests/contract/semantic-integrity.spec.ts"
+      ],
+      "command": "npx vitest run tests/agent/verify-loop.spec.ts tests/cli/baseline-diff.spec.ts tests/contract/semantic-integrity.spec.ts",
+      "fixture": "Missing baseline, partial scan, and incomplete rules produce INCONCLUSIVE rather than clean",
+      "observed_result": "PASS",
+      "resource_budget": "240s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-OUTCOME-UNKNOWN",
+      "axis": "outcome",
+      "cell": "UNKNOWN outcome",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/e2e/journey-9-exit-codes.spec.ts",
+        "docs/RELEASE-TRAINS.md"
+      ],
+      "command": null,
+      "fixture": "No runnable evidence for this row",
+      "observed_result": "BLOCKED",
+      "resource_budget": "240s",
+      "last_candidate": "mjolnir-working-candidate-001",
+      "blocked_reason": "The evidence this row cited no longer exists.",
+      "revisit_trigger": "A runnable test is written for this capability."
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-OUTCOME-UNSUPPORTED",
+      "axis": "outcome",
+      "cell": "UNSUPPORTED outcome",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/engine/framework-inventory.spec.ts",
+        "docs/RELEASE-TRAINS.md"
+      ],
+      "command": null,
+      "fixture": "No runnable evidence for this row",
+      "observed_result": "BLOCKED",
+      "resource_budget": "180s",
+      "last_candidate": "mjolnir-working-candidate-001",
+      "blocked_reason": "The evidence this row cited no longer exists.",
+      "revisit_trigger": "A runnable test is written for this capability."
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-OUTCOME-ERROR",
+      "axis": "outcome",
+      "cell": "Error outcome",
+      "disposition": "TESTED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/cli/crash-paths.spec.ts",
+        "tests/cli/error-paths.spec.ts"
+      ],
+      "command": "npx vitest run tests/cli/crash-paths.spec.ts tests/cli/error-paths.spec.ts",
+      "fixture": "Internal failures map to exit 20 without unhandled rejection or stack leakage",
+      "observed_result": "PASS",
+      "resource_budget": "180s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-OUTCOME-TIMEOUT",
+      "axis": "outcome",
+      "cell": "Timeout outcome",
+      "disposition": "TESTED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/forensics/triage-workflow.spec.ts",
+        "tests/engine/analysis/parser-cancellation.spec.ts"
+      ],
+      "command": "npx vitest run tests/forensics/triage-workflow.spec.ts tests/engine/analysis/parser-cancellation.spec.ts",
+      "fixture": "Timeout and cancellation workflow fixtures",
+      "observed_result": "PASS",
+      "resource_budget": "240s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-OUTCOME-PERMISSION-DENIED",
+      "axis": "outcome",
+      "cell": "Permission-denied outcome",
+      "disposition": "TESTED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/audit/audit-coverage-arms-6.spec.ts",
+        "tests/cli/crash-paths.spec.ts"
+      ],
+      "command": "npx vitest run tests/audit/audit-coverage-arms-6.spec.ts tests/cli/crash-paths.spec.ts",
+      "fixture": "Unreadable directory and unwritable output fixtures; neither can produce a clean result",
+      "observed_result": "PASS",
+      "resource_budget": "240s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-OUTCOME-ROLLBACK-CANARY",
+      "axis": "outcome",
+      "cell": "Rollback and canary outcome",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        ".github/workflows/stable-release.yml",
+        "docs/M26-EXTERNAL-VALIDATION.json"
+      ],
+      "command": "none — no real rollback or canary fixture exists",
+      "fixture": "Required fixture: immutable candidate A, candidate B with regression, staged consumer cohort, rollback, and post-rollback proof",
+      "observed_result": "BLOCKED",
+      "blocked_reason": "Local workflow contracts prove packaging and tag safety, but no canary cohort, rollback trigger, or post-rollback observation exists. EXT-M26-001 is validator-BLOCKED because result is missing.",
+      "revisit_trigger": "An authorized canary cohort and candidate-bound rollback evidence are complete.",
+      "resource_budget": "external release window",
+      "last_candidate": "mjolnir-working-candidate-001",
+      "source_issue_ids": [
+        "GAP-M26-012"
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-OUTCOME-CLEAN-CONSUMER",
+      "axis": "outcome",
+      "cell": "Clean-consumer outcome",
+      "disposition": "TESTED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/integrations/registry-install.spec.ts",
+        "tests/contract/pack-audit.spec.ts"
+      ],
+      "command": "npx vitest run tests/integrations/registry-install.spec.ts tests/contract/pack-audit.spec.ts",
+      "fixture": "Packed artifact installs and runs from a clean HOME; source and package contents match",
+      "observed_result": "PASS",
+      "resource_budget": "300s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-LANGUAGE-CURRENT-BEACHHEAD",
+      "axis": "language-framework",
+      "cell": "Current beachhead languages: javascript, typescript, python, java, csharp",
+      "disposition": "TESTED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/engine/adapters/adapters.spec.ts",
+        "tests/engine/python-ast-branch.spec.ts",
+        "tests/engine/adapters/java-csharp.spec.ts",
+        "tests/jv-cs-l2-ast.spec.ts"
+      ],
+      "command": "npx vitest run tests/engine/adapters/adapters.spec.ts tests/engine/python-ast-branch.spec.ts tests/engine/adapters/java-csharp.spec.ts tests/jv-cs-l2-ast.spec.ts",
+      "fixture": "TypeScript/JavaScript, Python, Java, and C# AST/parser fixtures",
+      "observed_result": "PASS",
+      "resource_budget": "300s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-LANGUAGE-FUTURE-CANDIDATES",
+      "axis": "language-framework",
+      "cell": "Future language candidates: kotlin, fsharp, vbnet, c, cpp, objectivec, swift, go, rust, ruby, php, scala, dart, groovy, shell, powershell, lua, perl, r, julia, elixir, erlang, haskell, clojure, ocaml, zig, fortran, cobol, abap, apex, plsql, tsql, sql, matlab, yaml, json, xml, toml, dockerfile, terraform, hcl, kubernetes, helm, cloudformation, ansible, azurearm, bicep",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        "docs/RELEASE-TRAINS.md"
+      ],
+      "command": null,
+      "fixture": "Scope decision, not an implementation",
+      "observed_result": "BLOCKED",
+      "blocked_reason": "The test proves the M40 intake and anti-self-certification contract only. Every listed future language lacks a real adapter, real framework corpus, parser-tier conformance, and independent maintainer/adoption evidence.",
+      "revisit_trigger": "Language enters the actual adapter inventory with real syntax, semantic, cross-file, runtime, malformed, version, performance, privacy, and security fixtures.",
+      "resource_budget": "language-specific 600s minimum",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-FRAMEWORK-REGISTERED",
+      "axis": "language-framework",
+      "cell": "Registered framework inventory: playwright, jest, vitest, pytest, junit, nunit, xunit, cypress, selenium, testng, github-actions, azure-devops, jenkins, gitlab-ci",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/engine/framework-inventory.spec.ts",
+        "tests/integrations/adapter-reporter-matrix.spec.ts",
+        "docs/RELEASE-TRAINS.md"
+      ],
+      "command": null,
+      "fixture": "No runnable evidence for this row",
+      "observed_result": "BLOCKED",
+      "resource_budget": "300s",
+      "last_candidate": "mjolnir-working-candidate-001",
+      "blocked_reason": "The evidence this row cited no longer exists.",
+      "revisit_trigger": "A runnable test is written for this capability."
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-FRAMEWORK-FUTURE-CANDIDATES",
+      "axis": "language-framework",
+      "cell": "Future framework candidates outside the 14-entry registry",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        "src/frameworks/framework-inventory.ts",
+        "tests/engine/framework-inventory.spec.ts"
+      ],
+      "command": "none — no finite future-framework candidate registry exists",
+      "fixture": "Required fixture: every future framework enters FRAMEWORK_INVENTORY with stable ID, supported version, maturity, limitations, adapter/reporter fixtures, and certification state",
+      "observed_result": "BLOCKED",
+      "blocked_reason": "The current registry is finite at 14 entries, but the plan requires every future candidate. No admission ledger makes an unlisted future candidate explicitly tracked and testable.",
+      "revisit_trigger": "A finite future-framework intake ledger is added and cross-checked against FRAMEWORK_INVENTORY.",
+      "resource_budget": "600s per framework",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-CAPABILITY-STATE-CONTRACT",
+      "axis": "language-framework",
+      "cell": "Bounded state transitions: CANDIDATE, EXPERIMENTAL, DEGRADED, UNSUPPORTED, DEPRECATED",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        "docs/RELEASE-TRAINS.md"
+      ],
+      "command": null,
+      "fixture": "No runnable evidence for this row",
+      "observed_result": "BLOCKED",
+      "resource_budget": "300s",
+      "last_candidate": "mjolnir-working-candidate-001",
+      "blocked_reason": "The evidence this row cited no longer exists.",
+      "revisit_trigger": "A runnable test is written for this capability."
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-CAPABILITY-EXTERNAL-CERTIFICATION",
+      "axis": "language-framework",
+      "cell": "CERTIFIED and TRUST_COMPLETE promotion",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        "docs/M26-EXTERNAL-VALIDATION.json",
+        "docs/RELEASE-TRAINS.md"
+      ],
+      "command": null,
+      "fixture": "Scope decision, not an implementation",
+      "observed_result": "BLOCKED",
+      "blocked_reason": "Synthetic M40 evidence can reach CERTIFIED inside its own contract, while the same test proves it cannot self-certify for release. No independent package-bound evidence exists.",
+      "revisit_trigger": "Independent candidate-bound certification is accepted for the exact language/framework/version.",
+      "resource_budget": "external certification cycle",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-CI-GITHUB-ACTIONS",
+      "axis": "ci-release",
+      "cell": "GitHub Actions adapter and workflow contract",
+      "disposition": "TESTED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/engine/adapters/github-actions.spec.ts",
+        "tests/integrations/action-surface.spec.ts"
+      ],
+      "command": "npx vitest run tests/engine/adapters/github-actions.spec.ts tests/integrations/action-surface.spec.ts",
+      "fixture": "Checkout, setup-node, npm test, upload-artifact, SHA, and permissions policy",
+      "observed_result": "PASS",
+      "resource_budget": "180s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-CI-AZURE-DEVOPS",
+      "axis": "ci-release",
+      "cell": "Azure DevOps adapter contract",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/engine/adapters/azure-pipelines.spec.ts",
+        "docs/RELEASE-TRAINS.md"
+      ],
+      "command": null,
+      "fixture": "No runnable evidence for this row",
+      "observed_result": "BLOCKED",
+      "resource_budget": "180s",
+      "last_candidate": "mjolnir-working-candidate-001",
+      "blocked_reason": "The evidence this row cited no longer exists.",
+      "revisit_trigger": "A runnable test is written for this capability."
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-CI-JENKINS",
+      "axis": "ci-release",
+      "cell": "Jenkins adapter contract",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/engine/adapters/jenkins.spec.ts",
+        "docs/RELEASE-TRAINS.md"
+      ],
+      "command": null,
+      "fixture": "No runnable evidence for this row",
+      "observed_result": "BLOCKED",
+      "resource_budget": "180s",
+      "last_candidate": "mjolnir-working-candidate-001",
+      "blocked_reason": "The evidence this row cited no longer exists.",
+      "revisit_trigger": "A runnable test is written for this capability."
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-CI-GITLAB-CANDIDATE",
+      "axis": "ci-release",
+      "cell": "GitLab CI candidate basic parser/template, not provider execution",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/adapters/gitlab-ci.spec.ts",
+        "tests/commands/ux-verification.spec.ts",
+        "docs/RELEASE-TRAINS.md"
+      ],
+      "command": null,
+      "fixture": "No runnable evidence for this row",
+      "observed_result": "BLOCKED",
+      "resource_budget": "240s",
+      "last_candidate": "mjolnir-working-candidate-001",
+      "blocked_reason": "The evidence this row cited no longer exists.",
+      "revisit_trigger": "A runnable test is written for this capability."
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-RELEASE-RC-CONTRACT",
+      "axis": "ci-release",
+      "cell": "Release-candidate workflow contract",
+      "disposition": "TESTED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/integrations/release-workflow.spec.ts",
+        ".github/workflows/release.yml"
+      ],
+      "command": "npx vitest run tests/integrations/release-workflow.spec.ts",
+      "fixture": "RC authorization, exact version, ci-local readiness, pack, and prerelease flag",
+      "observed_result": "PASS",
+      "resource_budget": "180s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-RELEASE-STABLE-CONTRACT",
+      "axis": "ci-release",
+      "cell": "Stable-release workflow contract",
+      "disposition": "TESTED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/integrations/stable-release-workflow.spec.ts",
+        ".github/workflows/stable-release.yml"
+      ],
+      "command": "npx vitest run tests/integrations/stable-release-workflow.spec.ts",
+      "fixture": "Latest candidate, tag verification, and stable npm publication contract",
+      "observed_result": "PASS",
+      "resource_budget": "180s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-RELEASE-DRY-RUN",
+      "axis": "ci-release",
+      "cell": "Release dry-run",
+      "disposition": "TESTED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/integrations/release-workflow.spec.ts"
+      ],
+      "command": "npx vitest run tests/integrations/release-workflow.spec.ts",
+      "fixture": "workflow_dispatch dry_run has no publish step or credentials",
+      "observed_result": "PASS",
+      "resource_budget": "180s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-RELEASE-RESUME-CONTRACT",
+      "axis": "ci-release",
+      "cell": "Release resume contract",
+      "disposition": "TESTED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/integrations/stable-release-workflow.spec.ts",
+        ".github/workflows/stable-release.yml"
+      ],
+      "command": "npx vitest run tests/integrations/stable-release-workflow.spec.ts",
+      "fixture": "workflow_dispatch resume job and gh release download reuse",
+      "observed_result": "PASS",
+      "resource_budget": "180s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-RELEASE-PROPAGATION-DELAY",
+      "axis": "ci-release",
+      "cell": "Registry and consumer propagation delay",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        "docs/VERSIONING.md",
+        "docs/M26-EXTERNAL-VALIDATION.json"
+      ],
+      "command": "none — no external registry timing fixture exists",
+      "fixture": "Required fixture: publish one immutable candidate, query npm from two independent networks until installable, record timestamps, and prove documented delay",
+      "observed_result": "BLOCKED",
+      "blocked_reason": "The repository contains timing guidance but no candidate-bound observation. EXT-M26-001 is validator-BLOCKED because required result is missing.",
+      "revisit_trigger": "Independent registry observations and maximum propagation delay are recorded for the exact candidate.",
+      "resource_budget": "external observation window",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-RELEASE-IMMUTABLE-TAG",
+      "axis": "ci-release",
+      "cell": "Immutable release-tag contract",
+      "disposition": "TESTED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/integrations/release-workflow.spec.ts",
+        "tests/integrations/stable-release-workflow.spec.ts"
+      ],
+      "command": "npx vitest run tests/integrations/release-workflow.spec.ts tests/integrations/stable-release-workflow.spec.ts",
+      "fixture": "Existing tag must point to candidate; gh release is no-force",
+      "observed_result": "PASS",
+      "resource_budget": "180s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-RELEASE-ROLLBACK-CANARY",
+      "axis": "ci-release",
+      "cell": "Release rollback and canary",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        ".github/workflows/stable-release.yml",
+        "docs/M26-EXTERNAL-VALIDATION.json"
+      ],
+      "command": "none — no canary or rollback execution exists",
+      "fixture": "Required fixture: two candidates, staged cohort, canary metrics, rollback authorization, and post-rollback installation evidence",
+      "observed_result": "BLOCKED",
+      "blocked_reason": "There is no canary workflow, rollback workflow, candidate cohort, or external rollback result.",
+      "revisit_trigger": "Canary and rollback playbooks plus candidate-bound execution evidence are approved.",
+      "resource_budget": "external release window",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-PLATFORM-NODE22-UBUNTU",
+      "axis": "platform",
+      "cell": "Node 22 on Ubuntu",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        ".github/workflows/ci.yml",
+        "docs/VERSIONING.md"
+      ],
+      "command": "npm test",
+      "fixture": "Required fixture: .github/workflows/ci.yml on ubuntu-latest with node-version 22 and completed run artifact",
+      "observed_result": "BLOCKED",
+      "blocked_reason": "Workflow configuration is not execution evidence, and no current-SHA completed Ubuntu/Node 22 run artifact is linked.",
+      "revisit_trigger": "A successful current-SHA Ubuntu/Node 22 CI run and environment record are attached.",
+      "resource_budget": "30m per CI run",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-PLATFORM-NODE22-WINDOWS",
+      "axis": "platform",
+      "cell": "Node 22 on Windows",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        ".github/workflows/ci.yml",
+        "docs/VERSIONING.md"
+      ],
+      "command": "npm test",
+      "fixture": "Required fixture: .github/workflows/ci.yml on windows-latest with node-version 22 and completed run artifact",
+      "observed_result": "BLOCKED",
+      "blocked_reason": "Windows is declared supported, but no candidate-bound CI artifact records OS, Node version, shell, and complete result.",
+      "revisit_trigger": "A successful current-SHA Windows/Node 22 CI run is attached.",
+      "resource_budget": "30m per CI run",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-PLATFORM-NODE22-MACOS",
+      "axis": "platform",
+      "cell": "Node 22 on macOS",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        ".github/workflows/ci.yml",
+        "docs/VERSIONING.md"
+      ],
+      "command": "npm test",
+      "fixture": "Required fixture: .github/workflows/ci.yml on macos-latest with node-version 22 and completed run artifact",
+      "observed_result": "BLOCKED",
+      "blocked_reason": "macOS is declared supported, but no candidate-bound completed platform run exists.",
+      "revisit_trigger": "A successful current-SHA macOS/Node 22 CI run is attached.",
+      "resource_budget": "30m per CI run",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-PLATFORM-NODE24-UBUNTU",
+      "axis": "platform",
+      "cell": "Node 24 on Ubuntu",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        ".github/workflows/ci.yml",
+        "docs/VERSIONING.md"
+      ],
+      "command": "npm test",
+      "fixture": "Required fixture: .github/workflows/ci.yml on ubuntu-latest with node-version 24 and completed run artifact",
+      "observed_result": "BLOCKED",
+      "blocked_reason": "Node 24 is declared supported, but no candidate-bound completed platform run exists.",
+      "revisit_trigger": "A successful current-SHA Ubuntu/Node 24 CI run is attached.",
+      "resource_budget": "30m per CI run",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-PLATFORM-NODE24-WINDOWS",
+      "axis": "platform",
+      "cell": "Node 24 on Windows",
+      "disposition": "NOT_APPLICABLE",
+      "owner": "qa-owner",
+      "evidence": [
+        "docs/VERSIONING.md"
+      ],
+      "command": "none — outside declared support envelope",
+      "fixture": "Declared support matrix: Node 24 is Ubuntu-only; Windows support is Node 22",
+      "observed_result": "NA",
+      "not_applicable_rationale": "VERSIONING.md explicitly assigns Node 24 only to Ubuntu. This is a declared unsupported combination, not missing evidence.",
+      "revisit_trigger": "Published support policy adds Node 24 on Windows.",
+      "resource_budget": "not applicable",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-PLATFORM-NODE24-MACOS",
+      "axis": "platform",
+      "cell": "Node 24 on macOS",
+      "disposition": "NOT_APPLICABLE",
+      "owner": "qa-owner",
+      "evidence": [
+        "docs/VERSIONING.md"
+      ],
+      "command": "none — outside declared support envelope",
+      "fixture": "Declared support matrix: Node 24 is Ubuntu-only; macOS support is Node 22",
+      "observed_result": "NA",
+      "not_applicable_rationale": "VERSIONING.md explicitly assigns Node 24 only to Ubuntu. This is a declared unsupported combination, not missing evidence.",
+      "revisit_trigger": "Published support policy adds Node 24 on macOS.",
+      "resource_budget": "not applicable",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-PLATFORM-SHELLS",
+      "axis": "platform",
+      "cell": "Supported shell behavior: Bash and PowerShell",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        ".github/workflows/ci.yml",
+        "tests/cli/flag-matrix.spec.ts"
+      ],
+      "command": "npm test",
+      "fixture": "Required fixture: packed CLI install/help/scan/fail paths under native PowerShell and Bash on supported platforms",
+      "observed_result": "BLOCKED",
+      "blocked_reason": "Windows CI forces Git Bash, and tests simulate command behavior rather than certify native PowerShell execution.",
+      "revisit_trigger": "Native Bash and PowerShell jobs pass for the same candidate.",
+      "resource_budget": "30m per shell/platform lane",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-PLATFORM-LOCALE-TZ",
+      "axis": "platform",
+      "cell": "Locale and time-zone behavior",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/commands/artifact-integrity.spec.ts",
+        ".github/workflows/ci.yml"
+      ],
+      "command": "npm test",
+      "fixture": "Required fixture: packed CLI under UTC, America/New_York, Europe/Berlin, en-US, and a non-UTF-8 locale with fixed timestamps",
+      "observed_result": "BLOCKED",
+      "blocked_reason": "Artifact freshness is unit-tested, but no cross-locale/time-zone execution or fixed-clock deterministic corpus exists.",
+      "revisit_trigger": "Locale/time-zone matrix passes with fixed-clock comparisons.",
+      "resource_budget": "30m per locale/time-zone lane",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-PLATFORM-PATH-SEPARATORS",
+      "axis": "platform",
+      "cell": "Path-separator normalization contract",
+      "disposition": "TESTED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/cli/why.spec.ts",
+        "tests/scope/git-resolve.spec.ts"
+      ],
+      "command": "npx vitest run tests/cli/why.spec.ts tests/scope/git-resolve.spec.ts",
+      "fixture": "Relative, nested, and Windows-style path-resolution fixtures",
+      "observed_result": "PASS",
+      "resource_budget": "180s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-PLATFORM-FILESYSTEM-EDGES",
+      "axis": "platform",
+      "cell": "Filesystem edge-case contract",
+      "disposition": "TESTED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/scope/workspace-containment.spec.ts",
+        "tests/lib/fs-atomic-retry.spec.ts",
+        "tests/commands/trust-report.spec.ts"
+      ],
+      "command": "npx vitest run tests/scope/workspace-containment.spec.ts tests/lib/fs-atomic-retry.spec.ts tests/commands/trust-report.spec.ts",
+      "fixture": "Drive, UNC, sibling, symlink, junction, EPERM/EACCES, stale temp, and long nested output fixtures",
+      "observed_result": "PASS",
+      "resource_budget": "300s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-PERMISSION-LOCAL-ZERO-NETWORK",
+      "axis": "permissions-network",
+      "cell": "Local zero-network source and dependency contract",
+      "disposition": "TESTED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/contract/privacy-network-isolation.spec.ts",
+        "tests/contract/boundary-law.spec.ts",
+        "tests/commands/release-trust-arms.spec.ts"
+      ],
+      "command": "npx vitest run tests/contract/privacy-network-isolation.spec.ts tests/contract/boundary-law.spec.ts tests/commands/release-trust-arms.spec.ts",
+      "fixture": "No telemetry, remote logging, network dependency, or network import; unsatisfied security/privacy blocks release trust",
+      "observed_result": "PASS",
+      "resource_budget": "240s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-PERMISSION-READ-ONLY-TOKEN",
+      "axis": "permissions-network",
+      "cell": "Read-only token contract",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/integrations/action-surface.spec.ts",
+        "docs/RELEASE-TRAINS.md"
+      ],
+      "command": null,
+      "fixture": "No runnable evidence for this row",
+      "observed_result": "BLOCKED",
+      "resource_budget": "180s",
+      "last_candidate": "mjolnir-working-candidate-001",
+      "blocked_reason": "The evidence this row cited no longer exists.",
+      "revisit_trigger": "A runnable test is written for this capability."
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-PERMISSION-FORK-PR",
+      "axis": "permissions-network",
+      "cell": "Fork pull-request permission contract",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/integrations/action-surface.spec.ts",
+        "docs/RELEASE-TRAINS.md"
+      ],
+      "command": null,
+      "fixture": "No runnable evidence for this row",
+      "observed_result": "BLOCKED",
+      "resource_budget": "180s",
+      "last_candidate": "mjolnir-working-candidate-001",
+      "blocked_reason": "The evidence this row cited no longer exists.",
+      "revisit_trigger": "A runnable test is written for this capability."
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-PERMISSION-OPTIONAL-TELEMETRY",
+      "axis": "permissions-network",
+      "cell": "Optional telemetry decision and implementation",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/contract/privacy-network-isolation.spec.ts",
+        "docs/M26-EXTERNAL-VALIDATION.json"
+      ],
+      "command": "npx vitest run tests/contract/privacy-network-isolation.spec.ts",
+      "fixture": "Current absence of telemetry is tested, but required owner decision is not externally recorded",
+      "observed_result": "BLOCKED",
+      "blocked_reason": "Code currently enforces no telemetry, but external evidence lacks an approved decision among none, opt-in, and out of scope. That is governance, not an inferred test result.",
+      "revisit_trigger": "qa-owner ratifies the telemetry decision; if opt-in, consented and revocation tests are added.",
+      "resource_budget": "180s plus governance review",
+      "last_candidate": "mjolnir-working-candidate-001",
+      "source_issue_ids": [
+        "GAP-M26-014"
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-PERMISSION-OPTIONAL-HOSTED-SYNC",
+      "axis": "permissions-network",
+      "cell": "Optional hosted synchronization",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        "docs/M26-EXTERNAL-VALIDATION.json",
+        "docs/RELEASE-TRAINS.md"
+      ],
+      "command": null,
+      "fixture": "Scope decision, not an implementation",
+      "observed_result": "BLOCKED",
+      "blocked_reason": "No hosted synchronization service, offline/conflict contract, or two-repository pilot exists. M34 marks the pilot pending.",
+      "revisit_trigger": "Hosted sync implementation plus offline, conflict, access, and recovery pilot evidence is available.",
+      "resource_budget": "external pilot",
+      "last_candidate": "mjolnir-working-candidate-001",
+      "source_issue_ids": [
+        "GAP-M26-016"
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-PERMISSION-AGENT-TOOL",
+      "axis": "permissions-network",
+      "cell": "Agent/MCP tool permission contract",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/contract/mcp-transport.spec.ts",
+        "tests/mcp/crash-containment.spec.ts",
+        "docs/RELEASE-TRAINS.md"
+      ],
+      "command": null,
+      "fixture": "No runnable evidence for this row",
+      "observed_result": "BLOCKED",
+      "resource_budget": "300s",
+      "last_candidate": "mjolnir-working-candidate-001",
+      "blocked_reason": "The evidence this row cited no longer exists.",
+      "revisit_trigger": "A runnable test is written for this capability."
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-PERMISSION-SELF-HOSTED-AIR-GAPPED",
+      "axis": "permissions-network",
+      "cell": "Self-hosted and air-gapped operation",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        "src/commands/enterprise.ts",
+        "docs/M26-EXTERNAL-VALIDATION.json",
+        "docs/RELEASE-TRAINS.md"
+      ],
+      "command": null,
+      "fixture": "Scope decision, not an implementation",
+      "observed_result": "BLOCKED",
+      "blocked_reason": "CLI can generate enterprise configuration, but no complete local enterprise profile or real service-account pilot exists; M34 remains pending and EXT-M26-001 is validator-BLOCKED.",
+      "revisit_trigger": "Offline installation and least-privilege self-hosted pilot produce a candidate-bound result.",
+      "resource_budget": "external pilot",
+      "last_candidate": "mjolnir-working-candidate-001",
+      "source_issue_ids": [
+        "GAP-M26-015"
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-SECURITY-PROMPT-INJECTION",
+      "axis": "security-privacy",
+      "cell": "Prompt-injection resistance",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        "docs/RELEASE-TRAINS.md"
+      ],
+      "command": null,
+      "fixture": "Scope decision, not an implementation",
+      "observed_result": "BLOCKED",
+      "blocked_reason": "Current tests validate deterministic decision receipts and secret redaction, but no adversarial prompt-injection corpus exercises the agent boundary.",
+      "revisit_trigger": "Prompt-injection corpus spanning findings, source, rules, artifacts, MCP responses, and PR comments passes.",
+      "resource_budget": "300s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-SECURITY-TOOL-POISONING",
+      "axis": "security-privacy",
+      "cell": "Tool-poisoning resistance",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/contract/mcp-transport.spec.ts",
+        "docs/RELEASE-TRAINS.md"
+      ],
+      "command": null,
+      "fixture": "Scope decision, not an implementation",
+      "observed_result": "BLOCKED",
+      "blocked_reason": "MCP transport and tool listing are tested, but no fixture treats tool metadata/results as hostile data or proves poisoned instructions cannot alter behavior.",
+      "revisit_trigger": "Tool metadata/result poisoning tests and an explicit untrusted-data policy are implemented.",
+      "resource_budget": "300s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-SECURITY-EXFILTRATION",
+      "axis": "security-privacy",
+      "cell": "Local exfiltration prevention contract",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/contract/privacy-network-isolation.spec.ts",
+        "tests/contract/boundary-law.spec.ts",
+        "docs/RELEASE-TRAINS.md"
+      ],
+      "command": null,
+      "fixture": "No runnable evidence for this row",
+      "observed_result": "BLOCKED",
+      "resource_budget": "240s",
+      "last_candidate": "mjolnir-working-candidate-001",
+      "blocked_reason": "The evidence this row cited no longer exists.",
+      "revisit_trigger": "A runnable test is written for this capability."
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-SECURITY-TRAVERSAL",
+      "axis": "security-privacy",
+      "cell": "Path traversal",
+      "disposition": "TESTED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/scope/workspace-containment.spec.ts",
+        "tests/rules/cross-domain-regressions.spec.ts"
+      ],
+      "command": "npx vitest run tests/scope/workspace-containment.spec.ts tests/rules/cross-domain-regressions.spec.ts",
+      "fixture": "Traversal, sibling-prefix, drive, UNC, symlink, and junction escape fixtures",
+      "observed_result": "PASS",
+      "resource_budget": "240s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-SECURITY-SYMLINK",
+      "axis": "security-privacy",
+      "cell": "Symlink escape",
+      "disposition": "TESTED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/scope/workspace-containment.spec.ts",
+        "tests/config/config.spec.ts"
+      ],
+      "command": "npx vitest run tests/scope/workspace-containment.spec.ts tests/config/config.spec.ts",
+      "fixture": "File and directory symlink/junction escapes and symlinked config rejection",
+      "observed_result": "PASS",
+      "resource_budget": "240s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-SECURITY-REDOS",
+      "axis": "security-privacy",
+      "cell": "ReDoS resistance",
+      "disposition": "TESTED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/rules/redos-gate.spec.ts"
+      ],
+      "command": "npx vitest run tests/rules/redos-gate.spec.ts",
+      "fixture": "Long runs, nested parentheses, Unicode strings, and locator-alternation bait across every registered rule",
+      "observed_result": "PASS",
+      "resource_budget": "180s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-SECURITY-RESOURCE-EXHAUSTION",
+      "axis": "security-privacy",
+      "cell": "Resource-exhaustion resistance",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/lib/fs-bounded.spec.ts",
+        "tests/rules/redos-gate.spec.ts",
+        "tests/stress/scale-benchmark.spec.ts",
+        "docs/RELEASE-TRAINS.md"
+      ],
+      "command": null,
+      "fixture": "No runnable evidence for this row",
+      "observed_result": "BLOCKED",
+      "resource_budget": "300s",
+      "last_candidate": "mjolnir-working-candidate-001",
+      "blocked_reason": "The evidence this row cited no longer exists.",
+      "revisit_trigger": "A runnable test is written for this capability."
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-SECURITY-SANDBOX-ESCAPE",
+      "axis": "security-privacy",
+      "cell": "Sandbox escape",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        "enterprise/threat-model.json",
+        "tests/plugins/tier-isolation.spec.ts"
+      ],
+      "command": "none — no sandbox exists to test",
+      "fixture": "Required fixture: malicious plugin attempts filesystem, process, environment, network, and parent-process access from an OS-enforced sandbox",
+      "observed_result": "BLOCKED",
+      "blocked_reason": "The threat model explicitly states that plugins and MCP execute unsandboxed with full Node privileges. Tier checks are not an OS sandbox.",
+      "revisit_trigger": "A documented sandbox implementation and adversarial escape suite are added.",
+      "resource_budget": "600s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-SECURITY-SECRET-CANARY",
+      "axis": "security-privacy",
+      "cell": "Secret canary non-leakage",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/contract/pack-audit.spec.ts",
+        "tests/contract/privacy-network-isolation.spec.ts",
+        "docs/RELEASE-TRAINS.md"
+      ],
+      "command": null,
+      "fixture": "No runnable evidence for this row",
+      "observed_result": "BLOCKED",
+      "resource_budget": "240s",
+      "last_candidate": "mjolnir-working-candidate-001",
+      "blocked_reason": "The evidence this row cited no longer exists.",
+      "revisit_trigger": "A runnable test is written for this capability."
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-SECURITY-UNTRUSTED-ARTIFACT",
+      "axis": "security-privacy",
+      "cell": "Untrusted artifact handling",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/commands/artifact-integrity.spec.ts",
+        "tests/false-green/trace.spec.ts",
+        "docs/RELEASE-TRAINS.md"
+      ],
+      "command": null,
+      "fixture": "No runnable evidence for this row",
+      "observed_result": "BLOCKED",
+      "resource_budget": "300s",
+      "last_candidate": "mjolnir-working-candidate-001",
+      "blocked_reason": "The evidence this row cited no longer exists.",
+      "revisit_trigger": "A runnable test is written for this capability."
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-SECURITY-SUPPLY-CHAIN-SUBSTITUTION",
+      "axis": "security-privacy",
+      "cell": "Supply-chain substitution rejection contract",
+      "disposition": "TESTED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/release/reproducibility.spec.ts",
+        "tests/release/provenance.spec.ts",
+        "tests/contract/pack-audit.spec.ts"
+      ],
+      "command": "npx vitest run tests/release/reproducibility.spec.ts tests/release/provenance.spec.ts tests/contract/pack-audit.spec.ts",
+      "fixture": "Checked-in and freshly packed artifacts must have identical provenance and source/package parity",
+      "observed_result": "PASS",
+      "resource_budget": "300s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-DOMAIN-REQUIREMENTS",
+      "axis": "qa-sdet-domain",
+      "cell": "Requirements intelligence",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        "docs/RELEASE-TRAINS.md"
+      ],
+      "command": null,
+      "fixture": "Scope decision, not an implementation",
+      "observed_result": "BLOCKED",
+      "blocked_reason": "The provisional model can represent requirements, but no requirements adapter, trace corpus, traceability generation, or independent certification exists.",
+      "revisit_trigger": "Requirements adapter, traceable fixture, external reviewer, and saturation evidence are integrated.",
+      "resource_budget": "600s plus external review",
+      "last_candidate": "mjolnir-working-candidate-001",
+      "source_issue_ids": [
+        "GAP-M26-006"
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-DOMAIN-RISK",
+      "axis": "qa-sdet-domain",
+      "cell": "Risk intelligence",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        "docs/RELEASE-TRAINS.md"
+      ],
+      "command": null,
+      "fixture": "Scope decision, not an implementation",
+      "observed_result": "BLOCKED",
+      "blocked_reason": "The provisional model can represent risk, but no risk-ingestion adapter, independent risk corpus, reviewer saturation, or operational risk decision is certified.",
+      "revisit_trigger": "Risk adapter and independently reviewed risk corpus are integrated.",
+      "resource_budget": "600s plus external review",
+      "last_candidate": "mjolnir-working-candidate-001",
+      "source_issue_ids": [
+        "GAP-M26-006"
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-DOMAIN-TEST-DESIGN",
+      "axis": "qa-sdet-domain",
+      "cell": "Test-design intelligence",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        "docs/RELEASE-TRAINS.md"
+      ],
+      "command": null,
+      "fixture": "Scope decision, not an implementation",
+      "observed_result": "BLOCKED",
+      "blocked_reason": "Rule scaffolding and framework detection exist, but no integrated test-design adapter or independent certification selects and justifies tests across domains.",
+      "revisit_trigger": "Test-design adapter and reviewed requirements-to-tests corpus are integrated.",
+      "resource_budget": "600s plus external review",
+      "last_candidate": "mjolnir-working-candidate-001",
+      "source_issue_ids": [
+        "GAP-M26-007"
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-DOMAIN-UNIT",
+      "axis": "qa-sdet-domain",
+      "cell": "Unit-test domain",
+      "disposition": "TESTED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/engine/adapters/framework-filter.spec.ts",
+        "tests/engine/adapters/java-csharp.spec.ts",
+        "tests/engine/framework-inventory.spec.ts"
+      ],
+      "command": "npx vitest run tests/engine/adapters/framework-filter.spec.ts tests/engine/adapters/java-csharp.spec.ts tests/engine/framework-inventory.spec.ts",
+      "fixture": "Unit framework detection for Jest, Vitest, pytest, JUnit, TestNG, NUnit, xUnit, and MSTest",
+      "observed_result": "PASS",
+      "resource_budget": "240s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-DOMAIN-INTEGRATION",
+      "axis": "qa-sdet-domain",
+      "cell": "Integration-test domain",
+      "disposition": "TESTED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/e2e/journey-1-first-run.spec.ts",
+        "tests/integrations/adapter-reporter-matrix.spec.ts"
+      ],
+      "command": "npx vitest run tests/e2e/journey-1-first-run.spec.ts tests/integrations/adapter-reporter-matrix.spec.ts",
+      "fixture": "Packed binary scans a multi-package test tree and emits through all reporters",
+      "observed_result": "PASS",
+      "resource_budget": "300s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-DOMAIN-API",
+      "axis": "qa-sdet-domain",
+      "cell": "API contracts",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        "docs/RELEASE-TRAINS.md"
+      ],
+      "command": null,
+      "fixture": "Scope decision, not an implementation",
+      "observed_result": "BLOCKED",
+      "blocked_reason": "The provisional model can represent API evidence, but no OpenAPI/AsyncAPI adapter, schema corpus, contract generation, or independent API certification exists.",
+      "revisit_trigger": "API adapter, real schema corpus, and external contract certification are integrated.",
+      "resource_budget": "900s plus external review",
+      "last_candidate": "mjolnir-working-candidate-001",
+      "source_issue_ids": [
+        "GAP-M26-008"
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-DOMAIN-BROWSER",
+      "axis": "qa-sdet-domain",
+      "cell": "Browser domain",
+      "disposition": "TESTED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/contract/playwright-capabilities.spec.ts",
+        "tests/integrations/playwright-reporter-package.spec.ts",
+        "tests/engine/adapters/framework-filter.spec.ts"
+      ],
+      "command": "npx vitest run tests/contract/playwright-capabilities.spec.ts tests/integrations/playwright-reporter-package.spec.ts tests/engine/adapters/framework-filter.spec.ts",
+      "fixture": "Playwright TypeScript/Python/Java capability boundaries and reporter package contract",
+      "observed_result": "PASS",
+      "resource_budget": "300s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-DOMAIN-MOBILE",
+      "axis": "qa-sdet-domain",
+      "cell": "Mobile domain",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        "docs/RELEASE-TRAINS.md"
+      ],
+      "command": null,
+      "fixture": "Scope decision, not an implementation",
+      "observed_result": "BLOCKED",
+      "blocked_reason": "The model has a mobile record kind, but no mobile framework inventory, adapter, real device/emulator corpus, or independent mobile certification exists.",
+      "revisit_trigger": "Mobile adapter, framework/device matrix, and independently reviewed corpus are integrated.",
+      "resource_budget": "1800s plus external review",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-DOMAIN-ACCESSIBILITY",
+      "axis": "qa-sdet-domain",
+      "cell": "Accessibility domain",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        "docs/M26-EXTERNAL-VALIDATION.json",
+        "docs/RELEASE-TRAINS.md"
+      ],
+      "command": null,
+      "fixture": "Scope decision, not an implementation",
+      "observed_result": "BLOCKED",
+      "blocked_reason": "No accessibility scanner/adapter, keyboard/screen-reader corpus, assistive-technology run, or independent human/automated certification exists.",
+      "revisit_trigger": "Accessibility adapter, real repository corpus, and candidate-bound assistive-technology validation are available.",
+      "resource_budget": "900s plus external review",
+      "last_candidate": "mjolnir-working-candidate-001",
+      "source_issue_ids": [
+        "GAP-M26-009"
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-DOMAIN-PERFORMANCE",
+      "axis": "qa-sdet-domain",
+      "cell": "Performance domain",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/stress/scale-benchmark.spec.ts",
+        "docs/RELEASE-TRAINS.md"
+      ],
+      "command": null,
+      "fixture": "Scope decision, not an implementation",
+      "observed_result": "BLOCKED",
+      "blocked_reason": "Internal timing and memory budgets are tested, but no independent variance dataset, external performance adapter, or candidate-bound comparative result exists.",
+      "revisit_trigger": "Versioned independent performance corpus, variance methodology, and accepted result are attached.",
+      "resource_budget": "1800s plus external review",
+      "last_candidate": "mjolnir-working-candidate-001",
+      "source_issue_ids": [
+        "GAP-M26-010"
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-DOMAIN-SECURITY",
+      "axis": "qa-sdet-domain",
+      "cell": "Security testing domain",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        "docs/M26-EXTERNAL-VALIDATION.json",
+        "docs/RELEASE-TRAINS.md"
+      ],
+      "command": null,
+      "fixture": "Scope decision, not an implementation",
+      "observed_result": "BLOCKED",
+      "blocked_reason": "The product's own security tests do not certify a security-testing domain. No scanner inventory, normalized security adapter, independent corpus, or external security review exists.",
+      "revisit_trigger": "Security-domain adapter, scanner inventory, real-corpus validation, and independent claim review are integrated.",
+      "resource_budget": "1800s plus external review",
+      "last_candidate": "mjolnir-working-candidate-001",
+      "source_issue_ids": [
+        "GAP-M26-011"
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-DOMAIN-EXPLORATORY-OBSERVABILITY",
+      "axis": "qa-sdet-domain",
+      "cell": "Exploratory testing and observability",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        "docs/RELEASE-TRAINS.md"
+      ],
+      "command": null,
+      "fixture": "Scope decision, not an implementation",
+      "observed_result": "BLOCKED",
+      "blocked_reason": "No exploratory-session, trace, log, or observability adapter integrates into the QA domain model, and no external practitioner validation exists.",
+      "revisit_trigger": "Privacy-reviewed observability adapter and reviewed exploratory-session corpus are integrated.",
+      "resource_budget": "900s plus external review",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-DOMAIN-RELEASE-EVIDENCE",
+      "axis": "qa-sdet-domain",
+      "cell": "Release evidence",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/commands/release-trust-arms.spec.ts",
+        "tests/release/provenance.spec.ts",
+        "docs/RELEASE-TRAINS.md"
+      ],
+      "command": null,
+      "fixture": "No runnable evidence for this row",
+      "observed_result": "BLOCKED",
+      "resource_budget": "300s",
+      "last_candidate": "mjolnir-working-candidate-001",
+      "blocked_reason": "The evidence this row cited no longer exists.",
+      "revisit_trigger": "A runnable test is written for this capability."
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-UX-BEGINNER",
+      "axis": "ux",
+      "cell": "Beginner UX",
+      "disposition": "TESTED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/e2e/journey-1-first-run.spec.ts",
+        "tests/cli/help.spec.ts"
+      ],
+      "command": "npx vitest run tests/e2e/journey-1-first-run.spec.ts tests/cli/help.spec.ts",
+      "fixture": "First-run output, help examples, and next-step guidance",
+      "observed_result": "PASS",
+      "resource_budget": "300s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-UX-EXPERT",
+      "axis": "ux",
+      "cell": "Expert UX",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/cli/flag-matrix.spec.ts",
+        "tests/cli/subcommands.spec.ts",
+        "docs/RELEASE-TRAINS.md"
+      ],
+      "command": null,
+      "fixture": "No runnable evidence for this row",
+      "observed_result": "BLOCKED",
+      "resource_budget": "300s",
+      "last_candidate": "mjolnir-working-candidate-001",
+      "blocked_reason": "The evidence this row cited no longer exists.",
+      "revisit_trigger": "A runnable test is written for this capability."
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-UX-KEYBOARD-SCREEN-READER-AUTOMATED",
+      "axis": "ux",
+      "cell": "Keyboard/screen-reader automated semantics contract",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/cli/help.spec.ts",
+        "docs/RELEASE-TRAINS.md"
+      ],
+      "command": null,
+      "fixture": "No runnable evidence for this row",
+      "observed_result": "BLOCKED",
+      "resource_budget": "240s",
+      "last_candidate": "mjolnir-working-candidate-001",
+      "blocked_reason": "The evidence this row cited no longer exists.",
+      "revisit_trigger": "A runnable test is written for this capability."
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-UX-KEYBOARD-SCREEN-READER-SESSION",
+      "axis": "ux",
+      "cell": "Keyboard and screen-reader user session",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        "docs/M26-EXTERNAL-VALIDATION.json",
+        "docs/RELEASE-TRAINS.md"
+      ],
+      "command": null,
+      "fixture": "Scope decision, not an implementation",
+      "observed_result": "BLOCKED",
+      "blocked_reason": "No real keyboard-only, NVDA/JAWS/VoiceOver, focus-order, or announcement corpus is present.",
+      "revisit_trigger": "A consented assistive-technology test script and candidate-bound session result are attached.",
+      "resource_budget": "external human validation",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-UX-ERROR-RECOVERY",
+      "axis": "ux",
+      "cell": "Error recovery UX",
+      "disposition": "TESTED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/cli/crash-paths.spec.ts",
+        "tests/e2e/journey-5678-flows.spec.ts",
+        "tests/commands/ux-verification.spec.ts"
+      ],
+      "command": "npx vitest run tests/cli/crash-paths.spec.ts tests/e2e/journey-5678-flows.spec.ts tests/commands/ux-verification.spec.ts",
+      "fixture": "Missing report, invalid config, unwritable output, and error guidance fixtures",
+      "observed_result": "PASS",
+      "resource_budget": "300s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-UX-LOCALIZATION",
+      "axis": "ux",
+      "cell": "Localization",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/readme-translations.spec.ts",
+        "docs/RELEASE-TRAINS.md"
+      ],
+      "command": null,
+      "fixture": "Scope decision, not an implementation",
+      "observed_result": "BLOCKED",
+      "blocked_reason": "There is no localized CLI/report/PR surface, locale negotiation, translation-completeness test, or independent linguistic validation.",
+      "revisit_trigger": "A localized user-facing surface, translation catalog, and bilingual reviewer are added.",
+      "resource_budget": "600s plus linguistic review",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-UX-NO-FINDINGS",
+      "axis": "ux",
+      "cell": "No-findings UX",
+      "disposition": "TESTED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/reporters/empty-states.spec.ts",
+        "tests/e2e/journey-34-baseline-fix.spec.ts"
+      ],
+      "command": "npx vitest run tests/reporters/empty-states.spec.ts tests/e2e/journey-34-baseline-fix.spec.ts",
+      "fixture": "Clean terminal, JSON, SARIF, and CLI no-findings output",
+      "observed_result": "PASS",
+      "resource_budget": "240s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-UX-PARTIAL",
+      "axis": "ux",
+      "cell": "PARTIAL/INCONCLUSIVE UX",
+      "disposition": "TESTED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/reporters/empty-states.spec.ts",
+        "tests/integrations/github/pr-comment-renderer.spec.ts",
+        "tests/commands/ux-verification.spec.ts"
+      ],
+      "command": "npx vitest run tests/reporters/empty-states.spec.ts tests/integrations/github/pr-comment-renderer.spec.ts tests/commands/ux-verification.spec.ts",
+      "fixture": "PARTIAL/INCONCLUSIVE banners, partial PR analysis, and non-green UX guidance",
+      "observed_result": "PASS",
+      "resource_budget": "240s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-UX-HIGH-NOISE",
+      "axis": "ux",
+      "cell": "High-noise UX",
+      "disposition": "TESTED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/reporters/next-actions.spec.ts",
+        "tests/rules/fp-audit-table.spec.ts",
+        "tests/rules/measured-fp.spec.ts"
+      ],
+      "command": "npx vitest run tests/reporters/next-actions.spec.ts tests/rules/fp-audit-table.spec.ts tests/rules/measured-fp.spec.ts",
+      "fixture": "Prioritization, bounded next actions, FP evidence table, and measured FP classifications",
+      "observed_result": "PASS",
+      "resource_budget": "300s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-UX-ACCESSIBLE-PR",
+      "axis": "ux",
+      "cell": "Accessible pull-request output",
+      "disposition": "TESTED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/integrations/github/pr-comment-contract.spec.ts",
+        "tests/integrations/github/pr-comment-renderer.spec.ts",
+        "tests/reporters/pr-comment-determinism.spec.ts",
+        "tests/integrations/action-surface.spec.ts"
+      ],
+      "command": "npx vitest run tests/integrations/github/pr-comment-contract.spec.ts tests/integrations/github/pr-comment-renderer.spec.ts tests/reporters/pr-comment-determinism.spec.ts tests/integrations/action-surface.spec.ts",
+      "fixture": "Markdown headings, limitations, bounded body, deterministic output, and job-summary fallback",
+      "observed_result": "PASS",
+      "resource_budget": "240s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-UX-MOBILE-OUTPUT",
+      "axis": "ux",
+      "cell": "Mobile output surface",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        "docs/ROADMAP.yaml",
+        "docs/ROADMAP.yaml"
+      ],
+      "command": "none — no mobile output surface or contract exists",
+      "fixture": "Required fixture: responsive output contract, narrow table degradation, touch navigation, and device accessibility validation",
+      "observed_result": "BLOCKED",
+      "blocked_reason": "The plan explicitly includes future PR/mobile UX, so this is applicable but unimplemented. Accessible PR Markdown is covered separately and does not satisfy mobile output.",
+      "revisit_trigger": "A mobile surface and responsive/accessibility contract are defined and implemented.",
+      "resource_budget": "900s plus device testing",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-GOV-OWNER",
+      "axis": "governance",
+      "cell": "Ownership",
+      "disposition": "TESTED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/ledger/m26-validators.spec.ts",
+        "docs/M26-GAP-LEDGER.jsonl"
+      ],
+      "command": "npx vitest run tests/ledger/m26-validators.spec.ts",
+      "fixture": "Named qa-owner required; UNOWNED rejected",
+      "observed_result": "PASS",
+      "resource_budget": "180s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-GOV-EXPIRY",
+      "axis": "governance",
+      "cell": "Expiry",
+      "disposition": "TESTED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/e2e/journey-5678-flows.spec.ts",
+        "tests/config/config.spec.ts"
+      ],
+      "command": "npx vitest run tests/e2e/journey-5678-flows.spec.ts tests/config/config.spec.ts",
+      "fixture": "Expired suppression is re-revealed end to end",
+      "observed_result": "PASS",
+      "resource_budget": "240s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-GOV-REVIEW",
+      "axis": "governance",
+      "cell": "Review and approval",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/certification/candidate-manifest.spec.ts",
+        "docs/RELEASE-TRAINS.md"
+      ],
+      "command": null,
+      "fixture": "No runnable evidence for this row",
+      "observed_result": "BLOCKED",
+      "resource_budget": "300s",
+      "last_candidate": "mjolnir-working-candidate-001",
+      "blocked_reason": "The evidence this row cited no longer exists.",
+      "revisit_trigger": "A runnable test is written for this capability."
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-GOV-EXCEPTION",
+      "axis": "governance",
+      "cell": "Exception and suppression governance",
+      "disposition": "TESTED",
+      "owner": "qa-owner",
+      "evidence": [
+        "tests/e2e/journey-5678-flows.spec.ts",
+        "tests/contract/quarantine-ledger.spec.ts",
+        "tests/cli/flag-matrix.spec.ts"
+      ],
+      "command": "npx vitest run tests/e2e/journey-5678-flows.spec.ts tests/contract/quarantine-ledger.spec.ts tests/cli/flag-matrix.spec.ts",
+      "fixture": "Reason-bound quarantine and suppression reason/expiry fixtures",
+      "observed_result": "PASS",
+      "resource_budget": "300s",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-GOV-POLICY-INHERITANCE",
+      "axis": "governance",
+      "cell": "Policy inheritance",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        "docs/RELEASE-TRAINS.md"
+      ],
+      "command": null,
+      "fixture": "Scope decision, not an implementation",
+      "observed_result": "BLOCKED",
+      "blocked_reason": "No real organization/repository parent-child policy inheritance run exists. M34 explicitly marks the hosted pilot pending.",
+      "revisit_trigger": "Two-repository service-account pilot proves parent policy, overrides, denial, and audit behavior.",
+      "resource_budget": "external pilot",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-GOV-CODEOWNERS",
+      "axis": "governance",
+      "cell": "CODEOWNERS integration",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        "docs/RELEASE-TRAINS.md"
+      ],
+      "command": null,
+      "fixture": "Scope decision, not an implementation",
+      "observed_result": "BLOCKED",
+      "blocked_reason": "No CODEOWNERS parser, fixture, or provider review-request integration exists. M34 is a provisional local contract only.",
+      "revisit_trigger": "CODEOWNERS adapter and real provider review-request pilot are implemented.",
+      "resource_budget": "600s plus provider pilot",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-GOV-AUDIT",
+      "axis": "governance",
+      "cell": "Local audit decision-receipt contract",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        "docs/RELEASE-TRAINS.md"
+      ],
+      "command": null,
+      "fixture": "Scope decision, not an implementation",
+      "observed_result": "BLOCKED",
+      "resource_budget": "300s",
+      "last_candidate": "mjolnir-working-candidate-001",
+      "blocked_reason": "The decision-receipt contract has no production consumer: no scan, report, or CI path writes or reads a receipt. A passing contract test proves the schema matches itself, not that the capability exists.",
+      "revisit_trigger": "A scan or reporting path emits a receipt and a consumer verifies it end to end."
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-GOV-DELETION",
+      "axis": "governance",
+      "cell": "Deletion",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        "docs/RELEASE-TRAINS.md"
+      ],
+      "command": null,
+      "fixture": "Scope decision, not an implementation",
+      "observed_result": "BLOCKED",
+      "blocked_reason": "The repository has provisional deletion fields, but no real repository or hosted-policy deletion execution, verification, or external result exists.",
+      "revisit_trigger": "A consented deletion execution produces before/after evidence and complete deletion status.",
+      "resource_budget": "external deletion cycle",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-GOV-EXPORT",
+      "axis": "governance",
+      "cell": "Export",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        "docs/RELEASE-TRAINS.md"
+      ],
+      "command": null,
+      "fixture": "Scope decision, not an implementation",
+      "observed_result": "BLOCKED",
+      "blocked_reason": "A provisional simulation can produce an export contract, but no real repository/service-account export, portability, redaction, or external delivery result exists.",
+      "revisit_trigger": "A real governed repository export is generated, verified, and accepted externally.",
+      "resource_budget": "external pilot",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-GOV-RETENTION",
+      "axis": "governance",
+      "cell": "Retention",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        "docs/M26-EXTERNAL-VALIDATION.json",
+        "docs/RELEASE-TRAINS.md"
+      ],
+      "command": null,
+      "fixture": "Scope decision, not an implementation",
+      "observed_result": "BLOCKED",
+      "blocked_reason": "No actual retention clock, purge job, backup expiry, deletion verification, or candidate-bound external consent/deletion evidence exists.",
+      "revisit_trigger": "Retention policy is executed end to end with purge and backup-expiry evidence.",
+      "resource_budget": "retention window",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-GOV-CONSENT",
+      "axis": "governance",
+      "cell": "Consent",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        "docs/M26-EXTERNAL-VALIDATION.json",
+        "tests/ledger/m26-validators.spec.ts",
+        "docs/RELEASE-TRAINS.md"
+      ],
+      "command": null,
+      "fixture": "Scope decision, not an implementation",
+      "observed_result": "BLOCKED",
+      "blocked_reason": "The external ledger contains generic consent assertions but lacks the required result and candidate-bound cohort evidence. No runtime consent, withdrawal, or revocation workflow exists.",
+      "revisit_trigger": "Candidate-bound consented pilot with withdrawal/revocation evidence and a valid external result is accepted.",
+      "resource_budget": "external consent cycle",
+      "last_candidate": "mjolnir-working-candidate-001"
+    },
+    {
+      "schemaVersion": 1,
+      "cell_id": "MATRIX-GOV-SUPPORT",
+      "axis": "governance",
+      "cell": "Support ownership, SLA, and escalation",
+      "disposition": "BLOCKED",
+      "owner": "qa-owner",
+      "evidence": [
+        "docs/M26-EXTERNAL-VALIDATION.json",
+        "docs/M26-GITHUB-SNAPSHOT.json",
+        "package.json"
+      ],
+      "command": "none — no support/SLA test exists",
+      "fixture": "Required fixture: named support owner, response targets, escalation path, redacted support bundle, and recorded support-request lifecycle",
+      "observed_result": "BLOCKED",
+      "blocked_reason": "The external record has no support requests, and the repository has no tested support/SLA contract or support-bundle fixture.",
+      "revisit_trigger": "A real support contract and test are added.",
+      "resource_budget": "300s plus support-owner review",
+      "last_candidate": "mjolnir-working-candidate-001",
+      "source_issue_ids": [
+        "GAP-M26-017"
+      ]
+    }
   ]
 }

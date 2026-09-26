@@ -25,28 +25,22 @@
     "Approve the hosted, enterprise, and agent threat-model boundaries.",
     "Approve human adjudication and design-partner evidence collection."
   ],
-  "generatedAt": "2026-09-25",
+  "generatedAt": "2026-09-26",
   "identity": {
     "state": "WORKING_CANDIDATE",
-    "baseSha": "e01a8e0dd2aebf97546ec398259e95bb839526c3",
+    "baseSha": "7936cf868da3191ced166728dc887e6fc345cf45",
     "candidateSha": null,
-    "version": "4.0.0-rc.1",
-    "packageSha256": "8cd17750328505b3f6003a88e1a173b3803eb1b0f10041fdacd9899935bc9376",
-    "lockfileSha256": "aeaff5bca556b58283a5c3c074adda7e429f28b2a76cd51b0efeaeaba9b5021c",
-    "workingTreeSha256": "a75020b288e5a215c78c00755dd94028c2f276586180b30f698196e99fa143fd",
-    "changedPathCount": 2,
+    "version": "4.0.0",
+    "packageSha256": "835fe9841f6041c969c31c0a49d00086fdd320caa8ea25e79b2e13b9710abb6c",
+    "lockfileSha256": "7694a743490f8a4181a2fda22d38a638dd11ee1fabdb8ffadaceb0322f4d3c89",
+    "workingTreeSha256": "eabae63610efb7ed15dae7c10c35ac3eb3bed45c4265f636cbf2f02ef2eb3f06",
+    "changedPathCount": 0,
     "supportEnvelope": "self-hosted; hosted services require explicit consent and separate proof",
     "worktreeInventory": {
-      "changedPaths": [
-        ".github/workflows/mjolnir.yml",
-        "tests/integrations/pr-workflow.spec.ts"
-      ],
+      "changedPaths": [],
       "untrackedPaths": []
     },
-    "dirtyFiles": [
-      ".github/workflows/mjolnir.yml",
-      "tests/integrations/pr-workflow.spec.ts"
-    ]
+    "dirtyFiles": []
   },
   "claimRegistry": {
     "path": "docs/claim-registry.json",
@@ -111,26 +105,6 @@
     "src/frameworks/framework-inventory.ts",
     "scripts/check-changelog.ts",
     "src/commands/release-trust.ts",
-    "src/engine/runtime-evidence-graph.ts",
-    "src/frameworks/provider-capability-contract.ts",
-    "src/frameworks/universal-pack-contract.ts",
-    "src/qa/domain-model.ts",
-    "src/change-intelligence.ts",
-    "src/mutation/failure-sensitivity.ts",
-    "src/engine/m38-challenge-contract.ts",
-    "src/engine/m39-simulation-contract.ts",
-    "src/engine/m40-language-expansion-contract.ts",
-    "src/engine/m43-system-of-systems.ts",
-    "src/engine/m44-historical-intelligence.ts",
-    "src/detectors/m45-detector-lifecycle.ts",
-    "src/research/m46-reproducible-research-lab-contract.ts",
-    "src/benchmark/m47-false-green-benchmark.ts",
-    "src/bench/m48-scale-operating-model.ts",
-    "src/engine/m49-experience-parity-contract.ts",
-    "src/engine/m50-release-proof-contract.ts",
-    "src/governance/m33-m34-contract.ts",
-    "src/agent/decision-receipt.ts",
-    "src/plugins/sdk-contract.ts",
     "schemas/m35/plugin-manifest.schema.json",
     "scripts/sync-m26-github.mjs",
     "docs/reporter-version-policy.json",

@@ -66,7 +66,7 @@ inputs:
       registry while it is a release candidate. Override only with another
       published exact version.
     required: false
-    default: "3.0.0"
+    default: "4.0.0"
   upload-sarif:
     description: >-
       Upload SARIF to GitHub Code Scanning (requires security-events:
@@ -103,16 +103,24 @@ inputs:
     default: "false"
 
 outputs:
-  exit-code:
-    description: "The scan's exit code (0 clean · 1 findings at gate · 2 partial)"
+  # Output names use underscores, never hyphens. In an expression
+  # `${{ steps.x.outputs.some-name }}` is parsed as SUBTRACTION
+  # (`outputs.some` minus `name`), evaluates to 0, and makes every consuming
+  # gate unfailable. A hyphenated output name is not merely awkward, it is
+  # unreadable — which is how a gate that can never fail gets shipped.
+  exit_code:
+    description: "The scan's exit code (0 clean · 1 findings at gate · 2 inconclusive)"
     value: ${{ steps.scan.outputs.exit }}
   findings:
     description: "Finding count from the JSON report (format: json only, else empty)"
     value: ${{ steps.scan.outputs.findings }}
-  sarif-file:
-    description: "Path of the SARIF report when format is sarif, else empty"
-    value: ${{ steps.scan.outputs.sarif-file }}
-  trust-report-file:
+    # Underscore, never hyphen: a hyphenated name is unreadable in an
+    # expression (`outputs.sarif` minus `file` evaluates to 0), so every
+    # consumer of it silently takes the false branch.
+    sarif_file:
+      description: "Path of the SARIF report when format is sarif, else empty"
+      value: ${{ steps.scan.outputs.sarif_file }}
+  trust_report_file:
     description: "Path of the generated unified PR report (mjolnir-comment.md)"
     value: ${{ steps.pr-report.outputs.file }}
 
@@ -244,9 +252,9 @@ runs:
           exit 0
         fi
         if [ "$MJ_FORMAT" = "sarif" ]; then
-          echo "sarif-file=mjolnir-report.sarif" >> "$GITHUB_OUTPUT"
+          echo "sarif_file=mjolnir-report.sarif" >> "$GITHUB_OUTPUT"
         else
-          echo "sarif-file=" >> "$GITHUB_OUTPUT"
+          echo "sarif_file=" >> "$GITHUB_OUTPUT"
         fi
         if [ "$MJ_FORMAT" = "json" ] && [ -s mjolnir.json ]; then
           node -e '
@@ -267,10 +275,10 @@ runs:
     - name: Upload SARIF to GitHub Code Scanning
       if: >-
         always() && inputs.format == 'sarif' && inputs.upload-sarif == 'true' &&
-        steps.scan.outputs.sarif-file != ''
+        steps.scan.outputs.sarif_file != ''
       uses: github/codeql-action/upload-sarif@b96794f015dfd88f77b49b1c93e0fa7110f94c63 # v4
       with:
-        sarif_file: ${{ steps.scan.outputs.sarif-file }}
+        sarif_file: ${{ steps.scan.outputs.sarif_file }}
 
     # ── Trust Report consumption (WI-9, plan §13) ──────────────────────
     # Zero trust semantics HERE: every number below is rendered by the

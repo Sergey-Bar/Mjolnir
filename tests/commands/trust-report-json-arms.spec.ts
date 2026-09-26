@@ -159,7 +159,7 @@ describe("renderTrustReportJson — nextAction + evidence arms", () => {
     expect(j.topTrustRisks[0]?.evidence).toBe("test");
   });
 
-  it("finding without corroboration and without evidenceLevel → E2 fallback", () => {
+  it("finding without corroboration and without evidenceLevel → derived E1, not an E2 fallback", () => {
     const j = JSON.parse(
       renderTrustReportJson(
         result({
@@ -182,10 +182,14 @@ describe("renderTrustReportJson — nextAction + evidence arms", () => {
         }),
       ),
     ) as { topTrustRisks: Array<{ evidence: string }> };
-    expect(j.topTrustRisks[0]?.evidence).toBe("E2");
+    // BW-101: this used to be "E2". A heuristic-risk finding at low
+    // confidence with no evidenceLevel of its own derives E1 — the old
+    // `?? "E2"` fallback claimed the strongest evidence level for a
+    // finding nobody had measured.
+    expect(j.topTrustRisks[0]?.evidence).toBe("E1");
   });
 
-  it("score: null and missing counts → honest null/0 in the twin", () => {
+  it("score: null and missing counts → honest null, never a fabricated 0", () => {
     const bare = JSON.parse(JSON.stringify(result())) as Record<
       string,
       unknown
@@ -197,11 +201,13 @@ describe("renderTrustReportJson — nextAction + evidence arms", () => {
       renderTrustReportJson(bare as unknown as ScanResult),
     ) as {
       score: number | null;
-      tests: { files: number; declarations: number };
+      tests: { files: number | null; declarations: number | null };
     };
     expect(j.score).toBeUndefined(); // the twin passes the field through verbatim
-    expect(j.tests.files).toBe(0);
-    expect(j.tests.declarations).toBe(0);
+    // BW-103: an unmeasured count is null. `0` is a claim that the count
+    // was taken and found nothing, which is a different statement.
+    expect(j.tests.files).toBeNull();
+    expect(j.tests.declarations).toBeNull();
   });
 
   it("includes completion, scope, and verdict fields", () => {

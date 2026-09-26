@@ -1,5 +1,7 @@
 {
   "countsByRule": {},
   "totalFindings": 0,
-  "partial": false
+  "partial": false,
+  "schemaVersion": 1,
+  "sourceRevision": "298a8857c7128a0d121e7f699dfd729f23b3966d"
 }

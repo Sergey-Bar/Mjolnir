@@ -13,8 +13,12 @@ import type { Finding, ScanResult, TrustSummary } from "../types.js";
 import { deriveEvidenceLevel } from "../types.js";
 import type { BaselineDiff } from "../commands/baseline.js";
 import { sanitizeData } from "./theme.js";
-import { deriveScoreState, headlineFor } from "./score-state.js";
-import { verdictFor } from "./terminal.js";
+import {
+  deriveScoreState,
+  headlineFor,
+  testsAnalyzedCell,
+  verdictFor,
+} from "./presentation.js";
 import { pct } from "../lib/format.js";
 import {
   nextAction as _nextAction,
@@ -122,7 +126,7 @@ export function renderConfidenceTable(
     } |`,
   );
   lines.push(
-    `| Tests analyzed | ${result.testDeclarationCount ?? 0} in ${result.testFileCount ?? 0} files |`,
+    `| Tests analyzed | ${testsAnalyzedCell(result.testDeclarationCount, result.testFileCount)} |`,
   );
   lines.push("");
   lines.push("</details>");

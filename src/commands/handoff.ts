@@ -30,8 +30,12 @@ import {
 import type { Output } from "../cli.js";
 import { usageErrorMessage } from "../cli.js";
 import { CLI_VERSION } from "../cli.js";
-import { deriveScoreState, headlineFor } from "../reporter/score-state.js";
-import { verdictFor } from "../reporter/terminal.js";
+import {
+  deriveScoreState,
+  headlineFor,
+  verdictFor,
+} from "../reporter/presentation.js";
+import { palette, scoreGauge } from "../reporter/theme.js";
 import { escapeMarkdown } from "./pr-comment.js";
 import { errorText, loadSavedReport, reportExists } from "./report-io.js";
 
@@ -77,9 +81,19 @@ function fpLine(f: Finding): string {
   return `Measured FP rate: ${pct}%${n}.`;
 }
 
-function scoreBar(score: number, width = 20): string {
-  const filled = Math.round((score / 100) * width);
-  return `${"█".repeat(filled)}${"░".repeat(Math.max(0, width - filled))}`;
+/**
+ * The score bar. BW-105: this used to be a private, COLOURLESS copy of
+ * `scoreGauge` — 20 blocks of `█`/`░` with no head tick, so 99 and 100
+ * rendered identically and a reader could not read a band off the bar.
+ *
+ * It delegates to the canonical gauge with the inert palette: the head-tick
+ * geometry is the gauge's own, and NO SGR escapes reach a Markdown file
+ * (which would render as literal `[38;2;…m` on GitHub). The band itself is
+ * carried in words on the line above — `VERDICT (band)` — which is R11
+ * anyway: a colour is never the only signal.
+ */
+function scoreBar(score: number): string {
+  return scoreGauge(score, palette(false), 20);
 }
 
 function scopeNote(options: HandoffOptions): string {

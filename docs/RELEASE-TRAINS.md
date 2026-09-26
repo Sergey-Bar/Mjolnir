@@ -67,6 +67,29 @@ sandbox exists); full localization, assistive-tech, and mobile-output support;
 CI provider execution beyond GitHub Actions; performance/accessibility/visual/
 security-test deep intelligence. These stay catalogued and gated, never claimed.
 
+### Verb removals, and why the reason differs per verb
+
+`npm run verbs:budget` caps the command surface at **50** today, with a **44**
+target for 5.0. Six verbs are scheduled for removal, deprecated through 4.1
+with notices and a migration row. The removals are NOT justified uniformly, and
+the original plan said they were — a source audit on 2026-09-26 found the two
+groups behave differently:
+
+| Verb                | The reason it goes                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `business-case`     | **Fabricated values.** Multiplied a measured FP rate by a table of invented incident costs (fintech $50 000, healthcare $100 000, …) and printed the product as "Expected Savings". `--history` promised estimates from scan history and read none. `--projected` divided the total by six. Fixed in-tree 2026-09-26: a dollar figure now requires `--incident-cost`, so the number is the reader's.                                                                             |
+| `enterprise`        | **Fabricated artifacts.** Wrote a config declaring `"authentication": "sso-saml"` (no server, no session, no SAML in the product), an SSO guide telling readers to add a config key nothing reads, and three auditor-facing SOC 2 / HIPAA / PCI-DSS templates mapping controls to capabilities that do not exist. Fixed in-tree 2026-09-26: `sso` and `compliance` refuse and write nothing; `config` emits a capability manifest whose `notProvided` list records the absences. |
+| `maturity`          | **Redundant, not dishonest.** It did emit hardcoded dimension scores (75/70/65/30) and an invented `ruleCount = 79`; those were already removed. What remains is a presence report over named QA artifacts that explicitly says a signal is not a score.                                                                                                                                                                                                                         |
+| `quarantine`        | **Redundant, not dishonest.** It did invent an attempt count from severity and print "Quarantines updated." after changing nothing; those were already removed. It now refuses to propose without runtime evidence.                                                                                                                                                                                                                                                              |
+| `release-report`    | **Redundant, not dishonest.** It did hardcode five zeros as measured figures and ignore `partial`; those were already fixed. The GO/CONDITIONAL GO/NO-GO verdict is real.                                                                                                                                                                                                                                                                                                        |
+| `report-playwright` | **Redundant, not dishonest.** It did present static findings as Playwright `suites`/`tests` with a `passed` status, publishing "0 tests, all passed" on a clean scan; the execution block is now empty and says so.                                                                                                                                                                                                                                                              |
+
+The distinction matters for the deprecation notice. A user who depended on
+`business-case` was reading a number that was never real, and the notice must say
+so — "this verb's output was unsound, do not carry the figure into a decision" is
+a different message from "this verb is going away, use `trend`". Telling all six
+the same thing would be the same class of error in a different file.
+
 ## External validation is the long pole
 
 `docs/M26-EXTERNAL-VALIDATION.json` is `BLOCKED` with no owner, no consent, and

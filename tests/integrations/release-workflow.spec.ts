@@ -60,18 +60,30 @@ describe("release candidate workflow", () => {
 
   it("never auto-releases from main", () => {
     expect(workflow.on.push?.branches).toBeUndefined();
-    expect(workflow.on.push?.tags).toEqual(["v*-rc.*"]);
+    // Prereleases AND stable releases. The RC-only list was correct while
+    // `latest` on the registry was 3.0.0 and every 4.x attempt stopped at a
+    // candidate — a gate that can only produce prereleases is a gate that
+    // never lets the project ship.
+    expect(workflow.on.push?.tags).toEqual([
+      "v*-rc.*",
+      "v[0-9]+.[0-9]+.[0-9]+",
+    ]);
     expect(source).not.toContain("refs/heads/main");
     expect(source).not.toContain("git push origin main");
     expect(workflow.jobs.version).toBeUndefined();
   });
 
-  it("validates RC identity, tag, changelog, and protected-main ancestry", () => {
+  it("validates release identity, tag, changelog, and protected-main ancestry", () => {
     const validation = steps("verify").find(
       (step) => step.name === "Validate release identity",
     )?.run;
 
-    expect(validation).toContain("^[0-9]+\\.[0-9]+\\.[0-9]+-rc\\.[0-9]+$");
+    // Stable or prerelease, decided once from the version and carried
+    // downstream as `is_prerelease`. The old regex accepted only
+    // `-rc.N`, so a stable tag could never pass this step even if the
+    // workflow had been triggered by one.
+    expect(validation).toContain("^[0-9]+\\.[0-9]+\\.[0-9]+(-rc\\.[0-9]+)?$");
+    expect(validation).toContain("is_prerelease");
     expect(validation).toContain('git cat-file -t "refs/tags/$TAG"');
     expect(validation).toContain('"$REF_NAME" == "release/v$BASE_VERSION"');
     expect(validation).not.toContain('grep -F "##');

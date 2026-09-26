@@ -1,0 +1,166 @@
+{
+  "schemaVersion": 1,
+  "registryId": "mjolnir-issue-dispositions-001",
+  "policy": {
+    "note": "BITTERSWEET BW-002/BW-004. Every entry is a judgement a person made. `npm run m26:github:sync` refuses to emit a disposition that lacks a non-empty `reason` and a `verification` naming a command or a source path, and refuses any `verification` that is this script itself. An issue with no entry here stays OPEN as CARRY_FORWARD with pending_human_triage â€” it is never guessed and never silently closed.",
+    "closures_are_destructive": "Closing a GitHub issue is public and effectively irreversible from this repository. This file RECORDS the decision; it does not execute it. Applying the closures is a separate, explicitly approved step.",
+    "labels_are_not_numbers": "Keys are GitHub issue NUMBERS, not the MVP-###/CORE-###/M##-## labels. Those labels appear in the issue title. Guessing one from the other is how a closure gets aimed at the wrong issue.",
+    "classes": {
+      "CLOSED_SHIPPED": "The capability in the title exists in src/ AND is covered by a passing test.",
+      "FIX_IN_BITTERSWEET": "Maps to a numbered task in the BITTERSWEET release plan.",
+      "CARRY_FORWARD": "Real and wanted, not this release. Must name the blocking condition, not a milestone name.",
+      "CLOSED_WONT_FIX": "Contradicts a declared doctrine. Must cite the doctrine.",
+      "CLOSED_BLOCKED_EXTERNAL": "Real, but needs capacity or consent we do not have. Must cite a MATRIX-* cell with disposition BLOCKED."
+    }
+  },
+  "doctrines": {
+    "NO_TELEMETRY": {
+      "id": "DOCTRINE-NO-TELEMETRY",
+      "decision": "MjÃ¶lnir ships no telemetry. Local-first is the product.",
+      "rationale": "A verification trust engine that reports on your test suite must not become a data-collection surface for that suite. The product is zero-network by contract and tests/contract/privacy-network-isolation.spec.ts enforces it. Telemetry cannot be added without breaking that contract, so a request for it is a request for a different product.",
+      "recorded": "2026-09-26",
+      "closesGap": "GAP-M26-014"
+    },
+    "LOCAL_FIRST_NO_HOSTED_TIER": {
+      "id": "DOCTRINE-LOCAL-FIRST",
+      "decision": "There is no hosted control plane, air-gapped sync service, or hosted dashboard tier.",
+      "rationale": "A hosted tier is a different product with a different threat model, a different consent story, and a different operational burden. The MATRIX-* cells stay BLOCKED, which is the honest representation and is cheaper than an issue backlog pretending they are planned.",
+      "recorded": "2026-09-26",
+      "closesGap": "GAP-M26-013, GAP-M26-015, GAP-M26-016"
+    }
+  },
+  "dispositions": {
+    "223": {
+      "disposition": "CLOSED_WONT_FIX",
+      "reason": "MVP-015 asks for a telemetry policy and event contract. DOCTRINE-NO-TELEMETRY settles it: the contract would describe an event stream the product will not have, and writing it invites someone to build the sender next.",
+      "contradicts": "DOCTRINE-NO-TELEMETRY",
+      "verification": "tests/contract/privacy-network-isolation.spec.ts"
+    },
+    "224": {
+      "disposition": "CLOSED_WONT_FIX",
+      "reason": "MVP-016 telemetry config plumbing. Refused by DOCTRINE-NO-TELEMETRY; config for a sender that must not exist is a config surface with no consumer.",
+      "contradicts": "DOCTRINE-NO-TELEMETRY",
+      "verification": "tests/contract/privacy-network-isolation.spec.ts"
+    },
+    "225": {
+      "disposition": "CLOSED_WONT_FIX",
+      "reason": "MVP-017 telemetry event builder with a privacy scrubber. A scrubber for an event stream that must not exist is the most dangerous kind of almost-feature: it makes the sink look built.",
+      "contradicts": "DOCTRINE-NO-TELEMETRY",
+      "verification": "tests/contract/privacy-network-isolation.spec.ts"
+    },
+    "226": {
+      "disposition": "CLOSED_WONT_FIX",
+      "reason": "MVP-018 `mjolnir telemetry inspect`. Refused by DOCTRINE-NO-TELEMETRY, and separately it would be a new verb, which the 5.x verb law forbids without a removal.",
+      "contradicts": "DOCTRINE-NO-TELEMETRY",
+      "verification": "src/engine/cli-command-names.ts"
+    },
+    "227": {
+      "disposition": "CLOSED_WONT_FIX",
+      "reason": "MVP-019 telemetry send with a local queue and fail-open behaviour. A fail-open network sender is the exact opposite of this product\u0027s contract.",
+      "contradicts": "DOCTRINE-NO-TELEMETRY",
+      "verification": "tests/contract/privacy-network-isolation.spec.ts"
+    },
+    "228": {
+      "disposition": "CLOSED_WONT_FIX",
+      "reason": "MVP-020 telemetry first-run notice. A notice about a thing that never happens is noise in the first-run path, which is the one place the product has a user\u0027s full attention.",
+      "contradicts": "DOCTRINE-NO-TELEMETRY",
+      "verification": "tests/contract/privacy-network-isolation.spec.ts"
+    },
+    "274": {
+      "disposition": "CLOSED_WONT_FIX",
+      "reason": "CORE-036 telemetry product decision gate. The decision this gate was waiting for is now recorded in this file\u0027s doctrines block, so the gate has nothing left to wait for â€” this is the row that closes GAP-M26-014.",
+      "contradicts": "DOCTRINE-NO-TELEMETRY",
+      "verification": "docs/M26-GAP-LEDGER.jsonl"
+    },
+    "275": {
+      "disposition": "CLOSED_WONT_FIX",
+      "reason": "CORE-037 telemetry privacy threat model. There is no telemetry to threaten; the threat model that matters here is enterprise/threat-model.json, which is validated in CI.",
+      "contradicts": "DOCTRINE-NO-TELEMETRY",
+      "verification": "enterprise/threat-model.json"
+    },
+    "364": {
+      "disposition": "CARRY_FORWARD",
+      "reason": "CORE-126 asks for onboarding-friction telemetry ALTERNATIVES. Declining telemetry is not declining the underlying problem: measuring how hard onboarding is has a local answer (the existing scan artifacts) and needs a design decision about which local signals are worth reading, not a network sink.",
+      "deferred_because": "the alternative measurement surface has not been designed; shipping a metric nobody has agreed to read is the same failure as shipping the telemetry",
+      "revisit_trigger": "a local onboarding-friction measurement is specified and someone commits to reading it",
+      "verification": "src/commands/trust-report.ts"
+    },
+    "150": {
+      "disposition": "CLOSED_SHIPPED",
+      "reason": "CORE-150 trust semantic diff. NOTE: the release plan cited `src/engine/change-intelligence.ts`, which no longer exists â€” it was deleted as an unshipped module. The `diff` capability actually ships as `diffAgainstBaseline` in the baseline command, which correlates findings by fingerprint (ruleId + file + message) rather than by line number.",
+      "shipped_at": "4.0.0",
+      "evidence": "src/commands/baseline.ts",
+      "verification": "tests/cli/agent-handoff-m1.spec.ts"
+    },
+    "112": {
+      "disposition": "CLOSED_SHIPPED",
+      "reason": "CORE-112 `mjolnir trust diff`. The verb is registered in the one command manifest and every registered verb is required to have a help page by a test.",
+      "shipped_at": "4.0.0",
+      "evidence": "src/engine/cli-command-names.ts",
+      "verification": "tests/cli/help.spec.ts"
+    },
+    "180": {
+      "disposition": "CLOSED_SHIPPED",
+      "reason": "CORE-180 property-based and fuzz strategy. Ships as two dedicated Vitest configs wired to fast-check and run by ci-local.",
+      "shipped_at": "4.0.0",
+      "evidence": "vitest.property.config.ts",
+      "verification": "npm run test:property"
+    },
+    "141": {
+      "disposition": "CLOSED_SHIPPED",
+      "reason": "CORE-141 per-rule measured precision. Ships as a generated table consumed by the terminal\u0027s evidence descriptor, so a measured false-positive rate reaches the reader instead of living in a doc.",
+      "shipped_at": "4.0.0",
+      "evidence": "src/rules/measured-fp.generated.ts",
+      "verification": "npm run fp-audit:generate"
+    },
+    "34": {
+      "disposition": "CLOSED_SHIPPED",
+      "reason": "CORE-034 memory profiling budget. Ships as the stress suite (soak + concurrent harnesses).",
+      "shipped_at": "4.0.0",
+      "evidence": "tests/stress/soak.mjs",
+      "verification": "npm run test:stress"
+    },
+    "45": {
+      "disposition": "CLOSED_SHIPPED",
+      "reason": "CORE-045 path traversal / symlink containment. Ships as the atomic writer every artifact write goes through.",
+      "shipped_at": "4.0.0",
+      "evidence": "src/lib/fs-atomic.ts",
+      "verification": "tests/cli/staged-blocking.spec.ts"
+    },
+    "553": {
+      "disposition": "FIX_IN_BITTERSWEET",
+      "reason": "M19-04 cancellable worker scheduler and resource budgets. The issue backlog and the engine work agree: the bounded pool and the honest `--max-duration` expiry contract are the same change, and neither is worth shipping alone.",
+      "task": "BW-020, BW-023",
+      "verification": "src/engine/scan-pipeline.ts"
+    },
+    "292": {
+      "disposition": "CARRY_FORWARD",
+      "reason": "CORE-054 prove changed-scope impact analysis. Impact analysis is exactly the surface a wrong file selection silently corrupts: it looks authoritative and is wrong in a direction nobody can see.",
+      "deferred_because": "no held-out differential evidence exists for change selection, so any impact number would be uncalibrated â€” shipping it would replace one false-green with another",
+      "revisit_trigger": "a held-out corpus run reports selection precision and recall against a known-changed-file ground truth",
+      "verification": "docs/SCORING.md"
+    },
+    "595": {
+      "disposition": "CARRY_FORWARD",
+      "reason": "M22-09 prompt-injection, tool-poisoning and exfiltration red-team suite. The suite can be written today and would describe a threat model the runtime does not implement, because plugins execute with full Node privileges by design.",
+      "deferred_because": "no plugin sandbox exists, so a red-team pass would certify a boundary that is not enforced anywhere",
+      "revisit_trigger": "a plugin sandbox ships and a rule can be loaded into it",
+      "verification": "enterprise/threat-model.json"
+    },
+    "617": {
+      "disposition": "CARRY_FORWARD",
+      "reason": "M24-02 complete enterprise threat model and data-flow review â€” the only `release-blocker`-labelled open issue. Its own matrix cell already records the capability as BLOCKED, so completing the model cannot be done from this tree and does not block 5.0.",
+      "deferred_because": "no consented air-gapped pilot and no least-privilege service account exist to model against",
+      "revisit_trigger": "an offline enterprise pilot and recovery drill are run",
+      "matrix_cell": "MATRIX-PERMISSION-SELF-HOSTED-AIR-GAPPED",
+      "verification": "docs/M26-SUPPORT-MATRIX.json"
+    },
+    "232": {
+      "disposition": "CARRY_FORWARD",
+      "reason": "MVP-024 \u0027management summary\u0027 artifact mode. Already delivered by the exec-report and trust-report surfaces. A dedicated verb would breach the 5.x verb law (one new verb requires one removal) for an output that already exists.",
+      "deferred_because": "the capability is delivered by existing verbs; a dedicated verb is a naming preference, not a gap",
+      "revisit_trigger": "the exec-report and trust-report surfaces measurably stop serving an executive audience",
+      "verification": "src/commands/exec-report.ts"
+    }
+  }
+}

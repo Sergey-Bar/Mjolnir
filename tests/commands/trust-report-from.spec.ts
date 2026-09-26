@@ -20,6 +20,25 @@ import { join } from "node:path";
 import { runTrustReportCommand } from "../../src/commands/trust-report.js";
 import type { ScanResult } from "../../src/types.js";
 
+/**
+ * A machine-anchored identity (plan V5-012).
+ *
+ * Every rendering test below exercises a VERIFIED report. Without this the
+ * fixtures are legacy artifacts with no run identity, and since V5-012 the
+ * command correctly reports them as OPEN and exits 2 — which is the point, and
+ * is asserted separately in the "legacy report" cases rather than papered over
+ * by deleting those assertions.
+ */
+const RUN_IDENTITY = {
+  scanId: "s".repeat(64),
+  inputFingerprint: "i".repeat(64),
+  rulesDigest: "r".repeat(64),
+  configFingerprint: "c".repeat(64),
+  engineVersion: "4.0.0-rc.1",
+  commit: "a".repeat(40),
+  boundLinks: ["input", "rules", "config", "engine", "commit"] as const,
+};
+
 const result = (overrides: Partial<ScanResult> = {}): ScanResult => ({
   schemaVersion: 1,
   partial: false,
@@ -43,6 +62,15 @@ const result = (overrides: Partial<ScanResult> = {}): ScanResult => ({
     inconclusiveRate: 0,
     provisionalRuleIds: [],
     ceilingReasons: [],
+  },
+  runIdentity: {
+    scanId: RUN_IDENTITY.scanId,
+    inputFingerprint: RUN_IDENTITY.inputFingerprint,
+    rulesDigest: RUN_IDENTITY.rulesDigest,
+    configFingerprint: RUN_IDENTITY.configFingerprint,
+    engineVersion: RUN_IDENTITY.engineVersion,
+    commit: RUN_IDENTITY.commit,
+    boundLinks: ["input", "rules", "config", "engine", "commit"],
   },
   ...overrides,
 });
@@ -310,7 +338,7 @@ describe("trust-report --from (WI-9 consumption path)", () => {
       );
       resetCaptured();
       await runTrustReportCommand(["--from", pD, "--stdout"], io);
-      expect(captured.out.join("\n")).toContain("run corroborated");
+      expect(captured.out.join("\n")).toContain("runtime: defect corroborated");
     });
 
     it("fallback-summary branches (pre-WI-3 producer shapes)", async () => {
@@ -366,7 +394,7 @@ describe("trust-report --from (WI-9 consumption path)", () => {
       await runTrustReportCommand(["--from", pG, "--stdout"], io);
       expect(captured.out.join("\n")).toContain("mjolnir ci install");
 
-      // corroborated finding at "test" level (not defect) → "run executed"
+      // corroborated finding at "test" level (not defect) → "runtime: test executed"
       const pH = join(dir, "test-corroborated.json");
       writeFileSync(
         pH,
@@ -407,12 +435,13 @@ describe("trust-report --from (WI-9 consumption path)", () => {
       );
       resetCaptured();
       await runTrustReportCommand(["--from", pH, "--stdout"], io);
-      expect(captured.out.join("\n")).toContain("run executed");
+      expect(captured.out.join("\n")).toContain("runtime: test executed");
     });
 
-    it("remaining evidence-twin branches (E1 pattern, findings message escaping, risks table arms)", async () => {
-      // E1 corroboration-undefined finding → "pattern" (branch 19: the
-      // second arm of (evidenceLevel ?? "E2") === "E2").
+    it("remaining evidence-twin branches (E1 heuristic, findings message escaping, risks table arms)", async () => {
+      // E1 corroboration-undefined finding → "E1 · heuristic". The second
+      // arm of the old `(evidenceLevel ?? "E2") === "E2"` chain said
+      // "pattern"; the canonical descriptor names the level too.
       const pI = join(dir, "e1-finding.json");
       writeFileSync(
         pI,
@@ -441,7 +470,7 @@ describe("trust-report --from (WI-9 consumption path)", () => {
       resetCaptured();
       await runTrustReportCommand(["--from", pI, "--stdout"], io);
       const out1 = captured.out.join("\n");
-      expect(out1).toContain("pattern");
+      expect(out1).toContain("E1 · heuristic");
       expect(out1).toContain("soft risk \\| with pipe");
 
       // A finding WITHOUT evidenceLevel + runtimeCorroboration ===
@@ -541,9 +570,11 @@ describe("trust-report --from (WI-9 consumption path)", () => {
       bare.score = null;
       delete bare.testFileCount;
       delete bare.testDeclarationCount;
-      // evidenceLevel omitted: the JSON twin's (evidenceLevel ?? "E2")
-      // fallback arm resolves to E2 (branch 195/204), and the MD's
-      // evidence cell reads "deterministic".
+      // evidenceLevel omitted: BW-101 removed the `(evidenceLevel ?? "E2")`
+      // fallback, which rendered a heuristic-risk finding as
+      // "deterministic" — the strongest claim the product can make,
+      // asserted for evidence nobody produced. The level is now derived
+      // from the finding's own type and confidence.
       bare.findings = [
         Object.fromEntries(
           Object.entries({
@@ -569,15 +600,16 @@ describe("trust-report --from (WI-9 consumption path)", () => {
       expect(code).toBe(0);
       const out = captured.out.join("\n");
       expect(out).toContain("| Score | unknown |");
-      expect(out).toContain("| Tests analyzed | 0 in 0 files |");
-      // evidenceLevel omitted → the JSON twin's ?? fallback arm and the
-      // MD's "deterministic" evidence cell (branch 195/204).
-      expect(out).toContain("deterministic");
+      expect(out).toContain("| Tests analyzed | unknown — not measured |");
+      // evidenceLevel omitted on a heuristic-risk finding → the derived
+      // level is E1, never the E2 the old `?? "E2"` fallback invented.
+      expect(out).toContain("E1 · heuristic");
+      expect(out).not.toContain("E2 · deterministic");
     });
 
     it("MD top-risks table: run-executed arm + findings-with-risks explain arm", async () => {
       // A finding corroborated at "test" level (not "defect") → the MD
-      // evidence cell takes the "run executed" arm (branch 177/178),
+      // evidence cell takes the "runtime: test executed" arm,
       // and the --from nextAction takes the findings arm (195-204).
       const pN = join(dir, "test-corroborated2.json");
       writeFileSync(
@@ -622,7 +654,7 @@ describe("trust-report --from (WI-9 consumption path)", () => {
       const code = await runTrustReportCommand(["--from", pN, "--stdout"], io);
       expect(code).toBe(0);
       const out = captured.out.join("\n");
-      expect(out).toContain("run executed");
+      expect(out).toContain("runtime: test executed");
       expect(out).toContain("mjolnir explain QA-PW-004");
     });
 

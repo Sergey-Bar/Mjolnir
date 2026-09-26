@@ -99,10 +99,11 @@ function populatedSnapshot(): Record<string, unknown> {
 
 function gap(
   id: string,
-  status: "open" | "fixed" = "open",
+  status: "open" | "fixed" | "ALREADY_FIXED" | "STALE_UNVERIFIABLE" = "open",
   supersedes?: string,
   supersededBy?: string,
 ): Record<string, unknown> {
+  const cleared = status === "fixed" || status === "ALREADY_FIXED";
   return {
     schemaVersion: 1,
     gap_id: id,
@@ -136,6 +137,20 @@ function gap(
             artifacts: ["fixture-output.txt"],
           }
         : null,
+    // BW-001: a cleared row must carry a revalidation that was actually
+    // run, at a named commit. `GAP-M26-002` was written `fixed` citing the
+    // script that produced the artifacts it claimed to prove, which is the
+    // hole this block closes.
+    ...(cleared
+      ? {
+          revalidation: {
+            command: "npx vitest run tests/ledger/m26-validators.spec.ts",
+            exit_code: 0,
+            observed_at_base_sha: "a".repeat(40),
+            observed: "the fixture validator accepts the record",
+          },
+        }
+      : {}),
     ...(supersedes === undefined ? {} : { supersedes }),
     ...(supersededBy === undefined ? {} : { superseded_by: supersededBy }),
   };
@@ -329,6 +344,124 @@ describe("gap ledger validators", () => {
     const value = gap("GAP-M26-001");
     value.owner = "UNOWNED";
     expect(validateGapLedgerRecord(value).status).toBe("FAIL");
+  });
+
+  it("refuses to clear a gap with no revalidation (BW-001)", () => {
+    // The specific hole GAP-M26-002 fell through: a row typed `fixed` with
+    // a PASS recorded, and no way to tell which tree that PASS described.
+    for (const status of ["fixed", "ALREADY_FIXED"] as const) {
+      const value = gap("GAP-M26-001", status);
+      delete value.revalidation;
+      const result = validateGapLedgerRecord(value);
+      expect(result.status, status).toBe("FAIL");
+      expect(
+        result.diagnostics.map((d) => d.code),
+        status,
+      ).toContain("FIX_WITHOUT_REVALIDATION");
+    }
+  });
+
+  it("refuses a revalidation that is missing its commit", () => {
+    // A PASS with no base SHA is the same hole one field narrower.
+    const value = gap("GAP-M26-001", "fixed");
+    delete (value.revalidation as Record<string, unknown>).observed_at_base_sha;
+    expect(
+      validateGapLedgerRecord(value).diagnostics.map((d) => d.code),
+    ).toContain("FIX_WITHOUT_REVALIDATION");
+  });
+
+  it("treats STALE_UNVERIFIABLE as NOT cleared, so it cannot unblock a release", () => {
+    // An unverifiable claim must never be able to satisfy a gate. This is
+    // the reason the class exists separately from `open`.
+    const value = gap("GAP-M26-RELEASE", "open");
+    value.status = "STALE_UNVERIFIABLE";
+    value.severity = "release-blocker";
+    expect(validateGapLedgerRecord(value).status).toBe("PASS");
+    expect(validateGapLedger([value]).status).toBe("BLOCKED");
+  });
+
+  it("clears a release blocker whose revalidation passed (ALREADY_FIXED)", () => {
+    const value = gap("GAP-M26-RELEASE", "ALREADY_FIXED");
+    value.severity = "release-blocker";
+    expect(validateGapLedgerRecord(value).status).toBe("PASS");
+    expect(validateGapLedger([value]).status).toBe("PASS");
+  });
+
+  it("still blocks a release blocker whose revalidation FAILED", () => {
+    const value = gap("GAP-M26-RELEASE", "ALREADY_FIXED");
+    value.severity = "release-blocker";
+    (value.revalidation as Record<string, unknown>).exit_code = 1;
+    // The row claims it is fixed and records that the command failed. That
+    // contradiction is a hard error, not a warning: the record asserts
+    // something its own evidence refutes, so it fails validation outright
+    // rather than quietly blocking.
+    const result = validateGapLedgerRecord(value);
+    expect(result.diagnostics.map((d) => d.code)).toContain("UNRUN_CLOSURE");
+    expect(result.status).toBe("FAIL");
+    expect(validateGapLedger([value]).status).toBe("FAIL");
+  });
+
+  describe("a failed revalidation must clear nothing, by any route", () => {
+    // The UNRUN_CLOSURE check used to live inside
+    //   `if (status === "ALREADY_FIXED" && closure_evidence === null)`
+    // so it was reachable through exactly ONE combination of the four the
+    // schema allows. The other three accepted a row that said "fixed" while
+    // its own recorded revalidation returned non-zero — which is the whole
+    // failure BW-001 exists to close, reappearing one layer down.
+    //
+    // The single passing case above is why it survived: the test factory
+    // only sets `closure_evidence` for `fixed`, so the covered case and the
+    // uncovered ones looked identical from the test.
+
+    const closure = {
+      candidate: "candidate-1",
+      observed_at: "2026-09-25T00:00:00.000Z",
+      command: "local fixture",
+      result: "PASS",
+      artifacts: ["fixture-output.txt"],
+    };
+
+    it("status `fixed`, revalidation exit_code 1, no closure_evidence", () => {
+      const value = gap("GAP-M26-001", "fixed");
+      (value.revalidation as Record<string, unknown>).exit_code = 1;
+      const result = validateGapLedgerRecord(value);
+      expect(result.diagnostics.map((d) => d.code)).toContain("UNRUN_CLOSURE");
+      expect(result.status).toBe("FAIL");
+    });
+
+    it("status `fixed` WITH a closure_evidence saying PASS, exit_code 1", () => {
+      const value = gap("GAP-M26-001", "fixed");
+      value.closure_evidence = closure;
+      (value.revalidation as Record<string, unknown>).exit_code = 1;
+      const result = validateGapLedgerRecord(value);
+      expect(result.diagnostics.map((d) => d.code)).toContain("UNRUN_CLOSURE");
+      expect(result.status).toBe("FAIL");
+    });
+
+    it("status `ALREADY_FIXED` WITH a closure_evidence, exit_code 1", () => {
+      const value = gap("GAP-M26-001", "ALREADY_FIXED");
+      value.closure_evidence = closure;
+      (value.revalidation as Record<string, unknown>).exit_code = 1;
+      const result = validateGapLedgerRecord(value);
+      expect(result.diagnostics.map((d) => d.code)).toContain("UNRUN_CLOSURE");
+      expect(result.status).toBe("FAIL");
+    });
+
+    it("CONTROL: exit_code 0 still clears, so the check is not vacuous", () => {
+      for (const status of ["fixed", "ALREADY_FIXED"] as const) {
+        const withClosure = gap("GAP-M26-001", status);
+        withClosure.closure_evidence = closure;
+        expect(
+          validateGapLedgerRecord(withClosure).status,
+          `${status} + closure_evidence + exit 0`,
+        ).toBe("PASS");
+        const withoutClosure = gap("GAP-M26-001", status);
+        expect(
+          validateGapLedgerRecord(withoutClosure).status,
+          `${status} + exit 0`,
+        ).toBe("PASS");
+      }
+    });
   });
 
   it("requires reciprocal supersession links", () => {

@@ -12,8 +12,8 @@ import {
   wrapText,
   shouldUseAscii,
   measure,
-  meter,
   palette,
+  scoreGauge,
 } from "../../src/reporter/theme.js";
 import type { Finding, ScanResult } from "../../src/types.js";
 
@@ -544,16 +544,19 @@ describe("box() with maxWidth", () => {
   });
 });
 
-describe("meter()", () => {
-  it("is an alias for scoreGauge with a smaller default width", () => {
-    const p = palette(false);
-    const m = meter(80, p);
-    expect(measure(m)).toBe(20);
+describe("scoreGauge is the only score bar (BW-105)", () => {
+  it("colours the bar by band, so a bar can never carry no band signal", () => {
+    // handoff.ts used to render a private, COLOURLESS copy of this bar —
+    // a 20-block gauge that looked identical at 30 and at 100. Colour is
+    // the band signal; the deleted `meter` alias cannot be reintroduced.
+    const p = palette(true);
+    expect(scoreGauge(30, p, 20)).not.toBe(scoreGauge(90, p, 20));
+    expect(measure(scoreGauge(80, p, 20))).toBe(20);
   });
 
   it("respects an explicit width and ascii flag", () => {
     const p = palette(false);
-    const m = meter(80, p, 10, true);
+    const m = scoreGauge(80, p, 10, true);
     expect(measure(m)).toBe(10);
     expect(m).not.toContain("█");
   });
