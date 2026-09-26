@@ -28,13 +28,13 @@
   "generatedAt": "2026-09-26",
   "identity": {
     "state": "WORKING_CANDIDATE",
-    "baseSha": "eff49205662d6790220f8f0dc6382418300257f5",
+    "baseSha": "3e09147e1756b1008091d1f3090931451a20708b",
     "candidateSha": null,
     "version": "4.0.0-rc.1",
-    "packageSha256": "86f25406fdae2933c0d4d0c6103c0b058a000d2e0eaf3294ee889e52c4a9a0ca",
+    "packageSha256": "395cab535b162cd8cc164387dc3bd015b80635f46d325d012601ed01a126a0ec",
     "lockfileSha256": "ddc729c2b004b6c6d6b13d2fff9c1e84c5fabec2da9978a66ab421e715bab644",
-    "workingTreeSha256": "547374e6a0b91cb730c36858e69bb1592742eb2e73d1f55fd37bda411367990d",
-    "changedPathCount": 9,
+    "workingTreeSha256": "af9f703cd396177668db2ef13e8eafc1c7f95a2329db442d01fe4d9854591279",
+    "changedPathCount": 10,
     "supportEnvelope": "self-hosted; hosted services require explicit consent and separate proof",
     "worktreeInventory": {
       "changedPaths": [
@@ -46,6 +46,7 @@
       ],
       "untrackedPaths": [
         "kilo.json",
+        "scripts/release-verify.ts",
         "scripts/sentry-release.mjs",
         "src/integrations/sentry.ts",
         "tests/integrations/sentry-opt-in.spec.ts"
@@ -56,6 +57,7 @@
       "kilo.json",
       "package-lock.json",
       "package.json",
+      "scripts/release-verify.ts",
       "scripts/sentry-release.mjs",
       "src/cli.ts",
       "src/integrations/sentry.ts",

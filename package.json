@@ -16,12 +16,14 @@
   ],
   "files": [
     "dist",
+    "!dist/**/*.map",
     "README.md",
     "LICENSE",
     "CHANGELOG.md"
   ],
   "scripts": {
-    "build": "tsdown src/cli.ts --format esm --dts --out-dir dist && tsdown src/mcp/stdio.ts --format esm --out-dir dist/mcp && npm run build --workspaces --if-present",
+    "build": "tsdown src/cli.ts --format esm --dts --sourcemap --out-dir dist && tsdown src/mcp/stdio.ts --format esm --sourcemap --out-dir dist/mcp && npm run build --workspaces --if-present",
+    "sentry:release": "node scripts/sentry-release.mjs",
     "dev": "tsx src/cli.ts",
     "mcp": "node dist/mcp/stdio.mjs",
     "test": "vitest run",
@@ -103,7 +105,7 @@
     "version:surface:check": "tsx scripts/check-version-surface.ts",
     "version:surface:sync": "tsx scripts/sync-version-surface.ts",
     "version:check": "npm run version:surface:check && npm run reporter:version-check && npm run changelog:check",
-    "release:verify": "npm run m26:audit && npm run version:check && npm run claims:check && npm run candidate:manifest:check && npm run candidate:decision:release && npm run candidate:readiness && npm run coverage:exemptions && npm run docs:roadmap:check && npm run enterprise:threat-model",
+    "release:verify": "tsx scripts/release-verify.ts",
     "self-scan": "node dist/cli.mjs .",
     "ci-local:parity": "node scripts/check-ci-local-parity.mjs",
     "test:property": "node scripts/check-property-runs.mjs && vitest run --config vitest.property.config.ts",
@@ -150,11 +152,20 @@
     "web-tree-sitter": "0.25.6",
     "yaml": "^2.5.0"
   },
+  "peerDependencies": {
+    "@sentry/node": "^11.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@sentry/node": {
+      "optional": true
+    }
+  },
   "devDependencies": {
     "@commitlint/cli": "^19.8.1",
     "@commitlint/config-conventional": "^19.8.1",
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.50.0",
+    "@sentry/node": "^11.0.0",
     "@types/node": "^26.4.0",
     "@vitest/coverage-istanbul": "^5.0.1",
     "axe-core": "^4.13.0",
