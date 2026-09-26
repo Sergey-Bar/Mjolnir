@@ -28,45 +28,19 @@
   "generatedAt": "2026-09-26",
   "identity": {
     "state": "WORKING_CANDIDATE",
-    "baseSha": "1629c6183d8b2f2cc182fc0963318f0cd7ac400c",
+    "baseSha": "a8dba7f634de76ae6f93c5a3a17c2f7b029fafb7",
     "candidateSha": null,
     "version": "4.0.0-rc.1",
     "packageSha256": "63fdbd1db06da2ae59467b13c78ad9828b6201e19c2f55a41d222dabda08f006",
     "lockfileSha256": "aeaff5bca556b58283a5c3c074adda7e429f28b2a76cd51b0efeaeaba9b5021c",
     "workingTreeSha256": "6725896b65f8a8deae40baf28a26a6de1e51035408d95d81515b7e7e607e1e67",
-    "changedPathCount": 12,
+    "changedPathCount": 0,
     "supportEnvelope": "self-hosted; hosted services require explicit consent and separate proof",
     "worktreeInventory": {
-      "changedPaths": [
-        "docs/BLAST-RADIUS-AUDIT.md",
-        "docs/CI-MATRIX.json",
-        "docs/DOMAIN-COVERAGE.json",
-        "docs/ECOSYSTEM-CENSUS.json",
-        "docs/ECOSYSTEM-DISPOSITIONS.json",
-        "docs/FRAMEWORK-MATRIX.json",
-        "docs/LANGUAGE-MATRIX.json",
-        "docs/SURFACE-MATURITY.json",
-        "docs/capability-registry.json",
-        "src/v6/ecosystem-census.ts",
-        "src/v6/test-doubles.ts",
-        "tests/v6/test-doubles.spec.ts"
-      ],
+      "changedPaths": [],
       "untrackedPaths": []
     },
-    "dirtyFiles": [
-      "docs/BLAST-RADIUS-AUDIT.md",
-      "docs/CI-MATRIX.json",
-      "docs/DOMAIN-COVERAGE.json",
-      "docs/ECOSYSTEM-CENSUS.json",
-      "docs/ECOSYSTEM-DISPOSITIONS.json",
-      "docs/FRAMEWORK-MATRIX.json",
-      "docs/LANGUAGE-MATRIX.json",
-      "docs/SURFACE-MATURITY.json",
-      "docs/capability-registry.json",
-      "src/v6/ecosystem-census.ts",
-      "src/v6/test-doubles.ts",
-      "tests/v6/test-doubles.spec.ts"
-    ]
+    "dirtyFiles": []
   },
   "claimRegistry": {
     "path": "docs/claim-registry.json",
