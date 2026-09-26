@@ -49,6 +49,7 @@
     "docs:registry": "tsx scripts/v6/generate-capability.ts",
     "registry:check": "tsx scripts/v6/check-capability-registry.ts",
     "rules:quality:check": "tsx scripts/v6/check-rule-quality.ts",
+    "qa-ir:parity": "tsx scripts/v6/check-qa-ir-parity.ts",
     "v6:archive:check": "tsx scripts/v6/reconcile-archive.ts",
     "issue-disposition:check": "tsx scripts/v6/check-issue-disposition.ts",
     "candidate:manifest:check": "node scripts/check-candidate-manifest.mjs",
