@@ -10,7 +10,9 @@ import {
 } from "../../src/v6/test-doubles.js";
 import { normalize, type NeutralTest } from "../../src/v6/qa-ir.js";
 import {
+  IGNORED_TOOLING,
   NOT_QA_TOOLING,
+  classifyIgnoredTooling,
   classifyName,
   classifyNotQaTooling,
 } from "../../src/v6/ecosystem-census.js";
@@ -187,8 +189,12 @@ describe("Law 8 in the other direction — a gap list that is not a gap", () => 
   it("stops counting error trackers and CI API clients as capability gaps", () => {
     // The first corpus run reported 44 unrecognized tools, 15 of which
     // were Sentry, OpenTelemetry, Octokit and the Actions SDK. None of
-    // them says anything about test quality, and all of them were
+    // them says something about test quality, and all of them were
     // occupying a gap slot and drowning the four real findings.
+    //
+    // This asserts the OUTCOME rather than the entry, which is the
+    // property that matters: a name becomes a gap only when it matches a
+    // QA category pattern and is not exempted.
     for (const name of [
       "@sentry/node",
       "@sentry/core",
@@ -196,23 +202,33 @@ describe("Law 8 in the other direction — a gap list that is not a gap", () => 
       "@elastic/elasticsearch",
       "@octokit/rest",
       "@actions/core",
-      "react",
     ]) {
-      expect(classifyNotQaTooling(name), name).not.toBeNull();
+      const isQaTooling = classifyName(name) !== null;
+      const isExempt =
+        classifyNotQaTooling(name) !== null ||
+        classifyIgnoredTooling(name) !== null;
+      expect(isQaTooling && !isExempt, name).toBe(false);
+    }
+  });
+
+  it("does not report application dependencies at all, not even as out-of-scope", () => {
+    // A report that opens with `react` buries the four real findings under
+    // the first forty dependencies. Two tiers, not one: the plausible-
+    // but-not-QA tier is answered, the obvious tier is not mentioned.
+    for (const name of ["react", "react-dom", "vue", "webpack", "vite"]) {
+      expect(classifyIgnoredTooling(name), name).not.toBeNull();
+      expect(classifyNotQaTooling(name), name).toBeNull();
     }
   });
 
   it("reaches the same outcome for build tooling, without naming it", () => {
     // `eslint` and `typescript` are this repository's own build tooling.
-    // Naming them in the exemption list would be a judgement about THIS
+    // Naming them in an exemption list would be a judgement about THIS
     // stack, and the next repository would need a new entry. They still
-    // cannot become gaps, because they match no QA name pattern either --
-    // so the outcome is identical and the list stays portable.
+    // cannot become gaps, because they match no QA name pattern either.
     for (const name of ["typescript", "eslint", "prettier"]) {
       const isQaTooling = classifyName(name) !== null;
-      const isExempt = classifyNotQaTooling(name) !== null;
       expect(isQaTooling, name).toBe(false);
-      expect(isQaTooling && !isExempt, name).toBe(false);
     }
   });
 
@@ -234,7 +250,7 @@ describe("Law 8 in the other direction — a gap list that is not a gap", () => 
   });
 
   it("states a reason per exemption, so the judgement can be re-made", () => {
-    for (const entry of NOT_QA_TOOLING) {
+    for (const entry of [...NOT_QA_TOOLING, ...IGNORED_TOOLING]) {
       expect(entry.id).toBeTruthy();
       expect(entry.rationale.length, entry.id).toBeGreaterThan(60);
     }

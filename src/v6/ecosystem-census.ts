@@ -1030,6 +1030,26 @@ export const NOT_QA_TOOLING: readonly NotQaToolingPattern[] = [
     rationale:
       "GitHub API clients and Actions SDK packages appear in CI workflow code, not in test code. A QA engine analysing a repository should see them and say nothing about them.",
   },
+];
+
+/**
+ * Two tiers, and the split is about **whether a user would wonder**.
+ *
+ * `NOT_QA_TOOLING` is the "plausible but not QA" tier: error tracking,
+ * tracing, GitHub API clients. A user might reasonably ask "isn't
+ * Sentry part of my quality story?", so the report answers — it says no,
+ * and why. These stay observable and reportable.
+ *
+ * `IGNORED_TOOLING` is the "obviously not QA" tier: `react`, `vue`,
+ * `webpack`. Nobody asks whether their UI framework is test tooling, and
+ * listing it would bury the four real findings under the first forty
+ * dependencies. These are not reported at all.
+ *
+ * An earlier draft had one tier, and the report opened with `react`.
+ * That is the Law 8 failure in its other direction: a list nobody can
+ * read protects nothing.
+ */
+export const IGNORED_TOOLING: readonly NotQaToolingPattern[] = [
   {
     id: "general-runtime",
     // `react-dom` is covered by the `react` prefix. `eslint`, `typescript`
@@ -1041,11 +1061,21 @@ export const NOT_QA_TOOLING: readonly NotQaToolingPattern[] = [
     pattern:
       /^(react|vue|angular|@angular\/core|svelte|next|nuxt|express|fastify|webpack|vite|rollup)/i,
     rationale:
-      "An application dependency. It appears in the same package.json as the tooling, and a gap report that lists it is a gap report nobody reads.",
+      "An application or build dependency. Nobody asks whether their UI framework is test tooling, and listing it buries the real findings under the first forty dependencies.",
   },
 ];
 
-/** The pattern that classifies a name as not-QA-tooling, or `null`. */
+/** The pattern that classifies a name as not-reported-at-all, or `null`. */
+export function classifyIgnoredTooling(
+  name: string,
+): NotQaToolingPattern | null {
+  for (const entry of IGNORED_TOOLING) {
+    if (entry.pattern.test(name)) return entry;
+  }
+  return null;
+}
+
+/** The pattern that classifies a name as out-of-scope, or `null`. */
 export function classifyNotQaTooling(name: string): NotQaToolingPattern | null {
   for (const entry of NOT_QA_TOOLING) {
     if (entry.pattern.test(name)) return entry;
@@ -1418,6 +1448,37 @@ export function classifyObservations(
       recognized.push({ ...observation, censusId: hit });
       continue;
     }
+    // Precedence matters, and it is why this check comes BEFORE the name
+    // patterns.
+    //
+    // `np.observability` matches `@sentry/*` and `@opentelemetry/*`, and
+    // `np.ci` matches `@actions/*` and `@octokit/*`. With the patterns
+    // first, all fifteen of those became `UNRECOGNIZED` gaps and the
+    // exemption below was dead code. An explicit exemption with a stated
+    // reason has to beat a broad category heuristic: a decision outranks a
+    // guess.
+    //
+    // Still observed, still reportable in a scan -- simply not a gap.
+    if (classifyNotQaTooling(observation.name) !== null) {
+      notQaTooling += 1;
+      notAFinding.push({
+        ...observation,
+        censusId: null,
+        category: "UNCLASSIFIED",
+      });
+      continue;
+    }
+    if (classifyIgnoredTooling(observation.name) !== null) {
+      // Not reported at all. Counted, so the omission is visible, but a
+      // report that opens with `react` buries the findings.
+      notQaTooling += 1;
+      notAFinding.push({
+        ...observation,
+        censusId: null,
+        category: "UNCLASSIFIED",
+      });
+      continue;
+    }
     const named = classifyName(observation.name);
     if (named !== null) {
       // A QA tool by name that the census has no entry for. This is the
@@ -1428,13 +1489,6 @@ export function classifyObservations(
         category: named.category,
       });
       continue;
-    }
-    // Classifiable as QA tooling by name, but explicitly out of scope for a
-    // test-quality engine. Still observed and still reportable in a scan --
-    // it is simply not a capability gap. Counting error trackers and CI API
-    // clients as gaps is how a 4-finding backlog becomes an unreadable 19.
-    if (classifyNotQaTooling(observation.name) !== null) {
-      notQaTooling += 1;
     }
     notAFinding.push({
       ...observation,

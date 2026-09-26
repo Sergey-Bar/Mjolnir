@@ -478,6 +478,18 @@ export interface ScanResult {
     reasons?: string[];
   };
   /**
+   * Tool coverage (v6): which QA tooling this scan actually saw, what the
+   * engine does about it, and what it is blind to.
+   *
+   * Present when the scan ran the ecosystem probe. Additive within
+   * schemaVersion 1; absent when the producer predates this field.
+   *
+   * complete is always false. A scan that could not see through a test
+   * double must never render as a scan with no blind spots, and that is
+   * the one claim a verification tool cannot make.
+   */
+  toolCoverage?: import("./v6/tool-coverage.js").ToolCoverage;
+  /**
    * Run Identity (R4c): the deterministic anchor binding verdict ←
    * evidence ← execution ← scope ← source ← rule(rev). Present when the
    * execution was machine-anchored; never fabricated.
