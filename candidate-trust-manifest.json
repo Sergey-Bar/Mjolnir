@@ -28,19 +28,19 @@
   "generatedAt": "2026-09-26",
   "identity": {
     "state": "WORKING_CANDIDATE",
-    "baseSha": "bd897195bd2a4361391dd1bbce3feca11a18038a",
+    "baseSha": "4d99f7dfd7bf42a209186ff0782f72825ebd9ffc",
     "candidateSha": null,
     "version": "4.0.0-rc.1",
     "packageSha256": "41db44ce9c1f288d484c529dbb5bd5048e1156a622a211d5be1a4da475deab32",
     "lockfileSha256": "7694a743490f8a4181a2fda22d38a638dd11ee1fabdb8ffadaceb0322f4d3c89",
     "workingTreeSha256": "7fa121e67ddc9c8c124deb88fd639eedb5abf98504fa232cb82891250886c156",
-    "changedPathCount": 2,
+    "changedPathCount": 0,
     "supportEnvelope": "self-hosted; hosted services require explicit consent and separate proof",
     "worktreeInventory": {
-      "changedPaths": ["package-lock.json"],
-      "untrackedPaths": ["scripts/complete-lockfile.mjs"]
+      "changedPaths": [],
+      "untrackedPaths": []
     },
-    "dirtyFiles": ["package-lock.json", "scripts/complete-lockfile.mjs"]
+    "dirtyFiles": []
   },
   "claimRegistry": {
     "path": "docs/claim-registry.json",
