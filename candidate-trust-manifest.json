@@ -28,19 +28,19 @@
   "generatedAt": "2026-09-26",
   "identity": {
     "state": "WORKING_CANDIDATE",
-    "baseSha": "9cdea6fe5c109c7bd15cad9ae348f5275cc3f339",
+    "baseSha": "bd897195bd2a4361391dd1bbce3feca11a18038a",
     "candidateSha": null,
     "version": "4.0.0-rc.1",
     "packageSha256": "41db44ce9c1f288d484c529dbb5bd5048e1156a622a211d5be1a4da475deab32",
-    "lockfileSha256": "d854d2a27cae545bd77b99697094472dbb7c963481d9163fc967926fc34e8198",
-    "workingTreeSha256": "44c507e354766c0772bd3f162a72378b086764b660927c68a659e98ef375048f",
-    "changedPathCount": 0,
+    "lockfileSha256": "7694a743490f8a4181a2fda22d38a638dd11ee1fabdb8ffadaceb0322f4d3c89",
+    "workingTreeSha256": "7fa121e67ddc9c8c124deb88fd639eedb5abf98504fa232cb82891250886c156",
+    "changedPathCount": 2,
     "supportEnvelope": "self-hosted; hosted services require explicit consent and separate proof",
     "worktreeInventory": {
-      "changedPaths": [],
-      "untrackedPaths": []
+      "changedPaths": ["package-lock.json"],
+      "untrackedPaths": ["scripts/complete-lockfile.mjs"]
     },
-    "dirtyFiles": []
+    "dirtyFiles": ["package-lock.json", "scripts/complete-lockfile.mjs"]
   },
   "claimRegistry": {
     "path": "docs/claim-registry.json",
