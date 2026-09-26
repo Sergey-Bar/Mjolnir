@@ -204,12 +204,18 @@ describe("dependency-graph (ECO-005)", () => {
   });
 
   describe("getReachableFiles", () => {
-    it("returns starting files when graph is empty", () => {
+    // These four tests used to assert that an unresolvable query returns its
+    // own input — which is how a fabricated "Reachable files: N" survived,
+    // where N was the input size. They now assert the honest report.
+
+    it("reports the starting points it could not resolve, and reaches nothing", () => {
+      // The old expectation was `['a.ts','b.ts']`. That said "these two files
+      // are reachable" when the graph was EMPTY and nothing was traversed.
       const graph = new DependencyGraph();
-      expect(getReachableFiles(["a.ts", "b.ts"], graph)).toEqual([
-        "a.ts",
-        "b.ts",
-      ]);
+      const result = getReachableFiles(["a.ts", "b.ts"], graph);
+      expect(result.reachable).toEqual([]);
+      expect(result.unresolvedStarts).toEqual(["a.ts", "b.ts"]);
+      expect(result.resolvedAny).toBe(false);
     });
 
     it("follows dependency chain", () => {
@@ -217,10 +223,14 @@ describe("dependency-graph (ECO-005)", () => {
       graph.addNode({ path: "test.spec.ts", dependencies: ["src.ts"] });
       graph.addNode({ path: "src.ts", dependencies: ["lib.ts"] });
       graph.addNode({ path: "lib.ts", dependencies: [] });
-      const reachable = getReachableFiles(["test.spec.ts"], graph);
+      const { reachable, unresolvedStarts } = getReachableFiles(
+        ["test.spec.ts"],
+        graph,
+      );
       expect(reachable).toContain("test.spec.ts");
       expect(reachable).toContain("src.ts");
       expect(reachable).toContain("lib.ts");
+      expect(unresolvedStarts).toEqual([]);
     });
 
     it("handles diamond dependencies", () => {
@@ -229,8 +239,12 @@ describe("dependency-graph (ECO-005)", () => {
       graph.addNode({ path: "b", dependencies: ["d"] });
       graph.addNode({ path: "c", dependencies: ["d"] });
       graph.addNode({ path: "d", dependencies: [] });
-      const reachable = getReachableFiles(["a"], graph);
-      expect(reachable).toEqual(["a", "b", "c", "d"]);
+      expect(getReachableFiles(["a"], graph).reachable).toEqual([
+        "a",
+        "b",
+        "c",
+        "d",
+      ]);
     });
 
     it("deduplicates reachable files", () => {
@@ -238,9 +252,47 @@ describe("dependency-graph (ECO-005)", () => {
       graph.addNode({ path: "a", dependencies: ["c"] });
       graph.addNode({ path: "b", dependencies: ["c"] });
       graph.addNode({ path: "c", dependencies: [] });
-      const reachable = getReachableFiles(["a", "b"], graph);
-      const cCount = reachable.filter((f) => f === "c").length;
-      expect(cCount).toBe(1);
+      const { reachable } = getReachableFiles(["a", "b"], graph);
+      expect(reachable.filter((f) => f === "c")).toHaveLength(1);
+    });
+
+    it("a source path is NOT resolvable against a manifest-keyed graph", () => {
+      // The defect this whole change exists for, locked.
+      //
+      // `buildDependencyGraph` keys nodes by MANIFEST path; callers pass
+      // SOURCE paths. Every lookup missed, so the function returned its input
+      // unchanged and the caller printed that as "Reachable files: N". This
+      // is the shape production actually produces, and the four tests above
+      // never built it — they hand-built a graph keyed by the very paths being
+      // queried, so the seam was never exercised.
+      const root = fs.mkdtempSync(path.join(os.tmpdir(), "mjolnir-graph-"));
+      try {
+        fs.writeFileSync(path.join(root, "package.json"), '{"name":"root"}');
+        fs.mkdirSync(path.join(root, "packages", "a"), { recursive: true });
+        fs.writeFileSync(
+          path.join(root, "packages", "a", "package.json"),
+          '{"name":"a","dependencies":{"root":"1.0.0"}}',
+        );
+        const graph = buildDependencyGraph(root);
+        expect(graph.size).toBeGreaterThan(0);
+
+        const result = getReachableFiles(
+          ["packages/a/tests/a.spec.ts", "tests/b.spec.ts"],
+          graph,
+        );
+        // Honest: the graph resolved NEITHER source path, so nothing is
+        // claimed reachable and both are named as unresolved.
+        expect(result.reachable).toEqual([]);
+        expect(result.unresolvedStarts).toEqual([
+          "packages/a/tests/a.spec.ts",
+          "tests/b.spec.ts",
+        ]);
+        expect(result.resolvedAny).toBe(false);
+        // The specific number that used to be fabricated.
+        expect(result.reachable.length).not.toBe(2);
+      } finally {
+        fs.rmSync(root, { recursive: true, force: true });
+      }
     });
   });
 });

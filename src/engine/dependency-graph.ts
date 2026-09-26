@@ -62,6 +62,12 @@ export class DependencyGraph {
   get size(): number {
     return this.nodes.size;
   }
+
+  /** Whether the graph knows this exact key. Reachability must not
+   *  treat "not in the graph" as "nothing to traverse" without saying so. */
+  has(path: string): boolean {
+    return this.nodes.has(path);
+  }
 }
 
 function parsePackageJson(filePath: string): DependencyNode | undefined {
@@ -170,23 +176,75 @@ function parseManifest(filePath: string): DependencyNode | undefined {
 }
 
 /**
- * Given a set of starting files (e.g. test files), return all files
- * transitively reachable through the dependency graph.
+ * What a reachability query actually managed to do.
+ *
+ * `reachable` alone is not enough to report, and that is the whole reason this
+ * type exists. The previous signature returned `string[]`, and because the
+ * graph is keyed by MANIFEST path while callers pass SOURCE paths, every
+ * lookup missed and the function returned its own input unchanged. The caller
+ * then printed that count as "Reachable files: N", where N was simply how many
+ * files went in — a number derived from nothing, presented as if it came from
+ * a traversal.
+ *
+ * `unresolvedStarts` is what makes that state visible: every starting point
+ * the graph could not place. A caller that sees a non-empty list knows the
+ * result is the input echoed back, and must say so rather than imply it
+ * traversed anything.
+ */
+export interface ReachabilityResult {
+  /** Files reachable from the resolved starting points, sorted. */
+  reachable: string[];
+  /**
+   * Starting points the graph could not resolve to an owning manifest,
+   * sorted. Non-empty means the graph is not connected to these paths and
+   * `reachable` is NOT evidence of a traversal.
+   */
+  unresolvedStarts: string[];
+  /** True when the graph resolved at least one starting point. */
+  resolvedAny: boolean;
+}
+
+/**
+ * Given a set of starting files (e.g. test files), return the files
+ * transitively reachable through the dependency graph, plus an honest
+ * account of what could not be resolved.
+ *
+ * KNOWN LIMITATION (BW-022, still open): the graph is keyed by manifest path
+ * and this query is given source paths, so today `unresolvedStarts` is
+ * normally every input. The traversal itself is correct for a graph whose
+ * keys are the paths being queried — which is what the unit tests build, and
+ * which is why they passed while production did nothing. Fixing the seam
+ * means giving a file a resolvable owning manifest and deciding impact's
+ * direction (dependents, not dependencies), which is a design change, not a
+ * patch. Until then this function reports that it resolved nothing instead
+ * of implying otherwise.
  */
 export function getReachableFiles(
   fromFiles: ReadonlyArray<string>,
   graph: DependencyGraph,
-): string[] {
+): ReachabilityResult {
   const reachable = new Set<string>();
+  const unresolvedStarts: string[] = [];
   const stack = [...fromFiles];
   while (stack.length > 0) {
     const current = stack.pop();
     if (current === undefined) continue;
     if (reachable.has(current)) continue;
-    reachable.add(current);
+    if (graph.has(current)) {
+      reachable.add(current);
+    } else if (fromFiles.includes(current)) {
+      // A STARTING point the graph does not know. Recorded rather than
+      // silently echoed back, which is what produced the false count.
+      unresolvedStarts.push(current);
+      continue;
+    }
     for (const dep of graph.getDependencies(current)) {
       if (!reachable.has(dep)) stack.push(dep);
     }
   }
-  return [...reachable].sort();
+  return {
+    reachable: [...reachable].sort(),
+    unresolvedStarts: unresolvedStarts.sort(),
+    resolvedAny: unresolvedStarts.length < fromFiles.length,
+  };
 }

@@ -148,10 +148,15 @@ describe("standalone module integration (Release 2.0.0)", () => {
       graph.addNode({ path: "test.spec.ts", dependencies: ["src.ts"] });
       graph.addNode({ path: "src.ts", dependencies: ["lib.ts"] });
       graph.addNode({ path: "lib.ts", dependencies: [] });
-      const reachable = getReachableFiles(["test.spec.ts"], graph);
+      const { reachable, unresolvedStarts } = getReachableFiles(
+        ["test.spec.ts"],
+        graph,
+      );
       expect(reachable).toContain("test.spec.ts");
       expect(reachable).toContain("src.ts");
       expect(reachable).toContain("lib.ts");
+      // Resolved, so nothing is reported unresolved.
+      expect(unresolvedStarts).toEqual([]);
     });
   });
 

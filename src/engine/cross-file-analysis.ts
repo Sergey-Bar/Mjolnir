@@ -14,7 +14,11 @@
 import type { Finding } from "../types.js";
 import { findDuplicateTestNames } from "./cross-file.js";
 import { correlateFindings } from "./correlation-engine.js";
-import { buildDependencyGraph, getReachableFiles } from "./dependency-graph.js";
+import {
+  buildDependencyGraph,
+  getReachableFiles,
+  type ReachabilityResult,
+} from "./dependency-graph.js";
 
 export interface CrossFileSignal {
   type:
@@ -31,7 +35,16 @@ export interface CrossFileAnalysisResult {
   circularDependencies: CrossFileSignal[];
   correlationConclusions: string;
   dependencyGraphSize: number;
-  reachableFilesCount: number;
+  /**
+   * What the dependency graph actually managed to resolve.
+   *
+   * This replaced a `reachableFilesCount: number`, which was fabricated: the
+   * graph is keyed by manifest path, the query was given source paths, every
+   * lookup missed, and the "reachable" count was the number of files that went
+   * in. Carrying the resolution report instead means no caller can print a
+   * traversal that never happened.
+   */
+  reachability: ReachabilityResult;
 }
 
 /**
@@ -74,7 +87,7 @@ export function analyzeCrossFileSignals(
     .join("; ");
 
   const graph = buildDependencyGraph(root);
-  const reachableFiles = getReachableFiles(
+  const reachability = getReachableFiles(
     orderedFiles.map((f) => f.path),
     graph,
   );
@@ -86,7 +99,7 @@ export function analyzeCrossFileSignals(
     circularDependencies,
     correlationConclusions,
     dependencyGraphSize: graph.size,
-    reachableFilesCount: reachableFiles.length,
+    reachability,
   };
 }
 
@@ -200,7 +213,22 @@ export function renderCrossFileAnalysis(
   lines.push(`Shared imports: ${result.sharedImports.length}`);
   lines.push(`Circular dependencies: ${result.circularDependencies.length}`);
   lines.push(`Dependency graph size: ${result.dependencyGraphSize}`);
-  lines.push(`Reachable files: ${result.reachableFilesCount}`);
+  // The honest line. It used to read `Reachable files: ${count}`, where the
+  // count was the input size — so the report claimed a traversal that never
+  // ran. A number nobody can trace is the failure this product exists to
+  // catch, including in its own output.
+  const { reachability } = result;
+  if (reachability.resolvedAny) {
+    lines.push(
+      `Reachable files: ${reachability.reachable.length} (resolved from the dependency graph)`,
+    );
+  } else {
+    lines.push(
+      `Reachable files: not resolved — the graph is keyed by package manifest ` +
+        `and none of the ${reachability.unresolvedStarts.length} starting ` +
+        `file(s) could be placed. This number is not evidence of a traversal.`,
+    );
+  }
   lines.push("");
 
   if (result.signals.length > 0) {
