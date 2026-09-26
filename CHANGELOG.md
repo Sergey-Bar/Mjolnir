@@ -47,6 +47,18 @@ once shipped, so this file is the record of what changed between versions.
   The generation timestamp moved out of the visible body into
   `<meta name="mjolnir-generated-at">`, and `--deterministic` omits it entirely
   so the artifact is byte-identical and can be diffed in review.
+- **`mjolnir report` no longer publishes a test-run status.** The top-level
+  `status` was computed from the findings
+  (`partial ? "interrupted" : hasError ? "failed" : "passed"`), so a clean scan
+  wrote `{status: "passed", totalTests: 0}` — the first field a Playwright
+  consumer reads, asserting a green run over zero executed tests, with the
+  contradicting `execution: "STATIC_ANALYSIS"` marker buried in the extension
+  block. `failed` was equally dishonest: it implies tests ran and lost. The
+  field is now the literal `interrupted` on every path, and what the scan
+  actually found is reported separately as
+  `mjolnir.scanOutcome` (`clean` / `blocked` / `partial`), which the previous
+  `mjolnir.status` field carried. Consumers reading the root `status` will see
+  `passed` → `interrupted`; that is the correction, not a regression.
 - **Score bands are decided in one place.** The dashboard split at 60 while the
   terminal split at 80, so a score the terminal called UNWORTHY rendered amber
   in HTML; the contributor handover used 90; `mermaid.ts` and
@@ -95,6 +107,79 @@ once shipped, so this file is the record of what changed between versions.
 
 ### Fixed
 
+- **Fifteen silent capability losses are now counted, and the count reaches the
+  report.** A `catch` in a detection path that returned a clean default made
+  the scan exit 0, report `analysisComplete`, and quietly lose the thing that
+  made its verdict trustworthy — the reader had no way to tell a whole scan
+  from a narrowed one. The worst case was `getCodeOnlyText` returning raw text
+  after a throw, which switches OFF the comment/string false-positive firewall
+  for that file rather than merely slowing it down. Every such site now records
+  a reason in one append-only ledger (`src/engine/degradation-ledger.ts`),
+  following the precedent already set by `parserRetryDegradationCount`, and the
+  scan result carries `analysisStatus.degradations` — reason-coded counts,
+  present only when something was actually lost, alongside a
+  `degraded:<reason>:<count>` entry in `reasons`. A non-empty set makes the
+  scan `partial`. `truncationReasons` is untouched: a degradation is not
+  truncation, and a reader must be able to tell "the scan stopped" from "the
+  scan lost a layer".
+  - Two distinctions the ledger refuses to blur. **Absent is not degraded:** a
+    Python, Java, Go or Rust repository has no `package.json`, and recording
+    that would mark every non-Node project partial while training readers to
+    ignore the field — so only a manifest that exists and will not parse
+    counts. **A no-AST adapter is not a downgrade either:** the same line
+    W1.4 draws for the deadline fallback.
+  - Two sites outside the original list were found by the new contract spec
+    and fixed in the same commit: the tree-sitter Java/C#/Python parses (left
+    alone, because the pipeline already counts every `parseAst → undefined` as
+    one parse fallback, and counting again would tally one file twice in two
+    different fields) and `hashDir`'s `readdirSync`, whose early `return`
+    omitted a whole subtree from the detector fingerprint — two rule trees
+    differing only inside an unreadable directory then hash identically, which
+    is a stale-cache hit wearing a fresh one's clothes.
+  - `mjolnir trend show` no longer prints "No trend data yet." and exits clean
+    for a history file whose every line failed to parse. The count of
+    discarded lines is now reported on stderr, and a history that exists but
+    cannot be read is `EXIT_INTERNAL` — the difference between no history and
+    unreadable history, which both used to arrive as the same empty array.
+  - `mjolnir explain` distinguishes _the rule found nothing_ from _the rule
+    never ran_. A rule that THREW on its own fixture produced the same output
+    as a correctly silent one, in the one surface whose purpose is to show
+    that a rule works. It now says so, with the reason.
+  - `tests/contract/no-uncounted-degradation.spec.ts` is the durable half: a
+    `catch` in the detection path that RETURNS A VALUE must record a reason,
+    rethrow, route to a counted sink, or be exempted with a stated failure
+    direction. The rule is about the _return_, not the `catch` — 37 of the 70
+    detection-path catches return nothing and cannot lie to a caller, and a
+    spec that listed all 70 as individual exemptions would be the same as no
+    exemption list at all.
+
+- **Scanning a subdirectory no longer reports a framework it read from its
+  parent.** `runScan` walks up past the target to find the project root, and
+  re-anchors the scan root to the target when the target is a strict
+  descendant — but it kept the discovered root's parsed `package.json`. So
+  `mjolnir scan monorepo/packages/foo` reported `jest` because
+  `monorepo/package.json` said so: a read outside the explicit scan root, and
+  a framework verdict about a tree nobody pointed at. Framework detection now
+  works from in-root evidence only (config files and the anchor's own
+  manifest), and reports `frameworkDetectionUnknown` when that evidence is
+  absent — an absent verdict you can see, rather than a parent's you cannot.
+  Scanning the project root itself is unchanged. This is the CLI counterpart
+  to the containment property the MCP workspace-boundary contract already
+  enforced.
+- **A scan that ran out of time no longer loses its AST stage silently.** When a
+  scan passes `--max-duration`, the remaining files were analyzed by regex
+  instead of AST — a different detection capability, not a slower version of the
+  same one, so the same tree produced different findings and a different score.
+  The mode was faithfully recorded in the scan cache and reported nowhere; the
+  only nearby disclosure, `file-budget`, fired incidentally because the
+  per-file rule-loop deadline was usually already spent too. Such a scan now
+  carries the truncation reason `ast-budget-fallback` and an
+  `analysisStatus.reasons` entry `ast-budget-fallback-files:<n>` saying how many
+  files were analyzed by regex, and is honestly `partial`. An adapter that
+  declares no AST stage at all (a YAML workflow, for instance) is a declared
+  capability envelope and is NOT reported as truncation. `truncationReasons` is
+  an open `string[]` by design, so consumers should test for members rather than
+  assert the exact array.
 - **`frontier:contracts` was reporting 19 suites it never ran.** It named 24
   test files; nineteen had been deleted by the `cc5fcb88` cleanup and its
   follow-up. Vitest treats a missing path as "no tests here" rather than an

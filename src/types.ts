@@ -511,6 +511,21 @@ export interface ScanResult {
     /** Canonical completion reasons, including scope and parser degradation. */
     reasons?: string[];
     /**
+     * Per-reason counts of capability lost inside a `catch` that returned a
+     * clean default — the degradation ledger (`src/engine/degradation-ledger.ts`).
+     *
+     * Distinct from `truncationReasons`, which means the scan STOPPED, and
+     * from `reasons`, which is a flat string set. This one is structured and
+     * reason-coded so "the AST mask was unavailable for 3 files" and "3 files
+     * were skipped" cannot be confused. Each entry is ALSO surfaced in
+     * `reasons` as `degraded:<reason>:<count>`.
+     *
+     * Present only when at least one degradation happened; absence means the
+     * scan lost no capability to a swallowed error, OR the producer predates
+     * the ledger. A non-empty value always forces `partial: true`.
+     */
+    degradations?: Array<{ reason: string; count: number }>;
+    /**
      * Rule executions that threw and were swallowed by crash isolation
      * (audit R-9). 0 means no rule silently failed; absence means the
      * producer predates the counter.

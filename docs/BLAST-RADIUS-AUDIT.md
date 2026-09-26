@@ -7,20 +7,20 @@ contract enforces: **every external import in src/ must belong to the
 allowlist**, and the shipped surface (adapters, rules, flags, formats, exit
 codes) must match this document exactly.
 
-## Inventory: 311 files, 66818 LOC
+## Inventory: 313 files, 67452 LOC
 
 | Area              | Files | LOC   |
 | ----------------- | ----- | ----- |
-| src/commands      | 43    | 13545 |
-| src/engine        | 49    | 12138 |
+| src/commands      | 43    | 13692 |
+| src/engine        | 50    | 12473 |
 | src/rules         | 88    | 11758 |
-| src/reporter      | 14    | 3527  |
-| src/(root)        | 7     | 3134  |
+| src/reporter      | 14    | 3528  |
+| src/(root)        | 7     | 3161  |
 | src/forensics     | 17    | 3065  |
 | src/ledger        | 1     | 2782  |
+| src/discovery     | 10    | 1794  |
 | src/integrations  | 12    | 1790  |
-| src/discovery     | 10    | 1777  |
-| src/adapters      | 11    | 1744  |
+| src/adapters      | 11    | 1764  |
 | src/gaps          | 2     | 1390  |
 | src/frameworks    | 4     | 1336  |
 | src/release       | 7     | 1012  |
@@ -29,14 +29,14 @@ codes) must match this document exactly.
 | src/plugins       | 4     | 715   |
 | src/store         | 2     | 671   |
 | src/bench         | 4     | 592   |
-| src/certification | 2     | 560   |
-| src/config        | 3     | 540   |
-| src/scorer        | 3     | 533   |
+| src/certification | 2     | 568   |
+| src/config        | 3     | 559   |
+| src/scorer        | 3     | 537   |
 | src/mutation      | 5     | 496   |
 | src/traceability  | 2     | 441   |
 | src/scope         | 2     | 427   |
-| src/playwright    | 2     | 328   |
-| src/lib           | 5     | 306   |
+| src/lib           | 6     | 358   |
+| src/playwright    | 2     | 332   |
 | src/trust         | 2     | 232   |
 | src/benchmark     | 2     | 174   |
 | src/anti-gaming   | 2     | 169   |
@@ -52,6 +52,7 @@ codes) must match this document exactly.
 | src/lib/fs-atomic               | 20        |
 | src/cli-io                      | 19        |
 | src/forensics/types             | 19        |
+| src/lib/compare                 | 16        |
 | src/exit-codes                  | 16        |
 | src/engine/adapter              | 14        |
 | src/rules/index                 | 13        |
@@ -59,7 +60,6 @@ codes) must match this document exactly.
 | src/discovery/ignores           | 11        |
 | src/forensics/evidence-hygiene  | 11        |
 | src/rules/measured-fp.generated | 11        |
-| src/engine/ts-ast               | 10        |
 
 ## External dependency allowlist (containment)
 

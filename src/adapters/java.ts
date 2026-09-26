@@ -26,6 +26,7 @@ import { join } from "node:path";
 import { sharedWalk } from "../discovery/shared-walk.js";
 import { computeCodeText } from "../engine/code-text.js";
 import { parseJavaAst } from "../engine/tree-sitter-ast.js";
+import { recordDegradation } from "../engine/degradation-ledger.js";
 import {
   frameworkFilterApplies,
   type FrameworkInfo,
@@ -221,6 +222,12 @@ export function javaBuildFiles(root: string): string[] {
       /pom\.xml$|build\.gradle(?:\.kts)?$/.test(f),
     );
   } catch {
+    // Returning `[]` here does not mean "no build files" — it means "we
+    // could not look". A monorepo whose submodule poms went unreadable
+    // yields a java verdict built from the root module alone, which is a
+    // narrower scan wearing the same report. Counted so the result is
+    // partial rather than confidently incomplete.
+    recordDegradation("java-build-listing-unreadable");
     return [];
   }
 }

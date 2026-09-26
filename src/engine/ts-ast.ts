@@ -12,6 +12,7 @@
 import { Project, type SourceFile, ts } from "ts-morph";
 
 import type { ParsedFile } from "./adapter.js";
+import { recordDegradation } from "./degradation-ledger.js";
 
 // One shared Project per scan keeps memory bounded while reusing the
 // compiler's program across files.
@@ -55,6 +56,11 @@ export function parseTsFile(file: ParsedFile): SourceFile | undefined {
     }
     return p.createSourceFile(file.path, file.text);
   } catch {
+    // Uncounted, this was the worst of the fifteen: the file drops to its
+    // regex path and the scan still says `analysisComplete`. Regex-only is a
+    // real capability loss — it is what a reader means by "scanned with the
+    // TypeScript parser" — so it is counted, and the count is reported.
+    recordDegradation("ast-parse-failed");
     return undefined;
   }
 }
@@ -138,6 +144,10 @@ export function commentAndStringRanges(ctx: {
     }
     return ranges;
   } catch {
+    // No ranges means every mask-oracle rule that asks treats the whole file
+    // as code, so a prose comment reads as an implementation. Counted, not
+    // swallowed.
+    recordDegradation("ast-range-scan-failed");
     return [];
   }
 }
@@ -196,6 +206,12 @@ export function getCodeOnlyText(file: ParsedFile): string {
     }
     return chars.join("");
   } catch {
+    // The raw-text fallback is the FALSE-POSITIVE FIREWALL going off for this
+    // file, not merely a slower answer: a rule whose oracle is "code only"
+    // now sees comments and string literals as code. It is the one site in
+    // this file where degrading changes what a scan can produce, so it gets
+    // its own reason rather than sharing `ast-parse-failed`.
+    recordDegradation("ast-mask-unavailable");
     return file.text;
   }
 }

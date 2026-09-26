@@ -26,6 +26,12 @@ import {
   type ScanResult,
 } from "../types.js";
 import { deriveCompletion } from "./completion.js";
+import {
+  beginDegradationWindow,
+  degradationsSince,
+  summarizeDegradations,
+  type DegradationCount,
+} from "./degradation-ledger.js";
 import { buildTrustSummary } from "./trust-summary.js";
 import { buildEvidenceGraph, buildRunIdentity } from "./run-identity.js";
 import {
@@ -1026,6 +1032,12 @@ export interface AssembleScanResultInput {
   parseFallbacks?: number;
   /** Files that lost their AST stage to the scan deadline. See completion.ts. */
   astFallbackFiles?: number;
+  /**
+   * Reason-coded capability losses recorded during this scan's window. See
+   * `src/engine/degradation-ledger.ts` for why the window is an index rather
+   * than an ownership claim.
+   */
+  degradations?: readonly DegradationCount[];
   scanned: number;
   analyzed?: number;
   testFiles: string[];
@@ -1216,6 +1228,7 @@ export function assembleScanResult(o: AssembleScanResultInput): ScanResult {
     parseFailed: o.parseFailed,
     parseFallbacks: o.parseFallbacks ?? 0,
     astFallbackFiles: o.astFallbackFiles ?? 0,
+    ...(o.degradations !== undefined ? { degradations: o.degradations } : {}),
     ...(o.scopeInfo.degraded !== undefined
       ? { scopeDegraded: o.scopeInfo.degraded }
       : {}),
@@ -1395,6 +1408,14 @@ export async function runScan(
   hooks: ScanHooks = {},
 ): Promise<ScanResult> {
   const started = Date.now();
+  // Open the degradation window FIRST, before workspace discovery, because
+  // `discoverWorkspace` is itself a degradation site (an unreadable
+  // package.json silently narrows a monorepo scan to the root package) and
+  // that is exactly the kind of loss this scan must report about itself. The
+  // window is an index, not a claim of ownership: a sibling scan running
+  // concurrently may contribute records, which can only over-count, never
+  // under-count. See src/engine/degradation-ledger.ts.
+  const degradationWindow = beginDegradationWindow();
   const requestedDuration = Number.isFinite(args.maxDurationMs)
     ? args.maxDurationMs
     : DEFAULT_MAX_DURATION_MS;
@@ -1416,11 +1437,27 @@ export async function runScan(
   // Scope containment: when the user targets a subdirectory of the
   // discovered project root (e.g. one package in a monorepo), scan ONLY
   // that subtree — sibling packages were never pointed at.
+  //
+  // Re-anchoring the ROOT is not containment on its own. `discoverWorkspace`
+  // already READ `package.json` from the DISCOVERED root, and that parsed
+  // object rides along in `discovered.packageJson`; carrying it into a
+  // re-anchored workspace meant `detectFrameworks` answered questions about
+  // the PARENT's manifest while claiming to describe the target. So a scan of
+  // `monorepo/packages/foo` reported jest because `monorepo/package.json`
+  // said so — a read outside the explicit scan root, and a framework claim
+  // about a tree the reader did not point at.
+  //
+  // The fix reads the manifest at the ANCHORED root. Framework detection
+  // then works from in-root evidence only (config files, the target's own
+  // `package.json`, its dependencies), and when that evidence is absent
+  // `detectFrameworks` already reports `frameworkDetectionUnknown: true` —
+  // which is the honest disclosure, and the reason V5-054's removal of the
+  // `postScan` consumer is deferred rather than rushed.
   const scanRoot =
     discovered &&
     discovered.root !== targetAbs &&
     targetAbs.startsWith(discovered.root + sep)
-      ? { ...discovered, root: targetAbs }
+      ? { ...discovered, root: targetAbs, packageJson: {} }
       : (discovered ?? fallbackWorkspace(targetAbs));
   const workspace = scanRoot;
   // Audit S3: verbose mode states the resolved root — operators can SEE
@@ -1625,6 +1662,7 @@ export async function runScan(
     parseFailed,
     parseFallbacks,
     astFallbackFiles,
+    degradations: summarizeDegradations(degradationsSince(degradationWindow)),
     scanned,
     analyzed,
     testFiles,

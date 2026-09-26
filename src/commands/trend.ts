@@ -16,6 +16,7 @@ import { join } from "node:path";
 
 import { sectionHeader, plainContext } from "../reporter/ui.js";
 import { runScan } from "../engine/scan-pipeline.js";
+import { recordDegradation } from "../engine/degradation-ledger.js";
 import { internalErrorMessage, type Output } from "../cli-io.js";
 import {
   EXIT_CLEAN,
@@ -53,20 +54,70 @@ export function recordTrend(root: string, snapshot: TrendSnapshot): boolean {
   }
 }
 
-export function loadTrend(root: string, limit: number = 20): TrendSnapshot[] {
+/**
+ * The history, and what had to be thrown away to build it.
+ *
+ * `corruptLines` exists because the old shape could not say "empty": a
+ * `.mjolnir/trend.jsonl` whose every line failed to parse returned `[]`, the
+ * same value a repository with no history returns, and `trend show` printed
+ * "No trend data yet." and exited clean. A file full of data this tool could
+ * not read is not an absence of data, and the repo already counts torn lines
+ * in two other readers (`src/store/evidence-store.ts`,
+ * `src/store/legacy-import.ts`) — this one was the odd reader out.
+ */
+export interface TrendLoad {
+  snapshots: TrendSnapshot[];
+  /** Lines present in the file that did not parse. */
+  corruptLines: number;
+}
+
+export function loadTrendDetail(root: string, limit: number = 20): TrendLoad {
   const path = trendPath(root);
-  if (!existsSync(path)) return [];
+  if (!existsSync(path)) return { snapshots: [], corruptLines: 0 };
   const lines = readFileSync(path, "utf8").trim().split("\n").filter(Boolean);
-  return lines
-    .map((line) => {
-      try {
-        return JSON.parse(line) as TrendSnapshot;
-      } catch {
-        return null;
-      }
-    })
-    .filter((s): s is TrendSnapshot => s !== null)
-    .slice(-limit);
+  let corruptLines = 0;
+  const parsed: Array<TrendSnapshot | null> = lines.map((line) => {
+    try {
+      return JSON.parse(line) as TrendSnapshot;
+    } catch {
+      // Counted at the line that discarded it, not at the command that
+      // reports it: the sink and the site that lost data are the same place,
+      // and a reader auditing the map callback should not have to walk up to
+      // the CLI to find out that something was dropped.
+      recordDegradation("trend-record-unparseable");
+      corruptLines++;
+      return null;
+    }
+  });
+  return {
+    snapshots: parsed
+      .filter((s): s is TrendSnapshot => s !== null)
+      .slice(-limit),
+    corruptLines,
+  };
+}
+
+export function loadTrend(root: string, limit: number = 20): TrendSnapshot[] {
+  return loadTrendDetail(root, limit).snapshots;
+}
+
+/**
+ * Say what was discarded, on stderr, and report whether the history is
+ * readable at all. Returns the snapshots so the caller does not read the
+ * file twice.
+ */
+function readTrendOrDisclose(
+  root: string,
+  limit: number,
+  io: { err: Output },
+): { snapshots: TrendSnapshot[]; readable: boolean } {
+  const { snapshots, corruptLines } = loadTrendDetail(root, limit);
+  if (corruptLines > 0) {
+    io.err(
+      `mjolnir trend: ${corruptLines} unreadable line(s) in ${trendPath(root)} were discarded; the history below is not the whole file.`,
+    );
+  }
+  return { snapshots, readable: corruptLines === 0 || snapshots.length > 0 };
 }
 
 export async function runTrendCommand(
@@ -131,9 +182,18 @@ export async function runTrendCommand(
     const limitArg = argv.find((a) => a.startsWith("--limit="));
     const limitStr = limitArg?.split("=")[1] ?? "20";
     const limit = parseInt(limitStr, 10);
-    const snapshots = loadTrend(target, limit);
+    const { snapshots, readable } = readTrendOrDisclose(target, limit, io);
 
     if (snapshots.length === 0) {
+      // The distinction the old shape could not make: no history file at all
+      // is the expected first-run state, and a history file this tool could
+      // not read is a failure. Both arrived here as `[]`.
+      if (!readable) {
+        io.err(
+          `mjolnir trend show: ${trendPath(target)} exists but no line in it could be parsed. That is unreadable history, not an empty history.`,
+        );
+        return EXIT_INTERNAL;
+      }
       io.out("No trend data yet. Run 'mjolnir trend record' first.");
       return EXIT_CLEAN;
     }
@@ -154,15 +214,14 @@ export async function runTrendCommand(
   }
 
   if (subcommand === "diff") {
-    const snapshots = loadTrend(target, 2);
+    const { snapshots, readable } = readTrendOrDisclose(target, 2, io);
     if (snapshots.length < 2) {
-      io.out(
-        "Need at least 2 snapshots for diff. Run 'mjolnir trend record' more than once.",
-      );
-      return EXIT_CLEAN;
-    }
-
-    if (snapshots.length < 2) {
+      if (!readable) {
+        io.err(
+          `mjolnir trend diff: ${trendPath(target)} exists but no line in it could be parsed, so there is no history to diff.`,
+        );
+        return EXIT_INTERNAL;
+      }
       io.out(
         "Need at least 2 snapshots for diff. Run 'mjolnir trend record' more than once.",
       );

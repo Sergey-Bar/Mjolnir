@@ -35,6 +35,7 @@ import { join } from "node:path";
 
 import { writeFileAtomic } from "../lib/fs-atomic.js";
 import { compareCodePoints } from "../lib/compare.js";
+import { recordDegradation } from "./degradation-ledger.js";
 import type { Finding } from "../types.js";
 import { parseJsonFile, isRecord } from "../lib/safe-json.js";
 
@@ -178,6 +179,13 @@ function hashDir(
   try {
     entries = readdirSync(dir, { withFileTypes: true });
   } catch {
+    // This `return` OMITS a whole subtree from the detector fingerprint. That
+    // is not a neutral degradation: two rule trees that differ only inside an
+    // unreadable directory then hash identically, so a cached verdict computed
+    // against one is served for the other. The parent listing succeeded, so
+    // the directory existed a moment ago — the failure is real, not an
+    // absence, and it gets a reason of its own.
+    recordDegradation("rules-tree-listing-unreadable");
     return;
   }
   // Code-unit order, NOT localeCompare: this order is fed straight into

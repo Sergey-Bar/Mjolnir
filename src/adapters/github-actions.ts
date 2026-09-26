@@ -10,6 +10,7 @@ import { join, relative } from "node:path";
 import type { LanguageAdapter, ScanContext } from "../engine/adapter.js";
 import { isLintFixtureDir } from "../discovery/ignores.js";
 import { parseWorkflow } from "../discovery/workflow-parser.js";
+import { recordDegradation } from "../engine/degradation-ledger.js";
 
 export const githubActionsAdapter: LanguageAdapter = {
   id: "github-actions",
@@ -43,6 +44,12 @@ export const githubActionsAdapter: LanguageAdapter = {
     try {
       entries = readdirSync(wfDir);
     } catch {
+      // The directory passed `existsSync` a moment ago, so this is a real
+      // failure to enumerate the CI surface — and the sibling catch below,
+      // which counts per file, never runs at all because the walk never
+      // started. An unlisted workflow is a workflow nobody scanned, and the
+      // scan has to say so rather than report a CI verdict from zero files.
+      recordDegradation("ci-workflow-listing-unreadable");
       return;
     }
     for (const name of entries) {
