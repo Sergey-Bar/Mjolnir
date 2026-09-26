@@ -308,29 +308,71 @@ export function excerptSarif(text) {
  * deriveScoreState changes shape, the site build fails here rather than
  * the page drifting from the model.
  */
+/**
+ * The four score bands, read out of the real model source.
+ *
+ * WHY THIS PARSES NAMES AND NOT COMPARISON OPERATORS
+ *
+ * It used to scrape `score >= (\d+)` out of the text. That couples the site
+ * to the exact spelling of a comparison, so replacing a literal with a named
+ * constant — a pure refactor, no behaviour change — silently broke the site,
+ * and it did so invisibly: two site tests failed on a build that was otherwise
+ * green, and nothing in `src/` noticed.
+ *
+ * It now reads two things that are an explicit contract rather than an
+ * implementation detail:
+ *
+ *   1. the exported threshold constants, and
+ *   2. the `band:` / `verdict:` pair each branch returns.
+ *
+ * The band→verdict pairing is adjacent lines in a returned object, so it is as
+ * stable as a named field. The numbers come from the constants that
+ * `thresholds:parity` exists to keep single-sourced. A rename of a comparison
+ * cannot break this; removing a band does, loudly, which is the point.
+ */
 export function extractBands(modelSource) {
-  const bands = [];
-  const re = /score >= (\d+)\)\s*{[\s\S]{0,200}?verdict:\s*"([A-Z ]+)"/g;
-  for (const m of modelSource.matchAll(re)) {
-    bands.push({ min: Number(m[1]), verdict: m[2] });
-  }
-  if (bands.length === 0) {
+  // 1. the numeric thresholds, by name.
+  const trusted = /export const TRUSTED_THRESHOLD = (\d+)/.exec(modelSource);
+  const warning = /export const WARNING_THRESHOLD = (\d+)/.exec(modelSource);
+  const forged = /forgedAt:\s*(\d+)/.exec(modelSource);
+  if (!trusted || !warning || !forged) {
     throw new Error(
-      "extractBands: no `score >= N` thresholds found in presentation.ts — " +
-        "deriveScoreState changed shape; re-sync the site's band parser.",
+      "extractBands: presentation.ts no longer exports TRUSTED_THRESHOLD / " +
+        "WARNING_THRESHOLD / SCORE_THRESHOLDS.forgedAt — the threshold " +
+        "registry changed shape; re-sync the site's band parser.",
     );
   }
-  // The floor band (everything below the lowest threshold) is the final
-  // `return` of deriveScoreState — the last verdict literal after the
-  // last `score >= ` threshold.
-  const afterLast = modelSource.slice(modelSource.lastIndexOf("score >= "));
-  const verdicts = [...afterLast.matchAll(/verdict:\s*"([A-Z ]+)"/g)];
-  if (verdicts.length === 0) {
+  const floorFor = {
+    forged: Number(forged[1]),
+    trusted: Number(trusted[1]),
+    warning: Number(warning[1]),
+    critical: 0,
+  };
+
+  // 2. the band → verdict pairing, from each returned object.
+  const pairs = [
+    ...modelSource.matchAll(
+      /band:\s*"([a-z]+)",\s*\n\s*verdict:\s*"([A-Z ]+)"/g,
+    ),
+  ].map((m) => ({ band: m[1], verdict: m[2] }));
+  if (pairs.length === 0) {
     throw new Error(
-      "extractBands: could not find the floor band's verdict in presentation.ts.",
+      "extractBands: no `band:` / `verdict:` pairs found in " +
+        "presentation.ts — deriveScoreState changed shape; re-sync the " +
+        "site's band parser.",
     );
   }
-  bands.push({ min: 0, verdict: verdicts[verdicts.length - 1][1] });
+
+  const bands = pairs
+    .filter((p) => p.band in floorFor)
+    .map((p) => ({ min: floorFor[p.band], verdict: p.verdict }));
+  const seen = new Set(bands.map((b) => b.min));
+  if (seen.size !== bands.length) {
+    throw new Error(
+      "extractBands: two bands resolved to the same floor in " +
+        "presentation.ts — the thresholds and the branches disagree.",
+    );
+  }
   return bands.sort((a, b) => b.min - a.min);
 }
 

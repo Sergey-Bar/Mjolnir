@@ -283,8 +283,28 @@ test("extractBands parses the real presentation.ts into the four bands", () => {
 test("extractBands throws loudly when the model changes shape", () => {
   assert.throws(
     () => extractBands("export function deriveScoreState() { return null }"),
-    /no `score >= N` thresholds found/,
+    /no longer exports TRUSTED_THRESHOLD/,
   );
+});
+
+test("extractBands survives a refactor of the comparison, not just the values", () => {
+  // The regression this parser rewrite exists for. Naming the threshold is a
+  // pure refactor — the bands are identical — and the old operator-scraping
+  // parser failed on it, taking two site tests with it while `src/` stayed
+  // green. A parser coupled to spelling cannot be allowed to be that fragile.
+  const src = readFileSync(
+    join(HERE, "..", "..", "src", "reporter", "presentation.ts"),
+    "utf8",
+  );
+  // Same file, but with the comparisons rewritten into a form the OLD parser
+  // could not read. The bands must come out identical.
+  const refactored = src.replace(
+    /if \(score >= (SCORE_THRESHOLDS\.forgedAt|TRUSTED_THRESHOLD|WARNING_THRESHOLD)\)/g,
+    (_m, name) =>
+      `if (score >= ${{ "SCORE_THRESHOLDS.forgedAt": 100, TRUSTED_THRESHOLD: 80, WARNING_THRESHOLD: 50 }[name]})`,
+  );
+  assert.notEqual(refactored, src, "the fixture rewrite did not apply");
+  assert.deepEqual(extractBands(refactored), extractBands(src));
 });
 
 test("extractConstants reads the two scorer constants", () => {
