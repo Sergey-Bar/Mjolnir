@@ -8,6 +8,14 @@ export interface CoverageExemptionEntry {
   structuralReason?: string;
   reviewBy?: string;
   removalPlan?: string;
+  /**
+   * Regexes that MUST still match `path`. A drift alarm, not a defect
+   * prover: a signature that stops matching means the code moved, so the
+   * entry needs re-review. Mutually exclusive with `closureState`.
+   */
+  defectSignatures?: string[];
+  /** The asserted defect is closed and no surface of it remains. */
+  closureState?: string;
 }
 
 export interface CoverageExemptionLedger {
@@ -31,5 +39,5 @@ export function shippedReachableModules(root: string): Set<string>;
 export function readLedger(root: string): CoverageExemptionLedger;
 export function validateCoverageExemptionLedger(
   root: string,
-  options?: { now?: Date },
+  options?: { now?: Date; ledger?: CoverageExemptionLedger },
 ): string[];

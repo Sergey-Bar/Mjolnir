@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "id": "coverage-exemption-truth-ledger",
   "policy": {
     "statement": "Every vitest coverage exclusion is a classified, owned, expiring debt entry. An exclusion with no owner, no justification, or a passed review date is a broken gate, not a covered file.",
@@ -10,6 +10,7 @@
       "SHIPPED_SURFACE": "Reachable from a shipped CLI verb, release gate, or MCP tool. The v5 GA hard gate removes every entry in this class."
     },
     "reviewBySemantics": "A passed reviewBy fails the gate. The date is a deadline to either cover the file or delete it — never a silent renewal.",
+    "defectSignatureSemantics": "A SHIPPED_SURFACE entry carries EITHER `defectSignatures` (regexes that MUST still match the named source file) OR a `closureState` (the asserted defect is closed and no surface of it remains) — never neither, never both. A signature is a DRIFT ALARM, not a defect prover: its job is to fire when anything about the thing the entry is about changes, so fixing code forces a ledger update in the same commit. A signature that stops matching fails the gate with 'defect closed or drifted — remove or reclassify'. This is deliberately the same mechanism as tests/corpus/detector-hashes.json: a recorded fingerprint of source that CI diffs. PERMANENT_STRUCTURAL entries are exempt — they are evidenced by a structural reason, not by a defect.",
     "shippedSurfaceCeiling": 16,
     "shippedSurfaceCeilingMeaning": "Ratchet over shipped surfaces that are not PERMANENT_STRUCTURAL, not a target. The count may fall (removal, merge, real tests) and may never rise. Structural entries are excluded from the count because they are evidenced by a structural reason rather than a removable gap."
   },
@@ -53,7 +54,8 @@
       "owner": "maintainers",
       "reviewBy": "2026-12-31",
       "removalPlan": "V5-090 — merge into cross-file; the shared-import + 20-char line heuristic is a partial duplicate of a covered analysis.",
-      "justification": "Shipped as `analyze`; duplicates cross-file and contains an unfixed process.cwd() resolution bug. Merged away rather than covered."
+      "justification": "Shipped as `analyze`; duplicates cross-file and resolves finding paths against process.cwd() rather than the scan root, so a scan of a subdirectory attributes paths outside it. Merged away rather than covered.",
+      "defectSignatures": ["process\\.cwd\\(\\)"]
     },
     {
       "path": "src/commands/business-case.ts",
@@ -61,8 +63,9 @@
       "shippedSurface": true,
       "owner": "maintainers",
       "reviewBy": "2026-12-31",
-      "removalPlan": "V5-090 — deprecate then remove in 5.0. The ROI model is unsupported by any measurement Mjölnir can make.",
-      "justification": "Shipped as `business-case`; renders an ROI projection no evidence supports. Deprecate, do not cover."
+      "removalPlan": "V5-090 — deprecate then remove in 5.0. The remaining arithmetic is a user's incident cost multiplied by a measured FP rate, and that is a spreadsheet, not a product.",
+      "justification": "Shipped as `business-case`; the verb still ships, so the file stays excluded until V5-090 removes it. This is removal debt, not a live defect.",
+      "closureState": "CLOSED (2026-09-26, [Unreleased] breaking changes). The invented incident-cost table, `--history` and `--projected` are gone: a dollar figure now exists only when the reader supplies `--incident-cost`, so the number's source is theirs. The residual surface is the reader's own arithmetic and a measured FP rate, which is honest output rather than a fabricated one."
     },
     {
       "path": "src/commands/ci-adapter.ts",
@@ -71,7 +74,11 @@
       "owner": "maintainers",
       "reviewBy": "2026-12-31",
       "removalPlan": "V5-035 — regenerate Azure/Jenkins templates with least-privilege permissions, then cover them.",
-      "justification": "Shipped as `ci-adapter`; template generators are real but their emitted workflows use the wrong path/permissions. Fix the behaviour, then cover it."
+      "justification": "Shipped as `ci-adapter`; the emitted GitHub workflow declares no `permissions:` block, so the job runs on the repository default token scope, and the GitLab/Jenkins templates carry no security-scope statement at all. Fix the emitted workflows, then cover them.",
+      "defectSignatures": [
+        "name: QA Check\\non: \\[push, pull_request\\]\\njobs:",
+        "- uses: actions/checkout@[0-9a-f]{40}"
+      ]
     },
     {
       "path": "src/commands/dashboard.ts",
@@ -79,8 +86,9 @@
       "shippedSurface": true,
       "owner": "maintainers",
       "reviewBy": "2026-12-31",
-      "removalPlan": "V5-083 — become a projection of the canonical proof; hardcoded zeros are removed first.",
-      "justification": "Shipped as `dashboard`; hardcoded zeros and an independent verdict make it a trust violation, not a coverage gap."
+      "removalPlan": "V5-083 — become a projection of the canonical proof; make the last independent-verdict surface a projection of the one determination.",
+      "justification": "Shipped as `dashboard`; the verb still ships, so the file stays excluded until V5-083 makes it a projection. This is removal debt, not a live defect.",
+      "closureState": "CLOSED on both asserted defects (2026-09-26). The hardcoded zeros are gone — every figure is now `!== null ? … : \"N/A\"` — the score band reads src/reporter/presentation.ts instead of a private 60-point split, and the determination comes from the shared `decideClaim`. What remains is a rendering projection, and V5-083 has not landed."
     },
     {
       "path": "src/commands/enterprise.ts",
@@ -88,8 +96,9 @@
       "shippedSurface": true,
       "owner": "maintainers",
       "reviewBy": "2026-12-31",
-      "removalPlan": "V5-090 — deprecate then remove in 5.0. SSO/compliance content is template text, not a capability.",
-      "justification": "Shipped as `enterprise`; fabricates SSO and compliance posture. Deprecate, do not cover."
+      "removalPlan": "V5-090 — deprecate then remove in 5.0. The honest answer (a capability manifest recording what is NOT provided) is a document, not a command.",
+      "justification": "Shipped as `enterprise`; the verb still ships, so the file stays excluded until V5-090 removes it. This is removal debt, not a live defect.",
+      "closureState": "CLOSED (2026-09-26, [Unreleased] breaking changes). `enterprise sso` and `enterprise compliance` now refuse with a reason and write nothing; the fabricated SOC 2 / HIPAA / PCI-DSS templates are gone; `enterprise config` emits a capability manifest whose `notProvided` list records the absences. What remains is an honest manifest, and V5-090 has not landed."
     },
     {
       "path": "src/commands/exec-report.ts",
@@ -97,8 +106,9 @@
       "shippedSurface": true,
       "owner": "maintainers",
       "reviewBy": "2026-12-31",
-      "removalPlan": "V5-001 — remove the fabricated values now; V5-083 — make it a proof projection.",
-      "justification": "Shipped as `exec-report`; rendered numbers without provenance and an independent release verdict."
+      "removalPlan": "V5-001 — landed: the fabricated values are removed; V5-083 — make it a proof projection.",
+      "justification": "Shipped as `exec-report`; the verb still ships, so the file stays excluded until V5-083 makes it a proof projection. This is removal debt, not a live defect.",
+      "closureState": "CLOSED on the asserted defect (2026-09-26). Numbers that had no provenance were deleted, and the report no longer carries an independent release verdict: it defers to the one determination function and states plainly that business risk, ROI and release readiness are decisions this tool has no evidence for."
     },
     {
       "path": "src/commands/maturity.ts",
@@ -107,7 +117,8 @@
       "owner": "maintainers",
       "reviewBy": "2026-12-31",
       "removalPlan": "V5-090 — deprecate then remove in 5.0. A file-existence proxy is not a maturity measurement.",
-      "justification": "Shipped as `maturity`; hardcoded 75/70/65/30 scores and a `ruleCount = 79` fallback invented from file existence."
+      "justification": "Shipped as `maturity`; the verb still ships, so the file stays excluded until V5-090 removes it. This is removal debt, not a live defect.",
+      "closureState": "CLOSED (2026-09-26). The ledger previously claimed this file carried 'hardcoded 75/70/65/30 scores and a ruleCount = 79 fallback invented from file existence'. That was already false: the scores and the fallback were removed, the module header records the removal, and the command now reports named, checkable artifacts with an explicit `doesNotSay` on each. The stale claim is the reason this entry carries a closure state instead of a signature — there is no surface of the asserted defect left to pin."
     },
     {
       "path": "src/commands/policy.ts",
@@ -116,7 +127,11 @@
       "owner": "maintainers",
       "reviewBy": "2026-12-31",
       "removalPlan": "W7 — keep as the policy file surface, but evaluate it against the canonical proof (V5-073) and cover it.",
-      "justification": "Shipped as `policy`; real behaviour that must survive to 5.0, so it gets covered rather than removed."
+      "justification": "Shipped as `policy`; real behaviour that must survive to 5.0, so it gets covered rather than removed. The signature pins the validation surface that has to stay: it is the one entry in this ledger whose debt is the ABSENCE of tests, not a defect.",
+      "defectSignatures": [
+        "export function validatePolicy\\(policy: unknown\\): string\\[\\]",
+        "export interface PolicyGates \\{"
+      ]
     },
     {
       "path": "src/commands/quarantine.ts",
@@ -124,8 +139,12 @@
       "shippedSurface": true,
       "owner": "maintainers",
       "reviewBy": "2026-12-31",
-      "removalPlan": "V5-001 — stop reporting empty proposals as updates; V5-090 — merge review/stats into the suppression ledger.",
-      "justification": "Shipped as `quarantine`; emitted empty proposals, zero statistics, and a false \"updated\" confirmation."
+      "removalPlan": "V5-001 — landed: static findings can no longer become proposals; V5-090 — merge review/stats into the suppression ledger.",
+      "justification": "Shipped as `quarantine`. The three asserted defects were fixed — no proposal is derived from a static finding, no zero statistics are printed, and nothing claims to have been updated — but the residual surface is exactly the guarantee, and it is the guarantee the signatures below pin so it cannot silently return.",
+      "defectSignatures": [
+        "export function proposalsFromStaticFindings\\(",
+        "A static scan has no runtime behaviour to observe"
+      ]
     },
     {
       "path": "src/commands/release-report.ts",
@@ -134,7 +153,8 @@
       "owner": "maintainers",
       "reviewBy": "2026-12-31",
       "removalPlan": "V5-083 — become a proof projection; a GO/NO-GO verdict computed here is the verdict-spl sprawl the canonical proof removes.",
-      "justification": "Shipped as `release-report`; hardcoded zeros and a GO verdict reachable with no runtime evidence."
+      "justification": "Shipped as `release-report`. The hardcoded zeros and the partial-ignoring GO are gone, but the report still computes its OWN GO/NO-GO rather than projecting the single determination, so the residual surface is a second verdict authority — the signature below is that refusal to grade a truncated scan, which is what a future edit would be most likely to break.",
+      "defectSignatures": ["A partial scan cannot support a GO verdict"]
     },
     {
       "path": "src/commands/report-playwright.ts",
@@ -142,8 +162,13 @@
       "shippedSurface": true,
       "owner": "maintainers",
       "reviewBy": "2026-12-31",
-      "removalPlan": "V5-001 — stop fabricating Playwright entries from static findings; V5-090 — hand rendering to the reporter package.",
-      "justification": "Shipped as `report`; invents Playwright results that were never executed and reports `passed` on zero findings."
+      "removalPlan": "V5-001 — landed: no Playwright entries are fabricated from static findings; V5-090 — hand rendering to the reporter package.",
+      "justification": "Shipped as `report`. V5-001 landed twice: the suite block is always empty, and (2026-09-26) the TOP-LEVEL status is no longer derived from the findings. It used to be `partial ? \"interrupted\" : hasError ? \"failed\" : \"passed\"`, so a clean scan published `{status: \"passed\", totalTests: 0}` — a green test run over zero tests, in the first field a Playwright consumer reads. The status is now the literal `interrupted` and the scan's own outcome moved to `mjolnir.scanOutcome`. The signatures below are written against that post-fix state, which is why this task had to land after it.",
+      "defectSignatures": [
+        "\\n  status: \"interrupted\";\\n",
+        "\\n    suites: \\[\\],\\n",
+        "\\n      scanOutcome,\\n"
+      ]
     },
     {
       "path": "src/commands/trend.ts",
@@ -152,7 +177,11 @@
       "owner": "maintainers",
       "reviewBy": "2026-12-31",
       "removalPlan": "V5-090 — merge into trust-trend; dashboards render stored evidence and never invent truth.",
-      "justification": "Shipped as `trend`; duplicates trust-trend, forces a framework count, and is non-deterministic across runs."
+      "justification": "Shipped as `trend`; duplicates trust-trend, and every stored snapshot carries a wall-clock `timestamp`, so two runs over an unchanged repository write different bytes. The signature below is the field that makes the store non-deterministic.",
+      "defectSignatures": [
+        "export interface TrendSnapshot \\{",
+        "\\n  timestamp: string;\\n"
+      ]
     },
     {
       "path": "src/ledger/m26-validators.ts",
@@ -161,7 +190,12 @@
       "owner": "maintainers",
       "reviewBy": "2026-12-31",
       "removalPlan": "V5-006 — wire m26:audit into `certify` so the validators gate engineering certification, then cover the validator branches.",
-      "justification": "Runs inside the release gate via `npm run m26:audit`. A gate that is not covered is a gate that can silently stop working."
+      "justification": "Runs inside the release gate via `npm run m26:audit`. A gate that is not covered is a gate that can silently stop working. The signatures are the schema the gate enforces: a required-field list that shrinks, or a record cap that grows without review, is the validator quietly accepting records it used to reject.",
+      "defectSignatures": [
+        "export const MAX_M26_LEDGER_RECORDS = 10_000;",
+        "export const GAP_REQUIRED_FIELDS = \\[",
+        "export const SUPPORT_REQUIRED_FIELDS = \\["
+      ]
     },
     {
       "path": "src/release/version-surface.ts",
@@ -170,7 +204,12 @@
       "owner": "maintainers",
       "reviewBy": "2026-12-31",
       "removalPlan": "V5-007 — single-source the version identity, then cover the drift-detection branches.",
-      "justification": "Runs inside `npm run version:check` on every certify. Version drift detection that is itself untested is exactly the class of defect this ledger exists to expose."
+      "justification": "Runs inside `npm run version:check` on every certify. Version drift detection that is itself untested is exactly the class of defect this ledger exists to expose. The signatures are the drift rules themselves: dropping one of them would let a surface install a version that does not exist on the registry, and nothing else would notice.",
+      "defectSignatures": [
+        "export function checkVersionSurfaceEnvelope\\(",
+        "export function checkActionDefaultVersion\\(",
+        "mutable mjolnir-qa@latest is forbidden"
+      ]
     },
     {
       "path": "src/forensics/triage.ts",
@@ -179,7 +218,11 @@
       "owner": "maintainers",
       "reviewBy": "2026-12-31",
       "removalPlan": "V5-038 — retire the independent HIGH/MEDIUM/LOW triage authority so classification derives from the single evidence verdict.",
-      "justification": "Shipped through `triage` and the MCP server. Low branch density, but it also carries an independent verdict authority that Wave 4 removes — fix the authority, then cover it."
+      "justification": "Shipped through `triage` and the MCP server. Low branch density, but it also carries an independent verdict authority that Wave 4 removes — fix the authority, then cover it. The signature is the authority itself.",
+      "defectSignatures": [
+        "export function classifyVerdict\\(v: TestVerdict\\): TriageClass \\{",
+        "export type TriageClass ="
+      ]
     },
     {
       "path": "src/cli.ts",
@@ -188,7 +231,10 @@
       "owner": "maintainers",
       "reviewBy": "2026-12-31",
       "removalPlan": "V5-080 — generate VERBS, help, README, and the site reference from one command manifest, which makes the entry point fully reachable by tests.",
-      "justification": "The shipped entry point. Every verb registration is a branch; a generated command manifest (V5-080) is what lifts it above the floor."
+      "justification": "The shipped entry point. Every verb registration is a branch; a generated command manifest (V5-080) is what lifts it above the floor. The signature is the hand-written dispatch table — when V5-080 replaces it with generated code, this signature stops matching and the entry is re-reviewed rather than silently outliving its own removal plan.",
+      "defectSignatures": [
+        "report: \\(a, o\\) => runReportPlaywrightCommand\\(a, o\\),"
+      ]
     },
     {
       "path": "dist/**",
