@@ -21,7 +21,7 @@
  * Scheduled for removal in 5.0 — see docs/RELEASE-TRAINS.md.
  */
 
-import { runScan } from "../cli.js";
+import { runScan, validateScanTarget } from "../cli.js";
 import { EXIT_CLEAN, EXIT_INTERNAL, EXIT_USAGE } from "../exit-codes.js";
 import { internalErrorMessage, type Output } from "../cli-io.js";
 import { out, err } from "../cli-io.js";
@@ -176,6 +176,18 @@ export async function runBusinessCaseCommand(
     }
 
     io.out(`Scanning ${target} ...`);
+
+    // Audit H-4, applied here because this verb calls runScan directly and so
+    // never passed through the dispatcher's check.
+    //
+    // It was the one scanning verb that answered a path which does not exist
+    // with exit 0 and a clean report — "Measured: 0 of 0 findings carry a
+    // corpus-measured FP rate" — for work that never happened. For a tool
+    // whose whole product is telling you whether a suite can be trusted, a
+    // green report over a typo'd CI path is the most dangerous output it can
+    // produce: a reader has no reason to doubt a table with no rows in it.
+    const invalid = validateScanTarget(target, io.err ?? err);
+    if (invalid !== null) return invalid;
 
     const result = await runScan({
       target,

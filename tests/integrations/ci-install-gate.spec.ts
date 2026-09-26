@@ -131,7 +131,37 @@ describe("the generated npx workflow gates and can resolve its tarball", () => {
   it("installs a version that exists on the registry", () => {
     const template = TEMPLATE("error");
     expect(template).toContain(`mjolnir-qa-${pkg.publishedStable}.tgz`);
-    expect(template).not.toContain(`mjolnir-qa-${pkg.version}.tgz`);
+    // Only meaningful while the working version is something the registry
+    // does not have. On a stable release `publishedStable` IS `version`, so
+    // the two assertions here would demand the same string be present and
+    // absent. The rule is "install the published version, never an
+    // unpublished one", and on a stable release the first assertion is the
+    // whole of it.
+    if (pkg.publishedStable !== pkg.version) {
+      expect(template).not.toContain(`mjolnir-qa-${pkg.version}.tgz`);
+    }
+  });
+
+  it("would reject an unpublished tarball name", () => {
+    // The negative half, exercised with a version the registry does not
+    // have, so it is a real assertion on any repository state rather than
+    // one that quietly switches itself off on a stable release.
+    //
+    // `replaceAll`, not `replace`: the generated workflow names the tarball
+    // on more than one line, and replacing only the first would leave the
+    // published reference in place — which is what made the first version of
+    // this test assert something the fixture had not actually removed.
+    const UNPUBLISHED = "9.9.9";
+    const template = TEMPLATE("error");
+    const published = `mjolnir-qa-${pkg.publishedStable}.tgz`;
+    const drifted = template.replaceAll(
+      published,
+      `mjolnir-qa-${UNPUBLISHED}.tgz`,
+    );
+    expect(drifted).not.toBe(template);
+    expect(template).toContain(published);
+    expect(drifted).not.toContain(published);
+    expect(drifted).toContain(`mjolnir-qa-${UNPUBLISHED}.tgz`);
   });
 
   it("publishedVersionForInstall prefers the recorded published stable", () => {

@@ -96,7 +96,19 @@ describe("root action.yml (Marketplace surface) is locked", () => {
     ) as { version: string; publishedStable: string };
     expect(action.inputs["version"]?.default).toBe(pkg.publishedStable);
     expect(pkg.publishedStable).not.toContain("-");
-    expect(pkg.publishedStable).not.toBe(ENGINE_VERSION);
+    // The Action default is the last PUBLISHED stable, so it must not name
+    // the working tree's build. While this repository was a release
+    // candidate those were different strings and this was a real assertion.
+    // On a stable release `publishedStable` IS the working version, and the
+    // requirement is expressed by the two assertions above — the default
+    // equals the published record, and that record is not a prerelease.
+    // Asserting they differ would demand that a published release lie about
+    // its own version.
+    if (pkg.version.includes("-")) {
+      expect(pkg.publishedStable).not.toBe(ENGINE_VERSION);
+    } else {
+      expect(pkg.version).toBe(pkg.publishedStable);
+    }
   });
 
   it("rejects an unpublished pinned version before the scan, with a reason", () => {

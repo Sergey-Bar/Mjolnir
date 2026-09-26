@@ -153,6 +153,172 @@ once shipped, so this file is the record of what changed between versions.
   removals is justified differently, so the deprecation notices do not all send
   the same message to users who acted on different output.
 
+## [4.0.0] — 2026-09-26
+
+The first release whose reporting surface is checked against the working tree
+rather than against a plan. Every box below is enforced by a gate in
+`npm run certify`.
+
+### What you get, relative to 3.0.0
+
+**The product no longer reports numbers it did not measure.**
+
+- [x] A scan that finished now says it finished. A minified bundle or a lockfile
+      in the repository used to downgrade a complete scan to `PARTIAL`, and the
+      terminal told you "some files were not analyzed, so the surface is
+      unverified" when every discovered test file _had_ been analyzed. Across
+      the 37-repository corpus, complete scans went from 13/37 to 29/37.
+- [x] Unmeasured counts read `unknown — not measured`, not `0`. The trust report,
+      the PR comment and the step summary all printed "0 tests analyzed in 0
+      files" for a producer that had never measured a test declaration. A zero
+      is a claim; an absent measurement is not.
+- [x] `handover` no longer tells you "the suite is in good shape" when no run
+      report was ingested and flakiness was therefore never checked. It now
+      names what it did not check.
+- [x] The HTML dashboard produces the same bytes for the same repository. It
+      embedded `new Date()` in its visible body, so it could never be diffed in
+      review. `--deterministic` omits the timestamp entirely.
+- [x] The trust report's evidence descriptor is the terminal's, on every surface.
+      HTML and Markdown showed four bare words (`E2 · deterministic`) where the
+      terminal showed the measured FP rate, the sample size, the trust rung and
+      what the runtime actually corroborated.
+- [x] A finding with no evidence level derives one from its own type and
+      confidence. It used to default to `E2` — the strongest claim the product
+      can make — for findings nobody had measured.
+- [x] The contributor handover no longer derives a dollar figure from a table of
+      invented incident costs. `business-case` multiplied a measured
+      false-positive rate by unsourced per-industry costs and printed the product
+      as "Expected Savings". A cost figure now requires `--incident-cost`, so the
+      number is yours. `--history` (which read no history) and `--projected`
+      (which divided by six) are gone, with reasons.
+- [x] `mjolnir enterprise` no longer writes a deployment config claiming
+      `sso-saml`, an SSO guide telling you to add a config key nothing reads, or
+      auditor-facing SOC 2 / HIPAA / PCI-DSS templates mapping controls to
+      capabilities this product does not have. `sso` and `compliance` refuse;
+      `config` emits a capability manifest whose `notProvided` list records the
+      absences.
+- [x] The dependency graph no longer prints a count derived from nothing.
+      "Reachable files: N" was always the number of files that went in.
+
+**The product now sees things it was blind to.**
+
+- [x] Node-native TypeScript tests (`.test.mts`, `.spec.mts`, `.test.cts`,
+      `.spec.cts`) are scanned. They were not mis-scored — they were never
+      scanned, so every rule was silent on them with no finding and no note.
+      Verified with two byte-identical tests: the `.ts` copy produced the
+      finding, the `.mts` copy produced nothing at all.
+- [x] The CI matrix installs cleanly on all three platforms. `npm ci` failed on
+      every job before a test ran, and then failed again with a missing
+      `lightningcss` binary for Linux, because a lockfile regenerated on Windows
+      cannot contain the other platforms' optional dependencies.
+
+**The gates now catch these instead of the next person.**
+
+- [x] `report:honesty` — no surface may print a zero for an absent measurement.
+      Four reviewed exceptions, each with a reason and a follow-up.
+- [x] `thresholds:parity` — no score-band literal outside the registry. It
+      immediately caught a selector-health threshold that shared a number with a
+      trust band but not a meaning.
+- [x] `script:paths` — no `package.json` script may name a path that is missing
+      or uncommitted. It found `frontier:contracts` naming 19 test files deleted
+      by an earlier cleanup: Vitest treats a missing path as "no tests here", so
+      the script exited 0 reporting "57 passed" while nineteen contract suites
+      never ran. Rebuilt from the 23 that exist — 1 110 tests, not 57.
+- [x] `lockfile:platforms` — the lockfile must carry the optional binaries for
+      every platform CI builds on. The failure is invisible locally by
+      construction, so it needed a gate that runs everywhere.
+- [x] `claims:revalidate` — a claim asserted `fixed` must rest on a
+      candidate-bound, independent revalidation. It rejects evidence citing the
+      artifact it is meant to prove, and downgrades rather than deletes a claim
+      that loses its evidence.
+- [x] `verbs:budget` — the 5.x law: one new verb requires one removal or a merge.
+- [x] `m26:gaps:revalidate` — re-runs each gap row's own command and records the
+      exit code and the commit it ran at.
+- [x] `release:verify` reports every blocker in one run. It was a `&&` chain, so
+      it stopped at the first of four and you met them one per run.
+- [x] The coverage gate is a floor and a ratchet, not one number pretending to
+      be both.
+
+**Truth in the project's own records.**
+
+- [x] The gap ledger was revalidated: all 17 rows had their own
+      `revalidation_command` run against this tree. `GAP-M26-005` read
+      `fixed` / PASS while its command _fails_. A cleared row can no longer
+      exist without a revalidation bound to a named commit, and
+      `STALE_UNVERIFIABLE` deliberately cannot unblock a release.
+- [x] **A gap row could be marked fixed while its own revalidation failed.**
+      The `exit_code === 0` check was reachable through only one of the four
+      combinations the schema allows, so a `fixed` row — or an
+      `ALREADY_FIXED` row carrying closure evidence — was accepted with
+      `exit_code: 1` recorded in its own revalidation. Three of those four
+      routes cleared the row. The test that covered it hid the hole, because
+      the fixture only set `closure_evidence` for `fixed`.
+- [x] The 429 GitHub dispositions no longer derive from GitHub's own `state`
+      field. A snapshot cannot prove itself; each disposition now needs a reason
+      and a verification. 215 issues are visibly awaiting a human decision,
+      which is the honest count.
+- [x] `PRODUCT-ENHANCEMENT-ANALYSIS.md` claimed 16 shipped features; six do not
+      hold. It is marked `SUPERSEDED-BY` and carries a per-feature audit, kept
+      rather than deleted because deleting it would destroy the only evidence
+      that the belief was wrong.
+
+**Found by the pre-release bug sweep, after the fix list was written.** Both
+were live in 3.0.0 and neither was in the plan.
+
+- [x] `mjolnir business-case <path>` answered a path that does not exist with
+      exit 0 and a clean report: "Measured: 0 of 0 findings carry a
+      corpus-measured FP rate". It called `runScan` directly and so never
+      passed through `validateScanTarget` — the check whose own comment says a
+      typo'd CI path must be a loud red, never a silent green. Thirteen of the
+      fifteen scanning verbs were already loud; this one was not, and a green
+      table over a path that was never scanned is the most dangerous output
+      this product can produce. Now exit 10.
+- [x] The extended TypeScript test-file regex was probed against 27 shapes:
+      all 12 that must match do, all 15 that must not are rejected —
+      including `a.min.mts`, `a.spec.cts.bak` and `notatest.mts`.
+- [x] `ships()` in `script:paths` was probed for the failure modes a new gate
+      usually has: an empty directory, a directory holding only untracked
+      files, and a symlink loop. All resolve correctly and none hangs. A
+      first version treated a directory as "tracked" only if `git ls-files`
+      listed the directory itself, which it never does — that produced two
+      false positives and is fixed.
+
+### Known open, deliberately
+
+- [ ] `CERTIFICATION_STATES` is not in ladder order, so `rankOf` — the only
+      ordering function — ranks `KNOWN` above `TRUST-COMPLETE`, and
+      `requiresEvidence` asks `BLOCKED` and `DEGRADED` for a corpus their own
+      doc comment says they need none. Two `it.fails` tests record it, so
+      reordering the array fails the build. Fixing it moves `rankOf` for every
+      state and changes admission outcomes, so it is a contract change, not a
+      patch.
+- [ ] 23 corpus count-drifts are unreviewed, the largest being `QA-PY-007`
+      firing 1332 times in apache-airflow and 92 now. Not accepted: running
+      `--update` without reading them would delete the only evidence that
+      detection changed.
+- [ ] 8 of 37 corpus repositories report `PARTIAL` because test-support files
+      under `__tests__/` are not scanned. The verdict is honest — an incomplete
+      scan is not a pass — and the fix is a design decision about what "the
+      surface" means, not a patch.
+- [ ] 215 of 229 GitHub issues are untriaged. Prepared dispositions exist in
+      `docs/issue-dispositions.json`; none has been applied, because closing a
+      public issue is destructive and is a person's decision.
+- [ ] `BW-022` (one workspace model, real graph edges) is open. The plan claimed
+      it is "what makes `impact` honest"; it is not — `impact` never used the
+      graph and is honest on its own path. The graph is a no-op on an unshipped
+      code path, and the function now reports that instead of implying otherwise.
+
+### Upgrade notes
+
+- Node-native TypeScript test files are now scanned, so a project using
+  `.mts`/`.cts` tests **will see new findings**. That is the fix working, not a
+  regression.
+- `business-case` requires `--incident-cost` for any dollar figure, and now
+  exits 10 on a target that does not exist instead of printing an empty report.
+- `enterprise sso` and `enterprise compliance` now exit non-zero with a reason.
+- The trust report JSON's `tests.files` and `tests.declarations` are `null`
+  rather than `0` when unmeasured.
+
 ## [4.0.0-rc.1] — 2026-09-25
 
 ### Breaking changes

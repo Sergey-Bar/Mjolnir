@@ -3,11 +3,11 @@
   "name": "mjolnir-qa",
   "displayName": "Mjölnir — verification trust scan",
   "description": "Scans test suites, Playwright configs and CI workflows, grades the verification system (not the product code), and publishes measured false-positive rates where corpus evidence exists. MCP tools: scan, explain, diff, verify, forensics, triage, pw-report.",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "server":
     {
       "type": "stdio",
-      "command": { "type": "npx", "args": ["-y", "mjolnir-qa@3.0.0", "mcp"] },
+      "command": { "type": "npx", "args": ["-y", "mjolnir-qa@4.0.0", "mcp"] },
     },
   "repository": "https://github.com/Sergey-Bar/Mjolnir",
   "license": "MIT",

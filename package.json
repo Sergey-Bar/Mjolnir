@@ -1,7 +1,7 @@
 {
   "name": "mjolnir-qa",
-  "version": "4.0.0-rc.1",
-  "publishedStable": "3.0.0",
+  "version": "4.0.0",
+  "publishedStable": "4.0.0",
   "description": "Mjölnir — the Verification Trust Engine for QA. Audits test suites and CI pipelines, reports a worthiness score and prioritized findings.",
   "type": "module",
   "engines": {
@@ -108,6 +108,7 @@
     "version:check": "npm run version:surface:check && npm run reporter:version-check && npm run changelog:check",
     "release:verify": "tsx scripts/release-verify.ts",
     "self-scan": "node dist/cli.mjs .",
+    "ci:standard": "node scripts/check-ci-standard.mjs",
     "ci-local:parity": "node scripts/check-ci-local-parity.mjs",
     "test:property": "node scripts/check-property-runs.mjs && vitest run --config vitest.property.config.ts",
     "test:fuzz": "vitest run --config vitest.fuzz.config.ts",

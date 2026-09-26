@@ -207,6 +207,29 @@ describe("runBusinessCaseCommand", () => {
     expect(err).toHaveBeenCalled();
   });
 
+  it("refuses a target that does not exist instead of reporting a clean scan", async () => {
+    // The one scanning verb that answered a path which does not exist with
+    // exit 0 and "Measured: 0 of 0 findings carry a corpus-measured FP rate".
+    // It called runScan directly, so it never passed through the
+    // dispatcher's `validateScanTarget` — the check whose own doc comment
+    // says a typo'd CI path must be a loud red, never a silent green.
+    //
+    // For a tool whose product is telling you whether a suite can be trusted,
+    // a green report over a path that does not exist is the most dangerous
+    // output it can produce: a table with no rows in it invites no doubt.
+    const out = vi.fn();
+    const err = vi.fn();
+    const result = await runBusinessCaseCommand(
+      ["./definitely-not-a-directory"],
+      { out, err },
+    );
+    expect(result).toBe(10);
+    expect(err.mock.calls.flat().join("\n")).toContain("does not exist");
+    // The whole point: no report, and no scan.
+    expect(out.mock.calls.flat().join("\n")).not.toContain("Measured:");
+    expect(mockRunScan).not.toHaveBeenCalled();
+  });
+
   it("defaults to the current directory when no target is provided", async () => {
     mockRunScan.mockResolvedValue(scanResult([]));
 

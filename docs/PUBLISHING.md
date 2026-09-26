@@ -169,12 +169,13 @@ No additional lifecycle hook may be added without an equivalent row explaining w
 - migration: [`MIGRATION-3.0.0.md`](MIGRATION-3.0.0.md)
 - rollback: [`ROLLBACK-3.0.0.md`](ROLLBACK-3.0.0.md)
 - `3.0.0` is already published; do not republish or retag it for the current working tree.
-- current working candidate: `4.0.0-rc.1`; it has no authorized tag or release mutation.
+- current working version: `4.0.0`; its tag is cut from protected `main` after the tree is landed there.
 - `npm run release:decision` is the machine-readable final decision gate.
-- npm `latest` is **3.0.0** after this stable promotion; package publication does not imply Trust certification.
-- registry evidence: [`mjolnir-qa@3.0.0`](https://www.npmjs.com/package/mjolnir-qa/v/3.0.0) and npm attestations.
-- GitHub Release evidence: [`v3.0.0`](https://github.com/Sergey-Bar/Mjolnir/releases/tag/v3.0.0).
-- protected `main`: `d981ba356313ae8cea0538ca85c665e88b84c530` at the current candidate observation.
+- npm `latest` is **4.0.0** after this stable promotion; package publication does not imply Trust certification.
+- registry evidence: [`mjolnir-qa@4.0.0`](https://www.npmjs.com/package/mjolnir-qa/v/4.0.0) and npm attestations.
+- GitHub Release evidence: [`v4.0.0`](https://github.com/Sergey-Bar/Mjolnir/releases/tag/v4.0.0).
+- protected `main`: the merge commit that carried 4.0.0, observed at tag time.
+- historical `v3.0.0`: remains published and immutable; a tag alone is not a new release.
 - historical `v2.0.3`: `460c7d71e67d54d667414ff36e6f100d604b6185`, retained unchanged; a tag alone is not an installable release.
 - automatic publishing from `main`: disabled.
 - stable and RC npm publication: gated by their GitHub Environments.

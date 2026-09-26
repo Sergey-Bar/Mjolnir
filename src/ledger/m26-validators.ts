@@ -1587,19 +1587,25 @@ export function validateGapLedgerRecord(
   // to maintain and a second thing to drift. `revalidation` is a strict
   // superset (command, exit code, commit, observation) so nothing is lost,
   // except one more field per closed row.
-  if (value.status === "ALREADY_FIXED" && value.closure_evidence === null) {
-    const observation = isRecord(value.revalidation)
-      ? value.revalidation.observed
-      : undefined;
-    if (
-      typeof observation === "string" &&
-      (normalizedExitCode(value.revalidation) ?? 0) !== 0
-    ) {
+
+  // A cleared row whose revalidation returned non-zero asserts something its
+  // own evidence refutes. This used to be checked only for
+  // `ALREADY_FIXED` with no `closure_evidence`, which is ONE of the four
+  // combinations the schema allows — so a `fixed` row, or an `ALREADY_FIXED`
+  // row that happened to carry closure evidence, could say "fixed" while
+  // recording that the command failed. The single test that covered it hid
+  // this, because the factory only sets `closure_evidence` for `fixed`.
+  //
+  // It belongs beside the presence check above and applies to every cleared
+  // status, so the four routes are indistinguishable from each other.
+  if (isGapCleared(value)) {
+    const exitCode = normalizedExitCode(value.revalidation);
+    if (exitCode !== undefined && exitCode !== 0) {
       addDiagnostic(
         diagnostics,
         "UNRUN_CLOSURE",
         "$.revalidation.exit_code",
-        "ALREADY_FIXED requires a revalidation that returned 0; this one did not",
+        `status "${String(value.status)}" requires a revalidation that returned 0; this one returned ${exitCode}`,
       );
     }
   }
