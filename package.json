@@ -111,7 +111,9 @@
     "brand:fonts:check": "tsx scripts/vendor-fonts.ts --check",
     "brand:marks": "tsx scripts/generate-brand-marks.ts",
     "brand:marks:update": "node scripts/update-mark-hashes.mjs",
-    "docs:regen": "npm run docs:rules && npm run fp-audit:generate && npm run docs:capability && npm run docs:counts && npm run docs:depth-adjudication && npm run docs:machine-contract && npm run brand:tokens && npm run golden:update && npm run docs:hero && npm run docs:demo && npm run docs:readme-brand && npm run detector-hashes:update"
+    "docs:regen": "npm run docs:rules && npm run fp-audit:generate && npm run docs:capability && npm run docs:counts && npm run docs:depth-adjudication && npm run docs:machine-contract && npm run brand:tokens && npm run golden:update && npm run docs:hero && npm run docs:demo && npm run docs:readme-brand && npm run detector-hashes:update",
+    "docs:refresh": "node scripts/refresh-generated.mjs",
+    "docs:refresh:check": "node scripts/refresh-generated.mjs --check"
   },
   "keywords": [
     "qa",

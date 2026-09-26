@@ -7,43 +7,44 @@ contract enforces: **every external import in src/ must belong to the
 allowlist**, and the shipped surface (adapters, rules, flags, formats, exit
 codes) must match this document exactly.
 
-## Inventory: 332 files, 93672 LOC
+## Inventory: 334 files, 94191 LOC
 
-| Area             | Files | LOC   |
-| ---------------- | ----- | ----- |
-| src/engine       | 58    | 25185 |
-| src/commands     | 44    | 13576 |
-| src/rules        | 88    | 11758 |
-| src/(root)       | 8     | 3726  |
-| src/reporter     | 15    | 3366  |
-| src/forensics    | 17    | 3065  |
-| src/governance   | 1     | 2744  |
-| src/ledger       | 1     | 2660  |
-| src/frameworks   | 6     | 2653  |
-| src/detectors    | 1     | 2564  |
-| src/plugins      | 6     | 2295  |
-| src/discovery    | 10    | 1745  |
-| src/agent        | 1     | 1726  |
-| src/adapters     | 11    | 1715  |
-| src/integrations | 11    | 1621  |
-| src/benchmark    | 3     | 1433  |
-| src/gaps         | 2     | 1390  |
-| src/qa           | 1     | 1285  |
-| src/bench        | 5     | 1068  |
-| src/release      | 7     | 1012  |
-| src/research     | 1     | 995   |
-| src/mutation     | 6     | 836   |
-| src/mcp          | 3     | 816   |
-| src/brand        | 3     | 807   |
-| src/store        | 2     | 671   |
-| src/config       | 3     | 540   |
-| src/scorer       | 3     | 533   |
-| src/traceability | 2     | 441   |
-| src/scope        | 2     | 427   |
-| src/playwright   | 2     | 312   |
-| src/lib          | 5     | 306   |
-| src/trust        | 2     | 232   |
-| src/anti-gaming  | 2     | 169   |
+| Area              | Files | LOC   |
+| ----------------- | ----- | ----- |
+| src/engine        | 58    | 25185 |
+| src/commands      | 44    | 13576 |
+| src/rules         | 88    | 11758 |
+| src/(root)        | 8     | 3726  |
+| src/reporter      | 15    | 3366  |
+| src/forensics     | 17    | 3065  |
+| src/governance    | 1     | 2744  |
+| src/ledger        | 1     | 2660  |
+| src/frameworks    | 6     | 2653  |
+| src/detectors     | 1     | 2564  |
+| src/plugins       | 6     | 2295  |
+| src/discovery     | 10    | 1745  |
+| src/agent         | 1     | 1726  |
+| src/adapters      | 11    | 1715  |
+| src/integrations  | 11    | 1621  |
+| src/benchmark     | 3     | 1433  |
+| src/gaps          | 2     | 1390  |
+| src/qa            | 1     | 1285  |
+| src/bench         | 5     | 1068  |
+| src/release       | 7     | 1012  |
+| src/research      | 1     | 995   |
+| src/mutation      | 6     | 836   |
+| src/mcp           | 3     | 816   |
+| src/brand         | 3     | 807   |
+| src/store         | 2     | 671   |
+| src/config        | 3     | 540   |
+| src/scorer        | 3     | 533   |
+| src/certification | 2     | 519   |
+| src/traceability  | 2     | 441   |
+| src/scope         | 2     | 427   |
+| src/playwright    | 2     | 312   |
+| src/lib           | 5     | 306   |
+| src/trust         | 2     | 232   |
+| src/anti-gaming   | 2     | 169   |
 
 ## Internal fan-in — top 15 (change-blast candidates)
 
