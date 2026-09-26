@@ -360,19 +360,45 @@ jobs:
           done
           echo "::error::$PACKAGE_NAME@$VERSION did not become visible on npm"
           exit 1
-      - name: Verify and repair the next dist-tag
+      - name: Verify and repair the release dist-tag
         shell: bash
         env:
           PACKAGE_NAME: ${{ needs.verify.outputs.package_name }}
           VERSION: ${{ needs.verify.outputs.version }}
+          IS_PRERELEASE: ${{ needs.verify.outputs.is_prerelease }}
         run: |
           set -euo pipefail
-          NEXT=$(npm view "$PACKAGE_NAME" dist-tags.next || true)
-          if [ "$NEXT" != "$VERSION" ]; then
-            npm dist-tag add "$PACKAGE_NAME@$VERSION" next
+          # A prerelease belongs on `next` and must NOT become `latest` — a
+          # consumer running `npm i mjolnir-qa` must not silently get a
+          # candidate. A STABLE release is the opposite: `latest` is where
+          # consumers are supposed to land, so leaving it on the previous
+          # version would ship 4.0.0 to nobody.
+          #
+          # This step was written for the RC-only era and asserted
+          # `latest != VERSION` unconditionally, which is exactly backwards
+          # for a stable tag.
+          if [ "$IS_PRERELEASE" = "true" ]; then
+            NEXT=$(npm view "$PACKAGE_NAME" dist-tags.next || true)
+            if [ "$NEXT" != "$VERSION" ]; then
+              npm dist-tag add "$PACKAGE_NAME@$VERSION" next
+            fi
+            test "$(npm view "$PACKAGE_NAME" dist-tags.next)" = "$VERSION"
+            test "$(npm view "$PACKAGE_NAME" dist-tags.latest || true)" != "$VERSION"
+            echo "prerelease: $VERSION is on \`next\`; \`latest\` is untouched"
+          else
+            CURRENT_LATEST=$(npm view "$PACKAGE_NAME" dist-tags.latest || true)
+            if [ "$CURRENT_LATEST" != "$VERSION" ]; then
+              npm dist-tag add "$PACKAGE_NAME@$VERSION" latest
+            fi
+            test "$(npm view "$PACKAGE_NAME" dist-tags.latest)" = "$VERSION"
+            # `next` is the prerelease channel; a stable version does not
+            # belong there, so remove it if this run left it behind.
+            NEXT=$(npm view "$PACKAGE_NAME" dist-tags.next || true)
+            if [ "$NEXT" = "$VERSION" ]; then
+              npm dist-tag rm "$PACKAGE_NAME" next
+            fi
+            echo "stable: \`latest\` now points at $VERSION"
           fi
-          test "$(npm view "$PACKAGE_NAME" dist-tags.next)" = "$VERSION"
-          test "$(npm view "$PACKAGE_NAME" dist-tags.latest || true)" != "$VERSION"
 
   github-release:
     needs:
