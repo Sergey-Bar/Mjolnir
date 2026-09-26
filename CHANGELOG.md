@@ -107,6 +107,32 @@ once shipped, so this file is the record of what changed between versions.
 
 ### Fixed
 
+- **A rule that crashes is no longer certified as a rule that stayed silent.**
+  The doc generator caught a rule THROW while running it against its own
+  must-not-fire fixture and returned `null`; the caller read that as
+  `fired: false` and committed, into a generated doc page and the
+  certification surface, the sentence _"Verified against … — a legitimate,
+  similar-looking pattern this rule correctly leaves alone."_ A detector that
+  crashes produces exactly the same absence of findings as one that correctly
+  abstains, so that claim had no evidence behind it — and it contradicted the
+  same function's own docstring, which says the field degrades honestly.
+  The outcome is now the tri-state the doctor's own model already defines:
+  `FIRED` (a real firewall violation), `DID_NOT_FIRE` (certified), and
+  `INCONCLUSIVE` (the rule did not run). An `INCONCLUSIVE` page says so and
+  says why, and it never renders the certification sentence. A missing
+  fixture is a fourth, separate thing — nothing was attempted — and says
+  that instead. The field is typed as a `FixtureOutcome` union rather than a
+  boolean, so reintroducing a derived `fired` flag does not typecheck.
+
+- **A human-facing table stopped sorting by code unit.** Pinning every
+  `localeCompare` to code-unit order (the fix for the ambient-locale drift)
+  made the per-rule corpus-occurrence table read
+  `SeleniumHQ-selenium` before `microsoft-playwright-dotnet`, because `S`
+  sorts before `m`. Stable, and worse to read than the alphabetical order the
+  table implies it has. That surface is a table a person chooses repos from,
+  so it now uses an **explicitly pinned** locale — readable order, identical
+  on every machine, which is the actual defect being avoided.
+
 - **Fifteen silent capability losses are now counted, and the count reaches the
   report.** A `catch` in a detection path that returned a clean default made
   the scan exit 0, report `analysisComplete`, and quietly lose the thing that

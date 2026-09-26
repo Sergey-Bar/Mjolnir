@@ -28,22 +28,52 @@ import {
 import { computeCodeText } from "../engine/code-text.js";
 import { getAntiPatternContent } from "./anti-pattern-catalog.js";
 import { firstFixtureFile } from "./fixture-example.js";
-import { compareCodePoints } from "../lib/compare.js";
+import {
+  compareCodePoints,
+  compareLocalized,
+  DISPLAY_LOCALE,
+} from "../lib/compare.js";
+import { recordDegradation } from "../engine/degradation-ledger.js";
 
 export interface RuleDocExample {
   finding?: Omit<Finding, "ruleId" | "category">;
   fixturePath?: string;
 }
 
+/**
+ * The outcome of running a rule against a fixture.
+ *
+ * `FIRED` and `DID_NOT_FIRE` are the two the fixture firewall is about, and
+ * the difference between them is the whole point of a must-not-fire fixture.
+ * `INCONCLUSIVE` is the third the doctor model already defines
+ * (`docs/CERTIFICATION-POLICY.md`): the rule DID NOT RUN. A boolean cannot
+ * express it, and collapsing it into `false` is what turned a rule that threw
+ * on its own fixture into a doc page reading "Verified against ... — a
+ * legitimate, similar-looking pattern this rule correctly leaves alone."
+ *
+ * That sentence is a certification claim. The evidence for it is that the
+ * rule produced no findings, and "produced no findings because it crashed"
+ * is not evidence of anything except a broken detector.
+ */
+export type FixtureOutcome = "FIRED" | "DID_NOT_FIRE" | "INCONCLUSIVE";
+
 export interface RuleDocData {
   rule: QADoctorRule;
   mustFire: RuleDocExample;
-  mustNotFire: { fixturePath?: string; fired: boolean };
+  mustNotFire: { fixturePath?: string; outcome: FixtureOutcome };
   /** Real corpus occurrence counts by repo name, when a baseline exists. */
   corpusOccurrences: Record<string, number>;
 }
 
-/** Mirrors explainRule's ast/path normalization exactly — see explain.ts. */
+/**
+ * Mirrors explainRule's ast/path normalization exactly — see explain.ts.
+ *
+ * `null` means the rule did not run, and the two reasons are kept apart
+ * because they are not the same failure: an unreadable FIXTURE is a
+ * generation-run problem with the repo, while a rule that THREW is a broken
+ * detector. Both are counted through the same degradation sink, and both are
+ * INCONCLUSIVE at the call site — neither may be rendered as a pass.
+ */
 function runRuleAgainstFixture(
   rule: QADoctorRule,
   fixturePath: string,
@@ -55,6 +85,7 @@ function runRuleAgainstFixture(
     // committed docs/rules/*.md snippet and drift from a clean CI regen.
     text = readFileSync(fixturePath, "utf8").replace(/\r\n/g, "\n");
   } catch {
+    recordDegradation("rule-doc-fixture-unreadable");
     return null;
   }
   const normalizedPath = fixturePath.replaceAll("\\", "/");
@@ -72,6 +103,7 @@ function runRuleAgainstFixture(
           ? parseAzurePipeline(text)
           : parseWorkflow(text);
       } catch {
+        recordDegradation("rule-doc-workflow-parse-failed");
         return null;
       }
     }
@@ -86,6 +118,11 @@ function runRuleAgainstFixture(
     const codeText = computeCodeText(parsed, languageOf(normalizedPath));
     return rule.run({ ...parsed, codeText });
   } catch {
+    // A rule that THREW is not a rule that stayed silent. This is the defect
+    // W1.2 exists for: the caller used to read `null` as "no findings" and
+    // write "Verified against ... this rule correctly leaves alone" into a
+    // committed doc page and the certification surface.
+    recordDegradation("rule-doc-rule-crash");
     return null;
   }
 }
@@ -107,6 +144,12 @@ export interface CorpusBaseline {
  * Collects everything a doc page needs for one rule. Degrades honestly
  * per field (missing fixture → undefined, not a fabricated example) —
  * mirrors explainRule's degradation contract exactly.
+ *
+ * The must-not-fire branch is where the honesty is load-bearing. `null` from
+ * `runRuleAgainstFixture` means the rule did not run, and the only honest
+ * rendering of that is INCONCLUSIVE — the third status the doctor model
+ * already defines. A `fired: false` here would be a certification claim
+ * backed by nothing.
  */
 export function collectRuleDocData(
   rule: QADoctorRule,
@@ -128,12 +171,19 @@ export function collectRuleDocData(
   const mustNotFirePath = firstFixtureFile(
     join(fixturesRoot, rule.id, "must-not-fire"),
   );
-  let mustNotFire: { fixturePath?: string; fired: boolean } = { fired: false };
+  let mustNotFire: { fixturePath?: string; outcome: FixtureOutcome } = {
+    outcome: "DID_NOT_FIRE",
+  };
   if (mustNotFirePath) {
     const findings = runRuleAgainstFixture(rule, mustNotFirePath);
     mustNotFire = {
       fixturePath: mustNotFirePath,
-      fired: (findings?.length ?? 0) > 0,
+      outcome:
+        findings === null
+          ? "INCONCLUSIVE"
+          : findings.length > 0
+            ? "FIRED"
+            : "DID_NOT_FIRE",
     };
   }
 
@@ -233,14 +283,33 @@ export function renderRuleDocMd(data: RuleDocData): string {
   lines.push("## Confirmed NOT to fire on the corresponding clean pattern");
   lines.push("");
   if (data.mustNotFire.fixturePath) {
-    lines.push(
-      data.mustNotFire.fired
-        ? `⚠️ This rule's must-not-fire fixture (\`${relOrAbs(data.mustNotFire.fixturePath)}\`) ` +
-            "currently DOES fire — that is a real fixture-firewall violation, " +
-            "not a doc bug. Run `mjolnir doctor` for the full self-audit."
-        : `Verified against \`${relOrAbs(data.mustNotFire.fixturePath)}\` — a legitimate, ` +
-            "similar-looking pattern this rule correctly leaves alone.",
-    );
+    const rel = relOrAbs(data.mustNotFire.fixturePath);
+    if (data.mustNotFire.outcome === "FIRED") {
+      lines.push(
+        `⚠️ This rule's must-not-fire fixture (\`${rel}\`) currently DOES fire ` +
+          "— that is a real fixture-firewall violation, not a doc bug. Run " +
+          "`mjolnir doctor` for the full self-audit.",
+      );
+    } else if (data.mustNotFire.outcome === "INCONCLUSIVE") {
+      // The sentence this section used to print unconditionally. It claims
+      // the rule CORRECTLY leaves the pattern alone, and the only evidence
+      // for that is that the rule ran and produced nothing. A rule that threw
+      // on this fixture produces the same absence, so printing the claim
+      // there is asserting verification quality the evidence does not carry.
+      lines.push(
+        `? INCONCLUSIVE — this rule did not run against its own ` +
+          `must-not-fire fixture (\`${rel}\`). The fixture was unreadable, or ` +
+          "the rule threw on it. This is NOT a pass: a detector that crashes " +
+          "here is indistinguishable from one that correctly abstains, and " +
+          "nothing above is verified until the rule runs. " +
+          "`mjolnir doctor` reports the self-audit.",
+      );
+    } else {
+      lines.push(
+        `Verified against \`${rel}\` — a legitimate, similar-looking pattern ` +
+          "this rule correctly leaves alone.",
+      );
+    }
   } else {
     lines.push("_No must-not-fire fixture on disk for this generation run._");
   }
@@ -265,8 +334,15 @@ export function renderRuleDocMd(data: RuleDocData): string {
     lines.push("");
     lines.push("| Repo | Occurrences |");
     lines.push("|---|---|");
+    // Pinned locale, not code-unit order and not the ambient default. This
+    // table is READ by a person choosing which corpus repos to trust, and
+    // code-unit order puts `SeleniumHQ-selenium` before
+    // `microsoft-playwright-dotnet` because `S` sorts before `m` - stable,
+    // and harder to read than the alphabetical order the table implies it
+    // has. Pinning "en" gets the readable order and keeps it identical on
+    // every machine, which is the actual defect being avoided.
     for (const [repo, count] of occurrences.sort((a, b) =>
-      compareCodePoints(a[0], b[0]),
+      compareLocalized(DISPLAY_LOCALE)(a[0], b[0]),
     )) {
       lines.push(`| ${repo} | ${count} |`);
     }

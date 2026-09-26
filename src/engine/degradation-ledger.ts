@@ -81,6 +81,16 @@ export const DEGRADATION_REASONS = [
    * because a rule that crashes is not a rule that stayed silent.
    */
   "explain-rule-crash",
+  /**
+   * A rule THREW while the doc generator ran it against its own fixture.
+   * The dangerous consequence is not a missing page, it is missing EVIDENCE:
+   * the must-not-fire section would otherwise certify a rule that never ran.
+   */
+  "rule-doc-rule-crash",
+  /** A doc-generation fixture could not be read. */
+  "rule-doc-fixture-unreadable",
+  /** A CI-workflow doc-generation fixture could not be parsed. */
+  "rule-doc-workflow-parse-failed",
 ] as const;
 
 export type DegradationReason = (typeof DEGRADATION_REASONS)[number];

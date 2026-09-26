@@ -83,10 +83,10 @@ describe("generateAllRuleDocs — 100% of registered rules", () => {
         `${id} has no must-not-fire fixture on disk`,
       ).toBeDefined();
       expect(
-        data.mustNotFire.fired,
+        data.mustNotFire.outcome,
         `${id}'s must-not-fire fixture actually fires — a real fixture-` +
           `firewall violation the doc page surfaces rather than hiding`,
-      ).toBe(false);
+      ).toBe("DID_NOT_FIRE");
     },
   );
 });
@@ -138,6 +138,11 @@ describe("collectRuleDocData — honest degradation", () => {
     expect(() => collectRuleDocData(throwingRule, FIXTURES_ROOT)).not.toThrow();
     const data = collectRuleDocData(throwingRule, FIXTURES_ROOT);
     expect(data.mustFire.finding).toBeUndefined();
+    // W1.2: the must-not-fire outcome must be INCONCLUSIVE, not DID_NOT_FIRE.
+    // `not.toThrow()` above is what this test used to assert, and it is the
+    // weaker half - a rule that crashes is exactly the case where the absence
+    // of findings means nothing.
+    expect(data.mustNotFire.outcome).toBe("INCONCLUSIVE");
   });
 });
 
@@ -169,7 +174,7 @@ describe("renderRuleDocMd — content contract", () => {
       mustFire: {},
       mustNotFire: {
         fixturePath: "tests/fixtures/FAKE/must-not-fire/x.ts",
-        fired: true,
+        outcome: "FIRED",
       },
       corpusOccurrences: {},
     };
@@ -184,7 +189,7 @@ describe("renderRuleDocMd — content contract", () => {
     const data = {
       rule,
       mustFire: {},
-      mustNotFire: { fired: false },
+      mustNotFire: { outcome: "DID_NOT_FIRE" },
       corpusOccurrences: {},
     };
     const md = renderRuleDocMd(data);
@@ -211,7 +216,7 @@ describe("renderRuleDocMd — content contract", () => {
     const data = {
       rule,
       mustFire: {},
-      mustNotFire: { fired: false },
+      mustNotFire: { outcome: "DID_NOT_FIRE" },
       corpusOccurrences: {},
     };
     const md = renderRuleDocMd(data);
