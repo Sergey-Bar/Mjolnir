@@ -110,6 +110,98 @@ describe("finalize reads the persisted records, not the report", () => {
     expect(reversed.counts).toEqual(forward.counts);
   });
 
+  describe("canonical order — every tie-breaker, not just the first", () => {
+    // The function's entire job is that the output cannot depend on input
+    // order, so its comparator's tie-breaker chain is the contract. The
+    // order-independence test above varies `line` and nothing else, so the
+    // `file`, `title` and `source` branches had no coverage at all: a
+    // regression in any of them would have been invisible, and a regression
+    // there is exactly a non-deterministic finalize.
+
+    const order = (records: EvidenceRecord[]): string[] =>
+      finalizeScanResult({
+        records,
+        artifact: "r.json",
+        findings: [],
+      }).records.map(
+        (r) => `${r.file}:${r.line ?? "-"}:${r.title}:${r.source}`,
+      );
+
+    it("orders by file first", () => {
+      expect(
+        order([
+          record({ file: "test/z.spec.ts", line: 1, title: "z" }),
+          record({ file: "test/a.spec.ts", line: 99, title: "a" }),
+        ]),
+      ).toEqual([
+        "test/a.spec.ts:99:a:jest-json",
+        "test/z.spec.ts:1:z:jest-json",
+      ]);
+    });
+
+    it("orders by line when the file is the same", () => {
+      expect(
+        order([
+          record({ file: "test/a.spec.ts", line: 20, title: "b" }),
+          record({ file: "test/a.spec.ts", line: 3, title: "a" }),
+        ]),
+      ).toEqual([
+        "test/a.spec.ts:3:a:jest-json",
+        "test/a.spec.ts:20:b:jest-json",
+      ]);
+    });
+
+    it("orders by title when file and line are both the same", () => {
+      // Two tests on one line, distinguished only by title — the branch
+      // that makes equal-line records deterministic instead of dependent on
+      // how the report happened to list them.
+      expect(
+        order([
+          record({ file: "test/a.spec.ts", line: 7, title: "zebra" }),
+          record({ file: "test/a.spec.ts", line: 7, title: "apple" }),
+        ]),
+      ).toEqual([
+        "test/a.spec.ts:7:apple:jest-json",
+        "test/a.spec.ts:7:zebra:jest-json",
+      ]);
+    });
+
+    it("orders by source when file, line and title are all the same", () => {
+      // The last tie-breaker, and the one that decides which evidence layer
+      // a coincidentally identical record is attributed to.
+      expect(
+        order([
+          record({
+            file: "test/a.spec.ts",
+            line: 4,
+            title: "same",
+            source: "vitest-json",
+            artifact: "reports/vitest.json",
+          }),
+          record({ file: "test/a.spec.ts", line: 4, title: "same" }),
+        ]),
+      ).toEqual([
+        "test/a.spec.ts:4:same:jest-json",
+        "test/a.spec.ts:4:same:vitest-json",
+      ]);
+    });
+
+    it("sorts a record with no line last, deterministically", () => {
+      // `line` is optional on a persisted record. An unline'd record must land
+      // after every lined one, and stay there across input orders.
+      const unlined = record({ file: "test/a.spec.ts", title: "late" });
+      delete (unlined as { line?: number }).line;
+      const early = record({ file: "test/a.spec.ts", line: 1, title: "early" });
+      const expected = [
+        "test/a.spec.ts:1:early:jest-json",
+        "test/a.spec.ts:-:late:jest-json",
+      ];
+      expect(order([unlined, early])).toEqual(expected);
+      // And the reverse input order must produce the same output.
+      expect(order([early, unlined])).toEqual(expected);
+    });
+  });
+
   it("is pure: the same input always produces the same output", () => {
     const input = {
       records: [record({ title: "x", line: 5 })],

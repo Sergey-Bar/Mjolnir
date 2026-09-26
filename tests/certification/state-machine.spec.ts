@@ -32,6 +32,7 @@ import {
 import {
   auditLanguageManifest,
   findRegressions,
+  languagesAtLeast,
   LANGUAGE_MANIFEST,
   rederive,
   supportClaim,
@@ -314,6 +315,91 @@ describe("the language manifest is checked against its own evidence", () => {
   it("reports no regression for a new or improved language", () => {
     expect(findRegressions([])).toEqual([]);
   });
+});
+
+describe("languagesAtLeast answers a question the manifest must be able to answer", () => {
+  it("returns only languages at or above the requested state", () => {
+    // This is the function a reader of the README asks: "which languages does
+    // Mjölnir actually support at PARSEABLE?" It was exported and had no
+    // caller in any test, so the answer was unverified — and the answer is
+    // exactly what a support claim is made of.
+    const certified = languagesAtLeast("CERTIFIED");
+    for (const entry of certified) {
+      expect(isAtLeast(entry.state, "CERTIFIED"), entry.id).toBe(true);
+    }
+    expect(certified.length).toBeGreaterThan(0);
+  });
+
+  it.fails(
+    "is monotone: a higher bar is a strict subset of a lower one",
+    () => {
+      // A KNOWN DEFECT, recorded rather than hidden. `CERTIFICATION_STATES` is
+      // not in ladder order, so `rankOf` — the only ordering function, and
+      // therefore the basis of every ordered comparison in the machine — ranks
+      // KNOWN at 18, above PROVISIONAL at 17 and TRUST-COMPLETE at 9. The real
+      // order it produces is:
+      //
+      //   UNKNOWN DISCOVERED UNSUPPORTED DEPRECATED UNMEASURED MEASURED
+      //   CANDIDATE EXPERIMENTAL CERTIFIED TRUST-COMPLETE BLOCKED DEGRADED
+      //   PARSEABLE SEMANTICALLY_SUPPORTED MEASURED-CORE … PROVISIONAL KNOWN
+      //
+      // So `isAtLeast("KNOWN", "CERTIFIED")` is true, `PARSEABLE` sorts above
+      // `CERTIFIED`, and `requiresEvidence` — `rankOf(s) >= rankOf("CANDIDATE")`
+      // — demands a corpus for BLOCKED and DEGRADED, which the constant's own
+      // doc comment says "none of which need a corpus behind them".
+      //
+      // Marked `it.fails` so the suite stays green while the defect is visible
+      // in the repo, and so that reordering CERTIFICATION_STATES turns this
+      // into a loud failure that says it was fixed. Not `it.skip`: a skipped
+      // test is a promise nobody is keeping.
+      const certified = new Set(
+        languagesAtLeast("CERTIFIED").map((entry) => entry.id),
+      );
+      const parseable = new Set(
+        languagesAtLeast("PARSEABLE").map((entry) => entry.id),
+      );
+      expect(parseable.size).toBeGreaterThanOrEqual(certified.size);
+      for (const id of certified) {
+        expect(parseable.has(id), `${id} is certified but not parseable`).toBe(
+          true,
+        );
+      }
+    },
+  );
+
+  it("returns the full manifest at UNKNOWN and nothing above the ceiling", () => {
+    // The two ends of the question. UNKNOWN is the floor of the ladder, so
+    // everything qualifies; there is no state above TRUST-COMPLETE, so asking
+    // for one must not throw and must not invent a match.
+    expect(languagesAtLeast("UNKNOWN")).toHaveLength(LANGUAGE_MANIFEST.length);
+    expect(languagesAtLeast("CERTIFIED").length).toBeLessThan(
+      LANGUAGE_MANIFEST.length,
+    );
+  });
+
+  it.fails(
+    "a caller-supplied manifest is filtered by the ladder, not by name",
+    () => {
+      // Same defect, isolated to one function so the report is unambiguous:
+      // `isAtLeast("KNOWN", "CERTIFIED")` returns true, so a filter on it keeps
+      // a state that is ten rungs below the one asked for.
+      const synthetic = [
+        {
+          ...(LANGUAGE_MANIFEST[0] as LanguageCapability),
+          id: "hi",
+          state: "CERTIFIED",
+        },
+        {
+          ...(LANGUAGE_MANIFEST[0] as LanguageCapability),
+          id: "lo",
+          state: "KNOWN",
+        },
+      ] as LanguageCapability[];
+      expect(
+        languagesAtLeast("CERTIFIED", synthetic).map((entry) => entry.id),
+      ).toEqual(["hi"]);
+    },
+  );
 });
 
 describe("the support claim is generated, not maintained by hand", () => {
