@@ -43,6 +43,7 @@ export { DAY_ONE_SEED };
 
 import { CI_PROVIDER_CAPABILITY_RECORDS } from "../frameworks/provider-capability-contract.js";
 import { compareCodePoints } from "../lib/compare.js";
+import { SCAN_ADAPTERS } from "../discovery/scan-adapters.js";
 import {
   FRAMEWORK_INVENTORY,
   type FrameworkMetadata,
@@ -514,6 +515,7 @@ export function deriveFrameworkEntries(
 export function deriveCiProviderEntries(
   resolver: CensusEvidenceResolver = BLIND_EVIDENCE_RESOLVER,
   observedAt = "1970-01-01",
+  registered: ReadonlySet<string> = registeredScanAdapterIds(),
 ): CensusEntry[] {
   const inventoryRows = new Map<string, FrameworkMetadata>();
   for (const framework of FRAMEWORK_INVENTORY) {
@@ -533,10 +535,31 @@ export function deriveCiProviderEntries(
   const entries: CensusEntry[] = [];
   for (const slug of [...slugs].sort()) {
     const framework = inventoryRows.get(slug);
-    const record = records.get(slug);
+    // Note there is no `record` binding here any more. The capability record
+    // decides only WHICH providers get a census entry (the slug join on the
+    // set below); it no longer decides what that entry CLAIMS.
+    //
+    // The adapter list comes from the product's own declaration of what it
+    // runs — `FRAMEWORK_INVENTORY.executorAdapterIds`, filtered by what the
+    // scanner actually registers — and NOT from whether
+    // `src/adapters/<slug>.ts` happens to exist on disk.
+    //
+    // 6.0: it was derived from record existence, so `gitlab-ci` came out
+    // `SUPPORTED` / `M2_IMPLEMENTED` with `adapter: src/adapters/gitlab-ci.ts`
+    // while `framework-inventory.ts` said `executorAdapterIds: []`, F0,
+    // UNSUPPORTED, and `SCAN_ADAPTERS` did not register the adapter. The
+    // census is an inventory of what the product DOES, so a consumer reading
+    // it would believe Mjölnir analyses `.gitlab-ci.yml`. It does not. The
+    // adapter is written and simply never registered.
+    //
+    // A file on disk is not a capability. `registered` is the registry itself,
+    // passed in so the census is derived from the product and so a test can
+    // assert the two against each other — the defect here was two sources of
+    // truth that were never compared.
     const adapterIds = [
-      ...(framework?.executorAdapterIds ?? []),
-      ...(record === undefined ? [] : [`src/adapters/${slug}.ts`]),
+      ...(framework?.executorAdapterIds ?? []).filter((id) =>
+        registered.has(id),
+      ),
     ];
     const hasAdapter = adapterIds.length > 0;
     const base: Omit<CensusEntry, "maturity" | "nextLevelGap"> = {
@@ -573,6 +596,19 @@ export function canonicalProviderSlug(id: string): string {
   const slug = censusSlug(id);
   if (slug === "azure-devops") return "azure-pipelines";
   return slug;
+}
+
+/**
+ * The executor adapter ids the scanner actually registers.
+ *
+ * `FRAMEWORK_INVENTORY.executorAdapterIds` names them with the same slugs
+ * the adapter modules use (`github-actions`, `python`, …), so the census can
+ * be derived from the registry rather than from a second, hand-maintained
+ * list. Importing the registry here is the point: the defect this closes was
+ * that the census and the registry were two sources of truth nobody compared.
+ */
+function registeredScanAdapterIds(): ReadonlySet<string> {
+  return new Set(SCAN_ADAPTERS.map((adapter) => adapter.id));
 }
 
 function deriveSignalsFromFramework(
