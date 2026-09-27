@@ -63,10 +63,17 @@ jobs:
         # anyone holding a token.
         run: npm install --global npm@11.5.1
 
+      - name: Read the package name
+        # The repository is Mjolnir; the published package is mjolnir-qa. Those
+        # are different strings, and guessing the wrong one would either fail
+        # the lookup or, worse, operate on a package that is not this one.
+        id: pkg
+        run: echo "name=$(node -p "require('./package.json').name")" >> "$GITHUB_OUTPUT"
+
       - name: Read the published version and the current dist-tags
         id: inspect
         env:
-          PACKAGE_NAME: ${{ github.event.repository.name }}
+          PACKAGE_NAME: ${{ steps.pkg.outputs.name }}
           VERSION: ${{ inputs.version }}
         run: |
           set -euo pipefail
@@ -75,19 +82,23 @@ jobs:
             echo "::error::$PACKAGE_NAME@$VERSION is not on npm. This workflow only repairs a version that already published."
             exit 1
           fi
+          CURRENT_LATEST=$(npm view "$PACKAGE_NAME" dist-tags.latest || true)
+          CURRENT_NEXT=$(npm view "$PACKAGE_NAME" dist-tags.next || true)
           {
             echo "published=$PUBLISHED"
-            echo "current_latest=$(npm view "$PACKAGE_NAME" dist-tags.latest || true)"
-            echo "current_next=$(npm view "$PACKAGE_NAME" dist-tags.next || true)"
+            echo "current_latest=$CURRENT_LATEST"
+            echo "current_next=$CURRENT_NEXT"
           } >> "$GITHUB_OUTPUT"
+          # The shell's own variables, not this step's outputs: a step cannot
+          # read an output it has not written yet, and actionlint says so.
           echo "published : $PUBLISHED"
-          echo "latest    : ${{ steps.inspect.outputs.current_latest }}"
-          echo "next      : ${{ steps.inspect.outputs.current_next }}"
+          echo "latest    : ${CURRENT_LATEST:-<unset>}"
+          echo "next      : ${CURRENT_NEXT:-<unset>}"
 
       - name: Move the dist-tag
         id: move
         env:
-          PACKAGE_NAME: ${{ github.event.repository.name }}
+          PACKAGE_NAME: ${{ steps.pkg.outputs.name }}
           VERSION: ${{ inputs.version }}
           TAG: ${{ inputs.tag }}
         run: |
@@ -103,7 +114,7 @@ jobs:
 
       - name: Record the repair
         env:
-          PACKAGE_NAME: ${{ github.event.repository.name }}
+          PACKAGE_NAME: ${{ steps.pkg.outputs.name }}
           VERSION: ${{ inputs.version }}
           TAG: ${{ inputs.tag }}
         run: |
