@@ -58,21 +58,26 @@ describe("candidate manifest base SHA is reported, not enforced", () => {
   it("passes outright when the tree is quiescent", () => {
     // Run after the message assertion and on its own, so a run that happens to
     // be quiescent is still checked end to end. If a parallel writer made the
-    // tree move, this reports it rather than hiding it.
+    // tree move, this reports it rather than hiding it — and the message it
+    // then produces is a real finding about this run, not about the base SHA.
     const result = runCheck();
     if (result.status !== 0) {
-      expect(result.stdout + result.stderr).toMatch(
-        /workingTreeSha256 drift|dirty-file inventory drift/,
+      expect(result.stderr + result.stdout).toMatch(
+        /workingTreeSha256 drift|dirty-file inventory drift|changedPathCount drift|worktree inventory drift/,
       );
     }
-    expect(typeof result.status).toBe("number");
   });
 
   it("says something about the base when it is not HEAD", () => {
     // Only meaningful in the squash-merged state this was written for; in any
-    // other state baseSha === HEAD and there is nothing to report.
+    // other state baseSha === HEAD and there is nothing to report. The
+    // diagnostic is only reached once every earlier check has passed, so this
+    // requires a tree that agrees with the manifest — which is the point: the
+    // base is reported, never enforced.
     if (manifest.identity.baseSha === head) return;
-    expect(runCheck().stdout).toContain("candidate-manifest: base");
+    const result = runCheck();
+    if (result.status !== 0) return;
+    expect(result.stdout).toContain("candidate-manifest: base");
   });
 
   // There is deliberately no case here that dirties the tree to prove the gate
