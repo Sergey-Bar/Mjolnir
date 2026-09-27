@@ -421,35 +421,19 @@ const ALLOWED_VALUE_RETURNS: ReadonlyArray<{
       "sentinel is the point: a reader can see that the hash is missing " +
       "instead of mistaking a zero-length placeholder for a real digest.",
   },
-  {
-    file: "engine/tree-sitter-ast.ts",
-    line: 225,
-    direction: "fails-explicitly",
-    reason:
-      "Counted one layer up: the pipeline counts every parseAst returning " +
-      "undefined as a parse fallback (scan-pipeline parseFallbacks++), and a " +
-      "grammar that never loaded is counted separately by " +
-      "parserRetryDegradationCount. Recording again here would count one " +
-      "file twice in two different fields.",
-  },
-  {
-    file: "engine/tree-sitter-ast.ts",
-    line: 240,
-    direction: "fails-explicitly",
-    reason:
-      "Same accounting as the Java parse above: the caller's parseFallbacks " +
-      "counter is the single place a grammar miss is counted, for every " +
-      "language, so the count stays one number a reader can compare.",
-  },
-  {
-    file: "engine/tree-sitter-ast.ts",
-    line: 257,
-    direction: "fails-explicitly",
-    reason:
-      "Same accounting as the Java and C# parses above. Three identical " +
-      "exemptions rather than three identical edits is the point: the count " +
-      "lives where the pipeline can see every language at once.",
-  },
+  // The three `engine/tree-sitter-ast.ts` parse catches that used to be
+  // exempted here are gone. Their exemption said "counted one layer up — the
+  // pipeline counts every parseAst returning undefined as a parse fallback,
+  // and recording again here would count one file twice".
+  //
+  // That was a judgement about double counting, and it was made at the wrong
+  // layer. `parseFallbacks` counts FILES that lost their AST stage. A grammar
+  // WASM that never loaded is a different fact: it takes the AST stage away
+  // from every file, for the whole run, and the reader cannot tell a run that
+  // parsed 400 files and hit one unparseable from a run with no AST at all.
+  // Both are now recorded — `parseFallbacks` at the call site,
+  // `ast-grammar-unavailable` here — because they are different facts, not
+  // the same one twice.
   {
     file: "adapters/github-actions.ts",
     line: 126,

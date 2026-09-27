@@ -24,6 +24,7 @@ import { join } from "node:path";
 import { sharedWalk } from "../discovery/shared-walk.js";
 import { computeCodeText } from "../engine/code-text.js";
 import { parsePythonAst } from "../engine/tree-sitter-ast.js";
+import { recordDegradation } from "../engine/degradation-ledger.js";
 import { runRuleIsolated } from "../engine/shared-run-rules.js";
 import {
   frameworkFilterApplies,
@@ -86,7 +87,13 @@ export const pythonAdapter: LanguageAdapter = {
         const text = readText(pyproject);
         if (/\[tool\.pytest/i.test(text)) frameworks.add("pytest");
       } catch {
-        /* unreadable — skip */
+        // Was `/* unreadable — skip */`, which returned an unchanged
+        // framework set. A repo whose `pyproject.toml` is unreadable then
+        // detected as "no pytest configured" — the one answer that is
+        // indistinguishable from "this is not a Python project", and the
+        // adapter's own `unknown: true` branch at the bottom of this
+        // function shows the author knew the difference mattered.
+        recordDegradation("python-manifest-unreadable");
       }
     }
 
@@ -104,7 +111,11 @@ export const pythonAdapter: LanguageAdapter = {
         if (/^selenium\b/im.test(text)) frameworks.add("selenium");
         if (/^playwright\b/im.test(text)) frameworks.add("playwright");
       } catch {
-        /* unreadable — skip */
+        // Same failure mode as the pyproject read above, and the same fix.
+        // A repo with an unreadable `requirements.txt` reports neither
+        // selenium nor playwright, which is a clean detection of a capability
+        // that was never looked for.
+        recordDegradation("python-manifest-unreadable");
       }
     }
 

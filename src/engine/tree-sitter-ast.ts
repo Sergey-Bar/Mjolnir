@@ -56,6 +56,7 @@ import { existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { Parser, Language, type Tree } from "web-tree-sitter";
+import { recordDegradation } from "./degradation-ledger.js";
 
 let parserInitPromise: Promise<void> | null = null;
 
@@ -104,11 +105,31 @@ async function withParseSlot<T>(fn: () => Promise<T>): Promise<T> {
 
 function grammarPath(fileName: string): string {
   // Resolve relative to this module's own location so it works whether
-  // the caller runs from source (tsx) or the built dist/ bundle.
+  // the caller runs from source (tsx) or the built dist/ bundle, and whether
+  // Mjölnir is the repository under test or an installed dependency.
   const here = dirname(fileURLToPath(import.meta.url));
-  // From src/engine/ (or dist/), node_modules is two levels up from src,
-  // one level up from dist — probe both, since this file ships in dist
-  // as a single bundled file with no nested directory structure.
+  //
+  // 6.0: a THIRD candidate was needed and its absence was a shipping defect.
+  //
+  // The two probes below are both correct for a checkout:
+  //   <repo>/src/engine/     → up two  → <repo>/node_modules          ✓
+  //   <repo>/dist/           → up one  → <repo>/node_modules          ✓
+  //
+  // Neither is correct for an INSTALLED package, which is where this matters:
+  //   <install>/node_modules/mjolnir-qa/dist/  → up one  → <pkg>/node_modules  ✗
+  //                                             → up two  → <install>/node_modules/node_modules  ✗
+  // npm hoists `tree-sitter-wasms` to `<install>/node_modules`, which is up
+  // THREE levels from `dist/`. So the published package found neither
+  // candidate, `Language.load` threw, and every Java, C# and Python file
+  // silently fell back to its regex path — with the comment/string
+  // false-positive firewall off and nothing in the report saying so.
+  //
+  // The reason nobody found it is the reason it was worth fixing rather than
+  // documenting: the fallback is load-bearing (a missing grammar must not
+  // fail a scan), so a run that had no AST at all looked exactly like a run
+  // that had one. The degradation this module now records is what made it
+  // visible — the E2E tarball journey started exiting 2 instead of 1, which
+  // is the honest answer for a run that never parsed anything structurally.
   const candidates = [
     join(
       here,
@@ -120,11 +141,23 @@ function grammarPath(fileName: string): string {
       fileName,
     ),
     join(here, "..", "node_modules", "tree-sitter-wasms", "out", fileName),
+    // Installed package: the dependency is hoisted above the package root.
+    join(
+      here,
+      "..",
+      "..",
+      "..",
+      "node_modules",
+      "tree-sitter-wasms",
+      "out",
+      fileName,
+    ),
   ] as const;
   const found = candidates.find((p) => existsSync(p));
-  // The tuple always has a first element: when neither candidate exists
-  // on disk, hand it to Language.load anyway so the failure surfaces as
-  // an honest grammar-load error, not a config crash.
+  // The tuple always has a first element: when no candidate exists on disk,
+  // hand it to Language.load anyway so the failure surfaces as an honest
+  // grammar-load error rather than a config crash. It is counted by the
+  // caller's degradation record, not swallowed.
   return found ?? candidates[0];
 }
 
@@ -223,6 +256,21 @@ export async function parseJavaAst(text: string): Promise<Tree | undefined> {
       return parser.parse(text) ?? undefined;
     });
   } catch {
+    // The heaviest silent failure in the tree, and previously uncounted.
+    //
+    // Returning undefined here IS the documented contract — the caller falls
+    // back to its regex path — but the consequence is not local. With no AST
+    // the comment/string false-positive firewall is OFF for every file, so a
+    // prose comment or a sample string reads as code, and the scan still
+    // reports findings. A grammar WASM that failed to load therefore made
+    // every Java/C#/Python detection noisier and nothing said so anywhere:
+    // not in `analysisStatus`, not in the report, not in the PR comment.
+    //
+    // The fallback stays — it is load-bearing, because a missing grammar must
+    // not fail the whole scan. What changes is that the loss is counted, so
+    // `partial` is forced and the report names the reason instead of
+    // describing a degraded scan as a clean one.
+    recordDegradation("ast-grammar-unavailable");
     return undefined;
   }
 }
@@ -238,6 +286,21 @@ export async function parseCSharpAst(text: string): Promise<Tree | undefined> {
       return parser.parse(text) ?? undefined;
     });
   } catch {
+    // The heaviest silent failure in the tree, and previously uncounted.
+    //
+    // Returning undefined here IS the documented contract — the caller falls
+    // back to its regex path — but the consequence is not local. With no AST
+    // the comment/string false-positive firewall is OFF for every file, so a
+    // prose comment or a sample string reads as code, and the scan still
+    // reports findings. A grammar WASM that failed to load therefore made
+    // every Java/C#/Python detection noisier and nothing said so anywhere:
+    // not in `analysisStatus`, not in the report, not in the PR comment.
+    //
+    // The fallback stays — it is load-bearing, because a missing grammar must
+    // not fail the whole scan. What changes is that the loss is counted, so
+    // `partial` is forced and the report names the reason instead of
+    // describing a degraded scan as a clean one.
+    recordDegradation("ast-grammar-unavailable");
     return undefined;
   }
 }
@@ -255,6 +318,21 @@ export async function parsePythonAst(text: string): Promise<Tree | undefined> {
       return parser.parse(text) ?? undefined;
     });
   } catch {
+    // The heaviest silent failure in the tree, and previously uncounted.
+    //
+    // Returning undefined here IS the documented contract — the caller falls
+    // back to its regex path — but the consequence is not local. With no AST
+    // the comment/string false-positive firewall is OFF for every file, so a
+    // prose comment or a sample string reads as code, and the scan still
+    // reports findings. A grammar WASM that failed to load therefore made
+    // every Java/C#/Python detection noisier and nothing said so anywhere:
+    // not in `analysisStatus`, not in the report, not in the PR comment.
+    //
+    // The fallback stays — it is load-bearing, because a missing grammar must
+    // not fail the whole scan. What changes is that the loss is counted, so
+    // `partial` is forced and the report names the reason instead of
+    // describing a degraded scan as a clean one.
+    recordDegradation("ast-grammar-unavailable");
     return undefined;
   }
 }

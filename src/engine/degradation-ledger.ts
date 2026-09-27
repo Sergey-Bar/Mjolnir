@@ -91,6 +91,45 @@ export const DEGRADATION_REASONS = [
   "rule-doc-fixture-unreadable",
   /** A CI-workflow doc-generation fixture could not be parsed. */
   "rule-doc-workflow-parse-failed",
+  // ── 6.0: sites that returned a value and were never counted ──────────────
+  // Each of the four below is a `catch` that returned a clean default to a
+  // caller, so a swallowed failure read as a successful detection. They were
+  // all present before the ledger had these members; the ledger had members
+  // for the sites that were easy to reach and the enumeration was never
+  // finished, which is the shape of every half-finished audit.
+  /**
+   * A Python manifest (`pyproject.toml` / `requirements*.txt`) could not be
+   * read during framework detection.
+   *
+   * The returned value was an unchanged framework set, so a repo with an
+   * unreadable `pyproject.toml` detected as "not a pytest project" — the
+   * one answer that is indistinguishable from "this is not Python".
+   */
+  "python-manifest-unreadable",
+  /**
+   * `tree-sitter` or a grammar WASM could not be loaded, so the AST stage is
+   * unavailable and every file falls back to its regex path.
+   *
+   * This is the heaviest silent failure in the tree: the whole
+   * comment/string false-positive firewall is off and the scan still reports
+   * findings. Previously invisible — `analyzeFile` had a fallback path, so
+   * the capability loss looked like normal operation.
+   */
+  "ast-grammar-unavailable",
+  /**
+   * A TypeScript file could not be parsed to an AST, leaving it on the regex
+   * path. The narrower sibling of `ast-parse-failed`, kept separate because
+   * this one is produced by the AST *load*, not by a per-file parse.
+   */
+  "ast-typescript-parse-failed",
+  /**
+   * A CI workflow file could not be parsed, so its rules did not run on it.
+   *
+   * The dangerous direction: a workflow that would have been flagged is
+   * reported as clean, and the surface it protects is the one the tool claims
+   * to police hardest.
+   */
+  "workflow-parse-failed",
 ] as const;
 
 export type DegradationReason = (typeof DEGRADATION_REASONS)[number];
