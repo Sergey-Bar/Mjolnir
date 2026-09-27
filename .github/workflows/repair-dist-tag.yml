@@ -55,20 +55,38 @@ jobs:
           node-version: 22.18.0
           registry-url: https://registry.npmjs.org
 
-      - name: Upgrade npm for OIDC trusted publishing
-        # Same pin as the publish path, and the same mechanism: there is no
-        # NPM_TOKEN in this repository. Authentication is npm trusted
-        # publishing over OIDC, authorised by `id-token: write` plus the
-        # environment gate, so this workflow cannot be made to publish by
-        # anyone holding a token.
-        run: npm install --global npm@11.5.1
-
       - name: Read the package name
         # The repository is Mjolnir; the published package is mjolnir-qa. Those
         # are different strings, and guessing the wrong one would either fail
         # the lookup or, worse, operate on a package that is not this one.
         id: pkg
         run: echo "name=$(node -p "require('./package.json').name")" >> "$GITHUB_OUTPUT"
+
+      - name: Authenticate for dist-tag operations
+        # npm's OIDC trusted publishing authorises `npm publish` and nothing
+        # else. `npm dist-tag add` under the same session returns E401 — which
+        # is not a configuration mistake, it is the scope of the credential.
+        # 5.0.0 published correctly under OIDC and the very next operation on
+        # the same runner failed for exactly this reason.
+        #
+        # So publishing keeps OIDC, which needs no secret and is the stronger
+        # credential, and this narrower operation uses a granular automation
+        # token scoped to this package. Without it the step fails loudly rather
+        # than mutating nothing and reporting success.
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -z "${NPM_TOKEN:-}" ]; then
+            echo "::error::secret NPM_TOKEN is not set."
+            echo "::error::npm OIDC trusted publishing covers \`npm publish\` only;"
+            echo "::error::moving a dist-tag needs a granular automation token."
+            exit 1
+          fi
+          npm config set //registry.npmjs.org/:_authToken "$NPM_TOKEN"
+          # Prove the credential before mutating anything, so a bad token fails
+          # as a permission problem rather than as a partial repair.
+          npm whoami
 
       - name: Read the published version and the current dist-tags
         id: inspect
