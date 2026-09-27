@@ -290,7 +290,6 @@ describe("release candidate workflow", () => {
     expect(actionTags).toContain("!contains(github.ref_name, '-rc.')");
     expect(actionTags).toContain('MAJOR="${VERSION%%.*}"');
     expect(actionTags).toContain('MAJOR_TAG="v$MAJOR"');
-    expect(actionTags).toContain('git tag -f "$MAJOR_TAG" "$GITHUB_SHA"');
     expect(actionTags).toContain(
       'git push origin "refs/tags/$MAJOR_TAG" --force',
     );
@@ -300,6 +299,28 @@ describe("release candidate workflow", () => {
     // after v2 pointed at a ref that did not exist. Deriving the major from
     // the tag being pushed is the only rule that survives the next major.
     expect(actionTags).not.toContain('"$MAJOR" != "3"');
+  });
+
+  it("can move the major tag for a tag that was already pushed", () => {
+    // The second regression, and the one that actually blocked 5.0.0. A
+    // tag-push-only trigger cannot move a tag that was pushed before the
+    // workflow could: `v5.0.0` was cut and verified, this fix merged
+    // afterwards, and no further v* tag will ever be pushed — so `@v5` had no
+    // path to existence. The docs' recommended `uses: Sergey-Bar/Mjolnir@v5`
+    // pointed at a ref the workflow whose whole job is to create it could not
+    // create.
+    const actionTags = readFileSync(
+      join(root, ".github", "workflows", "action-tags.yml"),
+      "utf8",
+    );
+    expect(actionTags).toContain("workflow_dispatch:");
+    expect(actionTags).toContain("DISPATCH_MAJOR");
+    // The manual path is not a loophole: the operator still names the major,
+    // and a non-integer is refused rather than coerced.
+    expect(actionTags).toContain("^[1-9][0-9]*$");
+    expect(actionTags).toContain("major must be a positive integer");
+    // And the RC exclusion still holds on the path that can bypass the push.
+    expect(actionTags).toMatch(/workflow_dispatch[\s\S]*DISPATCH_MAJOR/);
   });
 
   it("executes only real spec paths", () => {
