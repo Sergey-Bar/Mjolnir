@@ -14,6 +14,10 @@ import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import {
+  extractSections,
+  translationStatus,
+} from "./lib/readme-translation-status.mjs";
 
 const ROOT = join(import.meta.dirname, "..");
 
@@ -43,7 +47,6 @@ const LANGS = [
   ["bs", "Bosanski"],
 ];
 
-const DAY_MS = 24 * 60 * 60 * 1000;
 const SYNCED_RE = /Last synced:\s*(\d{4})-(\d{2})-(\d{2})/;
 const SOURCE_HASH_RE = /<!--\s*Source hash:\s*([a-f0-9]+)\s*-->/;
 
@@ -61,10 +64,6 @@ function readmeLastChangeDate() {
   }
 }
 
-function utcMs(dateStr) {
-  const [y, m, d] = dateStr.split("-").map(Number);
-  return Date.UTC(y, m - 1, d);
-}
 /**
  * Content hash of the English README's translatable sections.
  * Strips badges, shields, and HTML blocks so that CI-specific
@@ -86,21 +85,6 @@ function computeSourceHash() {
   }
 }
 
-/**
- * Extract section headings (## level) from markdown text.
- * Returns an array of heading strings (without the ## prefix).
- * Used to verify that translations preserve the same section
- * structure as the English source.
- */
-function extractSections(text) {
-  const sections = [];
-  for (const line of text.split("\n")) {
-    const m = /^##\s+(.+)/.exec(line.trim());
-    if (m) sections.push(m[1].trim());
-  }
-  return sections;
-}
-
 const readmeDate = readmeLastChangeDate();
 const currentSourceHash = computeSourceHash();
 const sourceSections = (() => {
@@ -110,6 +94,7 @@ const sourceSections = (() => {
     return [];
   }
 })();
+
 const rows = [];
 let issues = 0;
 
@@ -125,39 +110,14 @@ for (const [code, label] of LANGS) {
       status = "MISSING MARKER";
     } else {
       synced = `${m[1]}-${m[2]}-${m[3]}`;
-      if (!readmeDate) {
-        status = "unknown (README.md date unavailable)";
-      } else {
-        const staleDays = Math.round(
-          (utcMs(readmeDate) - utcMs(synced)) / DAY_MS,
-        );
-        const dateStatus =
-          staleDays <= 0
-            ? "fresh"
-            : `stale by ${staleDays} day${staleDays === 1 ? "" : "s"}`;
-        // Content-hash check: detects when the English source changed
-        // but the translation's date marker was bumped without re-translating.
-        if (hm && currentSourceHash && hm[1] !== currentSourceHash) {
-          status = `content changed (hash ${hm[1]} ≠ ${currentSourceHash})`;
-        } else {
-          status = dateStatus;
-        }
-        // Structural verification: check that major section headings
-        // from the English README are present in the translation.
-        // Missing sections indicate the translation is structurally
-        // incomplete even if the date/hash markers are current.
-        if (sourceSections.length > 0 && dateStatus === "fresh") {
-          const transSections = extractSections(text);
-          const missingSections = sourceSections.filter(
-            (s) => !transSections.some((ts) => ts.includes(s.slice(0, 10))),
-          );
-          // Only flag if a significant number of sections are missing
-          // (translations may rephrase headings slightly)
-          if (missingSections.length > 3) {
-            status = `structurally incomplete (missing ~${missingSections.length} sections)`;
-          }
-        }
-      }
+      status = translationStatus({
+        readmeDate,
+        syncedDate: synced,
+        sourceHash: hm?.[1] ?? null,
+        currentHash: currentSourceHash,
+        sourceSections,
+        translationSections: extractSections(text),
+      }).status;
     }
   } catch {
     status = "FILE MISSING";
