@@ -39,9 +39,19 @@ export const PR_BRAND_CONTRACT: PrCommentBrandContract = {
   productName: "Mjolnir",
   productDescriptor: "Verification Trust",
   logoAsset: {
+    // These resolve to files that exist. They did not: the contract named
+    // logo-light.svg and logo-dark.svg, and the repository only ever shipped
+    // PNGs. Nothing caught it, because the only assertion was that
+    // `logoAsset.light` is a string — a shape check on a URL cannot tell a
+    // live asset from a 404.
+    //
+    // `logo.png` is the single mark, used for both themes: GitHub renders a
+    // PR comment on one background and a `<picture>`/prefers-color-scheme
+    // pair in a PR comment is not worth the two-fetch cost for a 16px
+    // inline mark. `mark.svg` is the vector form, preferred for scaling.
     light:
-      "https://raw.githubusercontent.com/Sergey-Bar/Mjolnir/main/assets/brand/logo-light.svg",
-    dark: "https://raw.githubusercontent.com/Sergey-Bar/Mjolnir/main/assets/brand/logo-dark.svg",
+      "https://raw.githubusercontent.com/Sergey-Bar/Mjolnir/main/assets/brand/logo.png",
+    dark: "https://raw.githubusercontent.com/Sergey-Bar/Mjolnir/main/assets/brand/mark.svg",
     fallback: "Mjolnir",
   },
   verdictLabels: {

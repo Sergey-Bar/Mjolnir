@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Mjölnir">
+  <title>Mjölnir</title>
+  <!--
+    The mark, as vector. The PR comment and the brand contract both asked for
+    an SVG and were served a URL that 404'd: the repository only ever shipped
+    PNGs (assets/brand/{logo,mark,icon}.png), so both surfaces pointed at
+    files that did not exist and neither test resolved the URL against the
+    tree — a contract test asserting the SHAPE of a string cannot notice that
+    the string is a 404.
+
+    This file is the vector form of the same rune drawn by
+    scripts/generate-brand-marks.ts, kept small enough to inline or fetch
+    from a comment. It is NOT in assets/brand/marks.lock.json: that lock
+    pins rendered bitmaps, and adding a hand-drawn file to it would make
+    `brand:marks:update` overwrite the lock entry for an asset it does not
+    know how to render. The provenance is asserted instead, by
+    tests/reporters/pr-comment-render-gate.spec.ts, which fails if any
+    surface URL stops resolving to a file that exists.
+  -->
+  <defs>
+    <linearGradient id="mjolnir-rune" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#E6BD57" />
+      <stop offset="0.55" stop-color="#C19A34" />
+      <stop offset="1" stop-color="#A5811C" />
+    </linearGradient>
+  </defs>
+  <rect x="4" y="4" width="56" height="56" rx="12" fill="#12141A" />
+  <g fill="url(#mjolnir-rune)">
+    <!-- Head -->
+    <rect x="20" y="14" width="24" height="9" rx="2" />
+    <rect x="14" y="21" width="36" height="7" rx="2" />
+    <!-- Haft -->
+    <rect x="29" y="27" width="6" height="24" rx="2" />
+    <!-- Knurl, the two bands that make it a hammer rather than a bar -->
+    <rect x="25" y="33" width="14" height="3" rx="1.5" />
+    <rect x="25" y="40" width="14" height="3" rx="1.5" />
+  </g>
+</svg>

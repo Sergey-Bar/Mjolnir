@@ -1342,8 +1342,24 @@ export function assembleScanResult(o: AssembleScanResultInput): ScanResult {
         .map((f) => f.ruleId),
     ),
   ].sort();
+  // Both clamps are here because a 100 is the strongest claim the scorer can
+  // make and neither condition permits it. The problem was not the clamp — it
+  // is right — but that the RESULT was identical to a genuine 99, so a reader
+  // could not tell a withheld 100 from a real 99, and the reason the score
+  // moved was only discoverable by reading the pipeline.
+  //
+  // `scoreClampReason` is the disclosure: a named reason on the result, which
+  // the contract, the terminal footer and the PR comment all render. Absent
+  // means the score is exactly what the scorer computed.
+  const scopeClamped = scopeReasons.length > 0 && total >= 100;
+  const partialClamped = completion.partial && scopeAdjustedTotal >= 100;
+  const scoreClampReason = scopeClamped
+    ? ("scope-degraded" as const)
+    : partialClamped
+      ? ("partial-scan" as const)
+      : null;
   const finalScore = hasTests
-    ? completion.partial && scopeAdjustedTotal >= 100
+    ? partialClamped
       ? 99
       : scopeAdjustedTotal
     : null;
@@ -1407,6 +1423,7 @@ export function assembleScanResult(o: AssembleScanResultInput): ScanResult {
       durationMs: elapsed,
     },
     scoringModelVersion: SCORING_MODEL_VERSION,
+    ...(scoreClampReason !== null ? { scoreClampReason } : {}),
   };
   result.trustSummary = buildTrustSummary(result, o.declarationsByFile);
   // INTEL-005: Cross-Rule Evidence Correlation. Pure, deterministic,

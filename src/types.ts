@@ -565,6 +565,22 @@ export interface ScanResult {
    */
   scoringModelVersion?: string;
   /**
+   * Why `score` is 99 when the scorer computed 100 (contract v2).
+   *
+   * Two sites clamp: a degraded scope, and a partial scan. The clamp itself
+   * is right — 100 is the strongest claim the scorer makes and neither
+   * condition permits it — but the RESULT was byte-identical to a genuine 99,
+   * so a reader could not distinguish "withheld to 99" from "scored 99"
+   * without reading the pipeline. The presentation surfaces render the
+   * reason rather than the bare number.
+   *
+   * Absent means the score is exactly what the scorer computed. The field
+   * lives on `ScanResult`, NOT inside `runIdentity`: it describes the score,
+   * and `runIdentity` is the machine anchor whose digest must not change
+   * because a presentation reason was added.
+   */
+  scoreClampReason?: "scope-degraded" | "partial-scan";
+  /**
    * Scope Integrity block (product-gap master plan §7, R4c): the
    * claimed-vs-analyzed accounting. `scopeVerdict` is PROVEN only when
    * every discovered file was analyzed — no matcher exclusions, no

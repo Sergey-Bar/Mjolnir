@@ -119,6 +119,17 @@ export interface ArtifactIdentity {
   commit: string | null;
   /** Fired rule(rev) pairs — deduped, sorted by ruleId. */
   detectorRevisions: Array<{ ruleId: string; detectorRevision: number }>;
+  /**
+   * Digest over the WHOLE rule set that ran, not the rules that fired.
+   *
+   * Added because the PR comment's Artifact Integrity section reported
+   * "Rule(rev) inventory | none" on every clean run: the only per-rule
+   * source it had was `result.findings`, which is empty exactly when nothing
+   * was found. `runIdentity.rulesDigest` is computed over every rule the
+   * pipeline ran, so it is the honest coverage statement — a hash rather
+   * than a list, because the list would be 79 rows in a comment.
+   */
+  rulesDigest?: string;
   evidenceInventory: {
     totalFindings: number;
     /** Findings carrying runtime corroboration (L3–L5 input). */
@@ -149,6 +160,11 @@ export function buildArtifactIdentity(
   return {
     scanId: result.runIdentity?.scanId ?? null,
     commit: commit ?? null,
+    // Absent when the producer predates run identity — a scan outside a
+    // repository has no binding and must not be given a fabricated one.
+    ...(result.runIdentity?.rulesDigest !== undefined
+      ? { rulesDigest: result.runIdentity.rulesDigest }
+      : {}),
     detectorRevisions: [...revisions.entries()]
       .map(([ruleId, detectorRevision]) => ({ ruleId, detectorRevision }))
       .sort((a, b) => compareCodePoints(a.ruleId, b.ruleId)),

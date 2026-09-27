@@ -2227,10 +2227,10 @@
       "owner": "qa-owner",
       "evidence": [
         "tests/reporters/empty-states.spec.ts",
-        "tests/integrations/github/pr-comment-renderer.spec.ts",
+        "tests/reporters/pr-comment-render-gate.spec.ts",
         "tests/commands/ux-verification.spec.ts"
       ],
-      "command": "npx vitest run tests/reporters/empty-states.spec.ts tests/integrations/github/pr-comment-renderer.spec.ts tests/commands/ux-verification.spec.ts",
+      "command": "npx vitest run tests/reporters/empty-states.spec.ts tests/reporters/pr-comment-render-gate.spec.ts tests/commands/ux-verification.spec.ts",
       "fixture": "PARTIAL/INCONCLUSIVE banners, partial PR analysis, and non-green UX guidance",
       "observed_result": "PASS",
       "resource_budget": "240s",
@@ -2263,11 +2263,11 @@
       "owner": "qa-owner",
       "evidence": [
         "tests/integrations/github/pr-comment-contract.spec.ts",
-        "tests/integrations/github/pr-comment-renderer.spec.ts",
+        "tests/reporters/pr-comment-render-gate.spec.ts",
         "tests/reporters/pr-comment-determinism.spec.ts",
         "tests/integrations/action-surface.spec.ts"
       ],
-      "command": "npx vitest run tests/integrations/github/pr-comment-contract.spec.ts tests/integrations/github/pr-comment-renderer.spec.ts tests/reporters/pr-comment-determinism.spec.ts tests/integrations/action-surface.spec.ts",
+      "command": "npx vitest run tests/integrations/github/pr-comment-contract.spec.ts tests/reporters/pr-comment-determinism.spec.ts tests/reporters/pr-comment-render-gate.spec.ts tests/integrations/action-surface.spec.ts",
       "fixture": "Markdown headings, limitations, bounded body, deterministic output, and job-summary fallback",
       "observed_result": "PASS",
       "resource_budget": "240s",

@@ -7,16 +7,16 @@ contract enforces: **every external import in src/ must belong to the
 allowlist**, and the shipped surface (adapters, rules, flags, formats, exit
 codes) must match this document exactly.
 
-## Inventory: 344 files, 100929 LOC
+## Inventory: 341 files, 100846 LOC
 
 | Area              | Files | LOC   |
 | ----------------- | ----- | ----- |
-| src/engine        | 60    | 26003 |
-| src/commands      | 39    | 12735 |
+| src/engine        | 60    | 26020 |
+| src/commands      | 39    | 12751 |
 | src/rules         | 88    | 11758 |
 | src/v6            | 10    | 5733  |
-| src/(root)        | 8     | 3867  |
-| src/reporter      | 16    | 3688  |
+| src/reporter      | 16    | 3977  |
+| src/(root)        | 8     | 3883  |
 | src/forensics     | 17    | 3065  |
 | src/ledger        | 1     | 2780  |
 | src/governance    | 1     | 2744  |
@@ -24,18 +24,18 @@ codes) must match this document exactly.
 | src/detectors     | 1     | 2564  |
 | src/plugins       | 6     | 2295  |
 | src/discovery     | 10    | 1794  |
-| src/integrations  | 12    | 1790  |
 | src/adapters      | 11    | 1759  |
 | src/agent         | 1     | 1726  |
 | src/benchmark     | 3     | 1434  |
 | src/gaps          | 2     | 1390  |
+| src/integrations  | 9     | 1355  |
 | src/qa            | 1     | 1282  |
 | src/bench         | 5     | 1063  |
 | src/release       | 7     | 1004  |
 | src/research      | 1     | 995   |
 | src/mutation      | 6     | 831   |
 | src/mcp           | 3     | 825   |
-| src/brand         | 3     | 807   |
+| src/brand         | 3     | 817   |
 | src/store         | 2     | 665   |
 | src/certification | 2     | 568   |
 | src/config        | 3     | 559   |
@@ -44,7 +44,7 @@ codes) must match this document exactly.
 | src/scope         | 2     | 427   |
 | src/lib           | 6     | 369   |
 | src/playwright    | 2     | 332   |
-| src/trust         | 2     | 274   |
+| src/trust         | 2     | 278   |
 | src/anti-gaming   | 2     | 169   |
 
 ## Internal fan-in — top 15 (change-blast candidates)

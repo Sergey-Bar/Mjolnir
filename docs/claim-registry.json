@@ -89,7 +89,7 @@
       ],
       "corpus": [
         "tests/cli/pr-comment.spec.ts",
-        "tests/integrations/github/pr-comment-renderer.spec.ts"
+        "tests/reporters/pr-comment-render-gate.spec.ts"
       ],
       "benchmark": "N/A",
       "candidateProof": "npm run ci-local",

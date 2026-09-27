@@ -6,16 +6,27 @@
  *
  * The second of those is the one that matters. `scripts/check-ci-local-parity.mjs`
  * has always asserted one direction — that a required command is present —
- * and a checker that can only ever pass is a checker nobody believes. Every
- * assertion here that says "this fails" mutates the committed data, runs the
- * real checker, and restores the file in a `finally` — so the suite proves
- * the failure is reachable rather than asserting that a function returns a
- * number.
+ * and a checker that can only ever pass is a checker nobody believes.
+ *
+ * MUTATION HAPPENS IN A FIXTURE TREE, NEVER IN THE REPOSITORY. The first
+ * version of this spec mutated a committed tier file, ran the checker, and
+ * restored it in a `finally`. That worked, and it also made `npm test` fail
+ * intermittently: vitest runs files in parallel workers, and
+ * `tests/certification/candidate-manifest.spec.ts` was hashing the working
+ * tree at the same moment this file had `gates/pr.json` emptied. The
+ * symptom was a `workingTreeSha256 drift` error three suites away from the
+ * cause, which is a bad way to spend an afternoon.
+ *
+ * `--root=<dir>` on the checker makes the fixture approach possible, and
+ * removes the restore step entirely — so there is no window in which the
+ * repository is in a state the test did not intend.
  */
 
 import { execFileSync } from "node:child_process";
 import {
-  copyFileSync,
+  cpSync,
+  existsSync,
+  mkdirSync,
   mkdtempSync,
   readFileSync,
   rmSync,
@@ -25,9 +36,9 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import { afterEach, describe, expect, it } from "vitest";
+import { parse, stringify } from "yaml";
 
 const ROOT = join(import.meta.dirname, "..", "..");
-const TIER_DIR = join(ROOT, "gates");
 const CHECKER = join(ROOT, "scripts", "check-gate-tiers.mjs");
 const TIERS = ["pr", "release", "nightly"] as const;
 type Tier = (typeof TIERS)[number];
@@ -46,16 +57,50 @@ interface TierFile {
   gates: Array<{ id: string; command: string }>;
 }
 
+interface CommittedWorkflow {
+  jobs?: Record<string, unknown>;
+}
+
+const scratch: string[] = [];
+
 function readTier(tier: Tier): TierFile {
   return JSON.parse(
-    readFileSync(join(TIER_DIR, `${tier}.json`), "utf8"),
+    readFileSync(join(ROOT, "gates", `${tier}.json`), "utf8"),
   ) as TierFile;
 }
 
-function runChecker(): CheckerResult {
+/**
+ * A throwaway copy of everything the checker reads: the three tier files, the
+ * workflows they name, and package.json (for the script-chain closure).
+ * Nothing outside this directory is read or written.
+ */
+function fixtureTree(): string {
+  const dir = mkdtempSync(join(tmpdir(), "mjolnir-gate-tiers-"));
+  scratch.push(dir);
+  mkdirSync(join(dir, "gates"), { recursive: true });
+  mkdirSync(join(dir, ".github", "workflows"), { recursive: true });
+  for (const tier of TIERS) {
+    cpSync(
+      join(ROOT, "gates", `${tier}.json`),
+      join(dir, "gates", `${tier}.json`),
+    );
+  }
+  const declared = new Set<string>();
+  for (const tier of TIERS) {
+    for (const path of readTier(tier).workflows) declared.add(path);
+  }
+  for (const path of declared) {
+    cpSync(join(ROOT, path), join(dir, path));
+  }
+  cpSync(join(ROOT, "package.json"), join(dir, "package.json"));
+  return dir;
+}
+
+function runChecker(root?: string): CheckerResult {
+  const args = root === undefined ? [CHECKER] : [CHECKER, `--root=${root}`];
   try {
-    const stdout = execFileSync(process.execPath, [CHECKER], {
-      cwd: ROOT,
+    const stdout = execFileSync(process.execPath, args, {
+      cwd: root ?? ROOT,
       encoding: "utf8",
     });
     return { code: 0, output: stdout };
@@ -68,30 +113,33 @@ function runChecker(): CheckerResult {
   }
 }
 
-const scratch: string[] = [];
-
-/**
- * Run the checker against a mutated copy of a committed tier file.
- *
- * The mutation swaps the committed file and restores it from a byte copy
- * taken immediately beforehand, in a `finally`. Copying the whole
- * repository would be safer and much slower; a test at the end asserts the
- * tree is left byte-identical, so a dropped `finally` cannot pass silently.
- */
+/** Run the checker against a fixture tree with one tier file mutated. */
 function withMutatedTier(
   tier: Tier,
   mutate: (parsed: TierFile) => void,
 ): CheckerResult {
-  const target = join(TIER_DIR, `${tier}.json`);
-  const backup = readFileSync(target, "utf8");
-  try {
-    const parsed = JSON.parse(backup) as TierFile;
-    mutate(parsed);
-    writeFileSync(target, JSON.stringify(parsed, null, 2) + "\n", "utf8");
-    return runChecker();
-  } finally {
-    writeFileSync(target, backup, "utf8");
-  }
+  const dir = fixtureTree();
+  const path = join(dir, "gates", `${tier}.json`);
+  const parsed = JSON.parse(readFileSync(path, "utf8")) as TierFile;
+  mutate(parsed);
+  writeFileSync(path, JSON.stringify(parsed, null, 2) + "\n", "utf8");
+  return runChecker(dir);
+}
+
+/** A fixture tree with a workflow mutated, for the presence check. */
+function withMutatedWorkflow(
+  mutate: (workflow: CommittedWorkflow) => void,
+): CheckerResult {
+  const dir = fixtureTree();
+  const path = join(dir, readTier("pr").workflows[0] as string);
+  // Parsed and re-emitted with the same `yaml` package the checker uses, so
+  // the fixture is a real workflow file rather than a JSON file wearing a
+  // .yml extension. A hand-rolled emitter would drift from the real parser
+  // and the test would be asserting on an artefact the checker never sees.
+  const workflow = parse(readFileSync(path, "utf8")) as CommittedWorkflow;
+  mutate(workflow);
+  writeFileSync(path, stringify(workflow), "utf8");
+  return runChecker(dir);
 }
 
 afterEach(() => {
@@ -106,6 +154,12 @@ describe("gate tier declarations", () => {
     const { code, output } = runChecker();
     expect(output).toBeTruthy();
     expect(code, output).toBe(0);
+  });
+
+  it("the committed tree and a faithful copy of it agree", () => {
+    // If the fixture is not a faithful copy, every negative test below proves
+    // nothing: it would be asserting on a tree that is not the repository's.
+    expect(runChecker(fixtureTree()).code).toBe(0);
   });
 
   it("every tier declares a description saying why its gates are in it", () => {
@@ -172,6 +226,19 @@ describe("the tier checker can fail", () => {
     expect(output).toContain("reads as coverage");
   });
 
+  it("fails when a declared gate's step is removed from the workflow", () => {
+    // The other direction of the same check, and the one that matters most:
+    // a gate that is declared and no longer run reads as coverage.
+    const { code, output } = withMutatedWorkflow((workflow) => {
+      for (const job of Object.values(workflow.jobs ?? {})) {
+        const steps = (job as { steps?: unknown }).steps;
+        if (Array.isArray(steps)) steps.length = 0;
+      }
+    });
+    expect(code).toBe(1);
+    expect(output).toMatch(/no step in .* runs it directly/);
+  });
+
   it("fails on a duplicate gate id, which would make the relation ambiguous", () => {
     const { code, output } = withMutatedTier("pr", (parsed) => {
       const first = parsed.gates[0];
@@ -198,7 +265,7 @@ describe("the tier checker can fail", () => {
     expect(output).toContain('tier field is "release"');
   });
 
-  it("fails when a gate has no description-worthy rationale, i.e. an empty tier", () => {
+  it("fails on a tier with no gates at all", () => {
     const { code, output } = withMutatedTier("pr", (parsed) => {
       parsed.gates = [];
     });
@@ -206,19 +273,25 @@ describe("the tier checker can fail", () => {
     expect(output).toContain("gates must be a non-empty array");
   });
 
-  it("the tree is left exactly as it was found", () => {
-    // The mutation tests above swap committed files. If a `finally` were
-    // ever removed, the next `npm test` would run against a tier file that
-    // no longer matches its name, and the failure would look like a real
-    // contract breach. This assertion is the receipt.
+  it("fails on a tier with no description", () => {
+    const { code, output } = withMutatedTier("pr", (parsed) => {
+      parsed.description = "   ";
+    });
+    expect(code).toBe(1);
+    expect(output).toContain("description is required");
+  });
+
+  it("leaves the committed tree untouched", () => {
+    // The receipt for the property this file is built around. Every negative
+    // test above writes only inside a temp directory; this proves it.
     const before = TIERS.map((tier) =>
-      readFileSync(join(TIER_DIR, `${tier}.json`), "utf8"),
+      readFileSync(join(ROOT, "gates", `${tier}.json`), "utf8"),
     );
     withMutatedTier("pr", (parsed) => {
       parsed.gates = [];
     });
     const after = TIERS.map((tier) =>
-      readFileSync(join(TIER_DIR, `${tier}.json`), "utf8"),
+      readFileSync(join(ROOT, "gates", `${tier}.json`), "utf8"),
     );
     expect(after).toEqual(before);
   });
@@ -226,17 +299,15 @@ describe("the tier checker can fail", () => {
 
 describe("the committed tier files are byte-stable", () => {
   it("a bare run of the checker leaves them untouched", () => {
-    const dir = mkdtempSync(join(tmpdir(), "mjolnir-tiers-"));
-    scratch.push(dir);
-    for (const tier of TIERS) {
-      copyFileSync(join(TIER_DIR, `${tier}.json`), join(dir, `${tier}.json`));
-    }
+    const dir = fixtureTree();
+    const before = TIERS.map((tier) =>
+      readFileSync(join(ROOT, "gates", `${tier}.json`), "utf8"),
+    );
     expect(runChecker().code).toBe(0);
-    for (const tier of TIERS) {
-      expect(
-        readFileSync(join(TIER_DIR, `${tier}.json`), "utf8"),
-        `${tier}.json was rewritten by the checker`,
-      ).toBe(readFileSync(join(dir, `${tier}.json`), "utf8"));
-    }
+    const after = TIERS.map((tier) =>
+      readFileSync(join(ROOT, "gates", `${tier}.json`), "utf8"),
+    );
+    expect(after, "the checker rewrote a committed tier file").toEqual(before);
+    expect(existsSync(join(dir, "gates", "pr.json"))).toBe(true);
   });
 });

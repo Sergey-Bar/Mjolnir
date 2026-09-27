@@ -25,6 +25,7 @@ import type {
   DimensionScore,
 } from "../../src/types.js";
 import type { BaselineDiff } from "../../src/commands/baseline.js";
+import { deriveScoreState } from "../../src/reporter/presentation.js";
 import type { ArtifactIdentity } from "../../src/commands/trust-report.js";
 
 // ---------------------------------------------------------------------------
@@ -114,50 +115,89 @@ describe("marker constants", () => {
 // renderScoreBadge
 // ---------------------------------------------------------------------------
 
+/**
+ * The four hero cells return HTML, not markdown.
+ *
+ * They returned a markdown heading followed by a bold number and a verdict,
+ * and every assertion here was a `toContain` on that heading — which is
+ * satisfied by precisely the string that does not render, because CommonMark
+ * does not parse markdown inside block-level HTML and GitHub's sanitizer
+ * strips the enclosing table. The four cells flattened into one run of
+ * literal text.
+ *
+ * So these assert the HTML contract: a `<small>` label, a `<br>`, no markdown
+ * heading, no bold markdown. The cross-cutting guarantee — that the shipped
+ * comment contains no markdown inside a `<td>` — lives in
+ * tests/reporters/pr-comment-render-gate.spec.ts, which checks the assembled
+ * document rather than one function's return value.
+ */
 describe("renderScoreBadge", () => {
-  it("returns 'n/a' when score is null", () => {
-    expect(renderScoreBadge(null)).toBe("### Score\n*n/a*");
+  it("says the score is unavailable when it is null", () => {
+    const out = renderScoreBadge(null);
+    expect(out).toContain("<small>Score</small>");
+    expect(out).toContain("n/a");
+    expect(out).not.toMatch(/^\s*#{1,6}\s/m);
   });
 
   it("renders score with verdict when no delta", () => {
     const out = renderScoreBadge(85);
-    expect(out).toContain("### Score");
-    expect(out).toContain("**85**/100");
+    expect(out).toContain("<small>Score</small>");
+    expect(out).toContain("<b>");
+    expect(out).toContain("85");
+    expect(out).toContain("/100");
     expect(out).toContain("WORTHY");
-    expect(out).not.toContain("(");
+    expect(out).not.toContain("**");
+  });
+
+  it("renders the presentation model's band rune", () => {
+    // `deriveScoreState` was called into `_state` and never read, so the band
+    // never reached the output. Asserted here because a band that renders
+    // for one score and not another is a band nobody can rely on.
+    expect(renderScoreBadge(100)).toContain(deriveScoreState(100).rune);
+    expect(renderScoreBadge(30)).toContain(deriveScoreState(30).rune);
   });
 
   it("renders positive delta", () => {
     const out = renderScoreBadge(90, 5);
-    expect(out).toContain("**90**/100");
+    expect(out).toContain("90");
     expect(out).toContain("(+5)");
   });
 
   it("renders negative delta", () => {
     const out = renderScoreBadge(70, -10);
-    expect(out).toContain("**70**/100");
+    expect(out).toContain("70");
     expect(out).toContain("(-10)");
   });
 
   it("renders zero delta without parentheses", () => {
     const out = renderScoreBadge(80, 0);
-    expect(out).toContain("**80**/100");
-    expect(out).not.toContain("(");
+    expect(out).toContain("80");
+    expect(out).not.toContain("(+0)");
+    expect(out).not.toContain("(-0)");
   });
 
   it("renders critical (UNWORTHY) score", () => {
-    const out = renderScoreBadge(30);
-    expect(out).toContain("UNWORTHY");
+    expect(renderScoreBadge(30)).toContain("UNWORTHY");
   });
 
   it("renders warning (NEEDS WORK) score", () => {
-    const out = renderScoreBadge(60);
-    expect(out).toContain("NEEDS WORK");
+    expect(renderScoreBadge(60)).toContain("NEEDS WORK");
   });
 
   it("renders forged score as WORTHY", () => {
-    const out = renderScoreBadge(100);
-    expect(out).toContain("WORTHY");
+    expect(renderScoreBadge(100)).toContain("WORTHY");
+  });
+
+  it("stamps a clamped score so it cannot be read as a genuine one", () => {
+    // Two sites turn 100 into 99 so a scan with a finding cannot report a
+    // perfect score. The clamp is right; the defect was that the result was
+    // byte-identical to a genuine 99.
+    const clamped = renderScoreBadge(99, undefined, undefined, true);
+    const genuine = renderScoreBadge(99, undefined, undefined, false);
+    expect(clamped).toContain("99");
+    expect(genuine).toContain("99");
+    expect(clamped).toMatch(/capped/i);
+    expect(genuine).not.toMatch(/capped/i);
   });
 });
 
@@ -166,12 +206,18 @@ describe("renderScoreBadge", () => {
 // ---------------------------------------------------------------------------
 
 describe("renderTrustBadge", () => {
-  it("renders trust level in bold", () => {
-    expect(renderTrustBadge("L2")).toBe("### Trust Level\n**L2**");
+  it("renders the trust level in bold", () => {
+    expect(renderTrustBadge("L2")).toBe(
+      "<small>Trust level</small><br><b>L2</b>",
+    );
   });
 
   it("renders any string level", () => {
-    expect(renderTrustBadge("L5")).toBe("### Trust Level\n**L5**");
+    expect(renderTrustBadge("L5")).toContain("<b>L5</b>");
+  });
+
+  it("escapes a level that is not a level", () => {
+    expect(renderTrustBadge("L2 <script>")).toContain("&lt;script&gt;");
   });
 });
 
@@ -182,14 +228,20 @@ describe("renderTrustBadge", () => {
 describe("renderFindingsBadge", () => {
   it("renders error and warning counts", () => {
     expect(renderFindingsBadge(3, 5)).toBe(
-      "### Findings\n**3** errors · **5** warnings",
+      "<small>Findings</small><br><b>3</b> errors · <b>5</b> warnings",
     );
   });
 
   it("renders zero counts", () => {
     expect(renderFindingsBadge(0, 0)).toBe(
-      "### Findings\n**0** errors · **0** warnings",
+      "<small>Findings</small><br><b>0</b> errors · <b>0</b> warnings",
     );
+  });
+
+  it("agrees with itself on singular", () => {
+    expect(renderFindingsBadge(1, 0)).toContain("<b>1</b> error ·");
+    expect(renderFindingsBadge(1, 1)).toContain("<b>1</b> warning");
+    expect(renderFindingsBadge(2, 0)).toContain("<b>2</b> errors");
   });
 });
 
@@ -199,15 +251,17 @@ describe("renderFindingsBadge", () => {
 
 describe("renderEvidenceBadge", () => {
   it("renders formatted percentage", () => {
-    expect(renderEvidenceBadge(0.75)).toBe("### Evidence\n**75%** coverage");
+    expect(renderEvidenceBadge(0.75)).toBe(
+      "<small>Evidence</small><br><b>75%</b> coverage",
+    );
   });
 
   it("renders 0%", () => {
-    expect(renderEvidenceBadge(0)).toBe("### Evidence\n**0%** coverage");
+    expect(renderEvidenceBadge(0)).toContain("<b>0%</b> coverage");
   });
 
   it("renders 100%", () => {
-    expect(renderEvidenceBadge(1)).toBe("### Evidence\n**100%** coverage");
+    expect(renderEvidenceBadge(1)).toContain("<b>100%</b> coverage");
   });
 });
 
@@ -442,11 +496,32 @@ describe("renderArtifactIntegrity", () => {
     expect(text).toContain("| Commit | `unknown` |");
   });
 
-  it("renders 'none' when detector revisions are empty", () => {
+  it("says 'none fired' when no rule fired, not 'none'", () => {
+    // This row used to read `Rule(rev) inventory | none` on every clean run,
+    // under a heading called Artifact Integrity — because the only per-rule
+    // source was `result.findings`, which is empty exactly when nothing was
+    // found. So the one section whose job is to say what was scanned reported
+    // that nothing was scanned.
     const id: ArtifactIdentity = { ...identity, detectorRevisions: [] };
     const lines = renderArtifactIntegrity(id);
     const text = lines.join("\n");
-    expect(text).toContain("| Rule(rev) inventory | none |");
+    expect(text).toContain("| Fired rules | none fired |");
+    expect(text).not.toContain("Rule(rev) inventory");
+  });
+
+  it("states the whole rule set from the identity digest", () => {
+    // The fired subset cannot say which rules RAN; the run-identity digest is
+    // computed over every rule the pipeline ran, so it is the honest
+    // coverage statement — a hash rather than 79 table rows in a comment.
+    const text = renderArtifactIntegrity(identity).join("\n");
+    expect(text).toContain("| Whole rule set |");
+    expect(text).toContain(identity.rulesDigest?.slice(0, 12) ?? "");
+  });
+
+  it("says so plainly when the producer predates run identity", () => {
+    const { rulesDigest: _dropped, ...withoutDigest } = identity;
+    const text = renderArtifactIntegrity(withoutDigest).join("\n");
+    expect(text).toContain("no digest");
   });
 });
 
@@ -469,12 +544,17 @@ describe("renderUnifiedReport", () => {
   it("renders the hero table with trust/score/findings/evidence badges", () => {
     const r = result({ score: 85 });
     const out = renderUnifiedReport(r);
-    expect(out).toContain("### Trust Level");
-    expect(out).toContain("**L2**");
-    expect(out).toContain("### Score");
-    expect(out).toContain("**85**/100");
-    expect(out).toContain("### Findings");
-    expect(out).toContain("### Evidence");
+    // HTML cells, not markdown headings. The old assertions were
+    // `toContain("### Trust Level")` — satisfied by the string that does not
+    // render, which is how the broken table shipped.
+    expect(out).toContain('<td width="130">');
+    expect(out).toContain("<small>Trust level</small>");
+    expect(out).toContain("<b>L2</b>");
+    expect(out).toContain("<small>Score</small>");
+    expect(out).toContain("85</b>/100");
+    expect(out).toContain("<small>Findings</small>");
+    expect(out).toContain("<small>Evidence</small>");
+    expect(out).not.toContain("### Trust Level");
   });
 
   it("renders score delta when diff has baseline score", () => {
@@ -778,11 +858,11 @@ describe("renderUnifiedReport", () => {
   });
 
   it("provides fallback trust summary when result.trustSummary is undefined", () => {
-    const { trustSummary: _, ...restResult } = result();
+    const { trustSummary: _dropped, ...restResult } = result();
     const r = restResult as ScanResult;
     const out = renderUnifiedReport(r);
-    expect(out).toContain("L0");
-    expect(out).toContain("**0%**");
+    expect(out).toContain("<b>L0</b>");
+    expect(out).toContain("<b>0%</b> coverage");
   });
 
   it("renders separator lines", () => {
@@ -801,7 +881,11 @@ describe("renderUnifiedReport", () => {
   it("handles score=null (unmeasured)", () => {
     const r = result({ score: null });
     const out = renderUnifiedReport(r);
-    expect(out).toContain("*n/a*");
+    // An HTML cell, and it now says WHY the score is missing rather than a
+    // bare "n/a": a null score means the repository has no tests, which is a
+    // fact about the run rather than a missing measurement.
+    expect(out).toContain("<i>n/a — no tests found</i>");
+    expect(out).toContain("<small>Score</small>");
   });
 
   it("renders commit from options", () => {

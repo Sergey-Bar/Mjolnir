@@ -40,7 +40,27 @@ import { join, resolve } from "node:path";
 import { fileURLToPath, URL } from "node:url";
 import { parse } from "yaml";
 
-const ROOT = resolve(fileURLToPath(new URL("..", import.meta.url)));
+/**
+ * The tree to check.
+ *
+ * Defaults to the repository this file lives in, and accepts
+ * `--root=<dir>` so a test can point it at a fixture tree. That argument is
+ * not a convenience: the spec for this checker has to prove the checker can
+ * FAIL, and the obvious way to do that — mutate a committed tier file, run
+ * the checker, restore it — makes the test suite mutate the working tree
+ * while a parallel worker is hashing it. That produced a spurious
+ * `candidate-manifest: workingTreeSha256 drift` failure, which is exactly the
+ * kind of cross-test interference this repository's other specs are written
+ * to avoid. A checker that only reads its own repository cannot be tested for
+ * failure against anything else.
+ */
+const DEFAULT_ROOT = resolve(fileURLToPath(new URL("..", import.meta.url)));
+const ROOT = (() => {
+  const flag = process.argv.find((arg) => arg.startsWith("--root="));
+  return flag === undefined
+    ? DEFAULT_ROOT
+    : resolve(flag.slice("--root=".length));
+})();
 const TIER_DIR = join(ROOT, "gates");
 
 /** Innermost first. The chain is `tiers[i] ⊆ tiers[i + 1]`. */

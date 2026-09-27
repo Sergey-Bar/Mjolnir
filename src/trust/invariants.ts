@@ -174,11 +174,15 @@ export const TRUST_INVARIANTS: readonly TrustInvariant[] = [
   },
   {
     id: "TI-018",
-    description: "Same PrCommentModelV1 → byte-identical rendered Markdown",
+    description: "PR-comment rendering is deterministic",
     scope: "PR Comments",
     status: "CURRENT",
     verificationTest: "tests/reporters/pr-comment-determinism.spec.ts",
-    verificationCase: "soak: 50 renders produce identical output",
+    // Was "soak: 50 renders produce identical output", which asserted
+    // determinism of `renderPrComment` — a function with NO production
+    // importer. The live renderer is `renderUnifiedReport`, so the invariant
+    // was `CURRENT` while verifying code no user could reach.
+    verificationCase: "soak: 50 renders of each shape are identical",
   },
   {
     id: "TI-019",
