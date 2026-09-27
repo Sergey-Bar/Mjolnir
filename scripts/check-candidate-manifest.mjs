@@ -35,27 +35,50 @@ for (const key of [
 ]) {
   if (worktree[key] !== manifest.identity[key]) fail(`${key} drift`);
 }
+// The base SHA is bookkeeping, not the binding.
+//
+// The manifest's authority is `workingTreeSha256`, checked above without
+// exception, together with the dirty-file and worktree inventories. Those are
+// the invariants. A base SHA that is not an ancestor of HEAD adds no failure
+// case they do not already cover more precisely — and while it was enforced it
+// made the verdict depend on invisible local state.
+//
+// A stamp names the tip of the branch it was cut from. When that branch merges
+// through a squash, the stamp's base is a sibling of the merge commit, never an
+// ancestor. A fresh clone has never seen the branch tip, `git cat-file -e`
+// fails, the check is skipped, and CI is green — while a developer who still
+// has the branch locally gets "candidate base SHA is not the current or an
+// ancestor HEAD" for the identical commit. Same tree, same manifest, opposite
+// verdicts, decided by whether an object happens to survive in the local store.
+//
+// So the relation is reported, not enforced.
 const baseObjectAvailable =
   spawnSync(
     "git",
     ["cat-file", "-e", `${manifest.identity.baseSha}^{commit}`],
     { cwd: root, windowsHide: true },
   ).status === 0;
-if (
-  manifest.identity.baseSha !== worktree.baseSha &&
-  baseObjectAvailable &&
-  spawnSync(
-    "git",
-    [
-      "merge-base",
-      "--is-ancestor",
-      manifest.identity.baseSha,
-      worktree.baseSha,
-    ],
-    { cwd: root, windowsHide: true },
-  ).status !== 0
-) {
-  fail("candidate base SHA is not the current or an ancestor HEAD");
+if (manifest.identity.baseSha !== worktree.baseSha) {
+  const isAncestor =
+    baseObjectAvailable &&
+    spawnSync(
+      "git",
+      [
+        "merge-base",
+        "--is-ancestor",
+        manifest.identity.baseSha,
+        worktree.baseSha,
+      ],
+      { cwd: root, windowsHide: true },
+    ).status === 0;
+  const relation = !baseObjectAvailable
+    ? "not present in this repository, as expected after a squash merge"
+    : isAncestor
+      ? "an ancestor of HEAD"
+      : "not an ancestor of HEAD, which is what a squash merge produces";
+  console.log(
+    `candidate-manifest: base ${manifest.identity.baseSha.slice(0, 8)} is ${relation}`,
+  );
 }
 if (
   JSON.stringify(worktree.dirtyFiles) !==
