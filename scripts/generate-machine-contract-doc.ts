@@ -149,8 +149,17 @@ async function main(): Promise<void> {
 > Drift-locked: a \`MachineContract\` shape change that this doc does not
 > describe fails CI (generated-docs-drift).
 
-\`contractVersion: ${CONTRACT_VERSION}\` — additive-only within
-\`schemaVersion: 1\`.
+\`contractVersion: ${CONTRACT_VERSION}\` — additive-only WITHIN a
+\`contractVersion\`; the version itself is bumped when a SEMANTIC field
+joins the digest. \`schemaVersion\` describes the \`ScanResult\` projection
+and is independent of it.
+
+**Why v2 exists.** v2 adds \`coverageState\`, \`rulesApplied\`,
+\`rulesWithheld\` and \`degradations\`. Every one of them is semantic and
+every one of them lands in \`canonicalScanJson\`, so leaving the version at
+1 would have let a stored v1 artifact keep verifying while the digest no
+longer described which rules ran. A version that does not change when the
+meaning of the digest changes is a version that lies.
 
 **Source of truth**: \`scan-pipeline → canonical ScanResult →
 buildMachineContract\` (Contract D). No consumer may independently
@@ -160,7 +169,10 @@ reconstruct semantics.
 
 - The listed findings were detected by the named rules at the stated
   \`detectorRevision\`, with the stated evidence/trust/FP metadata.
-- \`completeness\` accurately describes the scan's actual coverage.
+- \`completeness\` accurately describes the scan's actual coverage — and
+  since v2 that includes *which rules could run at all*. \`completeness.rules\`
+  answers "did a rule fail", \`completeness.coverageState\` answers "were
+  rules present"; neither substitutes for the other.
 - \`summary.advisory\` findings (E0) are advisory — reported, never gating.
 - \`score\` is a measurement, not a contract.
 - \`trustSummary\` is the scan's trust MEASUREMENT (docs/SCORING.md):

@@ -1,9 +1,16 @@
 /**
  * Trust invariants registry suite (INVARIANT-001).
  *
- * Locks: registry completeness (20 invariants, TI-001–TI-020),
+ * Locks: registry completeness (24 invariants, TI-001–TI-024),
  * ID uniqueness, lookup helpers, scope/quarter filtering, and the
  * structural property that every CURRENT invariant has no quarter.
+ *
+ * The counts below are deliberately hard-coded rather than derived from
+ * `TRUST_INVARIANTS.length`. Deriving them would let the registry grow by
+ * one row with no test change at all, which is the exact shape of the
+ * problem the registry exists to record: an entry that appears without
+ * anyone deciding to add it. The cost of a literal is that adding an
+ * invariant fails this file — which is the point.
  */
 
 import { readFileSync } from "node:fs";
@@ -19,13 +26,13 @@ import {
 } from "../../src/trust/invariants.js";
 
 describe("TRUST_INVARIANTS registry", () => {
-  it("contains exactly 20 invariants", () => {
-    expect(TRUST_INVARIANTS).toHaveLength(20);
+  it("contains exactly 24 invariants", () => {
+    expect(TRUST_INVARIANTS).toHaveLength(24);
   });
 
-  it("covers TI-001 through TI-020 without gaps", () => {
+  it("covers TI-001 through TI-024 without gaps", () => {
     const ids = TRUST_INVARIANTS.map((inv) => inv.id);
-    for (let i = 1; i <= 20; i++) {
+    for (let i = 1; i <= 24; i++) {
       const expected = `TI-${String(i).padStart(3, "0")}`;
       expect(ids).toContain(expected);
     }
@@ -48,7 +55,7 @@ describe("TRUST_INVARIANTS registry", () => {
     }
   });
 
-  it("every invariant has a valid scope", () => {
+  it("every scope is one of the declared nine", () => {
     const validScopes = new Set([
       "Scan",
       "Trust",
@@ -183,6 +190,12 @@ describe("getInvariantsByScope", () => {
     expect(ids).toContain("TI-017");
   });
 
+  it("Exit scope returns TI-008 and the four gate-exit invariants", () => {
+    const exitScope = getInvariantsByScope("Exit");
+    const ids = exitScope.map((inv) => inv.id);
+    expect(ids).toEqual(["TI-008", "TI-021", "TI-022", "TI-023", "TI-024"]);
+  });
+
   it("PR Comments scope returns TI-018, TI-019, TI-020", () => {
     const pr = getInvariantsByScope("PR Comments");
     const ids = pr.map((inv) => inv.id);
@@ -193,7 +206,12 @@ describe("getInvariantsByScope", () => {
 
   it("every scope appears at least once", () => {
     const scopes = new Set(TRUST_INVARIANTS.map((inv) => inv.scope));
+    // 8 declared scopes, all used. TI-021..TI-024 re-use "Exit" rather
+    // than adding a "Gates" scope: the invariant is about the process
+    // exit code, which is the same contract surface either way, and a
+    // scope that differs only in name is a scope someone has to learn.
     expect(scopes.size).toBe(8);
+    expect(scopes).toContain("Exit");
   });
 
   it("returned arrays are fresh copies, not the same reference", () => {

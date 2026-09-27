@@ -785,6 +785,27 @@ function appendFooter(
   // Honesty Core: how much of what fired here is backed by a measured
   // false-positive rate, vs. shipping on assumption. Only meaningful when
   // there are findings — a clean repo needs no caveat.
+  //
+  // 6.0: this line used to be the ONLY coverage disclosure, and it is
+  // conditioned on `findings.length > 0` and divides by the rules that
+  // FIRED. Both make it blind in the same direction: a scan that withheld
+  // a third of the registry and found nothing reports no coverage line at
+  // all, and a scan that fired two unmeasured rules reports "0/2" as though
+  // the other 43 detectors had not existed. The withheld count is stated
+  // first now, unconditionally, because it is the larger loss and it is the
+  // one the reader cannot infer.
+  const withheld = result.analysisStatus.rulesWithheld;
+  if (withheld !== undefined && withheld > 0) {
+    const applied = result.analysisStatus.rulesApplied;
+    pushWrapped(
+      lines,
+      p,
+      `Rule coverage: ${withheld} of the ${applied !== undefined ? applied + withheld : ""} registered rules` +
+        ` were withheld (quarantine tier; not run). This scan is coverage-${result.analysisStatus.coverageState ?? "PARTIAL"}` +
+        ` — pass \`--strict\` to include them, or \`--require-full-coverage\` to fail the run instead.`,
+      width,
+    );
+  }
   if (result.findings.length > 0) {
     const firedRuleIds = new Set(result.findings.map((f) => f.ruleId));
     const measuredHere = [...firedRuleIds].filter(
@@ -793,8 +814,8 @@ function appendFooter(
     pushWrapped(
       lines,
       p,
-      `Rule coverage: ${measuredHere}/${firedRuleIds.size} rules that fired here have a measured` +
-        ` false-positive rate; the rest are heuristics.` +
+      `False-positive evidence: ${measuredHere}/${firedRuleIds.size} of the rules that fired here have a` +
+        ` measured false-positive rate; the rest are heuristics.` +
         ` \`mjolnir rules --unmeasured\` lists them.`,
       width,
     );

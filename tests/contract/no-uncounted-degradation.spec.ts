@@ -404,7 +404,7 @@ const ALLOWED_VALUE_RETURNS: ReadonlyArray<{
   },
   {
     file: "engine/scan-pipeline.ts",
-    line: 804,
+    line: 838,
     direction: "fails-explicitly",
     reason:
       "Counts the failure three ways in the block itself " +
@@ -414,7 +414,7 @@ const ALLOWED_VALUE_RETURNS: ReadonlyArray<{
   },
   {
     file: "engine/scan-pipeline.ts",
-    line: 1199,
+    line: 1241,
     direction: "fails-explicitly",
     reason:
       "Sets identityIncomplete and returns hash: 'UNAVAILABLE'. The literal " +

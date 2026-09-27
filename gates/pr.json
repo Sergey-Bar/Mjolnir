@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "tier": "pr",
+  "description": "Every gate that runs on a pull request. The fastest tier: a contributor waits on this, so a gate that can only run after hours of corpus sampling does not belong here — it belongs in nightly, and nightly is a superset, so nothing is lost by leaving it out. `npm test` and `npm run test:coverage:ci` are the same suite under two names and appear once, as `coverage`.",
+  "runsOn": ["pull_request", "push"],
+  "workflows": [".github/workflows/ci.yml", ".github/workflows/fuzz.yml"],
+  "gates": [
+    { "id": "build", "command": "npm run build" },
+    { "id": "typecheck", "command": "npm run typecheck" },
+    { "id": "lint", "command": "npm run lint" },
+    { "id": "version-check", "command": "npm run version:check" },
+    { "id": "brand-doctor", "command": "npm run brand:doctor" },
+    {
+      "id": "brand-doctor-selftest",
+      "command": "npm run brand:doctor:selftest"
+    },
+    { "id": "brand-fonts", "command": "npm run brand:fonts:check" },
+    { "id": "coverage", "command": "npm run test:coverage:ci" },
+    { "id": "coverage-ratchet", "command": "npm run coverage:ratchet" },
+    { "id": "property", "command": "npm run test:property" },
+    { "id": "audit", "command": "npm run audit:ci" },
+    { "id": "site-doctor", "command": "npm run site:doctor" },
+    { "id": "ci-standard", "command": "npm run ci:standard" },
+    { "id": "self-scan", "command": "node dist/cli.mjs src --json" },
+    { "id": "docs-regen", "command": "npm run docs:regen" },
+    { "id": "fuzz", "command": "npm run test:fuzz" }
+  ]
+}

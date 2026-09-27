@@ -4,7 +4,10 @@ import {
   verifyMachineContract,
   renderContractVerification,
 } from "../src/engine/machine-contract-verification.js";
-import { buildMachineContract } from "../src/engine/machine-contract.js";
+import {
+  buildMachineContract,
+  CONTRACT_VERSION,
+} from "../src/engine/machine-contract.js";
 
 describe("Milestone 11 — Machine Contract Verification", () => {
   it("should verify a valid machine contract", () => {
@@ -91,13 +94,20 @@ describe("Milestone 11 — Machine Contract Verification", () => {
       dimensions: [],
     } as any;
     const contract = buildMachineContract(result);
-    (contract as { contractVersion: number }).contractVersion = 2;
+    // A version the verifier has never heard of. Not `2`: that was the
+    // "future" version when this test was written and is the CURRENT one
+    // now, so leaving it here would have turned a rejection test into a
+    // test that rejects the shipping contract and nobody would have read
+    // the diff closely enough to notice.
+    (contract as { contractVersion: number }).contractVersion = 999;
 
     const verification = verifyMachineContract(result, contract);
 
     expect(verification.passed).toBe(false);
-    expect(verification.contractVersion).toBe(2);
-    expect(verification.violations).toContain("Unsupported contract version 2");
+    expect(verification.contractVersion).toBe(999);
+    expect(verification.violations).toContain(
+      "Unsupported contract version 999",
+    );
   });
 
   it("rejects forged summary counts", () => {
@@ -331,7 +341,7 @@ describe("Milestone 11 — Machine Contract Verification", () => {
       buildMachineContract(result),
     );
     expect(verification.passed).toBe(true);
-    expect(verification.contractVersion).toBe(1);
+    expect(verification.contractVersion).toBe(CONTRACT_VERSION);
   });
 
   it("should verify trust summary consistency", () => {

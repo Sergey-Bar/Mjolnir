@@ -9,6 +9,7 @@ import {
 } from "../../src/rules/measurement.js";
 import { FRAMEWORK_INVENTORY } from "../../src/frameworks/framework-inventory.js";
 import { EXIT_USAGE, EXIT_INTERNAL } from "../../src/exit-codes.js";
+import { isGapCleared } from "../../src/ledger/m26-validators.js";
 import type {
   RequirementClassification,
   V6Gap,
@@ -202,8 +203,16 @@ export function collectRepoFacts(root = ROOT): RepoFacts {
       total: gapLedger.length,
       byStatus: tally(gapLedger.map((g) => g.status)),
       bySeverity: tally(gapLedger.map((g) => g.severity)),
+      // `status === "open"` was the filter here through 5.x, and no row in
+      // M26-GAP-LEDGER.jsonl has ever carried that word — the file's status
+      // vocabulary is CONFIRMED_STILL_OPEN / STALE_UNVERIFIABLE /
+      // ALREADY_FIXED. The field was therefore always `[]`, which is the
+      // worst possible shape for a release-blocker count: it reported zero
+      // blockers while eleven rows carried the severity. The predicate is
+      // now the one the ledger validator itself uses, so `STALE_UNVERIFIABLE`
+      // keeps blocking — an unverifiable claim must never unblock a release.
       openReleaseBlockers: gapLedger
-        .filter((g) => g.status === "open" && g.severity === "release-blocker")
+        .filter((g) => g.severity === "release-blocker" && !isGapCleared(g))
         .map((g) => g.gap_id),
     },
     supportMatrix: {
@@ -612,9 +621,12 @@ export const REQUIREMENT_CLASSIFICATION: readonly (RequirementClassification & {
     specSection: "§39",
     area: "Quarantine governance",
     state: "ALREADY_COMPLETE",
-    evidence: ["src/commands/quarantine.ts"],
+    evidence: [
+      "src/rules/measurement-status.ts",
+      "docs/QUARANTINE-REMEDIATION.md",
+    ],
     wave: "9",
-    note: "Quarantine is a first-class governance surface with its own command.",
+    note: "Quarantine is a first-class governance surface: quarantined rules are a ledger with a status machine and a generated remediation artifact. The read-only `quarantine` prototype command was removed in 5.0 — a proposal list nobody could action was not a governance surface.",
   },
   {
     specSection: "§40",
@@ -786,12 +798,9 @@ export const REQUIREMENT_CLASSIFICATION: readonly (RequirementClassification & {
     specSection: "§60",
     area: "Release readiness",
     state: "ALREADY_COMPLETE",
-    evidence: [
-      "src/commands/release-report.ts",
-      "src/commands/release-trust.ts",
-    ],
+    evidence: ["src/commands/release-trust.ts"],
     wave: "14",
-    note: "Release report and release-trust both exist as commands.",
+    note: "release-trust is the one release-readiness command. The `release-report` GO/NO-GO command was removed in 5.0: a second verdict authority is the sprawl the canonical proof exists to remove.",
   },
   {
     specSection: "§61",

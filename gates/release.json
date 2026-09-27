@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "tier": "release",
+  "description": "Every gate that runs before a release is published. A superset of the PR tier by construction: `scripts/check-gate-tiers.mjs` fails when a gate id appears in pr.json and not here, so a check added high and forgotten low is a build failure rather than a silent omission. Most of this tier reaches its gates through `npm run ci-local`; the three that do not (`ci-standard`, `self-scan`, `docs-regen`) are separate steps in both release workflows, because `ci-local` does not chain them.",
+  "runsOn": ["push", "workflow_dispatch", "release"],
+  "workflows": [
+    ".github/workflows/release.yml",
+    ".github/workflows/stable-release.yml"
+  ],
+  "gates": [
+    { "id": "build", "command": "npm run build" },
+    { "id": "typecheck", "command": "npm run typecheck" },
+    { "id": "lint", "command": "npm run lint" },
+    { "id": "version-check", "command": "npm run version:check" },
+    { "id": "brand-doctor", "command": "npm run brand:doctor" },
+    {
+      "id": "brand-doctor-selftest",
+      "command": "npm run brand:doctor:selftest"
+    },
+    { "id": "brand-fonts", "command": "npm run brand:fonts:check" },
+    { "id": "coverage", "command": "npm run test:coverage:ci" },
+    { "id": "coverage-ratchet", "command": "npm run coverage:ratchet" },
+    { "id": "property", "command": "npm run test:property" },
+    { "id": "audit", "command": "npm run audit:ci" },
+    { "id": "site-doctor", "command": "npm run site:doctor" },
+    { "id": "ci-standard", "command": "npm run ci:standard" },
+    { "id": "self-scan", "command": "node dist/cli.mjs src --json" },
+    { "id": "docs-regen", "command": "npm run docs:regen" },
+    { "id": "fuzz", "command": "npm run test:fuzz" },
+    { "id": "certify", "command": "npm run ci-local" },
+    { "id": "m26-audit", "command": "npm run m26:audit" },
+    { "id": "candidate-readiness", "command": "npm run candidate:readiness" },
+    { "id": "changelog", "command": "npm run changelog:check" }
+  ]
+}

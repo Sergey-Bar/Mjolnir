@@ -11,6 +11,12 @@
  * scores, zero-as-measurement, invented runtime evidence, "updated" messages
  * for state changes that never happened — because a claim that is merely
  * absent is invisible to a coverage number.
+ *
+ * The `quarantine`, `maturity` and `report` arms lived here too, and were
+ * deleted with those verbs in 5.0 rather than being re-pointed elsewhere:
+ * a negative suite for a surface that no longer exists has nothing left to
+ * assert, and the quarantine LEDGER (src/rules/measurement-status.ts) keeps
+ * its own contract.
  */
 
 import { mkdtempSync, rmSync } from "node:fs";
@@ -20,9 +26,6 @@ import { readFileSync } from "node:fs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { runExecReportCommand } from "../../src/commands/exec-report.js";
-import { runMaturityCommand } from "../../src/commands/maturity.js";
-import { runQuarantineCommand } from "../../src/commands/quarantine.js";
-import { buildPlaywrightReport } from "../../src/commands/report-playwright.js";
 import { decideClaim, unmeasuredClaim } from "../../src/claim-evidence.js";
 import {
   EXIT_CLEAN,
@@ -165,50 +168,5 @@ describe("exec-report renders only measured values", () => {
       "utf8",
     );
     expect(source).not.toContain("Number.POSITIVE_INFINITY");
-  });
-});
-
-describe("no shipped command may fabricate a runtime result", () => {
-  it("the report-shaped artifact contains no executed tests", () => {
-    const report = buildPlaywrightReport({
-      findings: [],
-      score: 100,
-      frameworks: ["playwright"],
-    });
-    expect(report.totalTests).toBe(0);
-    expect(report.passedTests).toBe(0);
-    expect(report.failedTests).toBe(0);
-    expect(report.suites).toEqual([]);
-  });
-
-  it("quarantine stats reports no statistics rather than printing zeros", () => {
-    const code = runQuarantineCommand(["stats"], { out, err });
-    expect(code).toBe(EXIT_PARTIAL);
-    expect(stdout()).not.toMatch(/Total: \d/);
-  });
-
-  it("quarantine review never claims a state change it did not make", () => {
-    for (const action of ["--accept", "--defer", "--reject"]) {
-      out.mockClear();
-      const code = runQuarantineCommand(["review", action], { out, err });
-      expect(code).toBe(EXIT_PARTIAL);
-      expect(stdout()).not.toMatch(/updated|applied|saved/i);
-    }
-  });
-});
-
-describe("maturity reports signals, not a score", () => {
-  it("renders no numeric score at all", () => {
-    const code = runMaturityCommand(["assess", dir], { out, err });
-    expect(code).toBe(EXIT_PARTIAL);
-    const text = stdout();
-    expect(text).not.toMatch(/\d+\/100/);
-    expect(text).not.toMatch(/\(7[05]\)/);
-    expect(text).not.toMatch(/ruleCount|rules loaded/i);
-  });
-
-  it("states what presence does not prove", () => {
-    runMaturityCommand(["assess", dir], { out, err });
-    expect(stdout()).toContain("presence does NOT say");
   });
 });

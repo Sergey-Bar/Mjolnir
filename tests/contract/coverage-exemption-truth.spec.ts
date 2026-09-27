@@ -107,43 +107,27 @@ describe("T3: every non-structural exemption carries a machine-checkable truth c
     }
   });
 
-  it("the `maturity.ts` row is reclassified: the defect it described is gone", () => {
+  it("a row whose defect is gone carries a closure, not a signature", () => {
     // The case the whole task was written for. The entry used to assert
     // "hardcoded 75/70/65/30 scores and a ruleCount = 79 fallback invented
-    // from file existence" — none of which is in the source any more, and
-    // the module header says so. A signature here would have been theatre:
-    // pinning a shape nobody defends.
-    const entry = entryFor(readLedger(ROOT), "src/commands/maturity.ts");
+    // from file existence" — none of which was in the source any more, and
+    // the module header said so. A signature here would have been theatre:
+    // pinning a shape nobody defends. (That row was `maturity.ts`, removed
+    // with the verb in 5.0; `dashboard.ts` is the same shape of closure.)
+    const entry = entryFor(readLedger(ROOT), "src/commands/dashboard.ts");
     expect(entry.closureState).toMatch(/CLOSED/);
     expect(entry.defectSignatures).toBeUndefined();
-    expect(entry.justification).not.toMatch(/hardcoded 75\/70\/65\/30/);
-    // The closure is a fact, not an assertion. Comments are stripped: the
-    // module header CITES the removed `ruleCount = 79` fallback by name, and
-    // a comment documenting a corrected claim must not read as the claim
-    // still standing.
+    // The closure is a fact, not an assertion. Comments are stripped: a
+    // comment documenting a corrected claim must not read as the claim
+    // still standing. The score renders as "N/A" when it was never
+    // measured — never a fabricated 0 or a fabricated band.
     const source = stripComments(
-      readFileSync(join(ROOT, "src/commands/maturity.ts"), "utf8"),
+      readFileSync(join(ROOT, "src/commands/dashboard.ts"), "utf8"),
     );
-    expect(source).not.toContain("ruleCount");
-    expect(source).toMatch(/doesNotSay/);
-  });
-
-  it("the `report-playwright` signatures are written against the POST-T1 status", () => {
-    // T1 → T3 is a hard ordering dependency: this signature must name the
-    // corrected field, or the gate fires on the very task that closed the
-    // defect.
-    const entry = entryFor(
-      readLedger(ROOT),
-      "src/commands/report-playwright.ts",
+    expect(source).toMatch(
+      /data\.score !== null \? data\.score \+ "\/100" : "N\/A"/,
     );
-    expect(entry.defectSignatures).toEqual(
-      expect.arrayContaining([
-        expect.stringContaining('status: "interrupted"'),
-      ]),
-    );
-    expect(JSON.stringify(entry.defectSignatures)).not.toContain(
-      'status: "passed"',
-    );
+    expect(source).not.toMatch(/score: 0[,}]/);
   });
 
   it("the PERMANENT_STRUCTURAL rows are unaffected by the signature rule", () => {
@@ -238,13 +222,13 @@ describe("T3: the gate fails when the truth claim is absent, invalid, or drifted
 
   it("a closure state is required to be prose, not an empty string", () => {
     const ledger = clone();
-    const entry = entryFor(ledger, "src/commands/maturity.ts");
+    const entry = entryFor(ledger, "src/commands/dashboard.ts");
     entry.closureState = "";
     const problems = gate(ledger);
     expect(
       problems.some(
         (problem) =>
-          problem.includes("src/commands/maturity.ts") &&
+          problem.includes("src/commands/dashboard.ts") &&
           problem.includes("prose-only"),
       ),
       problems.join("\n"),

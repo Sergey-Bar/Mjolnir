@@ -306,6 +306,39 @@ export function validateReportJson(text: string): ScanResult {
   if (doc.partial === false && partialMarkers) {
     fail("partial=false conflicts with analysisStatus");
   }
+  // The coverage pair is checked for INTERNAL consistency, never against
+  // `partial`. `coverageState: "PARTIAL"` with `rulesWithheld: 0` is a
+  // report that contradicts itself, and that IS a load failure. A report
+  // with `coverageState: "PARTIAL"` and `partial: false` is a perfectly
+  // good report — a whole scan that could not see every rule — and
+  // refusing it would be this validator inventing a `partial` input that
+  // the engine deliberately does not have.
+  const coverageState = status["coverageState"];
+  if (
+    coverageState !== undefined &&
+    coverageState !== "COMPLETE" &&
+    coverageState !== "PARTIAL"
+  ) {
+    fail(
+      `analysisStatus.coverageState must be "COMPLETE" or "PARTIAL", got ${JSON.stringify(coverageState)}`,
+    );
+  }
+  const rulesWithheld = status["rulesWithheld"];
+  if (rulesWithheld !== undefined) {
+    if (
+      typeof rulesWithheld !== "number" ||
+      !Number.isInteger(rulesWithheld) ||
+      rulesWithheld < 0
+    ) {
+      fail("analysisStatus.rulesWithheld must be a non-negative integer");
+    }
+    const expected = Number(rulesWithheld) > 0 ? "PARTIAL" : "COMPLETE";
+    if (coverageState !== undefined && coverageState !== expected) {
+      fail(
+        `analysisStatus.coverageState is ${JSON.stringify(coverageState)} but ${rulesWithheld} rule(s) were withheld`,
+      );
+    }
+  }
   if (
     doc.partial === true &&
     typeof doc.score === "number" &&

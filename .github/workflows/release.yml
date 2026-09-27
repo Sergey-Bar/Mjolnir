@@ -184,6 +184,24 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
       - name: Run release certification
         run: npm run ci-local
+      # The three gates ci-local does not chain. They are here because
+      # gates/release.json declares them for the release tier, and that
+      # declaration is checked against this file by
+      # scripts/check-gate-tiers.mjs — a declared gate that no step runs
+      # is a gate that reads as coverage and is not.
+      - name: Standard-CI configuration gate
+        run: npm run ci:standard
+      - name: Self-scan the shipped source
+        run: node dist/cli.mjs src --json
+      - name: Generated docs are not stale
+        run: |
+          set -euo pipefail
+          npm run docs:regen
+          if ! git diff --exit-code -- docs/; then
+            echo "::error::generated docs are stale — run 'npm run docs:regen' and commit the result"
+            git --no-pager diff --stat -- docs/
+            exit 1
+          fi
       - name: Release-trust gate (verdict must PASS)
         shell: bash
         run: |

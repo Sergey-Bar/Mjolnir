@@ -22,6 +22,12 @@
  *               A probe that reports zero because it did not run is the
  *               classic silent green, so this is never `PASS`.
  *  - `FAIL`   — the probe ran and found a tool with no disposition.
+ *
+ * All three reach the exit code, and they are three different codes
+ * (`GATE_EXIT_CODES`): `PASS` 0, `FAIL` 1, usage 2, `BLOCKED` 3. Through
+ * 5.x this gate mapped `status === "FAIL" ? 1 : 0`, so `BLOCKED` was a
+ * success — the exact state whose whole purpose is to say "this did not
+ * run" was the one state a CI job read as "this passed".
  */
 
 import { existsSync, readFileSync } from "node:fs";
@@ -253,7 +259,7 @@ function main(): void {
   const requested = (process.argv[2] ?? "census") as GateName;
   if (requested !== "census" && requested !== "gaps") {
     console.error("usage: check-ecosystem.ts [census|gaps]");
-    process.exit(2);
+    process.exit(EXIT_USAGE);
   }
   const result =
     requested === "census" ? runCensusGate(ROOT) : runGapsGate(ROOT);
@@ -270,11 +276,36 @@ function main(): void {
       2,
     ),
   );
-  // BLOCKED is not a pass and is not a failure: it is the honest state
-  // when the evidence needed to decide does not exist locally.
-  process.exit(result.status === "FAIL" ? 1 : 0);
+  // Three outcomes, three exit codes. `BLOCKED` is neither a pass nor a
+  // failure of the artifact — it is the honest state when the evidence the
+  // decision needs does not exist locally — and the difference between
+  // "0 because the probe walked nothing" and "0 because everything is
+  // disposed" is the difference between a gate and a rubber stamp. 6.0:
+  // BLOCKED now exits GATE_BLOCKED. The `exit(2)` for a bad argument was
+  // unreachable behind the old `status === "FAIL" ? 1 : 0`; it is reachable
+  // again, and carries its own code rather than FAIL's.
+  process.exit(exitCodeForStatus(result.status));
 }
 
-if (process.argv[1] && process.argv[1].endsWith("check-ecosystem.ts")) {
+/**
+ * The only place a gate status becomes a process exit code.
+ *
+ * Three states need three answers, so a table rather than a ternary: the
+ * ternary is what made `BLOCKED` silently succeed. A fourth state added
+ * later fails to compile here instead of defaulting to 0.
+ */
+export const GATE_EXIT_CODES: Readonly<Record<GateStatus, number>> = {
+  PASS: 0,
+  BLOCKED: 3,
+  FAIL: 1,
+};
+
+export const EXIT_USAGE = 2;
+
+export function exitCodeForStatus(status: GateStatus): number {
+  return GATE_EXIT_CODES[status];
+}
+
+if (process.argv[1]?.endsWith("check-ecosystem.ts")) {
   main();
 }

@@ -149,6 +149,6 @@ describe("the command surface is documented, not just implemented", () => {
     // The gate proper is `npm run verbs:budget`; this asserts the count the
     // gate reads is the count the CLI actually dispatches, so a verb added
     // to the manifest without a handler still trips the documentation test.
-    expect(CLI_COMMAND_NAMES.length).toBeLessThanOrEqual(50);
+    expect(CLI_COMMAND_NAMES.length).toBeLessThanOrEqual(44);
   });
 });

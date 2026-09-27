@@ -166,6 +166,10 @@ export async function buildUniversalRules(
   tierByRuleId: Map<string, Tier>;
   pluginMeta: Array<{ name: string; rules: number }>;
   externalRules: QADoctorRule[];
+  /** Rules that ran, after the quarantine filter. */
+  rulesApplied: number;
+  /** Rules removed by the quarantine filter because `--strict` was absent. */
+  rulesWithheld: number;
 }> {
   const gateOpen = pluginsGateOpen(opts.enablePlugins);
   const { plugins, errors, skipped } = loadPlugins(root, gateOpen);
@@ -205,9 +209,21 @@ export async function buildUniversalRules(
   // Phase 4 (Tempering): exclude quarantine-tier rules unless --strict.
   // §18: the tier map covers EXTERNAL rules too — a workspace-local
   // quarantine rule is excluded exactly like a core one.
+  //
+  // 6.0: the withheld set is captured HERE and not anywhere else, because
+  // this is the last point at which it is knowable. The count used to be
+  // discarded here: the rule set simply came back smaller, and every
+  // downstream surface — the machine contract, the report, the PR comment —
+  // reported a scan that had covered the registry. `rulesWithheld` is what
+  // `coverageState` is derived from, and it never feeds `partial`.
+  const withheldBeforeFilter = rules.filter(
+    (r) => tierByRuleId.get(r.id) === "quarantine",
+  );
   if (!strict) {
     rules = rules.filter((r) => tierByRuleId.get(r.id) !== "quarantine");
   }
+  const rulesWithheld = strict ? 0 : withheldBeforeFilter.length;
+  const rulesApplied = rules.length;
   const pluginMeta = [
     ...plugins.map((p) => ({
       name: p.name,
@@ -228,6 +244,8 @@ export async function buildUniversalRules(
     tierByRuleId,
     pluginMeta,
     externalRules: local.rules,
+    rulesApplied,
+    rulesWithheld,
   };
 }
 
@@ -308,6 +326,22 @@ export interface CliArgs {
    * scan semantics and exit codes are unchanged (plan §5.6).
    */
   scoreOnly?: boolean;
+  /**
+   * `--require-full-coverage`: exit `EXIT_PARTIAL` when the quarantine
+   * filter withheld any rule, even though the scan itself was whole.
+   *
+   * Off by default, and the default is the point. Coverage-PARTIAL is the
+   * state of every ordinary scan — the quarantine tier is non-empty — so
+   * making it gate by default would exit 2 on nearly every run. The fix a
+   * user reaches for is `--strict`, which switches the quarantine ON, and
+   * then the flag has nothing left to check. A flag that inverts its own
+   * remedy is worse than no flag.
+   *
+   * The opt-in is for a project that has decided quarantined detectors must
+   * be live: then a withheld rule is a real loss of coverage and the run is
+   * inconclusive, exactly as a truncated walk is.
+   */
+  requireFullCoverage?: boolean;
   /**
    * Audit C2: --enable-plugins opens the plugin trust gate for THIS
    * invocation — npm-plugin and JS-module rule sources may load (and
@@ -1038,6 +1072,14 @@ export interface AssembleScanResultInput {
    * than an ownership claim.
    */
   degradations?: readonly DegradationCount[];
+  /**
+   * Rules removed from the run by the quarantine filter because `--strict`
+   * was absent. Threaded from the rule loader — the only site that knows
+   * the withheld set — into `coverageState`. Never an input to `partial`.
+   */
+  rulesWithheld?: number;
+  /** Rules that actually ran. The denominator `rulesWithheld` is measured against. */
+  rulesApplied?: number;
   scanned: number;
   analyzed?: number;
   testFiles: string[];
@@ -1239,6 +1281,17 @@ export function assembleScanResult(o: AssembleScanResultInput): ScanResult {
       ? { astFallbackFiles: o.astFallbackFiles }
       : {}),
     ...(o.degradations !== undefined ? { degradations: o.degradations } : {}),
+    // The coverage pair. Spread rather than passed as `?? 0` for the same
+    // reason `astFallbackFiles` is: a caller that has not measured the
+    // withheld set has not shown that it was empty. The rule loader always
+    // measures it, so in practice these are always present — but absence
+    // must mean "unknown", and `coverageState` reads absence as COMPLETE
+    // only because a producer that predates the field is the one case where
+    // claiming PARTIAL would be a fabricated new failure.
+    ...(o.rulesWithheld !== undefined
+      ? { rulesWithheld: o.rulesWithheld }
+      : {}),
+    ...(o.rulesApplied !== undefined ? { rulesApplied: o.rulesApplied } : {}),
     ...(o.scopeInfo.degraded !== undefined
       ? { scopeDegraded: o.scopeInfo.degraded }
       : {}),
@@ -1346,6 +1399,11 @@ export function assembleScanResult(o: AssembleScanResultInput): ScanResult {
       : {}),
     analysisStatus: {
       ...completion.analysisStatus,
+      // `coverageState` sits beside `analysisStatus.rules`, not inside it.
+      // `rules` answers "did a rule fail"; this answers "were rules
+      // present". Overloading `rules` to mean both is how a scan reports
+      // `rules: "complete"` over 45 of 79 detectors.
+      coverageState: completion.coverageState,
       durationMs: elapsed,
     },
     scoringModelVersion: SCORING_MODEL_VERSION,
@@ -1513,6 +1571,8 @@ export async function runScan(
     pluginErrors,
     tierByRuleId: tiers,
     pluginMeta,
+    rulesApplied,
+    rulesWithheld,
   } = await buildUniversalRules(workspace.root, args.strict, {
     ...(args.enablePlugins !== undefined
       ? { enablePlugins: args.enablePlugins }
@@ -1673,6 +1733,8 @@ export async function runScan(
     parseFallbacks,
     astFallbackFiles,
     degradations: summarizeDegradations(degradationsSince(degradationWindow)),
+    rulesApplied,
+    rulesWithheld,
     scanned,
     analyzed,
     testFiles,

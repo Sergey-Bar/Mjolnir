@@ -414,7 +414,14 @@ describe("§25.6 epistemic — the pipeline never upgrades evidence", () => {
     expect(contract.summary.advisory).toBe(1);
   });
 
-  it("the contract version is additive-locked at 1 for schemaVersion 1", () => {
-    expect(CONTRACT_VERSION).toBe(1);
+  it("the contract version is 2, and 2 is a semantic bump rather than a rename", () => {
+    // "Additive-locked at 1" was true while every addition to the
+    // projection was presentation. It stopped being true the moment
+    // `coverageState`/`rulesWithheld` and `degradations` joined
+    // `canonicalScanJson`: those change the digest, so a stored v1 artifact
+    // that still verified would be a contract claiming more than it proves.
+    // The version is therefore the thing the release had to change, and this
+    // assertion is the record that it did.
+    expect(CONTRACT_VERSION).toBe(2);
   });
 });

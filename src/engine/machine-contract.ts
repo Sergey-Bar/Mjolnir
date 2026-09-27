@@ -3,9 +3,19 @@
  *
  * CANONICAL PROJECTION — no parallel model: every field is derived
  * deterministically from a canonical ScanResult (schemaVersion 1). The
- * contract is additive within schemaVersion 1 and versioned as
- * `contractVersion: 1`; the human-readable form lives in the generated,
+ * contract is additive WITHIN a contractVersion and versioned as
+ * `contractVersion: 2`; the human-readable form lives in the generated,
  * drift-locked docs/machine-contract.md.
+ *
+ * WHY v2 AND NOT AN ADDITIVE FIELD. Everything added in 6.0 to this
+ * projection — `coverageState`, `rulesApplied`, `rulesWithheld`,
+ * `degradations` — is semantic, and semantic fields participate in
+ * `canonicalScanJson`. Leaving `contractVersion` at 1 would mean a stored
+ * v1 artifact still verified: `verifyPersistedContract` rebuilds `expected`
+ * from the stored result and compares with `isDeepStrictEqual`, and a
+ * digest that no longer includes the withheld-rule set would keep matching
+ * a result produced with different rules in play. A version that does not
+ * change when the meaning of the digest changes is a version that lies.
  *
  * What a machine MAY conclude from this object: the listed findings were
  * detected by the named rules at the stated detectorRevision, with the
@@ -33,7 +43,7 @@ import {
 } from "../types.js";
 
 /** Version of this projection. Additive-only evolution. */
-export const CONTRACT_VERSION = 1;
+export const CONTRACT_VERSION = 2;
 
 /**
  * GitHub check-run annotation level, derived from finding severity.
@@ -70,8 +80,34 @@ export interface MachineCompleteness {
   skippedFiles: number;
   rulesCrashed: number;
   parseFallbacks?: number;
+  /**
+   * Whether the scan could see the whole rule registry (contract v2).
+   *
+   * Separate from `partial` and from `rules` on purpose. `partial` is
+   * "this run lost something mid-run"; `rules` is "a rule was attempted
+   * and failed"; this is "rules were removed before the run started".
+   * A v1 consumer reading only the first two is told a 45-of-79 scan was
+   * complete, which is the reason this is a version bump rather than a
+   * silent additive field: `isDeepStrictEqual` against a rebuilt `expected`
+   * is how the verification path checks a stored artifact, and a new
+   * semantic field with no version change is a contract that looks valid
+   * and proves less than it did.
+   */
+  coverageState?: "COMPLETE" | "PARTIAL";
+  /** Rules that ran. Absent when the producing scan predates v2. */
+  rulesApplied?: number;
+  /** Rules withheld by the quarantine filter. Absent when predates v2. */
+  rulesWithheld?: number;
   truncationReasons: string[];
   reasons?: string[];
+  /**
+   * Per-reason capability losses from the degradation ledger, verbatim.
+   * Computed by the scan, dropped from both the digest and the completeness
+   * literal through 5.x — so a scan that lost the AST mask and one that did
+   * not produced the same digest, and the count was computed and thrown
+   * away (contract v2).
+   */
+  degradations?: Array<{ reason: string; count: number }>;
   frameworkDetectionUnknown: boolean;
   durationMs: number;
   scopeIntegrity?: ScanResult["scopeIntegrity"];
@@ -192,6 +228,17 @@ function canonicalScanJson(result: ScanResult): string {
       skippedFiles: result.analysisStatus.skippedFiles,
       rulesCrashed: result.analysisStatus.rulesCrashed ?? 0,
       parseFallbacks: result.analysisStatus.parseFallbacks ?? 0,
+      // The coverage pair and the degradation ledger are in the digest
+      // because they are SEMANTIC: two scans that differ only in how much
+      // of the registry they could see, or only in which capability a
+      // swallowed `catch` took away, are different results and must not
+      // hash alike. `durationMs` is excluded for the opposite reason — it
+      // is wall-clock, and including it would make every run of an
+      // unchanged repository a new digest.
+      coverageState: result.analysisStatus.coverageState ?? "COMPLETE",
+      rulesApplied: result.analysisStatus.rulesApplied ?? null,
+      rulesWithheld: result.analysisStatus.rulesWithheld ?? 0,
+      degradations: result.analysisStatus.degradations ?? [],
       truncationReasons: result.analysisStatus.truncationReasons ?? [],
       reasons: result.analysisStatus.reasons ?? [],
     },
@@ -274,6 +321,18 @@ export function buildMachineContract(result: ScanResult): MachineContract {
       truncationReasons: result.analysisStatus.truncationReasons ?? [],
       ...(result.analysisStatus.reasons !== undefined
         ? { reasons: result.analysisStatus.reasons }
+        : {}),
+      ...(result.analysisStatus.degradations !== undefined
+        ? { degradations: result.analysisStatus.degradations }
+        : {}),
+      ...(result.analysisStatus.coverageState !== undefined
+        ? { coverageState: result.analysisStatus.coverageState }
+        : {}),
+      ...(result.analysisStatus.rulesApplied !== undefined
+        ? { rulesApplied: result.analysisStatus.rulesApplied }
+        : {}),
+      ...(result.analysisStatus.rulesWithheld !== undefined
+        ? { rulesWithheld: result.analysisStatus.rulesWithheld }
         : {}),
       frameworkDetectionUnknown: result.frameworkDetectionUnknown,
       durationMs: result.analysisStatus.durationMs,

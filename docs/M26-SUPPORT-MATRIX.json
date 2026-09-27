@@ -1610,14 +1610,14 @@
       "disposition": "BLOCKED",
       "owner": "qa-owner",
       "evidence": [
-        "src/commands/enterprise.ts",
+        "src/v6/capability-types.ts",
         "docs/M26-EXTERNAL-VALIDATION.json",
         "docs/RELEASE-TRAINS.md"
       ],
       "command": null,
       "fixture": "Scope decision, not an implementation",
       "observed_result": "BLOCKED",
-      "blocked_reason": "CLI can generate enterprise configuration, but no complete local enterprise profile or real service-account pilot exists; M34 remains pending and EXT-M26-001 is validator-BLOCKED.",
+      "blocked_reason": "No complete local self-hosted profile or real service-account pilot exists; the enterprise command that generated deployment configuration was removed in 5.0, and M34 remains pending with EXT-M26-001 validator-BLOCKED.",
       "revisit_trigger": "Offline installation and least-privilege self-hosted pilot produce a candidate-bound result.",
       "resource_budget": "external pilot",
       "last_candidate": "mjolnir-working-candidate-001",

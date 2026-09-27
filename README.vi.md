@@ -194,19 +194,13 @@ npx mjolnir-qa@3.0.0 --scope changed
 | `mjolnir`                                     | Trust Report: kết luận, độ tin, hành động tiếp theo    |
 | `mjolnir --scope changed`                     | Chỉ những gì nhánh của bạn đưa vào (dạng dùng cho CI)  |
 | `mjolnir ci install`                          | Tạo workflow PR mang tính tư vấn (dựa trên action)     |
-| `mjolnir business-case`                       | ROI estimate: projected savings per finding            |
-| `mjolnir release-report`                      | Release readiness: GO, CONDITIONAL GO, or NO-GO        |
 | `mjolnir release-trust`                       | 12-dimension release assurance verdict                 |
-| `mjolnir report`                              | Generate a Playwright-compatible report                |
 | `mjolnir trend`                               | Record, show, or diff local quality snapshots          |
 | `mjolnir policy`                              | Initialize, validate, or check policy gates            |
-| `mjolnir quarantine`                          | Review deterministic proposals (prototype)             |
 | `mjolnir analyze --cross-file`                | Bounded cross-file analysis                            |
 | `mjolnir ci-adapter github .`                 | Generate CI templates for supported providers          |
 | `mjolnir dashboard`                           | Generate a self-contained quality dashboard            |
 | `mjolnir exec-report`                         | Executive KPIs and recommendations (advisory)          |
-| `mjolnir enterprise`                          | Self-hosted templates (prototype)                      |
-| `mjolnir maturity`                            | Assess maturity or display maturity levels             |
 | `mjolnir mutation tests/mutation-report.json` | Analyze mutation reports; never promotes trust         |
 | `mjolnir mcp`                                 | Read-only MCP tools over stdio                         |
 | `mjolnir explain QA-CI-001`                   | Cái gì, vì sao và cách sửa, kèm tỷ lệ FP đã đo         |

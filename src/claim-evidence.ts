@@ -117,7 +117,34 @@ export function scanExitCode<T extends { severity: string }>(input: {
   gate: GateLevel;
   /** Advisory (E0) findings never gate at any level. */
   isAdvisory?: (finding: T) => boolean;
+  /**
+   * Rules withheld from the run by the quarantine filter.
+   *
+   * Gating on this is OPT-IN and is the only way it gates. Absent (the
+   * default), a scan that ran 45 of 79 detectors exits on its findings like
+   * it always has: `--require-full-coverage` is how a project that has
+   * decided quarantine-tier rules must be live says so. It is not on by
+   * default because a default that fires on every ordinary scan trains
+   * people to pass `--strict`, and `--strict` disables the quarantine the
+   * flag is checking for.
+   *
+   * Returns `EXIT_PARTIAL` for the same reason `partial` does: a result
+   * that did not see everything is inconclusive, and inconclusive is not a
+   * pass. Note the collision is intentional — 2 already means "inconclusive
+   * for a reason the reader can see in `analysisStatus`", and this is one
+   * more such reason, recorded in `coverageState` rather than in `reasons`.
+   */
+  rulesWithheld?: number;
+  /** True when the caller passed `--require-full-coverage`. */
+  requireFullCoverage?: boolean;
 }): number {
+  if (
+    input.requireFullCoverage === true &&
+    input.rulesWithheld !== undefined &&
+    input.rulesWithheld > 0
+  ) {
+    return EXIT_PARTIAL;
+  }
   if (input.partial) return EXIT_PARTIAL;
   if (input.gate === "advisory") return EXIT_CLEAN;
   const gateSeverities: readonly string[] =

@@ -64,16 +64,10 @@ export default defineConfig({
         // tests/commands/ux-verification.spec.ts integration tests, and
         // global totals remain ratcheted by scripts/check-coverage-ratchet.mjs.
         "src/commands/analyze.ts",
-        "src/commands/business-case.ts",
         "src/commands/ci-adapter.ts",
         "src/commands/dashboard.ts",
-        "src/commands/enterprise.ts",
         "src/commands/exec-report.ts",
-        "src/commands/maturity.ts",
         "src/commands/policy.ts",
-        "src/commands/quarantine.ts",
-        "src/commands/release-report.ts",
-        "src/commands/report-playwright.ts",
         "src/commands/scan-cache.ts",
         "src/commands/trend.ts",
         "src/plugins/npm-loader.ts",

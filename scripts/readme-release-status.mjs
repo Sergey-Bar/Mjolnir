@@ -31,7 +31,11 @@ export function extractReleaseSection(source) {
 }
 
 export function extractCommandRows(source) {
-  const start = source.indexOf("| `mjolnir business-case`");
+  // The block is anchored on its first and last stable rows, both of which
+  // are verbs that survived the 5.0 removal: `release-trust` and
+  // `explain`. A removed verb must never be the anchor, or the sync
+  // silently starts shipping a partial table.
+  const start = source.indexOf("| `mjolnir release-trust`");
   const end = source.indexOf("| `mjolnir explain", start);
   if (start < 0 || end < 0)
     throw new Error("canonical command rows are missing");
@@ -49,7 +53,7 @@ function replaceReleaseSection(translation, releaseSection) {
 }
 
 function replaceCommandRows(translation, commandRows) {
-  const start = translation.indexOf("| `mjolnir business-case`");
+  const start = translation.indexOf("| `mjolnir release-trust`");
   const explain = translation.indexOf("| `mjolnir explain", Math.max(start, 0));
   if (start >= 0 && explain > start) {
     return `${translation.slice(0, start)}${commandRows}\n${translation.slice(explain)}`;

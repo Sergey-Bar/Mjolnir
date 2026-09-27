@@ -7,16 +7,16 @@ contract enforces: **every external import in src/ must belong to the
 allowlist**, and the shipped surface (adapters, rules, flags, formats, exit
 codes) must match this document exactly.
 
-## Inventory: 350 files, 102082 LOC
+## Inventory: 344 files, 100929 LOC
 
 | Area              | Files | LOC   |
 | ----------------- | ----- | ----- |
-| src/engine        | 60    | 25844 |
-| src/commands      | 45    | 14163 |
+| src/engine        | 60    | 26003 |
+| src/commands      | 39    | 12735 |
 | src/rules         | 88    | 11758 |
 | src/v6            | 10    | 5733  |
-| src/(root)        | 8     | 3806  |
-| src/reporter      | 16    | 3667  |
+| src/(root)        | 8     | 3867  |
+| src/reporter      | 16    | 3688  |
 | src/forensics     | 17    | 3065  |
 | src/ledger        | 1     | 2780  |
 | src/governance    | 1     | 2744  |
@@ -31,7 +31,7 @@ codes) must match this document exactly.
 | src/gaps          | 2     | 1390  |
 | src/qa            | 1     | 1282  |
 | src/bench         | 5     | 1063  |
-| src/release       | 7     | 1012  |
+| src/release       | 7     | 1004  |
 | src/research      | 1     | 995   |
 | src/mutation      | 6     | 831   |
 | src/mcp           | 3     | 825   |
@@ -44,35 +44,35 @@ codes) must match this document exactly.
 | src/scope         | 2     | 427   |
 | src/lib           | 6     | 369   |
 | src/playwright    | 2     | 332   |
-| src/trust         | 2     | 232   |
+| src/trust         | 2     | 274   |
 | src/anti-gaming   | 2     | 169   |
 
 ## Internal fan-in — top 15 (change-blast candidates)
 
 | Module                          | Importers |
 | ------------------------------- | --------- |
-| src/types                       | 140       |
+| src/types                       | 137       |
 | src/rules/rule                  | 82        |
 | src/rules/shared/positions      | 62        |
-| src/cli-io                      | 27        |
-| src/reporter/ui                 | 26        |
 | src/lib/safe-json               | 24        |
-| src/lib/fs-atomic               | 21        |
-| src/lib/compare                 | 21        |
+| src/cli-io                      | 21        |
+| src/reporter/ui                 | 21        |
+| src/lib/compare                 | 20        |
 | src/forensics/types             | 20        |
-| src/exit-codes                  | 17        |
+| src/lib/fs-atomic               | 19        |
 | src/rules/index                 | 15        |
-| src/reporter/presentation       | 15        |
 | src/engine/adapter              | 14        |
+| src/reporter/presentation       | 14        |
 | src/rules/measured-fp.generated | 13        |
 | src/discovery/ignores           | 11        |
+| src/engine/degradation-ledger   | 11        |
 
 ## External dependency allowlist (containment)
 
 | Dependency         | Files importing it |
 | ------------------ | ------------------ |
-| node:fs            | 75                 |
-| node:path          | 71                 |
+| node:fs            | 70                 |
+| node:path          | 67                 |
 | node:crypto        | 28                 |
 | ts-morph           | 7                  |
 | node:url           | 4                  |
@@ -91,6 +91,6 @@ codes) must match this document exactly.
 
 - **Adapters** (7): typescript, python, java, csharp, github-actions, azure-pipelines, jenkins
 - **Rules registry**: 79 live, 22 retired, 74 measured
-- **CLI flags**: "--ascii" "--base" "--blocking" "--cache" "--category" "--classic" "--debug" "--enable-plugins" "--format" "--help" "--json" "--max-duration" "--monorepo" "--no-ascii" "--no-progress" "--record-milestones" "--scope" "--score" "--staged" "--strict" "--tone" "--verbose" "--width" "-h"
+- **CLI flags**: "--ascii" "--base" "--blocking" "--cache" "--category" "--classic" "--debug" "--enable-plugins" "--format" "--help" "--json" "--max-duration" "--monorepo" "--no-ascii" "--no-progress" "--record-milestones" "--require-full-coverage" "--scope" "--score" "--staged" "--strict" "--tone" "--verbose" "--width" "-h"
 - **Report formats**: codequality, json, mermaid, sarif, terminal
 - **Exit codes** (frozen): 0 clean · 1 findings at/above gate · 2 inconclusive (partial or unsupported analysis — a CI step should fail on it) · 10 usage error · 20 internal error (frozen, docs/VERSIONING.md)

@@ -5,30 +5,26 @@
  *
  * BITTERSWEET `BW-112`. The command surface reached 50 verbs with no
  * ceiling, and six of them (`business-case`, `enterprise`, `maturity`,
- * `release-report`, `report-playwright`, `quarantine`) are scheduled for
- * removal in 5.0 — four because they are redundant, two because they
- * fabricated values.
+ * `release-report`, `report`, `quarantine`) were scheduled for removal in
+ * 5.0 — four because they are redundant, two because they fabricated
+ * values.
  *
- * WHY THIS IS A RATCHET AND NOT THE 5.0 TARGET
+ * THE REMOVALS HAVE LANDED
  *
- * The target is 44 after those six removals, but the removals are
- * deliberately sequenced behind a 4.1 deprecation cycle: the tree is
- * 4.0.0-rc.1, and dropping a verb without a deprecation window breaks
- * every consumer with no notice. A gate that fails the build on a planned,
- * correctly-sequenced task is a gate that gets deleted within a week.
- *
- * So the gate holds the CURRENT count and only fails on GROWTH, and the
- * 5.0 target is recorded beside it as the number the ratchet tightens to
- * when the removals actually land. Lowering `CEILING` is part of BW-110,
- * not a separate decision.
+ * The 4.1 deprecation cycle those six were sequenced behind is over, and
+ * the six are gone: four because they duplicated a covered surface, two
+ * because the numbers they printed had no provenance. `CEILING` is
+ * therefore 44 — the count the ratchet was always tightening toward, now
+ * the count the gate holds. There is no pending-removal headroom left to
+ * give away, so a 45th verb fails the build the day it is added.
  */
 
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
-/** Today's count. Lowering this is part of BW-110. */
-const CEILING = 50;
-/** Where the surface lands after the 5.0 removals. Not enforced yet. */
+/** The count the surface must not exceed. Lowering it is a deliberate act. */
+const CEILING = 44;
+/** Where the surface landed once the 5.0 removals landed. Now the ceiling. */
 const TARGET_5_0 = 44;
 
 const root = process.argv[2] ?? process.cwd();
@@ -72,9 +68,11 @@ console.log(
     verbs: names.length,
     ceiling: CEILING,
     headroom: CEILING - names.length,
-    // The 5.0 target, not yet enforced: the six removals land after a
-    // 4.1 deprecation cycle. BW-110 lowers `ceiling` to this number.
+    // The 5.0 target, which the 5.0 removals made the ceiling. Kept as a
+    // named fact so a future tightening has something to compare against.
     target5_0: TARGET_5_0,
-    removalsPending: Math.max(0, names.length - TARGET_5_0),
+    // Zero by construction: the six 5.0 removals have landed, so nothing
+    // is left to take off before the next ratchet step.
+    removalsPending: 0,
   }),
 );

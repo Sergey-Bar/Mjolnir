@@ -85,6 +85,7 @@ import { runInit, renderInit, tryReadPackageJson } from "./commands/init.js";
 import { renderPwRunSummary, summarizePwRun } from "./commands/pw-report.js";
 import { planAndApplyFixes, renderFixReport } from "./commands/fix.js";
 import { buildCatalog, renderCatalogMd } from "./commands/rules-catalog.js";
+import { runCapabilityCommand } from "./commands/capability.js";
 import {
   buildRuleHealth,
   renderRuleStats,
@@ -227,6 +228,16 @@ export async function runScanCommand(
             ? "advisory"
             : (args.blocking ?? scoreConfig.gate ?? "error"),
         isAdvisory: isAdvisoryFinding,
+        // `--score` is what the badge and baseline tooling read, so it has
+        // to honour the same coverage law as the full report: an opt-in
+        // that says "a withheld rule is a failure" has to mean it on the
+        // path that feeds a green badge too.
+        ...(result.analysisStatus.rulesWithheld !== undefined
+          ? { rulesWithheld: result.analysisStatus.rulesWithheld }
+          : {}),
+        ...(args.requireFullCoverage !== undefined
+          ? { requireFullCoverage: args.requireFullCoverage }
+          : {}),
       });
     }
 
@@ -282,6 +293,14 @@ export async function runScanCommand(
           ? "advisory"
           : (args.blocking ?? config.gate ?? "error"),
       isAdvisory: isAdvisoryFinding,
+      // Coverage gating is opt-in and stays opt-in. See scanExitCode for
+      // why a default here would be self-defeating.
+      ...(result.analysisStatus.rulesWithheld !== undefined
+        ? { rulesWithheld: result.analysisStatus.rulesWithheld }
+        : {}),
+      ...(args.requireFullCoverage !== undefined
+        ? { requireFullCoverage: args.requireFullCoverage }
+        : {}),
     });
   } catch (err) {
     if (err instanceof ConfigValidationError) {
@@ -917,6 +936,15 @@ export async function runRulesCommand(
   io: { out: Output; err: Output } = { out, err },
 ): Promise<number> {
   const withExternal = argv.includes("--external");
+
+  // The capability registry is the same evidence the rule catalog renders,
+  // so it is a `rules` subcommand rather than a verb of its own.
+  if (argv.includes("capability")) {
+    return runCapabilityCommand(
+      argv.filter((a) => a !== "capability"),
+      io,
+    );
+  }
 
   if (argv.includes("--stats")) {
     io.out(renderRuleStats(buildRuleHealth()));

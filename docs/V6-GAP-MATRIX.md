@@ -2,7 +2,7 @@
 
 **Generated — do not edit by hand.** Regenerate: `npm run docs:v6-inventory`.
 
-Baseline commit `933371fe224f3adb3c150e29c4de73ede3a7e00a`.
+Baseline commit `1b2a4ef93a1d135c66dd53a4415eb15feb684e67`.
 
 Two sources, one table. Rows marked **Wave 0** were found by this
 inventory and were carried by no ledger before; rows marked **M26
@@ -12,8 +12,8 @@ cannot be read as one number.
 ## Summary
 
 - Wave 0 gaps found: **8**
-- Open M26 release-blockers carried forward: **9**
-- Support-matrix cells explicitly BLOCKED (not rows here, but the same class of truth): **44**
+- Open M26 release-blockers carried forward: **11**
+- Support-matrix cells explicitly BLOCKED (not rows here, but the same class of truth): **69**
 - Archive issues blocking reconciliation: **18**
 
 ## Gaps by target wave
@@ -33,8 +33,10 @@ cannot be read as one number.
 | `GAP-V6-001`  | **high**            | Wave 0     | A third maturity ladder exists: FRAMEWORK_INVENTORY declares F0–F5 alongside the finding trust level L0–L5, and the v6 ladder is M0–M5. Three ladders for two axes is the collision Amendment A1 was written to prevent, and the blueprint only knew about L.                                                                                      | `npx tsx scripts/v6/check-ecosystem.ts census`                                    |
 | `GAP-V6-002`  | **high**            | Wave 0     | Three overlapping 'how well do we support this' vocabularies coexist: census states (SUPPORTED/TARGET/DEPRECATED/NOT_APPLICABLE/UNRECOGNIZED), framework supportStatus (OFFICIAL_FULL/OFFICIAL_PARTIAL/EXPERIMENTAL/DISCOVERED/UNSUPPORTED/DEGRADED/DEPRECATED), and rule status (MEASURED-CORE/MEASURED-EXTENDED/MEASURED-QUARANTINE/UNMEASURED). | `npx tsx scripts/v6/check-ecosystem.ts census`                                    |
 | `GAP-V6-006`  | **medium**          | Wave 0     | Four claims are registered in docs/claim-registry.json and all four are proof.status BLOCKED because candidate-trust-manifest.json carries candidateSha: null. No public claim currently has bound proof, so §94's de-metrics is enforced by nothing.                                                                                              | `node scripts/check-claim-registry.mjs && node scripts/v6/check-claim-budget.mjs` |
+| `GAP-M26-002` | **release-blocker** | M26 ledger | Carried from the M26 gap ledger; see `docs/M26-GAP-LEDGER.jsonl` for the full record.                                                                                                                                                                                                                                                              | `npm run m26:audit`                                                               |
 | `GAP-M26-003` | **release-blocker** | M26 ledger | Carried from the M26 gap ledger; see `docs/M26-GAP-LEDGER.jsonl` for the full record.                                                                                                                                                                                                                                                              | `npm run m26:audit`                                                               |
 | `GAP-M26-004` | **release-blocker** | M26 ledger | Carried from the M26 gap ledger; see `docs/M26-GAP-LEDGER.jsonl` for the full record.                                                                                                                                                                                                                                                              | `npm run m26:audit`                                                               |
+| `GAP-M26-005` | **release-blocker** | M26 ledger | Carried from the M26 gap ledger; see `docs/M26-GAP-LEDGER.jsonl` for the full record.                                                                                                                                                                                                                                                              | `npm run m26:audit`                                                               |
 | `GAP-M26-008` | **release-blocker** | M26 ledger | Carried from the M26 gap ledger; see `docs/M26-GAP-LEDGER.jsonl` for the full record.                                                                                                                                                                                                                                                              | `npm run m26:audit`                                                               |
 | `GAP-M26-009` | **release-blocker** | M26 ledger | Carried from the M26 gap ledger; see `docs/M26-GAP-LEDGER.jsonl` for the full record.                                                                                                                                                                                                                                                              | `npm run m26:audit`                                                               |
 | `GAP-M26-010` | **release-blocker** | M26 ledger | Carried from the M26 gap ledger; see `docs/M26-GAP-LEDGER.jsonl` for the full record.                                                                                                                                                                                                                                                              | `npm run m26:audit`                                                               |
