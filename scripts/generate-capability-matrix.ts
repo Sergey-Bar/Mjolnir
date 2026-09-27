@@ -55,6 +55,52 @@ const ROOT = join(HERE, "..");
 const VERDICTS_DIR = join(ROOT, "tests", "corpus", "verdicts");
 const MD_PATH = join(ROOT, "docs", "RULE-CAPABILITY-MATRIX.md");
 const JSON_PATH = join(ROOT, "docs", "RULE-CAPABILITY-MATRIX.json");
+/**
+ * The declared must-fire fixture root. A directory named after a rule id
+ * inside it is the canonical statement of "these cases must produce a
+ * finding for this rule" — which is what recall is measured against.
+ */
+const POSITIVE_FIXTURES_ROOT = join(
+  ROOT,
+  "tests",
+  "corpus",
+  "positive-fixtures",
+);
+const FIXTURE_FILE_PATTERN = /\.(?:ts|tsx|js|mjs|cjs|py|java|cs|ya?ml|json)$/;
+
+/**
+ * Where a rule's recall evidence lives, read from the tree.
+ *
+ * The positive-fixture root is a declared fixture root (registered in
+ * `src/commands/doctor.ts`), so a rule directory there is the canonical
+ * statement of "these cases must produce a finding". This COUNTS them; it
+ * does not evaluate whether they do. Computing a recall needs a corpus run.
+ */
+function recallEvidence(ruleId: string): {
+  recall: "UNCLASSIFIED";
+  recallFixtures: number;
+  recallStatus: "must-fire-fixtures-present" | "no-must-fire-fixture-directory";
+} {
+  const dir = join(POSITIVE_FIXTURES_ROOT, ruleId);
+  return {
+    recall: "UNCLASSIFIED",
+    recallFixtures: countFixtureFiles(dir),
+    recallStatus: existsSync(dir)
+      ? "must-fire-fixtures-present"
+      : "no-must-fire-fixture-directory",
+  };
+}
+
+function countFixtureFiles(dir: string): number {
+  if (!existsSync(dir)) return 0;
+  let total = 0;
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const path = join(dir, entry.name);
+    if (entry.isDirectory()) total += countFixtureFiles(path);
+    else if (FIXTURE_FILE_PATTERN.test(entry.name)) total += 1;
+  }
+  return total;
+}
 
 // ─── Defect ledger (plan §02) — owning phase per defect ─────────────
 
@@ -280,6 +326,25 @@ export interface CapabilityRow {
   ciLow: number | "UNCLASSIFIED";
   ciHigh: number | "UNCLASSIFIED";
   recall: "UNCLASSIFIED";
+  /**
+   * Must-fire fixture count from `tests/corpus/positive-fixtures/<id>/`.
+   *
+   * 6.0. The precondition for B5: recall is measurable only against a set of
+   * cases that must fire, and the tree already declares that set. A count is
+   * a fact about the repository; a recall number is a measurement, and this
+   * is not one.
+   */
+  recallFixtures: number;
+  /**
+   * Whether a per-rule must-fire fixture directory exists.
+   *
+   * Named for what it actually observes. It is NOT "recall is measurable" —
+   * the QA-CI rules are exercised by the shared
+   * `positive-fixtures/.github/workflows/` corpus rather than a per-rule
+   * directory, so a per-rule absence is not a claim about their coverage in
+   * either direction.
+   */
+  recallStatus: "must-fire-fixtures-present" | "no-must-fire-fixture-directory";
   corpusSize: number;
   corpusDiversity: number;
   mutationCoverage:
@@ -349,7 +414,30 @@ export function buildRows(
         n: measuredFlag && validM ? validM.n : "UNCLASSIFIED",
         ciLow: ci ? ci.ciLow : "UNCLASSIFIED",
         ciHigh: ci ? ci.ciHigh : "UNCLASSIFIED",
-        recall: "UNCLASSIFIED",
+        // Recall is the last unmeasured column, and it was the literal string
+        // "UNCLASSIFIED" on all 79 rows — a constant, so it carried no
+        // information and no row could ever move off it.
+        //
+        // 6.0 states what can be DERIVED from the tree rather than measured,
+        // which is the precondition B5 needs: a rule's recall is measurable
+        // only against a set of cases that must fire, and the tree already
+        // declares that set as
+        // `tests/corpus/positive-fixtures/<RULE-ID>/`. 53 of 79 rules have
+        // one; 26 do not.
+        //
+        // Deliberately NOT a recall number. Computing one requires running
+        // each rule over its fixtures and counting the misses, which is a
+        // corpus run, and inventing a value from the mere existence of a
+        // directory would be exactly the fabricated evidence this release
+        // exists to remove. `recallFixtures` and `recallStatus` are facts
+        // about the tree; `recall` stays unmeasured until something runs.
+        //
+        // The label is "no per-rule directory", NOT "no fixtures": the CI
+        // rules are exercised by the shared `positive-fixtures/.github/
+        // workflows/` corpus rather than by a per-rule directory, so calling
+        // their recall unmeasurable would be a claim this data does not
+        // support in either direction.
+        ...recallEvidence(rule.id),
         corpusSize: verdictStats?.classified ?? 0,
         corpusDiversity: verdictStats?.repos.size ?? 0,
         mutationCoverage: deriveMutationCoverage(rule),
