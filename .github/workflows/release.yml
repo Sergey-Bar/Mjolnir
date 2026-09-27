@@ -354,6 +354,7 @@ jobs:
             echo "published=false" >> "$GITHUB_OUTPUT"
           fi
       - name: Publish with trusted provenance
+        id: publish
         if: steps.registry.outputs.published == 'false'
         shell: bash
         env:
@@ -376,6 +377,18 @@ jobs:
           echo "::error::$PACKAGE_NAME@$VERSION did not become visible on npm"
           exit 1
       - name: Verify and repair the release dist-tag
+        # Runs whenever the publish itself succeeded, whether or not the
+        # visibility check above passed.
+        #
+        # These two steps were coupled by the default `success()` condition, and
+        # the one before this is a network read with a retry loop. A registry
+        # propagation delay therefore skipped the repair: 5.0.0 published
+        # correctly, landed on `next`, and `latest` stayed on 3.0.0 with no way
+        # to fix it in place, because re-running this workflow fails at
+        # `npm publish` on a version that already exists. The repair is
+        # idempotent and cheap; the check that can lose a race must not decide
+        # whether it happens.
+        if: always() && steps.publish.outcome == 'success'
         shell: bash
         env:
           PACKAGE_NAME: ${{ needs.verify.outputs.package_name }}

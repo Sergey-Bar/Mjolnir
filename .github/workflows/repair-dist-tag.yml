@@ -1,0 +1,129 @@
+name: Repair Release Dist-Tag
+
+# A publish that succeeds but leaves the wrong dist-tag behind must be
+# fixable in place.
+#
+# `release.yml` publishes with `--tag next` and then promotes a stable release
+# to `latest` in a later step. That later step was skipped when the step before
+# it failed, and the step before it is a network read - so a registry
+# propagation race could publish 5.0.0 correctly and still leave `latest` on
+# 3.0.0, with no way to correct it: re-running `release.yml` fails at
+# `npm publish` because the version already exists. That is how 5.0.0 shipped
+# onto `next` while `latest` stayed two majors behind.
+#
+# So the repair is its own workflow, dispatchable, with the same environment
+# gate and the same trust boundary as the publish itself.
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to place, e.g. 5.0.0. Must already be on npm."
+        required: true
+        type: string
+      tag:
+        description: "Dist-tag to point at it: latest or next."
+        required: true
+        default: latest
+        type: choice
+        options:
+          - latest
+          - next
+
+permissions:
+  contents: read
+
+concurrency:
+  group: repair-release-dist-tag
+  cancel-in-progress: false
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: npm-publish
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@820782786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22.18.0
+          registry-url: https://registry.npmjs.org
+
+      - name: Upgrade npm for OIDC trusted publishing
+        # Same pin as the publish path, and the same mechanism: there is no
+        # NPM_TOKEN in this repository. Authentication is npm trusted
+        # publishing over OIDC, authorised by `id-token: write` plus the
+        # environment gate, so this workflow cannot be made to publish by
+        # anyone holding a token.
+        run: npm install --global npm@11.5.1
+
+      - name: Read the package name
+        # The repository is Mjolnir; the published package is mjolnir-qa. Those
+        # are different strings, and guessing the wrong one would either fail
+        # the lookup or, worse, operate on a package that is not this one.
+        id: pkg
+        run: echo "name=$(node -p "require('./package.json').name")" >> "$GITHUB_OUTPUT"
+
+      - name: Read the published version and the current dist-tags
+        id: inspect
+        env:
+          PACKAGE_NAME: ${{ steps.pkg.outputs.name }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          PUBLISHED=$(npm view "$PACKAGE_NAME@$VERSION" version 2>/dev/null || true)
+          if [ -z "$PUBLISHED" ]; then
+            echo "::error::$PACKAGE_NAME@$VERSION is not on npm. This workflow only repairs a version that already published."
+            exit 1
+          fi
+          CURRENT_LATEST=$(npm view "$PACKAGE_NAME" dist-tags.latest || true)
+          CURRENT_NEXT=$(npm view "$PACKAGE_NAME" dist-tags.next || true)
+          {
+            echo "published=$PUBLISHED"
+            echo "current_latest=$CURRENT_LATEST"
+            echo "current_next=$CURRENT_NEXT"
+          } >> "$GITHUB_OUTPUT"
+          # The shell's own variables, not this step's outputs: a step cannot
+          # read an output it has not written yet, and actionlint says so.
+          echo "published : $PUBLISHED"
+          echo "latest    : ${CURRENT_LATEST:-<unset>}"
+          echo "next      : ${CURRENT_NEXT:-<unset>}"
+
+      - name: Move the dist-tag
+        id: move
+        env:
+          PACKAGE_NAME: ${{ steps.pkg.outputs.name }}
+          VERSION: ${{ inputs.version }}
+          TAG: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+          CURRENT=$(npm view "$PACKAGE_NAME" "dist-tags.$TAG" 2>/dev/null || true)
+          if [ "$CURRENT" = "$VERSION" ]; then
+            echo "\`$TAG\` already points at $VERSION; nothing to do."
+          else
+            npm dist-tag add "$PACKAGE_NAME@$VERSION" "$TAG"
+            echo "moved \`$TAG\` from ${CURRENT:-<unset>} to $VERSION"
+          fi
+          test "$(npm view "$PACKAGE_NAME" "dist-tags.$TAG")" = "$VERSION"
+
+      - name: Record the repair
+        env:
+          PACKAGE_NAME: ${{ steps.pkg.outputs.name }}
+          VERSION: ${{ inputs.version }}
+          TAG: ${{ inputs.tag }}
+        run: |
+          {
+            echo "### Dist-tag repaired"
+            echo ""
+            echo "\`$PACKAGE_NAME dist-tag $TAG\` now points at \`$VERSION\`."
+            echo ""
+            echo "Moved by \`Repair Release Dist-Tag\`, which exists because a"
+            echo "successful publish whose verification step failed left the"
+            echo "registry un-repairable from the publish workflow itself."
+          } >> "$GITHUB_STEP_SUMMARY"
