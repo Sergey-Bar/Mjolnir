@@ -1227,7 +1227,17 @@ export function assembleScanResult(o: AssembleScanResultInput): ScanResult {
     scopeUnrecognized: o.scopeUnrecognized,
     parseFailed: o.parseFailed,
     parseFallbacks: o.parseFallbacks ?? 0,
-    astFallbackFiles: o.astFallbackFiles ?? 0,
+    // NOT `?? 0`, and not a bare `astFallbackFiles: o.astFallbackFiles` either
+    // — `exactOptionalPropertyTypes` is on, so an explicit `undefined` is not
+    // the same as an absent key. A caller that did not measure the AST-stage
+    // downgrade has not shown that zero files lost it, so the key is spread
+    // in only when there is a measurement, and `deriveCompletion` treats
+    // absence as "no reason to report".
+    // `check-report-honesty.mjs` is the gate that caught the `?? 0`; this
+    // comment is here so the next reader does not "tidy" it back.
+    ...(o.astFallbackFiles !== undefined
+      ? { astFallbackFiles: o.astFallbackFiles }
+      : {}),
     ...(o.degradations !== undefined ? { degradations: o.degradations } : {}),
     ...(o.scopeInfo.degraded !== undefined
       ? { scopeDegraded: o.scopeInfo.degraded }

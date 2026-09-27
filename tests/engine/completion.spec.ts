@@ -78,4 +78,55 @@ describe("deriveCompletion", () => {
       ]),
     );
   });
+
+  it("orders degradation counts by reason, and reports them when there are any", () => {
+    // The comparator here is a FUNCTION, and a function only counts as
+    // covered when it is CALLED — with zero or one degradation the sort never
+    // invokes it, so a suite that only ever passes one entry reports 50%
+    // function coverage for the file and trips the per-file floor while
+    // looking, to a reader, like thorough coverage of this file.
+    //
+    // The order is asserted rather than just the count because a REASON
+    // order that varies between runs makes the `analysisStatus` a
+    // non-reproducible string in a diff-able report.
+    const result = deriveCompletion({
+      discoveryTruncated: false,
+      rulesPartial: false,
+      skippedFiles: 0,
+      rulesCrashed: 0,
+      truncationReasons: [],
+      scopeIgnored: 0,
+      scopeUnrecognized: 0,
+      parseFailed: 0,
+      degradations: [
+        { reason: "ast-range-scan-failed", count: 2 },
+        { reason: "ast-mask-unavailable", count: 1 },
+        { reason: "ast-parse-failed", count: 3 },
+      ],
+    });
+    expect(result.analysisStatus.degradations).toEqual([
+      { reason: "ast-mask-unavailable", count: 1 },
+      { reason: "ast-parse-failed", count: 3 },
+      { reason: "ast-range-scan-failed", count: 2 },
+    ]);
+    // Any degradation at all is a completion loss, and the scan says so
+    // rather than reporting the surface as verified.
+    expect(result.partial).toBe(true);
+  });
+
+  it("reports no degradations block when the list is empty", () => {
+    const result = deriveCompletion({
+      discoveryTruncated: false,
+      rulesPartial: false,
+      skippedFiles: 0,
+      rulesCrashed: 0,
+      truncationReasons: [],
+      scopeIgnored: 0,
+      scopeUnrecognized: 0,
+      parseFailed: 0,
+      degradations: [],
+    });
+    expect(result.analysisStatus.degradations).toBeUndefined();
+    expect(result.partial).toBe(false);
+  });
 });
