@@ -1,0 +1,24 @@
+{
+  "status": "PASS",
+  "errors": [],
+  "facts": {
+    "dialects": ["ts", "python", "java", "csharp", "unknown"],
+    "assertionKinds": 9,
+    "intentions": 12,
+    "shippedExecutorAdapters": [
+      "azure-pipelines",
+      "csharp",
+      "github-actions",
+      "java",
+      "jenkins",
+      "python",
+      "typescript"
+    ],
+    "testAdapters": ["csharp", "java", "python", "typescript"],
+    "ciAdapters": ["github-actions", "azure-pipelines", "jenkins", "gitlab-ci"],
+    "parityCases": 14,
+    "parityViolations": 0,
+    "sampleFingerprint": "fe301bdff1aaaaa2"
+  },
+  "generatedBy": "npm run qa-ir:parity"
+}

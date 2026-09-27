@@ -1,0 +1,90 @@
+{
+  "schemaVersion": 1,
+  "artifact": "claim-lint-report",
+  "generatedBy": "npm run claims:prose",
+  "surfacesScanned": 322,
+  "findings": [
+    {
+      "location": "PRODUCT-ENHANCEMENT-ANALYSIS.md:46",
+      "surface": "PRODUCT-ENHANCEMENT-ANALYSIS.md",
+      "kind": "doc",
+      "patternId": "count-of-rules",
+      "severity": "BANNED",
+      "text": "79 rules",
+      "line": 46
+    },
+    {
+      "location": "PRODUCT-ENHANCEMENT-ANALYSIS.md:62",
+      "surface": "PRODUCT-ENHANCEMENT-ANALYSIS.md",
+      "kind": "doc",
+      "patternId": "count-of-rules",
+      "severity": "BANNED",
+      "text": "79 rules",
+      "line": 62
+    },
+    {
+      "location": "PRODUCT-ENHANCEMENT-ANALYSIS.md:599",
+      "surface": "PRODUCT-ENHANCEMENT-ANALYSIS.md",
+      "kind": "doc",
+      "patternId": "count-of-rules",
+      "severity": "BANNED",
+      "text": "80 rule",
+      "line": 599
+    },
+    {
+      "location": "PRODUCT-ENHANCEMENT-ANALYSIS.md:613",
+      "surface": "PRODUCT-ENHANCEMENT-ANALYSIS.md",
+      "kind": "doc",
+      "patternId": "count-of-rules",
+      "severity": "BANNED",
+      "text": "79 rules",
+      "line": 613
+    },
+    {
+      "location": "PRODUCT-ENHANCEMENT-ANALYSIS.md:617",
+      "surface": "PRODUCT-ENHANCEMENT-ANALYSIS.md",
+      "kind": "doc",
+      "patternId": "count-of-rules",
+      "severity": "BANNED",
+      "text": "79 rules",
+      "line": 617
+    },
+    {
+      "location": "PRODUCT-ENHANCEMENT-ANALYSIS.md:46",
+      "surface": "PRODUCT-ENHANCEMENT-ANALYSIS.md",
+      "kind": "doc",
+      "patternId": "count-of-frameworks-languages",
+      "severity": "BANNED",
+      "text": "5 languages",
+      "line": 46
+    },
+    {
+      "location": "PRODUCT-ENHANCEMENT-ANALYSIS.md:595",
+      "surface": "PRODUCT-ENHANCEMENT-ANALYSIS.md",
+      "kind": "doc",
+      "patternId": "count-of-frameworks-languages",
+      "severity": "BANNED",
+      "text": "5 languages",
+      "line": 595
+    },
+    {
+      "location": "README.md:322",
+      "surface": "README.md",
+      "kind": "readme",
+      "patternId": "count-of-rules",
+      "severity": "BANNED",
+      "text": "79 rules",
+      "line": 322
+    }
+  ],
+  "bindings": [],
+  "byPattern": {
+    "count-of-rules": 6,
+    "count-of-frameworks-languages": 2
+  },
+  "unboundTotal": 8,
+  "unboundBySeverity": {
+    "BANNED": 8,
+    "BOUNDED": 0
+  }
+}

@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "registryId": "mjolnir-issue-dispositions-001",
   "policy": {
-    "note": "BITTERSWEET BW-002/BW-004. Every entry is a judgement a person made. `npm run m26:github:sync` refuses to emit a disposition that lacks a non-empty `reason` and a `verification` naming a command or a source path, and refuses any `verification` that is this script itself. An issue with no entry here stays OPEN as CARRY_FORWARD with pending_human_triage â€” it is never guessed and never silently closed.",
+    "note": "BITTERSWEET BW-002/BW-004. Every entry is a judgement a person made. `npm run m26:github:sync` refuses to emit a disposition that lacks a non-empty `reason` and a `verification` naming a command or a source path, and refuses any `verification` that is this script itself. An issue with no entry here stays OPEN as CARRY_FORWARD with pending_human_triage — it is never guessed and never silently closed.",
     "closures_are_destructive": "Closing a GitHub issue is public and effectively irreversible from this repository. This file RECORDS the decision; it does not execute it. Applying the closures is a separate, explicitly approved step.",
     "labels_are_not_numbers": "Keys are GitHub issue NUMBERS, not the MVP-###/CORE-###/M##-## labels. Those labels appear in the issue title. Guessing one from the other is how a closure gets aimed at the wrong issue.",
     "classes": {
@@ -16,7 +16,7 @@
   "doctrines": {
     "NO_TELEMETRY": {
       "id": "DOCTRINE-NO-TELEMETRY",
-      "decision": "MjÃ¶lnir ships no telemetry. Local-first is the product.",
+      "decision": "Mjölnir ships no telemetry. Local-first is the product.",
       "rationale": "A verification trust engine that reports on your test suite must not become a data-collection surface for that suite. The product is zero-network by contract and tests/contract/privacy-network-isolation.spec.ts enforces it. Telemetry cannot be added without breaking that contract, so a request for it is a request for a different product.",
       "recorded": "2026-09-26",
       "closesGap": "GAP-M26-014"
@@ -68,7 +68,7 @@
     },
     "274": {
       "disposition": "CLOSED_WONT_FIX",
-      "reason": "CORE-036 telemetry product decision gate. The decision this gate was waiting for is now recorded in this file\u0027s doctrines block, so the gate has nothing left to wait for â€” this is the row that closes GAP-M26-014.",
+      "reason": "CORE-036 telemetry product decision gate. The decision this gate was waiting for is now recorded in this file\u0027s doctrines block, so the gate has nothing left to wait for — this is the row that closes GAP-M26-014.",
       "contradicts": "DOCTRINE-NO-TELEMETRY",
       "verification": "docs/M26-GAP-LEDGER.jsonl"
     },
@@ -87,7 +87,7 @@
     },
     "150": {
       "disposition": "CLOSED_SHIPPED",
-      "reason": "CORE-150 trust semantic diff. NOTE: the release plan cited `src/engine/change-intelligence.ts`, which no longer exists â€” it was deleted as an unshipped module. The `diff` capability actually ships as `diffAgainstBaseline` in the baseline command, which correlates findings by fingerprint (ruleId + file + message) rather than by line number.",
+      "reason": "CORE-150 trust semantic diff. NOTE: the release plan cited `src/engine/change-intelligence.ts`, which no longer exists — it was deleted as an unshipped module. The `diff` capability actually ships as `diffAgainstBaseline` in the baseline command, which correlates findings by fingerprint (ruleId + file + message) rather than by line number.",
       "shipped_at": "4.0.0",
       "evidence": "src/commands/baseline.ts",
       "verification": "tests/cli/agent-handoff-m1.spec.ts"
@@ -136,7 +136,7 @@
     "292": {
       "disposition": "CARRY_FORWARD",
       "reason": "CORE-054 prove changed-scope impact analysis. Impact analysis is exactly the surface a wrong file selection silently corrupts: it looks authoritative and is wrong in a direction nobody can see.",
-      "deferred_because": "no held-out differential evidence exists for change selection, so any impact number would be uncalibrated â€” shipping it would replace one false-green with another",
+      "deferred_because": "no held-out differential evidence exists for change selection, so any impact number would be uncalibrated — shipping it would replace one false-green with another",
       "revisit_trigger": "a held-out corpus run reports selection precision and recall against a known-changed-file ground truth",
       "verification": "docs/SCORING.md"
     },
@@ -149,7 +149,7 @@
     },
     "617": {
       "disposition": "CARRY_FORWARD",
-      "reason": "M24-02 complete enterprise threat model and data-flow review â€” the only `release-blocker`-labelled open issue. Its own matrix cell already records the capability as BLOCKED, so completing the model cannot be done from this tree and does not block 5.0.",
+      "reason": "M24-02 complete enterprise threat model and data-flow review — the only `release-blocker`-labelled open issue. Its own matrix cell already records the capability as BLOCKED, so completing the model cannot be done from this tree and does not block 5.0.",
       "deferred_because": "no consented air-gapped pilot and no least-privilege service account exist to model against",
       "revisit_trigger": "an offline enterprise pilot and recovery drill are run",
       "matrix_cell": "MATRIX-PERMISSION-SELF-HOSTED-AIR-GAPPED",

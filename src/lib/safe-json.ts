@@ -44,5 +44,16 @@ export function parseJsonFile<T>(
  * code already checks individual fields.
  */
 export function isRecord(v: unknown): v is Record<string, unknown> {
-  return typeof v === "object" && v !== null && !Array.isArray(v);
+  // `Array.isArray` throws a TypeError on a revoked Proxy, and a revoked
+  // proxy is a value a caller can hand this predicate — the M38 challenge
+  // contract's "bounds hostile input" case does exactly that. A predicate
+  // whose whole job is "may I index into this?" must answer no to a value it
+  // cannot inspect, not throw. Wrapping the body cannot change the result for
+  // any value that is inspectable: it only decides what happens for the ones
+  // that are not.
+  try {
+    return typeof v === "object" && v !== null && !Array.isArray(v);
+  } catch {
+    return false;
+  }
 }
