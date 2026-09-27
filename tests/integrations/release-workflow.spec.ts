@@ -282,18 +282,24 @@ describe("release candidate workflow", () => {
     expect(source).not.toContain("continue-on-error");
   });
 
-  it("moves only the current v3 action tag outside RC releases", () => {
+  it("moves the released major's action tag, and never an RC", () => {
     const actionTags = readFileSync(
       join(root, ".github", "workflows", "action-tags.yml"),
       "utf8",
     );
     expect(actionTags).toContain("!contains(github.ref_name, '-rc.')");
-    expect(actionTags).toContain('if [[ "$MAJOR" != "3" ]]');
+    expect(actionTags).toContain('MAJOR="${VERSION%%.*}"');
+    expect(actionTags).toContain('MAJOR_TAG="v$MAJOR"');
     expect(actionTags).toContain('git tag -f "$MAJOR_TAG" "$GITHUB_SHA"');
     expect(actionTags).toContain(
       'git push origin "refs/tags/$MAJOR_TAG" --force',
     );
     expect(actionTags).not.toContain("for major in v1 v2 v3");
+    // The regression. The major was hardcoded to 3, so no v4 or v5 tag could
+    // ever be published and every `uses: Sergey-Bar/Mjolnir@vN` in the docs
+    // after v2 pointed at a ref that did not exist. Deriving the major from
+    // the tag being pushed is the only rule that survives the next major.
+    expect(actionTags).not.toContain('"$MAJOR" != "3"');
   });
 
   it("executes only real spec paths", () => {
