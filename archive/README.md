@@ -10,12 +10,7 @@ Phase 0 steps 3–5.
 
 Git stashes are reflog-only. They are not reachable from any branch or tag, so
 once the local repository is discarded the content is gone. Phase 1 of the plan
-drops five stashes; the patches below were exported **before** any drop, so every
-one of them can be re-applied with:
-
-```
-git apply --3way archive/stash-N.patch
-```
+drops five stashes; the patches below were exported **before** any drop.
 
 None of the five patches was restored. Each was assessed first, and the
 assessment is recorded here so the decision can be re-litigated later without
@@ -23,17 +18,49 @@ re-deriving it.
 
 ## Exported stashes
 
-All five were captured with `git stash show -p <sha>`. None had a third parent,
-so no untracked-file content was omitted by that command — the patches are
-complete.
+All five were captured with `git stash show -p <stash-sha>`. None had a third
+parent, so no untracked-file content was omitted by that command — the patches
+are complete.
 
-| Patch           | Stash commit | Subject at stash time                        | Diff               |
-| --------------- | ------------ | -------------------------------------------- | ------------------ |
-| `stash-0.patch` | `ceebdbfb`   | WIP on `milestone-m10-m13`                   | 1 file, +643/−48   |
-| `stash-1.patch` | `e6aa00b4`   | lint-staged automatic backup (`c7ea7234`)    | 7 files, +914      |
-| `stash-2.patch` | `2c137101`   | WIP on `codex/core-211-support-bundle`       | 9 files, +387/−378 |
-| `stash-3.patch` | `0d2d224e`   | lint-staged automatic backup (`1df9a237`)    | 4 files, +19/−12   |
-| `stash-4.patch` | `e540a454`   | WIP on `enhancement/wave-1-product-upgrades` | 4 files, +50/−5    |
+| Patch           | Stash commit | Base commit | Subject at stash time                        | Diff               |
+| --------------- | ------------ | ----------- | -------------------------------------------- | ------------------ |
+| `stash-0.patch` | `ceebdbfb`   | `adc0c4cf`  | WIP on `milestone-m10-m13`                   | 1 file, +643/−48   |
+| `stash-1.patch` | `e6aa00b4`   | `f86af492`  | lint-staged automatic backup                 | 7 files, +914      |
+| `stash-2.patch` | `2c137101`   | `0e64b03c`  | WIP on `codex/core-211-support-bundle`       | 9 files, +387/−378 |
+| `stash-3.patch` | `0d2d224e`   | `a844b4ec`  | lint-staged automatic backup                 | 4 files, +19/−12   |
+| `stash-4.patch` | `e540a454`   | `ab97a0b8`  | WIP on `enhancement/wave-1-product-upgrades` | 4 files, +50/−5    |
+
+The base commit is the first parent of the stash commit — the `HEAD` the stash
+was taken against. It is what the patch applies to, and it is the only commit
+the patch applies to.
+
+## How to restore one
+
+Not from `HEAD`. These are snapshots of work that is already obsolete, so their
+context has since been rewritten; `git apply` on any current checkout fails,
+and `git apply --3way` fails with it. Check the base out first:
+
+```
+git checkout --detach <base commit>
+git apply archive/stash-N.patch
+```
+
+All five were verified with `git apply --check` at their own base commits. That
+verification is the reason the base column is recorded: a patch whose base is
+unknown is only decoration.
+
+To inspect without touching a working tree:
+
+```
+git apply --numstat archive/stash-N.patch
+```
+
+Note the encoding. The patches are byte-exact UTF-8, and they must stay that
+way — the files they touch contain `Mjölnir`. On PowerShell, `git ... > file`
+writes UTF-16 and silently drops every non-ASCII byte, which yields a file that
+still parses as a diff and still reports the right `--numstat` while being
+unappliable. Use `cmd /c "git ... > file"` to capture native output verbatim,
+then confirm the result with `git apply --check` at the base commit.
 
 ## Disposition
 
