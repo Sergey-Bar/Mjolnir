@@ -394,8 +394,28 @@ jobs:
           PACKAGE_NAME: ${{ needs.verify.outputs.package_name }}
           VERSION: ${{ needs.verify.outputs.version }}
           IS_PRERELEASE: ${{ needs.verify.outputs.is_prerelease }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           set -euo pipefail
+          # A publish is authorised by OIDC, which npm scopes to `npm publish`
+          # and nothing else. `npm dist-tag add` on that same session returns
+          # E401 - 5.0.0 published correctly and left `latest` on 3.0.0 for
+          # exactly this reason, so the repair was never going to work under
+          # the publish credential however often it ran.
+          #
+          # The publish stays on OIDC, which is the stronger credential and needs
+          # no secret. Moving a dist-tag uses a granular automation token scoped to
+          # this package. Without it this step fails loudly, naming the version and
+          # the repair command, instead of leaving the registry quietly wrong.
+          if [ -z "${NPM_TOKEN:-}" ]; then
+            echo "::error::secret NPM_TOKEN is not set, so the dist-tag cannot be repaired."
+            echo "::error::$PACKAGE_NAME@$VERSION IS published, but `latest` is unchanged."
+            echo "::error::Add a granular automation token as NPM_TOKEN, then run Repair"
+            echo "::error::Release Dist-Tag with version=$VERSION tag=latest."
+            exit 1
+          fi
+          npm config set //registry.npmjs.org/:_authToken "$NPM_TOKEN"
+          npm whoami
           # A prerelease belongs on `next` and must NOT become `latest` — a
           # consumer running `npm i mjolnir-qa` must not silently get a
           # candidate. A STABLE release is the opposite: `latest` is where
