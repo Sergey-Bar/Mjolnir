@@ -19,7 +19,10 @@ export interface SuppressionReport {
   entries: Array<IgnoreEntry & { status: "active" | "expired" }>;
 }
 
-export function loadSuppressions(root: string): SuppressionReport {
+export function loadSuppressions(
+  root: string,
+  now: Date = new Date(),
+): SuppressionReport {
   // Bug-audit M6: resolve the config through loadConfig — the single
   // source for BOTH config names. Suppressions written to `.mjolnir.json`
   // used to be silently unenforced here (only mjolnir.config.json was
@@ -30,9 +33,19 @@ export function loadSuppressions(root: string): SuppressionReport {
   const { config } = loadConfig(root);
   // Audit S4: no mtime anchor — expiry is the entry's explicit `expires`
   // date alone. A config edit no longer resets suppression windows.
+  //
+  // `now` is a parameter for the same reason
+  // `computeSuppressionGovernanceGate` takes one: "is this suppression
+  // active" is a VERDICT, and a verdict that cannot be asked "as of when"
+  // is a verdict nobody can test. This call used to hard-code
+  // `new Date()`, so the same repository read on two days produced two
+  // different sets of live suppressions and every boundary test had to
+  // wait for a real midnight. The default keeps existing callers correct;
+  // `tests/contract/deterministic-clock.spec.ts` fails the build if a
+  // verdict path under `src/config/**` hard-codes the clock at a call site.
   const entries = (config.ignore ?? []).map((ign) => ({
     ...ign,
-    status: isSuppressionActive(ign, new Date())
+    status: isSuppressionActive(ign, now)
       ? ("active" as const)
       : ("expired" as const),
   }));
