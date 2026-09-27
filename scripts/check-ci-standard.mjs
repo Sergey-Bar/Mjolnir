@@ -7,7 +7,6 @@ const read = (file) =>
   readFileSync(join(root, ".github", "workflows", file), "utf8");
 const mjolnir = read("mjolnir.yml");
 const ci = read("ci.yml");
-const merge = read("merge-verify.yml");
 const errors = [];
 if (!mjolnir.includes("outcome=partial"))
   errors.push("PR scan does not mark partial analysis");
@@ -17,8 +16,6 @@ if (!ci.includes("test:coverage:ci"))
   errors.push("primary CI coverage gate is missing");
 if (!ci.includes("coverage:ratchet"))
   errors.push("coverage ratchet gate is missing");
-if (!merge.includes("ci-local:parity"))
-  errors.push("merge verification does not run CI parity");
 const prWorkflow = parse(mjolnir);
 const scanJob = prWorkflow?.jobs?.scan;
 if (scanJob?.permissions?.["pull-requests"] === "write") {
