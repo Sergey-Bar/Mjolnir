@@ -128,7 +128,25 @@ jobs:
             npm dist-tag add "$PACKAGE_NAME@$VERSION" "$TAG"
             echo "moved \`$TAG\` from ${CURRENT:-<unset>} to $VERSION"
           fi
-          test "$(npm view "$PACKAGE_NAME" "dist-tags.$TAG")" = "$VERSION"
+          # The read-after-write is retried rather than asserted once. npm's
+          # registry read is eventually consistent: the write above returned
+          # `+latest: mjolnir-qa@5.0.0` and the very next `npm view` still
+          # reported 3.0.0, so the job failed *having done the repair*. A single
+          # immediate read reports a stale answer as a failed run, which is the
+          # one thing a verification must not do.
+          for attempt in {1..12}; do
+            NOW=$(npm view "$PACKAGE_NAME" "dist-tags.$TAG" 2>/dev/null || true)
+            if [ "$NOW" = "$VERSION" ]; then
+              echo "\`$TAG\` confirmed at $VERSION (attempt $attempt/12)"
+              exit 0
+            fi
+            echo "registry read $attempt/12 reported '$NOW'; waiting for propagation"
+            sleep 5
+          done
+          echo "::error::$PACKAGE_NAME dist-tag $TAG reads '$NOW' after 12 attempts."
+          echo "::error::The move may still have applied; re-check before re-running,"
+          echo "::error::because \`npm dist-tag add\` is idempotent but the run is not."
+          exit 1
 
       - name: Record the repair
         env:
