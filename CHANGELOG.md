@@ -11,6 +11,8 @@ once shipped, so this file is the record of what changed between versions.
 
 ## [Unreleased]
 
+## [5.0.0] — 2026-09-27
+
 ### Breaking changes
 
 - **`business-case` no longer prints a dollar figure you did not supply.** The

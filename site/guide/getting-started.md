@@ -9,13 +9,13 @@ rule ID, a location, and a fix.
 Run it with no install:
 
 ```bash
-npx mjolnir-qa@4.0.0
+npx mjolnir-qa@5.0.0
 ```
 
 Or install globally:
 
 ```bash
-npm i -g mjolnir-qa@4.0.0
+npm i -g mjolnir-qa@5.0.0
 ```
 
 Requires Node.js ≥ 22.18. Works on Windows, macOS, and Linux.
@@ -30,7 +30,7 @@ have no such requirement.
 The Marketplace action runs the same scan from any workflow:
 
 ```yaml
-- uses: Sergey-Bar/Mjolnir@v4
+- uses: Sergey-Bar/Mjolnir@v5
   with:
     scope: changed
     fail-on: error
