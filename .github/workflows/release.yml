@@ -409,7 +409,7 @@ jobs:
           # the repair command, instead of leaving the registry quietly wrong.
           if [ -z "${NPM_TOKEN:-}" ]; then
             echo "::error::secret NPM_TOKEN is not set, so the dist-tag cannot be repaired."
-            echo "::error::$PACKAGE_NAME@$VERSION IS published, but `latest` is unchanged."
+            echo "::error::$PACKAGE_NAME@$VERSION IS published, but \`latest\` is unchanged."
             echo "::error::Add a granular automation token as NPM_TOKEN, then run Repair"
             echo "::error::Release Dist-Tag with version=$VERSION tag=latest."
             exit 1
