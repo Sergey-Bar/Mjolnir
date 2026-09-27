@@ -4,13 +4,31 @@ on:
   push:
     tags:
       - "v*"
+  # A tag-push-only trigger cannot do its job for a tag that was pushed before
+  # this workflow could move it. That is exactly what happened to v5.0.0: the
+  # tag was cut and verified, the fix that derives the major from the tag
+  # merged afterwards, and no further v* tag will ever be pushed — so `@v5` was
+  # unreachable through the only entry point this workflow had.
+  #
+  # A rule whose only path is closed is not a guard, it is a dead end. The
+  # manual trigger takes the major explicitly, so the operator still has to name
+  # the major they are publishing, and the job still refuses an RC and still
+  # refuses anything that is not a positive integer.
+  workflow_dispatch:
+    inputs:
+      major:
+        description: "Major line to move, e.g. 5. Publishes refs/tags/v<major>."
+        required: true
+        type: string
 
 permissions:
   contents: read
 
 jobs:
   move-current-major:
-    if: startsWith(github.ref, 'refs/tags/v') && !contains(github.ref_name, '-rc.')
+    if: >-
+      (startsWith(github.ref, 'refs/tags/v') && !contains(github.ref_name, '-rc.'))
+      || (github.event_name == 'workflow_dispatch' && inputs.major != '')
     runs-on: ubuntu-latest
     timeout-minutes: 10
     environment: stable-action-tags
@@ -23,16 +41,29 @@ jobs:
           persist-credentials: false
       - name: Move the action major tag
         shell: bash
+        env:
+          DISPATCH_MAJOR: ${{ inputs.major }}
+          EVENT_NAME: ${{ github.event_name }}
         run: |
           set -euo pipefail
-          VERSION="${GITHUB_REF_NAME#v}"
-          MAJOR="${VERSION%%.*}"
+          if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
+            [[ "$DISPATCH_MAJOR" =~ ^[1-9][0-9]*$ ]] || {
+              echo "::error::major must be a positive integer, got '$DISPATCH_MAJOR'"
+              exit 1
+            }
+            MAJOR="$DISPATCH_MAJOR"
+            TARGET="$GITHUB_SHA"
+          else
+            VERSION="${GITHUB_REF_NAME#v}"
+            MAJOR="${VERSION%%.*}"
+            TARGET="$GITHUB_SHA"
+          fi
           # The major tag follows the release. It was hardcoded to 3, which
           # meant no v4 or v5 could ever be published and the docs' recommended
           # `uses: Sergey-Bar/Mjolnir@vN` had no ref to resolve to. Deriving it
           # from the tag being pushed is the only rule that stays true as the
           # majors move.
           MAJOR_TAG="v$MAJOR"
-          git tag -f "$MAJOR_TAG" "$GITHUB_SHA"
+          git tag -f "$MAJOR_TAG" "$TARGET"
           git push origin "refs/tags/$MAJOR_TAG" --force
-          echo "moved $MAJOR_TAG to $GITHUB_SHA"
+          echo "moved $MAJOR_TAG to $TARGET"

@@ -532,6 +532,27 @@ were live in 3.0.0 and neither was in the plan.
 
 ### Known open, deliberately
 
+- [ ] **Trust certification is not claimed, and this release was authorized
+      without it.** `candidate:readiness` reports `BLOCKED` /
+      `INCONCLUSIVE` on all ten of its checks — candidate identity is not a
+      release candidate, the candidate SHA is not authorized, engineering
+      certification is not complete, and external validation, protected holdout
+      proof, real-world repository proof, the platform matrix, consumer install
+      proof and remote workflow proof are all absent.
+      `m26:audit` is likewise unsatisfied. Both ran, both printed, and neither
+      blocked the publish, because `vars.STABLE_RELEASE_AUTHORIZED` is `true` —
+      the same explicit override 4.0.0 shipped under.
+      The distinction is the point: **publication of a package is not the same
+      claim as a certification of it.** 5.0.0 asserts that the reporting
+      surface is honest, that a silent capability loss is disclosed, and that no
+      verdict is published without a measurement behind it. It does not assert
+      that a holdout corpus, a platform matrix and an external validation run
+      have been completed, because none of them have.
+      Consumers are not asked to take that on trust: the npm package publishes
+      the candidate manifest, which reads `NOT_CERTIFIED` and
+      `NOT_AUTHORIZED`, and every one of those ten blockers is enumerated above
+      rather than summarised. Closing them is the work that would make a
+      certification claim possible; it is not work this release did.
 - [ ] `CERTIFICATION_STATES` is not in ladder order, so `rankOf` — the only
       ordering function — ranks `KNOWN` above `TRUST-COMPLETE`, and
       `requiresEvidence` asks `BLOCKED` and `DEGRADED` for a corpus their own
