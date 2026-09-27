@@ -21,9 +21,9 @@ const COMMAND = "npx mjolnir-qa@4.0.0";
 const CI_COMMAND = `${COMMAND} --scope changed`;
 const MCP_COMMAND = "claude mcp add mjolnir -- npx -y mjolnir-qa@4.0.0 mcp";
 const ACTION = [
-  "- uses: Sergey-Bar/Mjolnir@v4",
+  "- uses: Sergey-Bar/Mjolnir@v5",
   "  with:",
-  "    version: 4.0.0",
+  "    version: 5.0.0",
   "    scope: changed",
   "    fail-on: error",
 ].join("\n");
