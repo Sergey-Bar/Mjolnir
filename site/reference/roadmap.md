@@ -6,15 +6,17 @@ works from; when planning changes, this page changes with it. Nothing on
 this page is a promise with a deadline; each item is a direction with an
 entry condition.
 
-> **Release status:** package 4.0.0 is the current stable line. 3.0.0
-> remains published and immutable; a tag alone is not a new release, and
+> **Release status:** package 5.0.0 is the current stable line. 3.0.0 and
+> 4.0.0 remain published and immutable; a tag alone is not a new release, and
 > republishing an existing version is not a path forward.
 
 ## Where Mjölnir is now
 
-- **v4.0.0 — current stable.** The reporting surface is checked against the
+- **v5.0.0 — current stable.** The reporting surface is checked against the
   working tree rather than against a plan, and each check is a gate in
-  `npm run certify`. Package publication does not imply Trust
+  `npm run certify`. A silent capability loss is disclosed through a
+  degradation ledger rather than absorbed, and a verdict is never published
+  without a measurement behind it. Package publication does not imply Trust
   certification: the release-readiness record is separate and still names
   what is open.
   <!-- census:total-rules -->79 rules<!-- /census:total-rules -->,

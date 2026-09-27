@@ -97,16 +97,29 @@ describe("main() dispatch to the new verbs (plan §9 wiring)", () => {
 
   it("`mjolnir install` dispatches with the caller's io", async () => {
     const cap = capture();
-    // The worktree itself has instruction surfaces (.kilo); --force makes
-    // the run idempotent regardless of prior local edits. Whether files
-    // were written or already up-to-date (no-op), the dispatch itself is
-    // what's under test — assert only the summary line.
-    await expect(main(["install", "--force"], cap.io)).resolves.toBe(0);
+    // Install into a sandbox that carries the same instruction surfaces the
+    // worktree has, never into the worktree itself.
+    //
+    // This test used to run against process.cwd() and then "clean up" with an
+    // rmSync. That rewrote the tracked .claude/commands/mjolnir.md and removed
+    // a generated file inside the repository, so `npm test` mutated the tree
+    // that candidate-trust-manifest.json is fingerprinted against — which made
+    // the manifest gate fail on a clean checkout for no stated reason.
+    // --force keeps the run idempotent regardless of prior local edits; the
+    // dispatch itself is what's under test, so only the summary is asserted.
+    const sandbox = mkdtempSync(join(tmpdir(), "mjolnir-install-dispatch-"));
+    const previous = process.cwd();
+    try {
+      for (const surface of [".claude", ".kilo", ".cursor"]) {
+        mkdirSync(join(sandbox, surface), { recursive: true });
+      }
+      process.chdir(sandbox);
+      await expect(main(["install", "--force"], cap.io)).resolves.toBe(0);
+    } finally {
+      process.chdir(previous);
+      rmSync(sandbox, { recursive: true, force: true });
+    }
     expect(cap.text()).toContain("Installed on");
-    // Cleanup: do not leave test artifacts in the worktree.
-    rmSync(join(process.cwd(), ".kilo", "command", "mjolnir.md"), {
-      force: true,
-    });
   });
 });
 
