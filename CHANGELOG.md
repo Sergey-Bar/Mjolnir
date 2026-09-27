@@ -107,6 +107,46 @@ once shipped, so this file is the record of what changed between versions.
 
 ### Fixed
 
+- **Order in the report no longer depends on the machine that produced it.** 23
+  sites in `src/` sorted with a bare `localeCompare`, which resolves against the
+  process's default locale. `scan-cache.ts` was the worst: it sorted INSIDE
+  `hashDir`, so the order was fed to `hash.update(entry.name)` and became a
+  semantic input to the detector fingerprint that `isIncrementalSafe` keys off
+  — one repository, two fingerprints, one per locale. All 23 now use
+  `compareCodePoints` from `src/lib/compare.ts`, except two whose key is a
+  human-readable label, which use a comparator pinned to `en` rather than
+  inheriting the environment. `tests/contract/deterministic-ordering.spec.ts`
+  fails the build on any unpinned `localeCompare` in `src/`.
+- **`mjolnir bind` can no longer be hijacked by a repository's own `git`.**
+  `src/engine/candidate-binding.ts` — called on every scan — ran
+  `execFileSync("git", …)` with a bare name. On Windows `CreateProcess` searches
+  the current directory before `PATH`, so a committed `git.exe` in an untrusted
+  repo chose the `commit` and `tree` that land in `runIdentity` and the evidence
+  graph. It is the last bare-name process launch left in `src/`, and
+  `tests/contract/no-bare-process-exec.spec.ts` now audits the whole tree.
+- **The coverage exemption ledger can no longer drift silently.** Each
+  non-structural entry in `docs/COVERAGE-EXEMPTIONS.json` now carries
+  `defectSignatures` — regexes that must still match its file — or an explicit
+  `closureState` when the defect it described is gone. A signature that stops
+  matching fails the gate, so a code fix forces a ledger edit in the same
+  commit. Six entries were already describing defects the current code had
+  fixed (`maturity`, `business-case`, `dashboard`, `enterprise`, `exec-report`
+  and the `report-playwright` row), and are reclassified accordingly.
+- **Skipped and expected-fail tests now have a price.** Nothing in the
+  repository counted them, so the count could grow from zero to hundreds with
+  every other signal still green. `docs/SKIP-BUDGET.json` records the current
+  counts — 8 skipped tests, 1 skipped file, 3 expected failures — measured by
+  `scripts/vitest-skip-budget-reporter.mjs` during the run. They may fall;
+  raising them fails `npm run skip:budget` and names the tests that spent the
+  budget. A missing or incomplete measurement fails too, so a reporter that
+  stops being wired in cannot read as a clean run.
+- **The M26 release gate and the version-drift checks are covered where it
+  matters.** Both run inside `certify` and both were excluded from the coverage
+  ratchet, so their reject arms — the paths that only execute when something is
+  wrong — had no reviewer pressure on them. `tests/ledger/m26-validator-reject-arms.spec.ts`
+  is table-driven over every required field, so a field that is added without a
+  test fails; `tests/release/version-surface-drift-arms.spec.ts` covers the
+  fail-fast arms of the version synchronizer.
 - **One error derivation, one `isRecord`, one crash-isolation path.** The tree
   carried `isRecord` eight times (seven byte-identical), error rendering four
   times under two names, and crash isolation seven times — and the copies

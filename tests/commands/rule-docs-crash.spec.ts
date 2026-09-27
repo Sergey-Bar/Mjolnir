@@ -195,7 +195,7 @@ describe("W1.2: the boolean cannot come back", () => {
     expect(source).toMatch(
       /mustNotFire: \{ fixturePath\?: string; outcome: FixtureOutcome \}/,
     );
-    expect(source).not.toMatch(/mustNotFire[^\n]*\bfired\b/);
+    expect(source).not.toMatch(/mustNotFire[^\n]+\bfired\b/);
   });
 
   it("the doc generator never collapses null findings into a pass", () => {

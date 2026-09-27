@@ -174,7 +174,7 @@ describe("renderRuleDocMd — content contract", () => {
       mustFire: {},
       mustNotFire: {
         fixturePath: "tests/fixtures/FAKE/must-not-fire/x.ts",
-        outcome: "FIRED",
+        outcome: "FIRED" as const,
       },
       corpusOccurrences: {},
     };
@@ -189,7 +189,7 @@ describe("renderRuleDocMd — content contract", () => {
     const data = {
       rule,
       mustFire: {},
-      mustNotFire: { outcome: "DID_NOT_FIRE" },
+      mustNotFire: { outcome: "DID_NOT_FIRE" as const },
       corpusOccurrences: {},
     };
     const md = renderRuleDocMd(data);
@@ -216,7 +216,7 @@ describe("renderRuleDocMd — content contract", () => {
     const data = {
       rule,
       mustFire: {},
-      mustNotFire: { outcome: "DID_NOT_FIRE" },
+      mustNotFire: { outcome: "DID_NOT_FIRE" as const },
       corpusOccurrences: {},
     };
     const md = renderRuleDocMd(data);
