@@ -1,4 +1,4 @@
-name: Stable v3 Action Tag
+name: Stable Action Major Tag
 
 on:
   push:
@@ -21,16 +21,18 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-      - name: Move stable v3 action tag
+      - name: Move the action major tag
         shell: bash
         run: |
           set -euo pipefail
           VERSION="${GITHUB_REF_NAME#v}"
           MAJOR="${VERSION%%.*}"
-          if [[ "$MAJOR" != "3" ]]; then
-            echo "No action tag update for v$MAJOR; the current action major is v3."
-            exit 0
-          fi
+          # The major tag follows the release. It was hardcoded to 3, which
+          # meant no v4 or v5 could ever be published and the docs' recommended
+          # `uses: Sergey-Bar/Mjolnir@vN` had no ref to resolve to. Deriving it
+          # from the tag being pushed is the only rule that stays true as the
+          # majors move.
           MAJOR_TAG="v$MAJOR"
           git tag -f "$MAJOR_TAG" "$GITHUB_SHA"
           git push origin "refs/tags/$MAJOR_TAG" --force
+          echo "moved $MAJOR_TAG to $GITHUB_SHA"
