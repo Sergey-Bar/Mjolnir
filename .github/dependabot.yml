@@ -4,20 +4,14 @@
 
 version: 2
 updates:
+  # Only a major opens a PR; minor and patch are ignored. Dependabot security
+  # updates are configured separately and are not affected by this.
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
       interval: "weekly"
-    # PR channel policy: only majors reach a PR. Minor and patch bumps are
-    # absorbed silently during routine work, so the upgrade log stays a list
-    # of breaking changes instead of a rolling wall of PRs. Loosen this when
-    # the repo actually wants the small bumps surfaced automatically.
-    # Note: Dependabot security updates are configured separately and are NOT
-    # suppressed by this list.
     ignore:
-      - update-types:
-          - "minor"
-          - "patch"
+      - update-types: ["minor", "patch"]
       # web-tree-sitter 0.25.6 -> 0.26.x: the 0.26 runtime cannot load the
       # tree-sitter-wasms grammar WASMs at all (Language.load() throws in
       # getDylinkMetadata; verified by reproduction — see the DEPENDENCY PIN
@@ -34,20 +28,9 @@ updates:
       - dependency-name: "typescript"
         versions: [">=7"]
 
-  # Actions are SHA-pinned, so a Dependabot commit is already a tight diff; the
-  # only thing worth cutting is the count. Minor/patch bumps are skipped, and
-  # every remaining major lands in ONE PR: the action majors are not
-  # independent (checkout/setup-node/upload-artifact move together on the Node
-  # runtime), so they have to be reviewed as a set rather than one at a time.
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
-    groups:
-      actions-major:
-        patterns:
-          - "*"
     ignore:
-      - update-types:
-          - "minor"
-          - "patch"
+      - update-types: ["minor", "patch"]

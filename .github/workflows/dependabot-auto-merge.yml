@@ -12,11 +12,8 @@ jobs:
   auto-merge:
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    # `github.actor` is whoever fired the event, not whoever opened the PR:
-    # on `labeled` that is the human applying the label, so this condition was
-    # false on the one trigger that matters, and on `opened`/`synchronize` the
-    # label was not there yet. The job could never run. Identify the PR by its
-    # author, which is what "is this a Dependabot PR" actually means.
+    # Check the PR author, not github.actor: actor is whoever fired the event,
+    # so on `labeled` it is the person adding the label, not Dependabot.
     if: >-
       github.event.pull_request.user.login == 'dependabot[bot]' &&
       contains(github.event.pull_request.labels.*.name, 'automerge')
