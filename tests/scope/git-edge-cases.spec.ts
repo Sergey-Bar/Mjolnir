@@ -30,6 +30,18 @@ function gitOut(cwd: string, args: string[]): string {
   }).trim();
 }
 
+// A fresh source repo per test is load-bearing: the last test checks out a
+// `feature` branch and commits a rename, so a shared fixture would leak that
+// branch into every test after it.
+//
+// The cost of that isolation is seven `git` process spawns per test, and
+// vitest's default hook timeout is 10s. Under a parallel run on a loaded
+// machine that is not enough, and the failure mode is a timeout rather than a
+// wrong answer - which is the worst kind of flake, because it says nothing
+// about the code under test. The explicit budget matches the one the coverage
+// run already passes on the command line.
+const FIXTURE_TIMEOUT_MS = 120_000;
+
 beforeEach(() => {
   sourceDir = mkdtempSync(join(tmpdir(), "mjolnir-scope-src-"));
   workDirs = [];
@@ -52,7 +64,7 @@ beforeEach(() => {
   );
   git(sourceDir, ["add", "."]);
   git(sourceDir, ["commit", "-m", "add focused test"]);
-});
+}, FIXTURE_TIMEOUT_MS);
 
 afterEach(() => {
   rmSync(sourceDir, { recursive: true, force: true });
