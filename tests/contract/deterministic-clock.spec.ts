@@ -39,6 +39,24 @@ const VERDICT_FILES = [
   "engine/suppression-integrity.ts",
 ];
 
+/**
+ * Repo-relative path in the same form VERDICT_FILES is written in.
+ *
+ * VERDICT_FILES uses forward slashes because that is how the paths are written
+ * in the repository. `path.join` produces whatever the host platform uses, so
+ * the two have to be reconciled or the comparison silently never matches.
+ *
+ * The split matches either separator rather than reading `path.sep`, so the
+ * function behaves identically on every host and can be asserted directly. A
+ * normaliser that is itself platform-dependent is how this bug happened.
+ */
+function repoRelative(absolute: string): string {
+  return absolute
+    .slice(SRC_ROOT.length + 1)
+    .split(/[\\/]/)
+    .join("/");
+}
+
 function stripComments(text: string): string {
   return text
     .replace(/\/\*[\s\S]*?\*\//g, "")
@@ -97,6 +115,30 @@ describe("T6: a verdict path never supplies its own clock", () => {
     expect(governance).toMatch(/now: Date = new Date\(\)/);
   });
 
+  it("recognises an already-audited path on every platform", () => {
+    // The regression. The sweep compared a platform-normalised relative path
+    // against VERDICT_FILES rewritten with hardcoded backslashes, so on Linux
+    // and macOS nothing ever matched and every file in src/config looked
+    // unaudited — including config.ts, which is in the list. The test passed on
+    // Windows and failed everywhere else, which is the worst possible shape for
+    // a gate: green on the machine that wrote it.
+    for (const rel of VERDICT_FILES) {
+      expect(repoRelative(join(SRC_ROOT, rel))).toBe(rel);
+    }
+  });
+
+  it("normalises both separator styles, so the sweep is host-independent", () => {
+    // Asserted on both separator styles regardless of host, because the
+    // original defect was a normaliser that only understood one of them. The
+    // separator is written literally rather than read from path.sep so that
+    // both branches are exercised on every machine.
+    for (const separator of ["/", "\\"]) {
+      expect(
+        repoRelative(`${SRC_ROOT}${separator}config${separator}config.ts`),
+      ).toBe("config/config.ts");
+    }
+  });
+
   it("src/config/** contains no other file that reads the clock inline", () => {
     // The directory-level sweep, so a new config module cannot join the
     // verdict set without being considered. `listSourceFiles` keeps this
@@ -110,11 +152,9 @@ describe("T6: a verdict path never supplies its own clock", () => {
           : [];
       });
     }
-    const audited = new Set(
-      VERDICT_FILES.map((rel) => rel.replaceAll("/", "\\")),
-    );
+    const audited = new Set(VERDICT_FILES);
     for (const file of list(join(SRC_ROOT, "config"))) {
-      const rel = file.slice(SRC_ROOT.length + 1);
+      const rel = repoRelative(file);
       if (audited.has(rel)) continue;
       const code = stripComments(readFileSync(file, "utf8"));
       expect(
