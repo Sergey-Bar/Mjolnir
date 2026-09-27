@@ -89,7 +89,11 @@ once shipped, so this file is the record of what changed between versions.
   the two existing top-level catch blocks rather than `uncaughtException` /
   `unhandledRejection` handlers, which would have changed the frozen exit-code
   contract. `npm run sentry:release` creates the release and uploads source maps
-  (the build now emits them; the published tarball still excludes them).
+  (the build now emits them; the published tarball still excludes them). Both
+  release pipelines now run it after `npm run build` and before `npm pack`,
+  because the debug ids it stamps are written into `dist/` in place: pack first
+  and the shipped tarball carries no ids, so the maps uploaded for the release
+  match nothing and every stack trace degrades to a bundle frame.
 - `npm run report:honesty` — no surface may print a zero for a measurement that
   may be absent. Four reviewed exceptions are recorded for computation inputs,
   each with a reason and a follow-up.
