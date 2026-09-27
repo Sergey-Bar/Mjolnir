@@ -1,0 +1,47 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/Sergey-Bar/Mjolnir/schemas/v6/deployment-mode.schema.json",
+  "title": "Mjölnir deployment mode (ADR 0008)",
+  "description": "Deployment mode is a declared, machine-readable state, not a promise in a document. The enum is closed and versioned; an unknown value is a CONFIG_ERROR, never a silent fallback to permissive; and an unset mode is LOCAL_ONLY. A LOCAL_ONLY process refuses hosted code paths structurally — the hosted client is never constructed — so the refusal cannot be forgotten by a later edit.",
+  "type": "object",
+  "required": ["schemaVersion", "mode"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "mode": {
+      "type": "string",
+      "enum": ["LOCAL_ONLY", "SELF_HOSTED", "CLOUD", "AIR_GAPPED"],
+      "description": "An unknown value MUST fail as CONFIG_ERROR. Falling back to CLOUD on an unparseable value would make a typo a privacy incident."
+    },
+    "allowsHosted": {
+      "type": "boolean",
+      "description": "Derived from `mode`, published so a consumer can render the refusal without re-implementing the rule."
+    },
+    "recordedAt": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}" },
+    "egressDeclarations": {
+      "type": "array",
+      "description": "Every capability that can egress must declare its egress footprint. A capability with an egress footprint and no declaration is a registry error, because \"what leaves the machine\" is otherwise unknowable per action rather than per product.",
+      "items": {
+        "type": "object",
+        "required": ["capabilityId", "leaves", "declaration"],
+        "additionalProperties": false,
+        "properties": {
+          "capabilityId": { "type": "string", "minLength": 1 },
+          "leaves": { "type": "boolean" },
+          "declaration": { "type": "string", "minLength": 10 }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "mode": { "enum": ["LOCAL_ONLY", "AIR_GAPPED"] } }
+      },
+      "then": {
+        "properties": { "allowsHosted": { "const": false } },
+        "description": "Local-only and air-gapped modes may not reach hosted code paths at all."
+      }
+    }
+  ]
+}

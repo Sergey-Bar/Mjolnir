@@ -21,6 +21,7 @@ import { sectionHeader, plainContext } from "../reporter/ui.js";
 import { internalErrorMessage, type Output } from "../cli-io.js";
 import { unmeasuredClaim } from "../claim-evidence.js";
 import { EXIT_INTERNAL, EXIT_USAGE } from "../exit-codes.js";
+import { runCapabilityCommand } from "./capability.js";
 
 const ui = plainContext();
 
@@ -160,6 +161,17 @@ export function runMaturityCommand(
       internalErrorMessage(e, io.err, false);
       return EXIT_INTERNAL;
     }
+  }
+
+  if (subcommand === "capabilities") {
+    // The capability registry was its own top-level verb until the 5.x verb
+    // budget caught it at 51 against a ceiling of 50. The law is that one new
+    // verb requires one removal or one merge, and this is the merge: a
+    // capability level IS a maturity level, so the registry reads naturally as
+    // a view of the same model. Nothing is lost — the runner, its read-only
+    // guarantee and its exit codes are the capability command's own, reached
+    // through `mjolnir maturity capabilities`.
+    return runCapabilityCommand(argv.slice(1), io);
   }
 
   io.err(`Unknown maturity subcommand: ${subcommand}`);

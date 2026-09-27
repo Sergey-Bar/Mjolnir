@@ -1,0 +1,70 @@
+{
+  "status": "PASS",
+  "errors": [],
+  "facts": {
+    "liveRules": 79,
+    "retiredRules": 22,
+    "tiers": {
+      "quarantine": 34,
+      "extended": 21,
+      "core": 24
+    },
+    "measured": 74,
+    "measuredAtStaleRevision": 0,
+    "capabilities": 27,
+    "maxReachableMaturity": "M2_IMPLEMENTED",
+    "unreachableLevels": [
+      "M3_FIXTURE_VERIFIED",
+      "M4_CORPUS_VERIFIED",
+      "M5_FIELD_PROVEN"
+    ],
+    "skeletonGaps": [
+      "fixture-quad",
+      "capability-detector-rev",
+      "recall-measurement",
+      "d3-adjudication",
+      "degradation-ledger"
+    ],
+    "ladder": [
+      "M0_UNKNOWN",
+      "M1_DECLARED",
+      "M2_IMPLEMENTED",
+      "M3_FIXTURE_VERIFIED",
+      "M4_CORPUS_VERIFIED",
+      "M5_FIELD_PROVEN"
+    ]
+  },
+  "generatedBy": "npm run rules:quality:check",
+  "gaps": [
+    {
+      "id": "fixture-quad",
+      "blocks": ["M3_FIXTURE_VERIFIED"],
+      "wave": "4",
+      "why": "no machine gate verifies a positive/negative/boundary/adversarial fixture quad per rule, so M3 is unreachable for every rule and every framework"
+    },
+    {
+      "id": "capability-detector-rev",
+      "blocks": ["M4_CORPUS_VERIFIED"],
+      "wave": "4",
+      "why": "the measurement sidecar locks detectorRev per rule; nothing binds a capability to it, so corpus verdicts alone cannot grant M4"
+    },
+    {
+      "id": "recall-measurement",
+      "blocks": ["recall", "M4_CORPUS_VERIFIED"],
+      "wave": "4",
+      "why": "precision is measured and recall is not, and Law 5 forbids reporting precision alone as quality"
+    },
+    {
+      "id": "d3-adjudication",
+      "blocks": ["rule conflict resolution", "retirement decisions"],
+      "wave": "4",
+      "why": "retirement and conflict resolution are documented rules, not a machine decision, so a D3 bucket is a review convention rather than an adjudicated state"
+    },
+    {
+      "id": "degradation-ledger",
+      "blocks": ["P6"],
+      "wave": "4",
+      "why": "nothing records what a rule stopped covering, so a degraded run is indistinguishable from a clean one"
+    }
+  ]
+}

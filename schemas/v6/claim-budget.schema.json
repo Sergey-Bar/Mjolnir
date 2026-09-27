@@ -1,0 +1,71 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/Sergey-Bar/Mjolnir/schemas/v6/claim-budget.schema.json",
+  "title": "Mjölnir claim budget (P4)",
+  "description": "The ratchet that makes §94's de-metrics enforceable. The number of unbound public claims may not exceed `maxUnbound`, and `maxUnbound` may only be raised by a dated, owned, EXPIRING exception — the constitution has no permanent waiver path. `target` is the declared trajectory: it is reported, not gated, because a budget that fails on its own first run is a budget people disable.",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "artifact",
+    "maxUnbound",
+    "lastReducedAt",
+    "target",
+    "exceptions",
+    "history"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "artifact": { "const": "claim-budget" },
+    "maxUnbound": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "The maximum number of unbound public claims the build tolerates. This is a debt statement measured by `npm run claims:prose`, not a target somebody picked."
+    },
+    "lastReducedAt": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+    "target": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Where the debt is headed. Must be <= maxUnbound, or the ratchet is pointed the wrong way."
+    },
+    "exceptions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["reason", "owner", "expiresAt", "permitsUpTo"],
+        "additionalProperties": false,
+        "properties": {
+          "reason": { "type": "string", "minLength": 20 },
+          "owner": {
+            "type": "string",
+            "minLength": 1,
+            "not": {
+              "enum": ["unassigned", "unowned", "tbd", "unknown", "none", "n/a"]
+            }
+          },
+          "expiresAt": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "An exception without an expiry is a permanent waiver, which the constitution does not have."
+          },
+          "permitsUpTo": { "type": "integer", "minimum": 0 }
+        }
+      }
+    },
+    "history": {
+      "type": "array",
+      "description": "Every ratchet movement, so a budget that was raised and never lowered is visible as debt rather than as a policy.",
+      "items": {
+        "type": "object",
+        "required": ["at", "maxUnbound", "unbound", "note"],
+        "additionalProperties": false,
+        "properties": {
+          "at": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+          "maxUnbound": { "type": "integer", "minimum": 0 },
+          "unbound": { "type": "integer", "minimum": 0 },
+          "note": { "type": "string" }
+        }
+      }
+    }
+  }
+}

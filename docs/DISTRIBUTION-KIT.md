@@ -1,7 +1,7 @@
-# Distribution Kit â€” Marketplace & Registry Publishing
+# Distribution Kit — Marketplace & Registry Publishing
 
 Product-gap-remediation master plan P1 (plan 1788853205786): everything
-below is **content prepared** â€” the final submission clicks are
+below is **content prepared** — the final submission clicks are
 **owner-only** (they are identity-bound: they require the Sergey-Bar
 account, its 2FA, or its GitHub admin rights; decision 10 keeps A4
 adjudication human and this document keeps publishing accountable to a
@@ -20,7 +20,7 @@ The artifacts this kit ships in-repo:
 ## Versioning & pinning guidance (P1.2)
 
 `action-tags.yml` moves the **`v3` major moving tag** to
-every stable release (rc tags never move it â€” the same ruling as npm's
+every stable release (rc tags never move it — the same ruling as npm's
 `next` dist-tag). Consumers choose their exposure:
 
 ```yaml
@@ -32,34 +32,34 @@ every stable release (rc tags never move it â€” the same ruling as npm's
 ```
 
 The scan itself always runs the **published npm package**
-(`npx mjolnir-qa@5.0.0`) â€” never a build of this repo: the action
+(`npx mjolnir-qa@5.0.0`) — never a build of this repo: the action
 works for consumers, not contributors. Leave `version` unset to take the
 Action's default, which is the last published stable release; or pin it
 explicitly to another published exact version
 (`with: version: 4.0.0`). Do not use `version: latest` in an enforcing gate,
-and do not pin a release candidate â€” it is not on the registry until it ships.
+and do not pin a release candidate — it is not on the registry until it ships.
 
 ## GitHub Actions Marketplace (P1.5)
 
 **Owner clicks only:** publish from the repo's "Releases" side panel
 ("Publish to GitHub Marketplace" â†’ draft â†’ publish), accepting the tag
-it offers (`v3` must be a valid tag at publish time â€” the action-tags
+it offers (`v3` must be a valid tag at publish time — the action-tags
 workflow guarantees it after a stable release).
 
 Listing content (paste verbatim into the marketplace draft):
 
-- **Name:** MjÃ¶lnir â€” verification trust scan
+- **Name:** Mjölnir — verification trust scan
 - **Tagline:** Fail your PR when a test suite or CI workflow cannot go
   red. Measured false-positive rates per rule.
-- **Description (short):** MjÃ¶lnir audits the verification _system_ â€”
-  tests, Playwright configs, CI workflows â€” for gates that cannot fail:
+- **Description (short):** Mjölnir audits the verification _system_ —
+  tests, Playwright configs, CI workflows — for gates that cannot fail:
   skipped tests, swallowed exit codes, always-success steps, retries
   that mask flakiness. 79 active rules over TS/JS, Python, Java, C#, GitHub
   Actions YAML; 74 have corpus-measured false-positive rates and 5 are
   explicitly unmeasured.
 - **Categories:** `Continuous integration`, `Code quality`
 - **Screenshots:** `assets/readme/terminal-hero.svg` (hero),
-  `assets/readme/score-gauge.svg`, `assets/readme/demo.svg` â€”
+  `assets/readme/score-gauge.svg`, `assets/readme/demo.svg` —
   Marketplace renders SVG via user-content; if the upload dialog rejects
   SVG, convert with `npm run docs:video`'s renderer stack (same fonts,
   same palette) to PNG 1280Ã—640.
@@ -80,21 +80,21 @@ Checklist (tick with dates, states in the table header):
 ## Awesome-list PRs (P1.6)
 
 All three lists are curated; read their CONTRIBUTING before opening.
-Draft PR body (shared): "Adds MjÃ¶lnir (mjolnir-qa on npm) â€” a CI tool
+Draft PR body (shared): "Adds Mjölnir (mjolnir-qa on npm) — a CI tool
 that audits the verification system itself: test suites, Playwright
 configs and CI workflows, for gates that cannot go red. 79 active rules;
 74 corpus-measured FP rates and 5 explicitly unmeasured rules; GitHub Action
 (`Sergey-Bar/Mjolnir@v5`), MCP server, SARIF. MIT."
 
-| Channel            | Where it belongs                                                      | State   |
-| ------------------ | --------------------------------------------------------------------- | ------- |
-| awesome-playwright | Tools section (after the config helpers)                              | pending |
-| awesome-testing    | CI/CD tooling section                                                 | pending |
-| awesome-actions    | Linting / testing categories â€” list the ACTION, not the npm package | pending |
+| Channel            | Where it belongs                                                    | State   |
+| ------------------ | ------------------------------------------------------------------- | ------- |
+| awesome-playwright | Tools section (after the config helpers)                            | pending |
+| awesome-testing    | CI/CD tooling section                                               | pending |
+| awesome-actions    | Linting / testing categories — list the ACTION, not the npm package | pending |
 
 **Agent-loop listing angles (P7):** the MCP registries' entries and the
-awesome PR bodies should lead with the agent loop â€” `mjolnir verify`
-gives an agent a before/after digest (resolved per Â§15 lifecycle, new,
+awesome PR bodies should lead with the agent loop — `mjolnir verify`
+gives an agent a before/after digest (resolved per §15 lifecycle, new,
 unchanged by ruleId+location, score delta) with frozen exit semantics;
 the MCP `verify` tool is 1:1 under the same transport guardrails. The
 agent-loop pitch belongs in the PulseMCP/mcp.so descriptions and the
@@ -103,27 +103,27 @@ since v0.5.37).
 
 ## MCP registries (P1.6)
 
-| Channel                      | Artifact                                                                                                                                                                                                                              | State   |
-| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
-| modelcontextprotocol/servers | PR adding MjÃ¶lnir to the community servers README (line: `- [mjolnir-qa](â€¦) â€” verification trust scanning: fails CI on tests that cannot fail; stdio MCP server with scan/explain/diff/verify/forensics/triage/pw-report tools`) | pending |
-| Smithery                     | `/smithery.yaml` ships with the repo; submit via smithery.ai "Add server" pointing at the repo                                                                                                                                        | pending |
-| PulseMCP                     | Directory entry form (owner: requires Sergey-Bar identity): name, description from smithery.yaml, stdio transport, install `npx -y mjolnir-qa@5.0.0 mcp`                                                                              | pending |
-| mcp.so                       | Entry form with the same payload as PulseMCP                                                                                                                                                                                          | pending |
+| Channel                      | Artifact                                                                                                                                                                                                                          | State   |
+| ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| modelcontextprotocol/servers | PR adding Mjölnir to the community servers README (line: `- [mjolnir-qa](”¦) — verification trust scanning: fails CI on tests that cannot fail; stdio MCP server with scan/explain/diff/verify/forensics/triage/pw-report tools`) | pending |
+| Smithery                     | `/smithery.yaml` ships with the repo; submit via smithery.ai "Add server" pointing at the repo                                                                                                                                    | pending |
+| PulseMCP                     | Directory entry form (owner: requires Sergey-Bar identity): name, description from smithery.yaml, stdio transport, install `npx -y mjolnir-qa@5.0.0 mcp`                                                                          | pending |
+| mcp.so                       | Entry form with the same payload as PulseMCP                                                                                                                                                                                      | pending |
 
 ## Ministry of Testing (P1.6)
 
-Tool page (owner: account-bound): title "MjÃ¶lnir", category
-"Test automation â€” CI/verification tooling", body = the marketplace
+Tool page (owner: account-bound): title "Mjölnir", category
+"Test automation — CI/verification tooling", body = the marketplace
 description plus the measured-FP paragraph from README ("How much of
 this is measured"). Link `sergey-bar.github.io/Mjolnir`.
 
 ## Announcement post draft (P1.6)
 
-Title: **MjÃ¶lnir: fail CI when your tests cannot go red**
+Title: **Mjölnir: fail CI when your tests cannot go red**
 
-Body (HN/Reddit/LinkedIn variants â€” same facts, different tone):
+Body (HN/Reddit/LinkedIn variants — same facts, different tone):
 
-> MjÃ¶lnir is a CLI (and now a GitHub Action + MCP server) that audits
+> Mjölnir is a CLI (and now a GitHub Action + MCP server) that audits
 > the verification system itself. It scans test suites, Playwright
 > configs and CI workflows for the patterns that make a green gate
 > meaningless: focused tests committed, assertions removed, exit codes
@@ -135,7 +135,7 @@ Body (HN/Reddit/LinkedIn variants â€” same facts, different tone):
 > Two things it does differently from a linter: every rule ships a
 > must-fire AND a must-not-fire fixture, and every rule publishes a
 > false-positive rate measured against real OSS code (n â‰¥ 10
-> hand-classified findings) â€” the rate that gates CI is â‰¤ 10%, and the
+> hand-classified findings) — the rate that gates CI is â‰¤ 10%, and the
 > rules that cannot demonstrate that sit in quarantine behind `--strict`,
 > capped to info, never gating. It scores what it finds, publishes the
 > score's full deduction table, and refuses to score an empty repo as a 100.
@@ -150,7 +150,7 @@ Comment-strategy note: lead with the FP-rate honesty angle on HN
 ## Node floor honesty (P1.7)
 
 **Why â‰¥ 22.18:** the build toolchain (tsdown/tsdown targets
-`node22.18.0`) sets the floor â€” it is the oldest runtime the release
+`node22.18.0`) sets the floor — it is the oldest runtime the release
 pipeline compiles and smoke-tests against; the runtime dependencies
 themselves have no such requirement. (Two sentences live in README and
 the site FAQ; the floor itself stays unchanged per owner decision 2.)

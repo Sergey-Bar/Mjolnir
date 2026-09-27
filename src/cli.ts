@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
  * Mjölnir CLI entry point (W1-02).
- * Exit codes (§24.1, frozen): 0 clean · 1 findings ≥ gate · 2 partial ·
- * 10 usage error · 20 internal error.
+ * Exit codes (§24.1, frozen): 0 clean Â· 1 findings â‰¥ gate Â· 2 partial Â·
+ * 10 usage error Â· 20 internal error.
  */
 
 import { existsSync, realpathSync, statSync } from "node:fs";
@@ -239,7 +239,7 @@ export function levenshtein(a: string, b: string): number {
   return walk(0, 0);
 }
 
-/** Nearest known flags within distance ≤ 2, nearest first. */
+/** Nearest known flags within distance â‰¤ 2, nearest first. */
 export function nearestFlags(flag: string, max = 3): string[] {
   return KNOWN_SCAN_FLAGS.map((f) => ({ f, d: levenshtein(flag, f) }))
     .filter((x) => x.d <= 2)
@@ -599,6 +599,10 @@ export async function main(
     mutation: (a, o) => runMutationCommand(a, o),
     badge: (a, o) => runBadgeCommand(a, o),
     "trust-report": (a, o) => runTrustReportCommand(a, o),
+    // Wave 1: the registry is inspectable, and deliberately not editable.
+    // There is no --set and no --promote, because maturity is derived from
+    // evidence (ADR 0001) — a verb that could raise a level would be a verb
+    // that could lie about one.
     debt: (a, o) => runDebtCommand(a, o),
     impact: (a, o) => runImpactCommand(a, o),
     "business-case": (a, o) => runBusinessCaseCommand(a, o),
