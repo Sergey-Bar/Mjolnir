@@ -28,25 +28,19 @@
   "generatedAt": "2026-09-27",
   "identity": {
     "state": "WORKING_CANDIDATE",
-    "baseSha": "456ea7c775d9c76c8991951b363d674fcedbf37f",
+    "baseSha": "0a35d46e5b84bfa00cba6cfeb7255554330a9a70",
     "candidateSha": null,
     "version": "4.0.0",
     "packageSha256": "9fad80a525772c2c9ab645dc88b6a61e41a74818fe85da02ef0dd8a508b8eb8e",
     "lockfileSha256": "7694a743490f8a4181a2fda22d38a638dd11ee1fabdb8ffadaceb0322f4d3c89",
     "workingTreeSha256": "7867a1f59cf41bf1a23f9207f888319dd6a394c1a7d0069ff1f5bbf55642128a",
-    "changedPathCount": 2,
+    "changedPathCount": 0,
     "supportEnvelope": "self-hosted; hosted services require explicit consent and separate proof",
     "worktreeInventory": {
-      "changedPaths": [
-        "docs/BLAST-RADIUS-AUDIT.md",
-        "tests/config/suppression-expiry-boundary.spec.ts"
-      ],
+      "changedPaths": [],
       "untrackedPaths": []
     },
-    "dirtyFiles": [
-      "docs/BLAST-RADIUS-AUDIT.md",
-      "tests/config/suppression-expiry-boundary.spec.ts"
-    ]
+    "dirtyFiles": []
   },
   "claimRegistry": {
     "path": "docs/claim-registry.json",
