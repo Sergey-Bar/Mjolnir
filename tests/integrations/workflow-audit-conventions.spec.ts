@@ -93,7 +93,6 @@ describe("every GitHub workflow satisfies the repo's own audit conventions", () 
       "corpus-audit.yml",
       "demo-video.yml",
       "fuzz.yml",
-      "merge-verify.yml",
       "pages.yml",
       "release-smoke.yml",
       "sarif-code-scanning.yml",

@@ -132,6 +132,21 @@ jobs:
           node dist/cli.mjs release-trust > release-assets/release-trust.txt
           test -s release-assets/release-trust.json
           test -s release-assets/release-trust.txt
+      # Sentry release + source maps. The ordering is load-bearing: this must
+      # run AFTER `npm run build` and BEFORE the `package` step below.
+      # `sentry sourcemaps inject` stamps a debug id into dist/ IN PLACE, and
+      # Sentry can only symbolicate a frame when the uploaded map carries the
+      # same id as the bytes the user actually downloaded. Pack first and the
+      # shipped tarball has no ids, every trace degrades to bundle frames, and
+      # the maps uploaded here silently apply to nothing. The script exits 0
+      # and says "SKIPPED" when the credentials are absent, so a release cut
+      # without Sentry configured still ships.
+      - name: Sentry release and source maps
+        env:
+          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+        run: npm run sentry:release
       - id: package
         name: Pack and audit the stable release
         shell: bash

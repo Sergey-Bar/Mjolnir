@@ -237,14 +237,9 @@ if (coverageRuns !== 1) {
 }
 
 const ci = readWorkflow(join(ROOT, ".github/workflows/ci.yml"), "ci.yml");
-const merge = readWorkflow(
-  join(ROOT, ".github/workflows/merge-verify.yml"),
-  "merge-verify.yml",
-);
 const fuzz = readWorkflow(join(ROOT, ".github/workflows/fuzz.yml"), "fuzz.yml");
 for (const command of remoteRequired) {
   checkCommand(ci, command, "ci.yml");
-  checkCommand(merge, command, "merge-verify.yml");
 }
 for (const variants of buildTestCanonical) {
   if (
@@ -253,13 +248,6 @@ for (const variants of buildTestCanonical) {
     failures.push(
       `ci.yml build-test: missing active gate ${variants.join(" or ")}`,
     );
-  }
-  if (
-    !variants.some((variant) =>
-      hasActiveJobCommand(merge, "merge-verify", variant),
-    )
-  ) {
-    failures.push(`merge-verify: missing active gate ${variants.join(" or ")}`);
   }
 }
 if (!hasActiveCommand(ci, "node dist/cli.mjs src --json")) {

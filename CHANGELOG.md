@@ -69,6 +69,14 @@ once shipped, so this file is the record of what changed between versions.
 
 ### Added
 
+- **`npm run ci:standard` now runs in CI.** `scripts/check-ci-standard.mjs`
+  was unit-tested by `tests/integrations/ci-standard.spec.ts` but referenced
+  by no workflow, so the invariants it checks — the PR scan's partial-analysis
+  handling, the coverage and ratchet gates, and the read-only scan job's
+  permissions — were enforced nowhere. It runs as a step in `workflow-lint`,
+  next to actionlint, since both are static checks of the repo's own CI
+  config.
+
 - **Opt-in Sentry crash reporting.** Set `SENTRY_DSN` and the CLI and the MCP
   stdio server report their own fatal errors — release-tagged as
   `mjolnir-qa@<version>`, tagged by surface, and nothing else: no user data
@@ -81,7 +89,11 @@ once shipped, so this file is the record of what changed between versions.
   the two existing top-level catch blocks rather than `uncaughtException` /
   `unhandledRejection` handlers, which would have changed the frozen exit-code
   contract. `npm run sentry:release` creates the release and uploads source maps
-  (the build now emits them; the published tarball still excludes them).
+  (the build now emits them; the published tarball still excludes them). Both
+  release pipelines now run it after `npm run build` and before `npm pack`,
+  because the debug ids it stamps are written into `dist/` in place: pack first
+  and the shipped tarball carries no ids, so the maps uploaded for the release
+  match nothing and every stack trace degrades to a bundle frame.
 - `npm run report:honesty` — no surface may print a zero for a measurement that
   may be absent. Four reviewed exceptions are recorded for computation inputs,
   each with a reason and a follow-up.
@@ -106,6 +118,64 @@ once shipped, so this file is the record of what changed between versions.
   decision. It reads a finding, a score or a palette and returns the word, band
   or descriptor to print. It opens no file, touches no clock and formats no
   document, and a test enforces that.
+
+### Changed
+
+- **Ruleset `01` now enforces 11 required checks instead of 4.** It required
+  only the four `build-test` matrix contexts, which meant the repo's entire
+  review surface — self-scan, certification, generated-docs-drift, site-build,
+  workflow-lint, property, fuzz — could be red while a PR still merged. That
+  made every one of those checks advice rather than a gate, and it meant the
+  deleted `merge-verify.yml` header was describing a ruleset that never
+  existed. The enforced set is now the four matrix entries plus
+  `property-tests`, `fuzz`, `site-build`, `workflow-lint`, `self-scan`,
+  `certification` and `generated-docs-drift` — every check that can actually
+  block. Deliberately still _not_ required: `detector-revision-diff` (advisory
+  by design — a hard fail would only manufacture routine revision bumps),
+  `scan` / `publish` (the Mjölnir PR report, which reviewers read but which
+  duplicates `self-scan` on the `src` tree), and the CodeQL/OSV workflows,
+  which report but do not gate. `strict_required_status_checks_policy` and
+  `do_not_enforce_on_create` are preserved, so a PR must still be current with
+  `main` to merge.
+- **`docs/BRANCH-PROTECTION.md` now states the enforced set instead of an
+  aspiration.** It listed eight required checks; three of them were enforced.
+  Its verification command also read `branches/main/protection`, which does not
+  carry required checks at all on this repo — they live in ruleset `01` — so it
+  could not have worked. Both are corrected.
+
+### Removed
+
+- **The Snyk webhook is gone.** Snyk posted a `security/snyk (sergey-bar)`
+  commit status on every push, duplicating the first-party `osv-scanner.yml`
+  (`scan-pr` / `scan-scheduled`) and the Dependabot security updates that are
+  already configured. Repo webhooks are now empty. Restore with Snyk's own
+  integration settings if it is ever wanted back — the deleted hook pointed at
+  `https://api.snyk.io/webhook/github/4ac3f376-3f24-42f7-a2c4-8830700f671d`.
+- **The `merge-verify` workflow is gone.** It re-ran the entire PR gate
+  (build, typecheck, lint, coverage, property, fuzz, site, self-scan, docs
+  regen) on every push to `main` — roughly doubling CI cost. Its stated
+  justification was that "a green PR that merges into a red main is not a
+  green PR", but that failure class is already closed by ruleset `01` running
+  `strict_required_status_checks_policy`, which refuses to merge a PR that is
+  not current with `main`. The file also asserted that ruleset `01` "requires
+  the complete PR matrix, property/fuzz, site, workflow-lint, self-scan,
+  certification, detector-revision, and generated-docs checks before merge" —
+  it did not, and never has. The ruleset requires only the four `build-test`
+  matrix contexts. Both the workflow and the claim are removed rather than left
+  to mislead a reviewer about what blocks a merge.
+- **The `bench-advisory` CI job is gone.** It spent a full `npm ci` plus a
+  3 000-file benchmark run on every PR to produce a comparison that
+  `continue-on-error: true` then discarded, and whose only output was a
+  warning nobody could gate on. `npm run bench:scan`, the pinned
+  `.mjolnir/bench-baseline.json`, and their schema/comparison tests in
+  `tests/adversarial/bench-gate.spec.ts` are untouched — the benchmark is
+  still runnable and still tested, it just no longer costs every PR a runner.
+- **Four copies of the soft job time-budget report.** Each of `build-test`,
+  `self-scan`, `generated-docs-drift` and `bench-advisory` re-derived its own
+  wall-clock minutes into `$GITHUB_STEP_SUMMARY` and printed a warning that,
+  by its own comment, "never gates". The jobs already declare
+  `timeout-minutes`, which is the hard bound, and GitHub reports job duration
+  natively.
 
 ### Fixed
 
