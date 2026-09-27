@@ -9,6 +9,7 @@
 import { createHash } from "node:crypto";
 
 import { globToRegExp } from "../discovery/ignores.js";
+import { compareCodePoints } from "../lib/compare.js";
 
 export interface SuppressionEntry {
   ruleId: string;
@@ -44,6 +45,13 @@ export interface SuppressionIntegrityReport {
  * Deterministic sha256 fingerprint of the suppression set. Canonical
  * JSON sorted by ruleId+files+reason+expires so order in the config
  * file does not affect the hash.
+ *
+ * Code-unit order on the ruleId, not an ambient `localeCompare`: the sorted
+ * array is serialized into the hash, so a locale-dependent collation would
+ * make the SAME suppression file produce two different fingerprints on two
+ * machines — and that fingerprint is what tells a reader their suppressions
+ * changed. (Line 55 keeps a bare `.sort()`: that is `Array.prototype.sort`'s
+ * own code-unit default, which is already locale-free.)
  */
 export function suppressionFingerprint(
   suppressions: SuppressionEntry[],
@@ -55,7 +63,7 @@ export function suppressionFingerprint(
       reason: s.reason,
       ...(s.expires !== undefined ? { expires: s.expires } : {}),
     }))
-    .sort((a, b) => a.ruleId.localeCompare(b.ruleId));
+    .sort((a, b) => compareCodePoints(a.ruleId, b.ruleId));
   return createHash("sha256").update(JSON.stringify(canonical)).digest("hex");
 }
 

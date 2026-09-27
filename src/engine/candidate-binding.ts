@@ -19,6 +19,8 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import type { CandidateBinding } from "../types.js";
+import { resolveGitPath } from "../scope/git-resolve.js";
+import { isRecord } from "../lib/safe-json.js";
 
 export const CANDIDATE_MANIFEST_PATH = "candidate-trust-manifest.json";
 
@@ -33,10 +35,6 @@ export type RepositoryBinding = {
   lockfile?: string;
 };
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
 function sha256File(path: string): string | undefined {
   try {
     return createHash("sha256").update(readFileSync(path)).digest("hex");
@@ -45,13 +43,33 @@ function sha256File(path: string): string | undefined {
   }
 }
 
+/**
+ * One git line, or nothing.
+ *
+ * Audit S1: the binary is the ABSOLUTE path `resolveGitPath()` found by
+ * walking PATH itself, never the bare name. `bindRepository()` runs on every
+ * scan (`scan-pipeline.ts`), and a bare `execFileSync("git", …)` lets a
+ * `git.exe`/`git.bat`/`git.cmd` CHECKED INTO AN UNTRUSTED REPO hijack the
+ * call on Windows, where CreateProcess searches the current directory before
+ * PATH. The attacker then controls the `commit` and `tree` that land in
+ * `runIdentity` and the evidence graph — the provenance a release decision
+ * reads. This was the last bare-name exec left in `src/`; the invariant that
+ * keeps it that way is `tests/contract/no-bare-process-exec.spec.ts`.
+ *
+ * The `-C <root>` shape (not `cwd`) matches every other hardened call site.
+ * With no git on PATH at all, the answer is nothing — a scan of an unpacked
+ * tarball has no commit, and its identity must say so rather than carrying a
+ * placeholder that looks like provenance.
+ */
 function gitLine(root: string, args: string[]): string | undefined {
+  const exe = resolveGitPath();
+  if (!exe) return undefined;
   try {
-    const out = execFileSync("git", args, {
-      cwd: root,
+    const out = execFileSync(exe, ["-C", root, ...args], {
       encoding: "utf8",
       stdio: ["ignore", "pipe", "ignore"],
       windowsHide: true,
+      timeout: 15_000,
     });
     const trimmed = out.trim();
     return trimmed.length > 0 ? trimmed : undefined;

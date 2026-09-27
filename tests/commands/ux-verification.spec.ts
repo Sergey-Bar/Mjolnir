@@ -470,7 +470,11 @@ describe("REPORT PLAYWRIGHT (V5-001: never a fabricated test run)", () => {
       score: 50,
       frameworks: ["playwright"],
     });
-    expect(report.status).toBe("failed");
+    // T1: an error finding is a SCAN outcome, not a failed test run. The
+    // root status stayed `interrupted`; the distinction moved to
+    // `mjolnir.scanOutcome` so it can never be read as a runtime verdict.
+    expect(report.status).toBe("interrupted");
+    expect(report.mjolnir.scanOutcome).toBe("blocked");
     expect(report.totalTests).toBe(0);
     expect(report.suites).toEqual([]);
     expect(report.mjolnir.findings).toHaveLength(1);
@@ -484,7 +488,7 @@ describe("REPORT PLAYWRIGHT (V5-001: never a fabricated test run)", () => {
       partial: true,
     });
     expect(report.status).toBe("interrupted");
-    expect(report.mjolnir.status).toBe("interrupted");
+    expect(report.mjolnir.scanOutcome).toBe("partial");
     expect(report.mjolnir.partial).toBe(true);
   });
 });

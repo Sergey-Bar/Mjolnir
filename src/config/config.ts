@@ -226,10 +226,16 @@ function validate(
  * Expiry is evaluated only from an explicit ISO `expires` date. A missing
  * date remains active and is reported as having no expiry. Config-file mtime
  * is never an expiry anchor.
+ *
+ * `now` defaults to the current instant so existing callers stay correct, but
+ * a verdict function that reads the clock invisibly is a verdict nobody can
+ * test at a boundary. `tests/contract/deterministic-clock.spec.ts` audits
+ * `src/config/**` for a call site that supplies its own `new Date()` instead
+ * of threading one through.
  */
 export function isSuppressionActive(
   ign: IgnoreEntry,
-  now = new Date(),
+  now: Date = new Date(),
 ): boolean {
   if (!ign.expires) return true;
   // Bug-audit 3.9 (timezone sensitivity): the expires value is an ISO

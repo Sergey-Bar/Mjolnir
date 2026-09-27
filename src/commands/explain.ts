@@ -27,6 +27,13 @@ import {
   parseAzurePipeline,
 } from "../discovery/azure-pipeline-parser.js";
 import { computeCodeText } from "../engine/code-text.js";
+import {
+  beginDegradationWindow,
+  degradationsSince,
+  recordDegradation,
+  summarizeDegradations,
+  type DegradationCount,
+} from "../engine/degradation-ledger.js";
 import { firstFixtureFile } from "./fixture-example.js";
 import { sectionHeader, plainContext } from "../reporter/ui.js";
 import { parseJsonFile, isRecord } from "../lib/safe-json.js";
@@ -44,6 +51,19 @@ export interface ExplainResult {
    * command already catches separately). */
   exampleFinding?: Omit<Finding, "ruleId" | "category">;
   exampleFixturePath?: string;
+  /**
+   * Why the real example is missing, when it is missing for a reason other
+   * than "no must-fire fixture exists".
+   *
+   * `ok` deliberately stays `true` for all of these: the command succeeded at
+   * explaining the rule, and the exit code is a frozen part of the CLI
+   * contract. What used to be wrong was not the exit code but the SILENCE —
+   * a rule that THREW on its own fixture produced the same output as a rule
+   * that correctly stayed quiet, and a reader could not tell "this rule found
+   * nothing" from "this rule never ran". This field is the difference, and
+   * `renderExplain` prints it.
+   */
+  exampleDegraded?: DegradationCount[];
   /**
    * `exampleFixturePath` relative to the fixtures root it was found under.
    *
@@ -75,6 +95,18 @@ export function explainRule(
     };
   }
 
+  // Open the ledger window BEFORE any of the three degradation sites below,
+  // and carry whatever landed in it onto the result. The three returns below
+  // all used to be the same object, `{ ok: true, rule }`, which is the whole
+  // defect: "the rule found nothing in its fixture" and "the rule threw
+  // before it could look" produced byte-identical output, and a reader had
+  // no way to know which one they were looking at.
+  const window = beginDegradationWindow();
+  const degraded = (): Pick<ExplainResult, "exampleDegraded"> => {
+    const counts = summarizeDegradations(degradationsSince(window));
+    return counts.length > 0 ? { exampleDegraded: counts } : {};
+  };
+
   const fixturePath = firstFixtureFile(join(fixturesRoot, ruleId, "must-fire"));
   if (!fixturePath) {
     return { ok: true, rule };
@@ -86,7 +118,8 @@ export function explainRule(
     // docs/rules page regardless of the checkout's line-ending config.
     text = readFileSync(fixturePath, "utf8").replace(/\r\n/g, "\n");
   } catch {
-    return { ok: true, rule };
+    recordDegradation("explain-fixture-unreadable");
+    return { ok: true, rule, ...degraded() };
   }
 
   // Rules always receive repo-relative, forward-slash-normalized paths
@@ -114,7 +147,8 @@ export function explainRule(
           ? parseAzurePipeline(text)
           : parseWorkflow(text);
       } catch {
-        return { ok: true, rule };
+        recordDegradation("explain-workflow-parse-failed");
+        return { ok: true, rule, ...degraded() };
       }
     }
   }
@@ -136,7 +170,14 @@ export function explainRule(
     );
     findings = rule.run({ ...parsed, codeText });
   } catch {
-    return { ok: true, rule };
+    // A rule that THREW is not a rule that stayed silent, and it is the
+    // worst of the three: the example the transcript promises is real
+    // detector output, and there is none because the detector did not run.
+    // Crash isolation makes this safe at scan time; it makes this LIE at
+    // explain time, which is the only place a reader checks whether the rule
+    // works at all.
+    recordDegradation("explain-rule-crash");
+    return { ok: true, rule, ...degraded() };
   }
 
   const example = findings[0];
@@ -245,6 +286,20 @@ export function renderExplain(
       width,
     )) {
       lines.push(seg);
+    }
+    // The reason the example is missing, when it is missing because
+    // something FAILED rather than because there is nothing to show. Without
+    // this the transcript above and a rule that crashed on its own fixture
+    // read identically, and "this rule found nothing here" is exactly the
+    // sentence a broken rule should never be able to produce.
+    for (const entry of result.exampleDegraded ?? []) {
+      lines.push("");
+      for (const seg of wrapText(
+        `NOT SHOWN — ${entry.reason} (${entry.count}): the example is missing because the check did not complete, not because the rule found nothing.`,
+        width,
+      )) {
+        lines.push(seg);
+      }
     }
   }
   lines.push("");

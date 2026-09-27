@@ -10,6 +10,7 @@ import { existsSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 
 import type { LanguageAdapter, ScanContext } from "../engine/adapter.js";
+import { runRuleIsolated } from "../engine/shared-run-rules.js";
 import { isLintFixtureDir } from "../discovery/ignores.js";
 import {
   AZURE_PIPELINE_FILENAMES,
@@ -94,17 +95,15 @@ export const azurePipelinesAdapter: LanguageAdapter = {
         budget.onExceeded();
         return;
       }
-      try {
-        for (const f of rule.run({
-          path: file.path,
-          text: file.text,
-          ast: doc,
-        })) {
-          emit(f, rule.id, rule.category);
-        }
-      } catch (error) {
-        // Crash isolation (§25) — counted and debuggable (R-9).
-        onCrash?.(rule.id, error);
+      // Crash isolation (§25) — counted and debuggable (R-9), in one place.
+      const produced = runRuleIsolated(
+        rule,
+        { path: file.path, text: file.text, ast: doc },
+        onCrash,
+      );
+      if (produced === null) continue;
+      for (const f of produced) {
+        emit(f, rule.id, rule.category);
       }
     }
   },

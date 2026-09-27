@@ -1,0 +1,708 @@
+diff --git a/tests/milestone-10.spec.ts b/tests/milestone-10.spec.ts
+index 9e6b1f55..174e1613 100644
+--- a/tests/milestone-10.spec.ts
++++ b/tests/milestone-10.spec.ts
+@@ -1,59 +1,654 @@
+ import { describe, it, expect } from "vitest";
++import { analyzeMonorepo, type MonorepoConfig, type PackageResult } from "../src/engine/monorepo-analysis.js";
+ import {
+-  analyzeCrossFileSignals,
+-  renderCrossFileAnalysis,
+-} from "../src/engine/cross-file-analysis.js";
+-
+-describe("Milestone 10 — Cross-File Analysis Engine", () => {
+-  it("should detect duplicate test names across files", () => {
+-    const files = [
+-      { path: "a.spec.ts", text: "test('shared name', () => {})" },
+-      { path: "b.spec.ts", text: "test('shared name', () => {})" },
+-    ];
+-    const result = analyzeCrossFileSignals(files, []);
+-    expect(result.duplicateTestNames.length).toBeGreaterThan(0);
+-    expect(result.duplicateTestNames[0].type).toBe("duplicate-test-name");
+-  });
++  computeChangedFiles,
++  isIncrementalSafe,
++  computeContentHash,
++  type ChangedFile,
++  type FileSnapshot,
++} from "../src/engine/incremental-analysis.js";
++import type { Finding } from "../src/types.js";
+ 
+-  it("should detect shared imports", () => {
+-    const files = [
+-      { path: "a.spec.ts", text: "import { foo } from './utils';" },
+-      { path: "b.spec.ts", text: "import { bar } from './utils';" },
+-    ];
+-    const result = analyzeCrossFileSignals(files, []);
+-    expect(result.sharedImports.length).toBeGreaterThan(0);
+-  });
++function makeFinding(overrides: Partial<Finding> = {}): Finding {
++  return {
++    ruleId: "TEST-001",
++    category: "QA-TEST",
++    severity: "warning",
++    confidence: "high",
++    findingType: "deterministic-defect",
++    qaImpact: "HYGIENE",
++    file: "test.spec.ts",
++    line: 1,
++    column: 1,
++    message: "test finding",
++    why: "because",
++    fix: "fix it",
++    ...overrides,
++  };
++}
++
++const WORTHY_THRESHOLD = 80;
++const NEEDS_WORK_THRESHOLD = 50;
++
++function verdictOf(score: number | null): "pass" | "warn" | "fail" {
++  if (score === null) return "fail";
++  if (score >= WORTHY_THRESHOLD) return "pass";
++  if (score >= NEEDS_WORK_THRESHOLD) return "warn";
++  return "fail";
++}
++
++function hasBlocker(findings: readonly Finding[]): boolean {
++  return findings.some((f) => f.severity === "error");
++}
++
++describe("M10: Monorepo Incremental Correctness Gate", () => {
++  describe("Monorepo Analysis (ECO-003)", () => {
++    describe("analyzeMonorepo", () => {
++      it("returns fail for empty package list", () => {
++        const result = analyzeMonorepo([], {
++          weightingStrategy: "average",
++        });
++        expect(result.overallVerdict).toBe("fail");
++        expect(result.overallScore).toBeNull();
++      });
++
++      it("passes when all packages pass", () => {
++        const result = analyzeMonorepo(
++          [
++            {
++              packageName: "pkg-a",
++              path: "packages/a",
++              findings: [],
++              score: 95,
++            },
++            {
++              packageName: "pkg-b",
++              path: "packages/b",
++              findings: [],
++              score: 90,
++            },
++          ],
++          { weightingStrategy: "average" },
++        );
++        expect(result.overallVerdict).toBe("pass");
++        expect(result.overallScore).toBe(93);
++      });
++
++      it("propagates worst-package blocker regardless of strategy", () => {
++        const result = analyzeMonorepo(
++          [
++            {
++              packageName: "good",
++              path: "packages/good",
++              findings: [],
++              score: 95,
++            },
++            {
++              packageName: "bad",
++              path: "packages/bad",
++              findings: [makeFinding({ severity: "error" })],
++              score: 40,
++            },
++          ],
++          { weightingStrategy: "average" },
++        );
++        expect(result.overallVerdict).toBe("fail");
++        expect(result.blockerPackage).toBe("bad");
++      });
++
++      it("marks an error-bearing package failed even with a high numeric score", () => {
++        const result = analyzeMonorepo(
++          [
++            {
++              packageName: "bad",
++              path: "bad",
++              findings: [makeFinding({ severity: "error" })],
++              score: 95,
++            },
++            { packageName: "clean", path: "clean", findings: [], score: 100 },
++          ],
++          { weightingStrategy: "worst-package" },
++        );
++        expect(result.packages[0]?.verdict).toBe("fail");
++        expect(result.overallVerdict).toBe("fail");
++        expect(result.blockerPackage).toBe("bad");
++      });
++
++      it("worst-package strategy picks lowest score", () => {
++        const result = analyzeMonorepo(
++          [
++            { packageName: "a", path: "a", findings: [], score: 90 },
++            { packageName: "b", path: "b", findings: [], score: 70 },
++            { packageName: "c", path: "c", findings: [], score: 85 },
++          ],
++          { weightingStrategy: "worst-package" },
++        );
++        expect(result.overallScore).toBe(70);
++        expect(result.overallVerdict).toBe("warn");
++      });
++
++      it("average strategy computes mean", () => {
++        const result = analyzeMonorepo(
++          [
++            { packageName: "a", path: "a", findings: [], score: 80 },
++            { packageName: "b", path: "b", findings: [], score: 100 },
++          ],
++          { weightingStrategy: "average" },
++        );
++        expect(result.overallScore).toBe(90);
++        expect(result.overallVerdict).toBe("pass");
++      });
++
++      it("configurable strategy uses package weights", () => {
++        const result = analyzeMonorepo(
++          [
++            { packageName: "a", path: "a", findings: [], score: 60 },
++            { packageName: "b", path: "b", findings: [], score: 100 },
++          ],
++          {
++            weightingStrategy: "configurable",
++            packageWeights: { a: 3, b: 1 },
++          },
++        );
++        // weighted: (60*3 + 100*1) / 4 = 280/4 = 70
++        expect(result.overallScore).toBe(70);
++        expect(result.overallVerdict).toBe("warn");
++      });
+ 
+-  it("should detect circular dependencies", () => {
+-    const files = [
+-      { path: "a.ts", text: "import { b } from './b';" },
+-      { path: "b.ts", text: "import { a } from './a';" },
+-    ];
+-    const result = analyzeCrossFileSignals(files, []);
+-    expect(result.circularDependencies.length).toBeGreaterThanOrEqual(0);
++      it("configurable strategy uses weight 1 for unweighted packages", () => {
++        const result = analyzeMonorepo(
++          [
++            { packageName: "a", path: "a", findings: [], score: 80 },
++            { packageName: "b", path: "b", findings: [], score: 100 },
++          ],
++          { weightingStrategy: "configurable" },
++        );
++        expect(result.overallScore).toBe(90);
++      });
++
++      it("fails when any package has null score", () => {
++        const result = analyzeMonorepo(
++          [
++            { packageName: "a", path: "a", findings: [], score: 90 },
++            { packageName: "b", path: "b", findings: [], score: null },
++          ],
++          { weightingStrategy: "worst-package" },
++        );
++        expect(result.overallVerdict).toBe("fail");
++        expect(result.blockerPackage).toBe("b");
++      });
++
++      it("returns per-package verdicts", () => {
++        const result = analyzeMonorepo(
++          [
++            { packageName: "a", path: "a", findings: [], score: 95 },
++            { packageName: "b", path: "b", findings: [], score: 60 },
++            { packageName: "c", path: "c", findings: [], score: 30 },
++          ],
++          { weightingStrategy: "average" },
++        );
++        expect(result.packages[0]?.verdict).toBe("pass");
++        expect(result.packages[1]?.verdict).toBe("warn");
++        expect(result.packages[2]?.verdict).toBe("fail");
++      });
++
++      it("returns correct strategy in result", () => {
++        const strategies: MonorepoConfig["weightingStrategy"][] = [
++          "worst-package",
++          "average",
++          "configurable",
++        ];
++        for (const strategy of strategies) {
++          const result = analyzeMonorepo(
++            [{ packageName: "a", path: "a", findings: [], score: 90 }],
++            { weightingStrategy: strategy },
++          );
++          expect(result.strategy).toBe(strategy);
++        }
++      });
++
++      it("package result includes all required fields", () => {
++        const result = analyzeMonorepo(
++          [
++            {
++              packageName: "pkg-a",
++              path: "packages/a",
++              findings: [makeFinding({ severity: "warning" })],
++              score: 85,
++            },
++          ],
++          { weightingStrategy: "worst-package" },
++        );
++        const pkg = result.packages[0] as PackageResult;
++        expect(pkg.packageName).toBe("pkg-a");
++        expect(pkg.path).toBe("packages/a");
++        expect(pkg.findings).toHaveLength(1);
++        expect(pkg.score).toBe(85);
++        expect(pkg.verdict).toBe("pass");
++      });
++    });
+   });
+ 
+-  it("should produce a valid analysis result", () => {
+-    const files = [
+-      { path: "a.spec.ts", text: "test('a', () => {})" },
+-      { path: "b.spec.ts", text: "test('b', () => {})" },
+-    ];
+-    const result = analyzeCrossFileSignals(files, []);
+-    expect(result.signals).toBeDefined();
+-    expect(result.dependencyGraphSize).toBeDefined();
+-    expect(result.reachableFilesCount).toBeDefined();
++  describe("Incremental Analysis (ECO-004 / TI-005)", () => {
++    describe("computeContentHash", () => {
++      it("returns a 64-char hex string", () => {
++        expect(computeContentHash("hello")).toMatch(/^[0-9a-f]{64}$/);
++      });
++
++      it("is deterministic", () => {
++        expect(computeContentHash("test")).toBe(computeContentHash("test"));
++      });
++
++      it("differs for different content", () => {
++        expect(computeContentHash("a")).not.toBe(computeContentHash("b"));
++      });
++    });
++
++    describe("computeChangedFiles", () => {
++      it("detects added files", () => {
++        const changes = computeChangedFiles(
++          [{ path: "new.ts", content: "x" }],
++          [],
++        );
++        expect(changes).toHaveLength(1);
++        expect(changes[0]?.state).toBe("added");
++        expect(changes[0]?.path).toBe("new.ts");
++      });
++
++      it("detects deleted files", () => {
++        const changes = computeChangedFiles(
++          [],
++          [{ path: "old.ts", content: "x" }],
++        );
++        expect(changes).toHaveLength(1);
++        expect(changes[0]?.state).toBe("deleted");
++      });
++
++      it("detects modified files", () => {
++        const changes = computeChangedFiles(
++          [{ path: "f.ts", content: "new" }],
++          [{ path: "f.ts", content: "old" }],
++        );
++        expect(changes).toHaveLength(1);
++        expect(changes[0]?.state).toBe("modified");
++      });
++
++      it("skips unchanged files", () => {
++        const changes = computeChangedFiles(
++          [{ path: "f.ts", content: "same" }],
++          [{ path: "f.ts", content: "same" }],
++        );
++        expect(changes).toHaveLength(0);
++      });
++
++      it("handles mixed changes", () => {
++        const current: FileSnapshot[] = [
++          { path: "a.ts", content: "changed" },
++          { path: "b.ts", content: "same" },
++          { path: "c.ts", content: "new" },
++        ];
++        const previous: FileSnapshot[] = [
++          { path: "a.ts", content: "original" },
++          { path: "b.ts", content: "same" },
++          { path: "d.ts", content: "deleted" },
++        ];
++        const changes = computeChangedFiles(current, previous);
++        const byPath = new Map(changes.map((c) => [c.path, c.state]));
++        expect(byPath.get("a.ts")).toBe("modified");
++        expect(byPath.has("b.ts")).toBe(false);
++        expect(byPath.get("c.ts")).toBe("added");
++        expect(byPath.get("d.ts")).toBe("deleted");
++      });
++
++      it("returns empty for two empty snapshots", () => {
++        expect(computeChangedFiles([], [])).toHaveLength(0);
++      });
++
++      it("sorts output by path", () => {
++        const changes = computeChangedFiles(
++          [
++            { path: "z.ts", content: "a" },
++            { path: "a.ts", content: "b" },
++          ],
++          [],
++        );
++        expect(changes[0]?.path).toBe("a.ts");
++        expect(changes[1]?.path).toBe("z.ts");
++      });
++    });
++
++    describe("isIncrementalSafe (TI-005 contract)", () => {
++      it("returns safe for regular file changes", () => {
++        const result = isIncrementalSafe([
++          {
++            path: "src/foo.ts",
++            state: "modified",
++            currentHash: "a",
++            previousHash: "b",
++          },
++          { path: "tests/bar.spec.ts", state: "added", currentHash: "c" },
++        ]);
++        expect(result.safe).toBe(true);
++        expect(result.reasons).toHaveLength(0);
++      });
++
++      it("returns unsafe for config changes", () => {
++        const result = isIncrementalSafe([
++          {
++            path: "mjolnir.config.json",
++            state: "modified",
++            currentHash: "a",
++            previousHash: "b",
++          },
++        ]);
++        expect(result.safe).toBe(false);
++        expect(result.reasons.length).toBeGreaterThan(0);
++      });
++
++      it("returns unsafe for package.json changes", () => {
++        const result = isIncrementalSafe([
++          {
++            path: "package.json",
++            state: "modified",
++            currentHash: "a",
++            previousHash: "b",
++          },
++        ]);
++        expect(result.safe).toBe(false);
++      });
++
++      it("returns unsafe for .mjolnirignore changes", () => {
++        const result = isIncrementalSafe([
++          {
++            path: ".mjolnirignore",
++            state: "modified",
++            currentHash: "a",
++            previousHash: "b",
++          },
++        ]);
++        expect(result.safe).toBe(false);
++      });
++
++      it("returns safe when no files changed", () => {
++        expect(isIncrementalSafe([]).safe).toBe(true);
++      });
++
++      it("handles Windows backslash paths", () => {
++        const result = isIncrementalSafe([
++          {
++            path: "src\\mjolnir.config.ts",
++            state: "modified",
++            currentHash: "a",
++            previousHash: "b",
++          },
++        ]);
++        expect(result.safe).toBe(false);
++      });
++
++      it("returns unsafe for tsconfig changes", () => {
++        const result = isIncrementalSafe([
++          {
++            path: "tsconfig.json",
++            state: "modified",
++            currentHash: "a",
++            previousHash: "b",
++          },
++        ]);
++        expect(result.safe).toBe(false);
++      });
++
++      it("returns unsafe for vitest.config changes", () => {
++        const result = isIncrementalSafe([
++          {
++            path: "vitest.config.ts",
++            state: "modified",
++            currentHash: "a",
++            previousHash: "b",
++          },
++        ]);
++        expect(result.safe).toBe(false);
++      });
++
++      it("returns unsafe for playwright.config changes", () => {
++        const result = isIncrementalSafe([
++          {
++            path: "playwright.config.ts",
++            state: "modified",
++            currentHash: "a",
++            previousHash: "b",
++          },
++        ]);
++        expect(result.safe).toBe(false);
++      });
++
++      it("returns unsafe for jest.config changes", () => {
++        const result = isIncrementalSafe([
++          {
++            path: "jest.config.js",
++            state: "modified",
++            currentHash: "a",
++            previousHash: "b",
++          },
++        ]);
++        expect(result.safe).toBe(false);
++      });
++    });
++
++    describe("Incremental correctness gate integration", () => {
++      it("incremental scan is safe when only test files change", () => {
++        const changedFiles: ChangedFile[] = [
++          {
++            path: "tests/checkout.spec.ts",
++            state: "modified",
++            currentHash: "abc123",
++            previousHash: "def456",
++          },
++          {
++            path: "tests/login.spec.ts",
++            state: "added",
++            currentHash: "ghi789",
++          },
++        ];
++        const result = isIncrementalSafe(changedFiles);
++        expect(result.safe).toBe(true);
++        expect(result.reasons).toHaveLength(0);
++      });
++
++      it("incremental scan is unsafe when config files change", () => {
++        const changedFiles: ChangedFile[] = [
++          {
++            path: "mjolnir.config.json",
++            state: "modified",
++            currentHash: "abc123",
++            previousHash: "def456",
++          },
++          {
++            path: "tests/checkout.spec.ts",
++            state: "modified",
++            currentHash: "ghi789",
++            previousHash: "jkl012",
++          },
++        ];
++        const result = isIncrementalSafe(changedFiles);
++        expect(result.safe).toBe(false);
++        expect(result.reasons.some((r) => r.includes("mjolnir.config"))).toBe(true);
++      });
++
++      it("incremental scan is unsafe when package.json changes", () => {
++        const changedFiles: ChangedFile[] = [
++          {
++            path: "package.json",
++            state: "modified",
++            currentHash: "abc123",
++            previousHash: "def456",
++          },
++        ];
++        const result = isIncrementalSafe(changedFiles);
++        expect(result.safe).toBe(false);
++        expect(result.reasons.some((r) => r.includes("package.json"))).toBe(true);
++      });
++
++      it("incremental scan is unsafe when multiple semantic inputs change", () => {
++        const changedFiles: ChangedFile[] = [
++          {
++            path: "mjolnir.config.json",
++            state: "modified",
++            currentHash: "abc123",
++            previousHash: "def456",
++          },
++          {
++            path: ".mjolnirignore",
++            state: "added",
++            currentHash: "ghi789",
++          },
++          {
++            path: "tsconfig.json",
++            state: "deleted",
++            previousHash: "jkl012",
++          },
++        ];
++        const result = isIncrementalSafe(changedFiles);
++        expect(result.safe).toBe(false);
++        expect(result.reasons.length).toBe(3);
++      });
++    });
+   });
+ 
+-  it("should render cross-file analysis report", () => {
+-    const files = [{ path: "a.spec.ts", text: "test('a', () => {})" }];
+-    const result = analyzeCrossFileSignals(files, []);
+-    const rendered = renderCrossFileAnalysis(result);
+-    expect(rendered).toContain("Cross-File Analysis Report");
++  describe("Monorepo + Incremental Integration", () => {
++    it("monorepo analysis works with incremental-safe changes", () => {
++      const packages = [
++        {
++          packageName: "pkg-a",
++          path: "packages/a",
++          findings: [],
++          score: 95,
++        },
++        {
++          packageName: "pkg-b",
++          path: "packages/b",
++          findings: [],
++          score: 90,
++        },
++      ];
++      const result = analyzeMonorepo(packages, { weightingStrategy: "average" });
++      expect(result.overallVerdict).toBe("pass");
++      expect(result.overallScore).toBe(93);
++    });
++
++    it("monorepo analysis fails fast on blocker regardless of incremental safety", () => {
++      const packages = [
++        {
++          packageName: "good",
++          path: "packages/good",
++          findings: [],
++          score: 100,
++        },
++        {
++          packageName: "bad",
++          path: "packages/bad",
++          findings: [makeFinding({ severity: "error" })],
++          score: 40,
++        },
++      ];
++      const result = analyzeMonorepo(packages, { weightingStrategy: "average" });
++      expect(result.overallVerdict).toBe("fail");
++      expect(result.blockerPackage).toBe("bad");
++    });
++
++    it("worst-package strategy is the safety net for monorepo", () => {
++      const packages = [
++        {
++          packageName: "a",
++          path: "a",
++          findings: [],
++          score: 90,
++        },
++        {
++          packageName: "b",
++          path: "b",
++          findings: [makeFinding({ severity: "error" })],
++          score: 95, // high score but has error
++        },
++        {
++          packageName: "c",
++          path: "c",
++          findings: [],
++          score: 85,
++        },
++      ];
++      const result = analyzeMonorepo(packages, { weightingStrategy: "average" });
++      expect(result.overallVerdict).toBe("fail");
++      expect(result.blockerPackage).toBe("b");
++    });
++
++    it("configurable weighting respects package weights when safe", () => {
++      const packages = [
++        { packageName: "core", path: "core", findings: [], score: 60 },
++        { packageName: "utils", path: "utils", findings: [], score: 90 },
++        { packageName: "ui", path: "ui", findings: [], score: 80 },
++      ];
++      const result = analyzeMonorepo(packages, {
++        weightingStrategy: "configurable",
++        packageWeights: { core: 5, utils: 2, ui: 1 },
++      });
++      // weighted: (60*5 + 90*2 + 80*1) / 8 = (300 + 180 + 80) / 8 = 560 / 8 = 70
++      expect(result.overallScore).toBe(70);
++      expect(result.overallVerdict).toBe("warn");
++    });
+   });
+ 
+-  it("should handle empty file list", () => {
+-    const result = analyzeCrossFileSignals([], []);
+-    expect(result.signals).toEqual([]);
+-    expect(result.duplicateTestNames).toEqual([]);
++  describe("Performance and Correctness Guarantees", () => {
++    it("monorepo analysis handles large package counts", () => {
++      const packages = Array.from({ length: 100 }, (_, i) => ({
++        packageName: `pkg-${i}`,
++        path: `packages/pkg-${i}`,
++        findings: [] as Finding[],
++        score: 70 + (i % 30),
++      }));
++      const result = analyzeMonorepo(packages, { weightingStrategy: "average" });
++      expect(result.packages).toHaveLength(100);
++      expect(result.overallScore).toBeGreaterThanOrEqual(70);
++      expect(result.overallScore).toBeLessThanOrEqual(100);
++    });
++
++    it("incremental analysis handles large file counts", () => {
++      const current: FileSnapshot[] = Array.from({ length: 1000 }, (_, i) => ({
++        path: `src/file${i}.ts`,
++        content: `content${i}`,
++      }));
++      const previous: FileSnapshot[] = Array.from({ length: 1000 }, (_, i) => ({
++        path: `src/file${i}.ts`,
++        content: `content${i}`,
++      }));
++      const changes = computeChangedFiles(current, previous);
++      expect(changes).toHaveLength(0);
++    });
++
++    it("isIncrementalSafe handles large changed file sets efficiently", () => {
++      const changedFiles: ChangedFile[] = Array.from({ length: 500 }, (_, i) => ({
++        path: `src/file${i}.ts`,
++        state: "modified" as const,
++        currentHash: `hash${i}`,
++        previousHash: `oldhash${i}`,
++      }));
++      const result = isIncrementalSafe(changedFiles);
++      expect(result.safe).toBe(true);
++      expect(result.reasons).toHaveLength(0);
++    });
++
++    it("monorepo blocker propagation is O(n) not O(n^2)", () => {
++      const packages = Array.from({ length: 1000 }, (_, i) => ({
++        packageName: `pkg-${i}`,
++        path: `packages/pkg-${i}`,
++        findings: i === 500 ? [makeFinding({ severity: "error" })] : [],
++        score: 90,
++      }));
++      const start = performance.now();
++      const result = analyzeMonorepo(packages, { weightingStrategy: "average" });
++      const elapsed = performance.now() - start;
++      expect(result.overallVerdict).toBe("fail");
++      expect(result.blockerPackage).toBe("pkg-500");
++      expect(elapsed).toBeLessThan(1000); // Should complete quickly
++    });
+   });
+-});
++});
+\ No newline at end of file

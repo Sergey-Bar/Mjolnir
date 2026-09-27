@@ -22,6 +22,7 @@ import { ConfigValidationError } from "../config/config.js";
 import { loadSuppressions } from "../config/suppressions.js";
 import { parseJsonFile, isRecord } from "../lib/safe-json.js";
 import { writeFileAtomic } from "../lib/fs-atomic.js";
+import { compareCodePoints } from "../lib/compare.js";
 import { TRUST_ORDER, type Finding, type ScanResult } from "../types.js";
 import {
   renderCrossFileAnalysis,
@@ -331,7 +332,7 @@ async function runMilestoneScan(
         readSkipped++;
       }
     }
-    files.sort((left, right) => left.path.localeCompare(right.path));
+    files.sort((left, right) => compareCodePoints(left.path, right.path));
   }
   return { result, preSuppressionFindings, files, readSkipped };
 }
@@ -989,8 +990,8 @@ export async function runTrustTrendCommand(
     merged.set(`${snapshot.scanId}\u0000${snapshot.timestamp}`, snapshot);
     const snapshots = [...merged.values()].sort(
       (left, right) =>
-        left.timestamp.localeCompare(right.timestamp) ||
-        left.scanId.localeCompare(right.scanId),
+        compareCodePoints(left.timestamp, right.timestamp) ||
+        compareCodePoints(left.scanId, right.scanId),
     );
     writeFileAtomic(historyPath, `${JSON.stringify(snapshots, null, 2)}\n`);
     const trend = analyzeTrustTrends(snapshots);

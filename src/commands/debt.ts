@@ -8,6 +8,7 @@
 
 import type { ScanResult } from "../types.js";
 import { panel, sectionHeader, plainContext } from "../reporter/ui.js";
+import { compareCodePoints } from "../lib/compare.js";
 
 const ui = plainContext();
 
@@ -67,7 +68,7 @@ export function computeDebt(result: ScanResult): {
       label,
       count: v.count,
       estHoursPerQuarter: Math.round(v.hours * 10) / 10,
-      ruleIds: [...v.ruleIds].sort((a, b) => a.localeCompare(b)),
+      ruleIds: [...v.ruleIds].sort(compareCodePoints),
     }))
     .sort((a, b) => b.estHoursPerQuarter - a.estHoursPerQuarter);
 

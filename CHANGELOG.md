@@ -47,6 +47,18 @@ once shipped, so this file is the record of what changed between versions.
   The generation timestamp moved out of the visible body into
   `<meta name="mjolnir-generated-at">`, and `--deterministic` omits it entirely
   so the artifact is byte-identical and can be diffed in review.
+- **`mjolnir report` no longer publishes a test-run status.** The top-level
+  `status` was computed from the findings
+  (`partial ? "interrupted" : hasError ? "failed" : "passed"`), so a clean scan
+  wrote `{status: "passed", totalTests: 0}` — the first field a Playwright
+  consumer reads, asserting a green run over zero executed tests, with the
+  contradicting `execution: "STATIC_ANALYSIS"` marker buried in the extension
+  block. `failed` was equally dishonest: it implies tests ran and lost. The
+  field is now the literal `interrupted` on every path, and what the scan
+  actually found is reported separately as
+  `mjolnir.scanOutcome` (`clean` / `blocked` / `partial`), which the previous
+  `mjolnir.status` field carried. Consumers reading the root `status` will see
+  `passed` → `interrupted`; that is the correction, not a regression.
 - **Score bands are decided in one place.** The dashboard split at 60 while the
   terminal split at 80, so a score the terminal called UNWORTHY rendered amber
   in HTML; the contributor handover used 90; `mermaid.ts` and
@@ -95,6 +107,169 @@ once shipped, so this file is the record of what changed between versions.
 
 ### Fixed
 
+- **Order in the report no longer depends on the machine that produced it.** 23
+  sites in `src/` sorted with a bare `localeCompare`, which resolves against the
+  process's default locale. `scan-cache.ts` was the worst: it sorted INSIDE
+  `hashDir`, so the order was fed to `hash.update(entry.name)` and became a
+  semantic input to the detector fingerprint that `isIncrementalSafe` keys off
+  — one repository, two fingerprints, one per locale. All 23 now use
+  `compareCodePoints` from `src/lib/compare.ts`, except two whose key is a
+  human-readable label, which use a comparator pinned to `en` rather than
+  inheriting the environment. `tests/contract/deterministic-ordering.spec.ts`
+  fails the build on any unpinned `localeCompare` in `src/`.
+- **`mjolnir bind` can no longer be hijacked by a repository's own `git`.**
+  `src/engine/candidate-binding.ts` — called on every scan — ran
+  `execFileSync("git", …)` with a bare name. On Windows `CreateProcess` searches
+  the current directory before `PATH`, so a committed `git.exe` in an untrusted
+  repo chose the `commit` and `tree` that land in `runIdentity` and the evidence
+  graph. It is the last bare-name process launch left in `src/`, and
+  `tests/contract/no-bare-process-exec.spec.ts` now audits the whole tree.
+- **The coverage exemption ledger can no longer drift silently.** Each
+  non-structural entry in `docs/COVERAGE-EXEMPTIONS.json` now carries
+  `defectSignatures` — regexes that must still match its file — or an explicit
+  `closureState` when the defect it described is gone. A signature that stops
+  matching fails the gate, so a code fix forces a ledger edit in the same
+  commit. Six entries were already describing defects the current code had
+  fixed (`maturity`, `business-case`, `dashboard`, `enterprise`, `exec-report`
+  and the `report-playwright` row), and are reclassified accordingly.
+- **Skipped and expected-fail tests now have a price.** Nothing in the
+  repository counted them, so the count could grow from zero to hundreds with
+  every other signal still green. `docs/SKIP-BUDGET.json` records the current
+  counts — 8 skipped tests, 1 skipped file, 3 expected failures — measured by
+  `scripts/vitest-skip-budget-reporter.mjs` during the run. They may fall;
+  raising them fails `npm run skip:budget` and names the tests that spent the
+  budget. A missing or incomplete measurement fails too, so a reporter that
+  stops being wired in cannot read as a clean run.
+- **The M26 release gate and the version-drift checks are covered where it
+  matters.** Both run inside `certify` and both were excluded from the coverage
+  ratchet, so their reject arms — the paths that only execute when something is
+  wrong — had no reviewer pressure on them. `tests/ledger/m26-validator-reject-arms.spec.ts`
+  is table-driven over every required field, so a field that is added without a
+  test fails; `tests/release/version-surface-drift-arms.spec.ts` covers the
+  fail-fast arms of the version synchronizer.
+- **One error derivation, one `isRecord`, one crash-isolation path.** The tree
+  carried `isRecord` eight times (seven byte-identical), error rendering four
+  times under two names, and crash isolation seven times — and the copies
+  disagreed, which is the only reason any of this mattered. `String(obj)`
+  renders `[object Object]`, so the two _thinner_ error helpers turned a real
+  Node failure shape like `throw { code: "EISDIR" }` into a message naming
+  nothing — in a doctor detail, an MCP tool result and a `summary` line
+  respectively. The richer body survived the collapse, and
+  `isRecord` — the predicate every JSON reader uses to decide "this is an
+  object I may index into", which is a question a hostile saved report gets
+  to ask — is now the exported one in `src/lib/safe-json.ts`. The four
+  adapters' duplicated `try { rule.run } catch { onCrash }` is now
+  `runRuleIsolated`, because that block is what the `rulesCrashed` count is
+  built on and seven copies mean seven chances to lose it.
+  The per-adapter _filter chain_ and budget check were deliberately **not**
+  folded into the existing `runRulesShared`: the TypeScript adapter injects
+  an AST, framework tags, a lazy `codeText` getter, config-only gating and
+  `configGateMatches`, and it _aborts the whole file_ on budget exhaustion
+  where `runRulesShared` only skips one rule. Routing every adapter through
+  it as written would have silently changed which rules run — the exact
+  unmeasured claim this program exists to delete.
+  `tests/contract/single-error-helper.spec.ts` holds the counts at one, and
+  pins the object arm so a future "simplification" cannot drop it.
+
+- **A crashed rule is no longer certified as a rule that stayed silent.**
+  The doc generator caught a rule THROW while running it against its own
+  must-not-fire fixture and returned `null`; the caller read that as
+  `fired: false` and committed, into a generated doc page and the
+  certification surface, the sentence _"Verified against … — a legitimate,
+  similar-looking pattern this rule correctly leaves alone."_ A detector that
+  crashes produces exactly the same absence of findings as one that correctly
+  abstains, so that claim had no evidence behind it — and it contradicted the
+  same function's own docstring, which says the field degrades honestly.
+  The outcome is now the tri-state the doctor's own model already defines:
+  `FIRED` (a real firewall violation), `DID_NOT_FIRE` (certified), and
+  `INCONCLUSIVE` (the rule did not run). An `INCONCLUSIVE` page says so and
+  says why, and it never renders the certification sentence. A missing
+  fixture is a fourth, separate thing — nothing was attempted — and says
+  that instead. The field is typed as a `FixtureOutcome` union rather than a
+  boolean, so reintroducing a derived `fired` flag does not typecheck.
+
+- **A human-facing table stopped sorting by code unit.** Pinning every
+  `localeCompare` to code-unit order (the fix for the ambient-locale drift)
+  made the per-rule corpus-occurrence table read
+  `SeleniumHQ-selenium` before `microsoft-playwright-dotnet`, because `S`
+  sorts before `m`. Stable, and worse to read than the alphabetical order the
+  table implies it has. That surface is a table a person chooses repos from,
+  so it now uses an **explicitly pinned** locale — readable order, identical
+  on every machine, which is the actual defect being avoided.
+
+- **Fifteen silent capability losses are now counted, and the count reaches the
+  report.** A `catch` in a detection path that returned a clean default made
+  the scan exit 0, report `analysisComplete`, and quietly lose the thing that
+  made its verdict trustworthy — the reader had no way to tell a whole scan
+  from a narrowed one. The worst case was `getCodeOnlyText` returning raw text
+  after a throw, which switches OFF the comment/string false-positive firewall
+  for that file rather than merely slowing it down. Every such site now records
+  a reason in one append-only ledger (`src/engine/degradation-ledger.ts`),
+  following the precedent already set by `parserRetryDegradationCount`, and the
+  scan result carries `analysisStatus.degradations` — reason-coded counts,
+  present only when something was actually lost, alongside a
+  `degraded:<reason>:<count>` entry in `reasons`. A non-empty set makes the
+  scan `partial`. `truncationReasons` is untouched: a degradation is not
+  truncation, and a reader must be able to tell "the scan stopped" from "the
+  scan lost a layer".
+  - Two distinctions the ledger refuses to blur. **Absent is not degraded:** a
+    Python, Java, Go or Rust repository has no `package.json`, and recording
+    that would mark every non-Node project partial while training readers to
+    ignore the field — so only a manifest that exists and will not parse
+    counts. **A no-AST adapter is not a downgrade either:** the same line
+    W1.4 draws for the deadline fallback.
+  - Two sites outside the original list were found by the new contract spec
+    and fixed in the same commit: the tree-sitter Java/C#/Python parses (left
+    alone, because the pipeline already counts every `parseAst → undefined` as
+    one parse fallback, and counting again would tally one file twice in two
+    different fields) and `hashDir`'s `readdirSync`, whose early `return`
+    omitted a whole subtree from the detector fingerprint — two rule trees
+    differing only inside an unreadable directory then hash identically, which
+    is a stale-cache hit wearing a fresh one's clothes.
+  - `mjolnir trend show` no longer prints "No trend data yet." and exits clean
+    for a history file whose every line failed to parse. The count of
+    discarded lines is now reported on stderr, and a history that exists but
+    cannot be read is `EXIT_INTERNAL` — the difference between no history and
+    unreadable history, which both used to arrive as the same empty array.
+  - `mjolnir explain` distinguishes _the rule found nothing_ from _the rule
+    never ran_. A rule that THREW on its own fixture produced the same output
+    as a correctly silent one, in the one surface whose purpose is to show
+    that a rule works. It now says so, with the reason.
+  - `tests/contract/no-uncounted-degradation.spec.ts` is the durable half: a
+    `catch` in the detection path that RETURNS A VALUE must record a reason,
+    rethrow, route to a counted sink, or be exempted with a stated failure
+    direction. The rule is about the _return_, not the `catch` — 37 of the 70
+    detection-path catches return nothing and cannot lie to a caller, and a
+    spec that listed all 70 as individual exemptions would be the same as no
+    exemption list at all.
+
+- **Scanning a subdirectory no longer reports a framework it read from its
+  parent.** `runScan` walks up past the target to find the project root, and
+  re-anchors the scan root to the target when the target is a strict
+  descendant — but it kept the discovered root's parsed `package.json`. So
+  `mjolnir scan monorepo/packages/foo` reported `jest` because
+  `monorepo/package.json` said so: a read outside the explicit scan root, and
+  a framework verdict about a tree nobody pointed at. Framework detection now
+  works from in-root evidence only (config files and the anchor's own
+  manifest), and reports `frameworkDetectionUnknown` when that evidence is
+  absent — an absent verdict you can see, rather than a parent's you cannot.
+  Scanning the project root itself is unchanged. This is the CLI counterpart
+  to the containment property the MCP workspace-boundary contract already
+  enforced.
+- **A scan that ran out of time no longer loses its AST stage silently.** When a
+  scan passes `--max-duration`, the remaining files were analyzed by regex
+  instead of AST — a different detection capability, not a slower version of the
+  same one, so the same tree produced different findings and a different score.
+  The mode was faithfully recorded in the scan cache and reported nowhere; the
+  only nearby disclosure, `file-budget`, fired incidentally because the
+  per-file rule-loop deadline was usually already spent too. Such a scan now
+  carries the truncation reason `ast-budget-fallback` and an
+  `analysisStatus.reasons` entry `ast-budget-fallback-files:<n>` saying how many
+  files were analyzed by regex, and is honestly `partial`. An adapter that
+  declares no AST stage at all (a YAML workflow, for instance) is a declared
+  capability envelope and is NOT reported as truncation. `truncationReasons` is
+  an open `string[]` by design, so consumers should test for members rather than
+  assert the exact array.
 - **`frontier:contracts` was reporting 19 suites it never ran.** It named 24
   test files; nineteen had been deleted by the `cc5fcb88` cleanup and its
   follow-up. Vitest treats a missing path as "no tests here" rather than an

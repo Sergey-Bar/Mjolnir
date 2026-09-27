@@ -37,7 +37,8 @@ import {
   type UiContext,
 } from "../reporter/ui.js";
 import { escapeMarkdown } from "./pr-comment.js";
-import { errorText, loadSavedReport, reportExists } from "./report-io.js";
+import { loadSavedReport, reportExists } from "./report-io.js";
+import { errorMessage } from "../cli-io.js";
 
 export interface WhyMatch {
   findings: Finding[];
@@ -216,7 +217,7 @@ export async function runWhyCommand(
     try {
       result = loadSavedReport(reportPath);
     } catch (err) {
-      io.err(`mjolnir why: cannot read ${reportPath}: ${errorText(err)}`);
+      io.err(`mjolnir why: cannot read ${reportPath}: ${errorMessage(err)}`);
       return 2;
     }
   } else {
@@ -238,7 +239,7 @@ export async function runWhyCommand(
         strict: argv.includes("--strict"),
       });
     } catch (err) {
-      io.err(`mjolnir why: scan failed: ${errorText(err)}`);
+      io.err(`mjolnir why: scan failed: ${errorMessage(err)}`);
       return 20;
     }
   }

@@ -29,10 +29,12 @@ import {
   type DetectorHashManifest,
   type RuleHashMetadata,
 } from "../../src/engine/detector-hash.js";
-import {
-  checkRevisionIntegrity,
-  errorText,
-} from "../../src/commands/doctor.js";
+import { checkRevisionIntegrity } from "../../src/commands/doctor.js";
+// The single error-to-message derivation. It used to be imported from
+// doctor.ts as `errorText`; doctor no longer declares it, because four
+// near-copies of this function existed and two of them rendered a non-Error
+// object as `[object Object]`. See tests/contract/single-error-helper.spec.ts.
+import { errorMessage as errorText } from "../../src/cli-io.js";
 import { minimalRules } from "./helpers.js";
 
 const BASE_MODULE = [

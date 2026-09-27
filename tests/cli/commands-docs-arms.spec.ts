@@ -174,7 +174,7 @@ describe("renderRuleDocMd metadata-optional paths", () => {
         // A path that contains no "tests/fixtures/" segment renders whole.
         fixturePath: join(root, "elsewhere", "a.spec.ts"),
       },
-      mustNotFire: { fired: false },
+      mustNotFire: { outcome: "DID_NOT_FIRE" },
       corpusOccurrences: {},
     });
     expect(text).toContain("not declared");
@@ -204,7 +204,7 @@ describe("renderRuleDocMd metadata-optional paths", () => {
         },
         // fixturePath deliberately absent — relOrAbs gets no path.
       },
-      mustNotFire: { fired: false },
+      mustNotFire: { outcome: "DID_NOT_FIRE" },
       corpusOccurrences: {},
     });
     expect(text).toContain("(unknown path)");

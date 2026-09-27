@@ -1,0 +1,121 @@
+diff --git a/docs/BLAST-RADIUS-AUDIT.md b/docs/BLAST-RADIUS-AUDIT.md
+index 207e6d1c..51660aaf 100644
+--- a/docs/BLAST-RADIUS-AUDIT.md
++++ b/docs/BLAST-RADIUS-AUDIT.md
+@@ -7,16 +7,16 @@ contract enforces: **every external import in src/ must belong to the
+ allowlist**, and the shipped surface (adapters, rules, flags, formats, exit
+ codes) must match this document exactly.
+ 
+-## Inventory: 288 files, 55672 LOC
++## Inventory: 288 files, 55690 LOC
+ 
+ | Area             | Files | LOC   |
+ | ---------------- | ----- | ----- |
+ | src/rules        | 87    | 11695 |
+-| src/commands     | 42    | 11429 |
++| src/commands     | 42    | 11441 |
+ | src/engine       | 36    | 8623  |
+ | src/reporter     | 15    | 3168  |
+ | src/forensics    | 17    | 3063  |
+-| src/(root)       | 6     | 2757  |
++| src/(root)       | 6     | 2763  |
+ | src/adapters     | 11    | 1677  |
+ | src/discovery    | 10    | 1643  |
+ | src/integrations | 11    | 1539  |
+diff --git a/src/cli.ts b/src/cli.ts
+index 730d3d4b..bd27b95b 100644
+--- a/src/cli.ts
++++ b/src/cli.ts
+@@ -202,7 +202,13 @@ const KNOWN_SCAN_FLAGS = [
+   "--debug",
+   "--record-milestones",
+   "--cache",
++  "--no-progress",
+   "--monorepo",
++  "--category",
++  "--score",
++  "--staged",
++  "--blocking",
++  "--enable-plugins",
+   "--help",
+   "-h",
+   "--version",
+diff --git a/src/commands/help.ts b/src/commands/help.ts
+index 87b0db4f..139946b1 100644
+--- a/src/commands/help.ts
++++ b/src/commands/help.ts
+@@ -377,6 +377,19 @@ const SCAN_SUMMARY_LINES: string[] = [
+   "mjolnir [path]                 full-repo scan + WORTHINESS score",
+ ];
+ 
++const SUBCOMMAND_USAGE_WIDTH = 46;
++
++function renderSubcommandSummary(entry: HelpEntry): string[] {
++  const usage = entry.usage.replace(/^mjolnir /, "");
++  if (usage.length <= SUBCOMMAND_USAGE_WIDTH) {
++    return [`  ${usage.padEnd(SUBCOMMAND_USAGE_WIDTH)}${entry.summary}`];
++  }
++  return [
++    `  ${usage}`,
++    `  ${"".padEnd(SUBCOMMAND_USAGE_WIDTH)}${entry.summary}`,
++  ];
++}
++
+ /**
+  * The redesigned root help (plan M2): grouped sections, one-line
+  * descriptions, copy-pasteable examples, the frozen exit-code table and
+@@ -428,8 +441,7 @@ export function renderRootHelp(schemaVersion = 1): string {
+     for (const verb of g.verbs) {
+       const e = byVerb.get(verb);
+       if (!e) continue;
+-      const usage = e.usage.replace(/^mjolnir /, "").padEnd(46);
+-      lines.push(`  ${usage}${e.summary}`);
++      lines.push(...renderSubcommandSummary(e));
+     }
+     lines.push("");
+   }
+diff --git a/tests/cli/help.spec.ts b/tests/cli/help.spec.ts
+index e1737d83..4871a96c 100644
+--- a/tests/cli/help.spec.ts
++++ b/tests/cli/help.spec.ts
+@@ -200,6 +200,19 @@ describe("nearestFlags suggestions", () => {
+   it("caps the suggestion list", () => {
+     expect(nearestFlags("--json", 1)).toHaveLength(1);
+   });
++
++  it("suggests newer scan flags, not only the original flag set", () => {
++    for (const [typo, expected] of [
++      ["--stagd", "--staged"],
++      ["--blokcing", "--blocking"],
++      ["--socre", "--score"],
++      ["--catgory", "--category"],
++      ["--no-progres", "--no-progress"],
++      ["--enable-plugin", "--enable-plugins"],
++    ] as const) {
++      expect(nearestFlags(typo), typo).toContain(expected);
++    }
++  });
+ });
+ 
+ describe("friendly usage errors", () => {
+@@ -326,6 +339,20 @@ describe("main() dispatch to help (plan M2)", () => {
+     expect(stub.text()).toContain('No detailed help for "teleport"');
+   });
+ 
++  it("wraps long subcommand usages before the summary instead of fusing them", () => {
++    const root = renderRootHelp();
++    expect(root).not.toContain(
++      "[--no-action] [--force]generate the PR workflow",
++    );
++    expect(root).not.toContain("[--limit=N]rule catalog");
++    expect(root).toContain(
++      "  ci install [--gate advisory|error|warning] [--no-action] [--force]\n",
++    );
++    expect(root).toContain(
++      "                                              generate the PR workflow",
++    );
++  });
++
+   it("the two-token join falls through to the single-token page when the pair is unregistered", () => {
+     const cap = capture();
+     expect(runHelpCommand(["teleport", "now"], cap.io)).toBe(0);

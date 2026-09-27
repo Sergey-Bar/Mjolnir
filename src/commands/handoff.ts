@@ -37,7 +37,8 @@ import {
 } from "../reporter/presentation.js";
 import { palette, scoreGauge } from "../reporter/theme.js";
 import { escapeMarkdown } from "./pr-comment.js";
-import { errorText, loadSavedReport, reportExists } from "./report-io.js";
+import { loadSavedReport, reportExists } from "./report-io.js";
+import { errorMessage } from "../cli-io.js";
 
 export interface HandoffOptions {
   /** Restrict sections to one rule category (presentation filter). */
@@ -455,7 +456,7 @@ export function runHandoffCommand(
   try {
     result = loadSavedReport(reportPath);
   } catch (err) {
-    io.err(`mjolnir handoff: cannot read ${reportPath}: ${errorText(err)}`);
+    io.err(`mjolnir handoff: cannot read ${reportPath}: ${errorMessage(err)}`);
     return 2;
   }
 

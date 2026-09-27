@@ -71,10 +71,16 @@ describe("discovery file-cap truncation", () => {
     // b.spec.ts and c.spec.ts trip the adapter cap (named per adapter);
     // xdir trips the walk-level cap; zdir's hit is deduplicated by
     // reason but the directories are still traversed honestly.
-    expect(result.analysisStatus.truncationReasons).toEqual([
-      "file-cap",
-      "file-cap:typescript",
-    ]);
+    //
+    // Containment, not equality. `truncationReasons` is an OPEN string[]
+    // (src/types.ts), so a producer may add a member without a schema
+    // bump; an exact-array assertion here would make every future reason a
+    // test-suite landmine, and the reason the field exists — naming what
+    // the scan dropped — is fully carried by "these two are present". The
+    // per-reason counts are asserted separately below.
+    expect(result.analysisStatus.truncationReasons).toEqual(
+      expect.arrayContaining(["file-cap", "file-cap:typescript"]),
+    );
     // b via the adapter cap, xdir via the walk cap; c and zdir are
     // deduplicated by reason and do not double-count.
     expect(result.analysisStatus.skippedFiles).toBe(2);

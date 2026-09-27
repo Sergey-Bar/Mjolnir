@@ -50,6 +50,7 @@ import {
   sweepStaleTempFiles,
   writeFileAtomic,
 } from "../lib/fs-atomic.js";
+import { isRecord } from "../lib/safe-json.js";
 
 /** The store's own layout version. Bump on a semantic change to the format. */
 export const EVIDENCE_STORE_VERSION = "evidence-store@1";
@@ -87,10 +88,6 @@ function canonical(value: unknown): string {
 
 export function digestOf(record: unknown): string {
   return createHash("sha256").update(canonical(record)).digest("hex");
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 const LOCK_STALE_MS = 30_000;

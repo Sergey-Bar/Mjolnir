@@ -19,6 +19,7 @@ import {
   getReachableFiles,
   type ReachabilityResult,
 } from "./dependency-graph.js";
+import { compareCodePoints } from "../lib/compare.js";
 
 export interface CrossFileSignal {
   type:
@@ -56,7 +57,9 @@ export function analyzeCrossFileSignals(
   findings: readonly Finding[],
   root: string,
 ): CrossFileAnalysisResult {
-  const orderedFiles = [...files].sort((a, b) => a.path.localeCompare(b.path));
+  const orderedFiles = [...files].sort((a, b) =>
+    compareCodePoints(a.path, b.path),
+  );
   const duplicateTestNames = findDuplicateTestNames(orderedFiles).map(
     (dup) => ({
       type: "duplicate-test-name" as const,
@@ -127,7 +130,7 @@ function detectSharedImports(
       });
     }
   }
-  return out.sort((a, b) => a.message.localeCompare(b.message));
+  return out.sort((a, b) => compareCodePoints(a.message, b.message));
 }
 
 function detectCircularDependencies(

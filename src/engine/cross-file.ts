@@ -11,6 +11,8 @@
  * already read; deterministic output ordered by first occurrence.
  */
 
+import { compareCodePoints } from "../lib/compare.js";
+
 export interface DuplicateTestNames {
   /** test name → files declaring it */
   name: string;
@@ -56,5 +58,5 @@ export function findDuplicateTestNames(
   for (const [name, filesSet] of byName) {
     if (filesSet.size > 1) out.push({ name, files: [...filesSet].sort() });
   }
-  return out.sort((a, b) => a.name.localeCompare(b.name));
+  return out.sort((a, b) => compareCodePoints(a.name, b.name));
 }

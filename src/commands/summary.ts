@@ -51,12 +51,13 @@ const DETAILS_PER_SEVERITY_CAP = 25;
 
 // Report loading/validation was extracted to report-io.ts (agent-handoff
 // plan §9.0) so summary, handoff and why share one loader and one error
-// shape. errorText is re-exported for the summary.spec assertions.
-import {
-  errorText,
-  loadSavedReport as loadValidatedReport,
-} from "./report-io.js";
-export { errorText };
+// shape. `errorText` is re-exported under its historical name because
+// tests/cli/summary.spec.ts imports it from here; the implementation is the
+// single `errorMessage` in src/cli-io.ts, re-exported rather than copied so
+// there is one derivation left in the tree.
+import { errorMessage } from "../cli-io.js";
+import { loadSavedReport as loadValidatedReport } from "./report-io.js";
+export { errorMessage as errorText };
 
 /**
  * The score bar. BW-105: the canonical gauge with the inert palette — the
@@ -268,7 +269,7 @@ export function runSummaryCommand(
   try {
     result = loadValidatedReport(reportPath);
   } catch (err) {
-    io.err(`mjolnir summary: cannot read ${reportPath}: ${errorText(err)}`);
+    io.err(`mjolnir summary: cannot read ${reportPath}: ${errorMessage(err)}`);
     return 2;
   }
 
@@ -293,7 +294,7 @@ export function runSummaryCommand(
       appendFileSync(stepSummaryPath, `${summary}\n`);
     } catch (err) {
       io.err(
-        `mjolnir summary: could not write $GITHUB_STEP_SUMMARY (${errorText(err)}); printing to stdout instead.`,
+        `mjolnir summary: could not write $GITHUB_STEP_SUMMARY (${errorMessage(err)}); printing to stdout instead.`,
       );
       io.out(summary);
     }

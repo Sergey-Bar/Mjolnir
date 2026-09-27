@@ -1,4 +1,5 @@
 import type { AnalysisStatus } from "../types.js";
+import type { DegradationCount } from "./degradation-ledger.js";
 
 export interface CompletionInput {
   discoveryTruncated: boolean;
@@ -10,6 +11,20 @@ export interface CompletionInput {
   scopeUnrecognized: number;
   parseFailed: number;
   parseFallbacks?: number;
+  /**
+   * Files that had an AST stage and lost it to the scan deadline, so they
+   * were analyzed by regex alone. Distinct from `parseFallbacks`, which
+   * counts a file whose parse was ATTEMPTED and then failed or degraded.
+   */
+  astFallbackFiles?: number;
+  /**
+   * Per-reason counts of capability lost inside a `catch` that returned a
+   * clean default. Distinct from `truncationReasons` (the scan stopped) and
+   * from `reasons` (a flat string set): this is the reason-coded ledger, so a
+   * reader can tell "the AST mask was off for 3 files" from "3 files were
+   * skipped". Any non-empty value forces `partial`.
+   */
+  degradations?: readonly DegradationCount[];
   scopeDegraded?: string;
   runtimeIncomplete?: boolean;
   identityIncomplete?: boolean;
@@ -24,12 +39,16 @@ export interface CompletionState {
     rulesCrashed: number;
     parseFallbacks: number;
     truncationReasons?: string[];
+    degradations?: DegradationCount[];
     reasons: string[];
   };
 }
 
 export function deriveCompletion(input: CompletionInput): CompletionState {
   const truncationReasons = [...new Set(input.truncationReasons)].sort();
+  const degradations = [...(input.degradations ?? [])].sort((a, b) =>
+    a.reason < b.reason ? -1 : a.reason > b.reason ? 1 : 0,
+  );
   const reasons = new Set<string>();
   if (input.discoveryTruncated) reasons.add("discovery-truncated");
   if (input.rulesPartial) reasons.add("rules-partial");
@@ -46,10 +65,24 @@ export function deriveCompletion(input: CompletionInput): CompletionState {
   if (input.parseFallbacks && input.parseFallbacks > 0) {
     reasons.add(`parse-fallbacks:${input.parseFallbacks}`);
   }
+  // The count of files analyzed WITHOUT the AST stage they could have had.
+  // The named reason alone says "some capability was lost"; this says how
+  // much, which is the difference between a reader trusting the score and a
+  // reader knowing exactly how much of the surface it does not cover.
+  if (input.astFallbackFiles && input.astFallbackFiles > 0) {
+    reasons.add(`ast-budget-fallback-files:${input.astFallbackFiles}`);
+  }
   if (input.scopeDegraded) reasons.add(`scope-degraded:${input.scopeDegraded}`);
   if (input.runtimeIncomplete) reasons.add("runtime-incomplete");
   if (input.identityIncomplete) reasons.add("identity-incomplete");
   for (const reason of truncationReasons) reasons.add(`truncated:${reason}`);
+  // The flat `reasons` set is what a machine consumer reads, so the ledger
+  // has to appear there too, not only in the structured field. One entry per
+  // REASON with its count: a reader who never learns the schema still sees
+  // that something was lost, and a reader who does can tell which.
+  for (const entry of degradations) {
+    reasons.add(`degraded:${entry.reason}:${entry.count}`);
+  }
 
   const discoveryPartial =
     input.discoveryTruncated ||
@@ -64,7 +97,12 @@ export function deriveCompletion(input: CompletionInput): CompletionState {
     input.skippedFiles > 0 ||
     input.runtimeIncomplete === true ||
     input.identityIncomplete === true ||
-    truncationReasons.length > 0;
+    truncationReasons.length > 0 ||
+    // A scan that lost capability inside a swallowed `catch` is not a
+    // complete scan, whatever its finding count says. This is the whole
+    // point of the ledger: without this clause the counts were computed and
+    // then thrown away, which is strictly worse than not counting.
+    degradations.length > 0;
 
   return {
     partial,
@@ -75,6 +113,7 @@ export function deriveCompletion(input: CompletionInput): CompletionState {
       rulesCrashed: input.rulesCrashed,
       parseFallbacks: input.parseFallbacks ?? 0,
       ...(truncationReasons.length > 0 ? { truncationReasons } : {}),
+      ...(degradations.length > 0 ? { degradations } : {}),
       reasons: [...reasons].sort(),
     },
   };

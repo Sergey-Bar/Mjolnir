@@ -26,6 +26,7 @@ import type { Finding } from "../types.js";
 import type { Output } from "../cli-io.js";
 import { unmeasuredClaim } from "../claim-evidence.js";
 import { EXIT_USAGE } from "../exit-codes.js";
+import { compareCodePoints } from "../lib/compare.js";
 
 const ui = plainContext();
 
@@ -134,7 +135,7 @@ export function buildQuarantineProposals(
     .sort(
       (a, b) =>
         b.attempts - a.attempts ||
-        a.file.localeCompare(b.file) ||
+        compareCodePoints(a.file, b.file) ||
         a.line - b.line,
     )
     .map((item, index) => ({

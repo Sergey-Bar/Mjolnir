@@ -1,0 +1,14 @@
+{
+  "id": "skip-budget",
+  "policy": "Skipped tests, skipped test FILES, and expected-fail tests may fall; they may never rise without a conscious, reviewed edit to this file. A skip is a defect that stopped running, and an expected failure is a defect the suite is forbidden from noticing. Both are cheap to add and invisible to every other signal — the suite stays green, coverage holds its ratchet, and no gate moves.",
+  "measurement": "Written by scripts/vitest-skip-budget-reporter.mjs during the run, from the tests a run ACTUALLY did not execute. NOT a source scan of it.skip: skips are routinely conditional (it.skipIf, describe.runIf), so a declaration count is a different number from the executed one, and a budget compared against the wrong number is a budget nobody trusts. Vitest's own JSON reporter cannot answer it either: an it.fails that passes for the expected reason is recorded there as an ordinary passed test, so expected failures are invisible to it and only the task's own `fails` flag carries them.",
+  "baseline": "Measured on branch NewLight, 2026-09-27, against a full run of 11,832 tests in 465 files. Two independent sources agree: the reporter's measurement, and Vitest's own summary line for the same run — `Tests 2 failed | 11819 passed | 3 expected fail | 8 skipped (11832)` with `Test Files 2 failed | 462 passed | 1 skipped (465)`. The pre-existing documentation claiming \"6 skipped, 1 expected fail\" was wrong on the second number and is superseded by this file.",
+  "skippedFiles": 1,
+  "skippedTests": 8,
+  "expectedFailures": 3,
+  "knownSkips": {
+    "skippedFiles": "One test FILE does not run at all. Naming it is the first task the next person should take, because a skipped file hides its whole subject rather than one case, and the file is the only entry here that is not accounted for by a documented reason.",
+    "skippedTests": "Eight individual cases, all platform-gated — Windows-only or POSIX-only behaviour, declared with it.skipIf / describe.runIf so the reason lives in the test's own name. Two of the eight are arms this roadmap added: the Windows proof arm of tests/engine/candidate-binding-hijack.spec.ts and the informational arm of tests/e2e/locale-matrix.spec.ts, which reports as skipped on a host whose ambient collation agrees with code-unit order. Neither hides an unverified product behaviour.",
+    "expectedFailures": "tests/certification/state-machine.spec.ts carries two `it.fails` cases documenting a real, still-open defect, and tests/corpus/audit-contract.spec.ts carries one. All three are visible defects on purpose, and a `.fails` that starts PASSING fails the suite, which is how a known defect announces its own fix."
+  }
+}

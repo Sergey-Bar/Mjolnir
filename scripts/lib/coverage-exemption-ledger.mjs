@@ -263,12 +263,16 @@ function shippedCommandModules(root) {
 export function validateCoverageExemptionLedger(root, options = {}) {
   const now = options.now ?? new Date();
   const problems = [];
-  const ledger = readLedger(root);
+  // `options.ledger` is the test seam: the rule set is what needs proving,
+  // and proving it against the committed file alone can only ever show the
+  // happy path. A caller can hand the evaluator a mutated ledger and read
+  // back exactly which rule fired.
+  const ledger = options.ledger ?? readLedger(root);
   const entries = ledger.entries ?? [];
   const committed = committedExclusions(root);
 
-  if (ledger.schemaVersion !== 1) {
-    problems.push(`schemaVersion must be 1, got ${ledger.schemaVersion}`);
+  if (ledger.schemaVersion !== 2) {
+    problems.push(`schemaVersion must be 2, got ${ledger.schemaVersion}`);
   }
 
   // 1. The ledger and the committed list are the same set, in the same order.
@@ -360,7 +364,71 @@ export function validateCoverageExemptionLedger(root, options = {}) {
     // 2. The classification must match what the import graph actually shows,
     //    or the ledger is a claim rather than a record. A structural entry is
     //    evidenced by its structural reason, not by an inbound edge.
-    if (entry.classification === "PERMANENT_STRUCTURAL") continue;
+    if (entry.classification === "PERMANENT_STRUCTURAL") {
+      if (
+        entry.defectSignatures !== undefined ||
+        entry.closureState !== undefined
+      ) {
+        problems.push(
+          `${id}: PERMANENT_STRUCTURAL is evidenced by its structuralReason, not by a defect — it carries neither defectSignatures nor closureState`,
+        );
+      }
+      continue;
+    }
+    // 2a. A prose-only entry is not permitted. Every non-structural entry
+    //     carries EITHER regexes that must still match its file OR an
+    //     explicit closure state — never neither, never both. A signature
+    //     is a drift alarm, not a defect prover: it fires when the thing
+    //     the entry is about changes, so a fix forces a ledger update in
+    //     the same commit and drift becomes impossible rather than merely
+    //     detectable. This is the same mechanism as
+    //     tests/corpus/detector-hashes.json.
+    const signatures = entry.defectSignatures;
+    const closure = entry.closureState;
+    const hasSignatures = Array.isArray(signatures) && signatures.length > 0;
+    const hasClosure = typeof closure === "string" && closure.trim().length > 0;
+    if (!hasSignatures && !hasClosure) {
+      problems.push(
+        `${id}: prose-only entry — carry defectSignatures (regexes that must still match this file) or an explicit closureState, never neither`,
+      );
+    }
+    if (hasSignatures && hasClosure) {
+      problems.push(
+        `${id}: carries both defectSignatures and closureState — an entry either still has a surface worth pinning or is closed, not both`,
+      );
+    }
+    if (hasSignatures) {
+      if (entry.path.includes("*")) {
+        problems.push(
+          `${id}: a glob path has no source to match — use a structuralReason instead`,
+        );
+      } else {
+        const source = readFileSync(join(root, entry.path), "utf8");
+        for (const signature of signatures) {
+          if (typeof signature !== "string" || signature.length === 0) {
+            problems.push(
+              `${id}: defectSignatures must be non-empty regex strings`,
+            );
+            continue;
+          }
+          let matched;
+          try {
+            matched = new RegExp(signature, "u").test(source);
+          } catch (e) {
+            problems.push(
+              `${id}: defectSignature ${JSON.stringify(signature)} is not a valid regex: ${e instanceof Error ? e.message : String(e)}`,
+            );
+            continue;
+          }
+          if (!matched) {
+            problems.push(
+              `${id}: defect closed or drifted — signature ${JSON.stringify(signature)} no longer matches ${entry.path}. Remove or reclassify the entry, and record what changed.`,
+            );
+          }
+        }
+      }
+    }
+
     const importers = liveImporters(entry.path);
     if (
       (entry.classification === "DEAD_CODE" ||

@@ -34,6 +34,8 @@ import {
 import { join } from "node:path";
 
 import { writeFileAtomic } from "../lib/fs-atomic.js";
+import { compareCodePoints } from "../lib/compare.js";
+import { recordDegradation } from "./degradation-ledger.js";
 import type { Finding } from "../types.js";
 import { parseJsonFile, isRecord } from "../lib/safe-json.js";
 
@@ -177,9 +179,21 @@ function hashDir(
   try {
     entries = readdirSync(dir, { withFileTypes: true });
   } catch {
+    // This `return` OMITS a whole subtree from the detector fingerprint. That
+    // is not a neutral degradation: two rule trees that differ only inside an
+    // unreadable directory then hash identically, so a cached verdict computed
+    // against one is served for the other. The parent listing succeeded, so
+    // the directory existed a moment ago — the failure is real, not an
+    // absence, and it gets a reason of its own.
+    recordDegradation("rules-tree-listing-unreadable");
     return;
   }
-  entries.sort((a, b) => a.name.localeCompare(b.name));
+  // Code-unit order, NOT localeCompare: this order is fed straight into
+  // `hash.update(entry.name)`, so it is a SEMANTIC INPUT to the detector
+  // fingerprint below. An ambient locale would give one fingerprint for a
+  // repository on an en-US runner and another on a de_DE or sv_SE one, and
+  // `isIncrementalSafe` reads that fingerprint.
+  entries.sort((a, b) => compareCodePoints(a.name, b.name));
   for (const entry of entries) {
     if (entry.name === "node_modules" || entry.name === ".git") continue;
     const full = join(dir, entry.name);

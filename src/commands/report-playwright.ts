@@ -11,6 +11,14 @@
  * So the execution block is empty and says so, and the findings live in the
  * `mjolnir` extension block where they are honestly labelled as static
  * analysis. The file is a findings report in a familiar shape, not a test run.
+ *
+ * The TOP-LEVEL status is the same claim and is now held to it. It used to be
+ * computed (`partial ? "interrupted" : hasError ? "failed" : "passed"`), so
+ * the clean case shipped `{status: "passed", totalTests: 0}` — a green test
+ * run over zero tests, in the one field a Playwright consumer reads first. The
+ * per-finding statuses were fixed; this one was not. It is now the literal
+ * `interrupted`, and what the scan actually found is reported as
+ * `mjolnir.scanOutcome` instead of being smuggled into the run status.
  */
 
 import { existsSync, mkdirSync } from "node:fs";
@@ -40,11 +48,15 @@ export interface PlaywrightReport {
   endTime: string;
   duration: number;
   /**
-   * Playwright's closed status enum. Static analysis executed no test, so none
-   * of passed/failed/timedout is true; `interrupted` is the only member that
-   * does not assert a completed test run.
+   * The run status, narrowed to the ONE honest value.
+   *
+   * Playwright's closed status enum is passed/failed/timedout/interrupted.
+   * A static scan executed no test, so the first three are all false and
+   * only `interrupted` — the member that refuses to assert a completed run
+   * — survives. The type is the literal, not a union, so a future edit
+   * that wants to reintroduce a runtime verdict does not typecheck.
    */
-  status: "passed" | "failed" | "timedout" | "interrupted";
+  status: "interrupted";
   /** Always 0: this command never executes a test. */
   totalTests: number;
   /** Always 0: see totalTests. */
@@ -60,8 +72,14 @@ export interface PlaywrightReport {
   mjolnir: {
     /** Names the producer so a consumer cannot mistake this for a test run. */
     execution: "STATIC_ANALYSIS";
-    /** Never `passed`/`failed` on the strength of a static scan. */
-    status: "passed" | "failed" | "interrupted";
+    /**
+     * What the STATIC SCAN found — a different question from the run
+     * status, deliberately kept out of it. `partial`: the scan was
+     * truncated, so the surface is unverified. `blocked`: error-severity
+     * findings. `clean`: nothing blocking was found by an analysis that
+     * ran to completion. No member of this set describes a test run.
+     */
+    scanOutcome: "clean" | "blocked" | "partial";
     partial: boolean;
     score: number | null;
     framework: string;
@@ -89,8 +107,17 @@ export function buildPlaywrightReport(result: {
   const now = new Date();
   const partial = result.partial === true;
   const hasError = result.findings.some((f) => f.severity === "error");
-  // Partial and blocked both refuse to claim a completed run.
-  const status = partial ? "interrupted" : hasError ? "failed" : "passed";
+  // A CONSTANT, not a computation. The defect this replaces derived the
+  // root status from the findings, so a clean scan published
+  // `{status: "passed", totalTests: 0}` — the exact shape a Playwright
+  // consumer reads as a green run, and the exact failure this file's own
+  // header documents as fixed. `failed` was equally dishonest: it implies
+  // tests ran and lost. A static scan started no run at all, so the status
+  // is `interrupted` on every path.
+  const status = "interrupted" as const;
+  // The scan's own outcome is a different question and lives in the
+  // extension block, where it cannot be read as a runtime verdict.
+  const scanOutcome = partial ? "partial" : hasError ? "blocked" : "clean";
 
   return {
     version: 1,
@@ -104,7 +131,7 @@ export function buildPlaywrightReport(result: {
     suites: [],
     mjolnir: {
       execution: "STATIC_ANALYSIS",
-      status,
+      scanOutcome,
       partial,
       score: result.score,
       framework: result.frameworks[0] ?? "unknown",

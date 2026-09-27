@@ -12,8 +12,10 @@ jobs:
   auto-merge:
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    # Check the PR author, not github.actor: actor is whoever fired the event,
+    # so on `labeled` it is the person adding the label, not Dependabot.
     if: >-
-      github.actor == 'dependabot[bot]' &&
+      github.event.pull_request.user.login == 'dependabot[bot]' &&
       contains(github.event.pull_request.labels.*.name, 'automerge')
     permissions:
       contents: write

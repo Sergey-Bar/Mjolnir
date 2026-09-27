@@ -68,7 +68,12 @@ const ALLOWLIST = new Map([
     "DENOMINATOR for evidenceCoverage, and the `> 0 ? … : 0` arm is an explicit, documented bounded result rather than a silent fill. The summary records the reason in `ceilingReasons`. Follow-up: Wave 2 honesty plumbing makes the absent denominator a first-class TrustSummary state.",
   ],
   [
-    "src/scorer/scorer.ts:216",
+    // Line-addressed, so this entry has to move whenever the file above it
+    // grows a comment — which is exactly what the gate is for: it fails
+    // rather than letting a stale justification sit here describing a line
+    // that no longer exists. Last moved by the locale-ordering change, which
+    // added a determinism note above `groupByCategory`.
+    "src/scorer/scorer.ts:220",
     "DENOMINATOR for the scorer, not a rendered value. Changing it to null would move scores — a contract change, tracked as Wave 2 engine work, not a reporting fix.",
   ],
 ]);

@@ -26,6 +26,12 @@ import {
   type ScanResult,
 } from "../types.js";
 import { deriveCompletion } from "./completion.js";
+import {
+  beginDegradationWindow,
+  degradationsSince,
+  summarizeDegradations,
+  type DegradationCount,
+} from "./degradation-ledger.js";
 import { buildTrustSummary } from "./trust-summary.js";
 import { buildEvidenceGraph, buildRunIdentity } from "./run-identity.js";
 import {
@@ -572,6 +578,12 @@ export interface FileAnalysisResult {
   parseFallbacks: number;
   scanned: number;
   analyzed: number;
+  /**
+   * Files that HAD an AST stage and lost it to the scan deadline, so they
+   * were analyzed by regex alone. Zero for every adapter that declares no
+   * `parseAst` — that is a capability envelope, not a downgrade.
+   */
+  astFallbackFiles: number;
 }
 
 export async function runFileAnalysisPhase(
@@ -597,6 +609,7 @@ export async function runFileAnalysisPhase(
   let rulesPartial = false;
   let parseFailed = 0;
   let parseFallbacks = 0;
+  let astFallbackFiles = 0;
   let scanned = 0;
   let analyzed = 0;
 
@@ -651,7 +664,24 @@ export async function runFileAnalysisPhase(
         provenance: classifyProvenance({ text }),
       });
     }
+    // The AST stage is a DIFFERENT detection capability, not a slower version
+    // of the same one, so losing it changes the findings and the score. It is
+    // therefore only taken while the scan still has time budget: past the
+    // deadline the file is analyzed by regex alone. That flip used to be
+    // silent — the mode is baked into the cache key (so the cache faithfully
+    // recorded the downgrade) and nothing told the reader. `file-budget`
+    // only fired incidentally, when the per-file deadline at the rule loop
+    // was also already spent. The disclosure below is what makes the scan
+    // honestly `partial` instead of quietly less capable.
     const wantsAst = adapter.parseAst !== undefined && Date.now() <= deadline;
+    if (adapter.parseAst !== undefined && !wantsAst) {
+      // Distinguish "the adapter has no AST stage" (python without a wasm
+      // grammar, github-actions — a permanent, declared capability envelope)
+      // from "the deadline took it away" (a capability this scan COULD have
+      // had and did not). Only the second is a truncation.
+      truncationReasons.add("ast-budget-fallback");
+      astFallbackFiles++;
+    }
     const identity = (mode: "ast" | "regex") => ({
       relPath,
       adapterId: adapter.id,
@@ -822,6 +852,7 @@ export async function runFileAnalysisPhase(
     parseFallbacks,
     scanned,
     analyzed,
+    astFallbackFiles,
   };
 }
 
@@ -999,6 +1030,14 @@ export interface AssembleScanResultInput {
   scopeUnrecognized: number;
   parseFailed: number;
   parseFallbacks?: number;
+  /** Files that lost their AST stage to the scan deadline. See completion.ts. */
+  astFallbackFiles?: number;
+  /**
+   * Reason-coded capability losses recorded during this scan's window. See
+   * `src/engine/degradation-ledger.ts` for why the window is an index rather
+   * than an ownership claim.
+   */
+  degradations?: readonly DegradationCount[];
   scanned: number;
   analyzed?: number;
   testFiles: string[];
@@ -1188,6 +1227,18 @@ export function assembleScanResult(o: AssembleScanResultInput): ScanResult {
     scopeUnrecognized: o.scopeUnrecognized,
     parseFailed: o.parseFailed,
     parseFallbacks: o.parseFallbacks ?? 0,
+    // NOT `?? 0`, and not a bare `astFallbackFiles: o.astFallbackFiles` either
+    // — `exactOptionalPropertyTypes` is on, so an explicit `undefined` is not
+    // the same as an absent key. A caller that did not measure the AST-stage
+    // downgrade has not shown that zero files lost it, so the key is spread
+    // in only when there is a measurement, and `deriveCompletion` treats
+    // absence as "no reason to report".
+    // `check-report-honesty.mjs` is the gate that caught the `?? 0`; this
+    // comment is here so the next reader does not "tidy" it back.
+    ...(o.astFallbackFiles !== undefined
+      ? { astFallbackFiles: o.astFallbackFiles }
+      : {}),
+    ...(o.degradations !== undefined ? { degradations: o.degradations } : {}),
     ...(o.scopeInfo.degraded !== undefined
       ? { scopeDegraded: o.scopeInfo.degraded }
       : {}),
@@ -1367,6 +1418,14 @@ export async function runScan(
   hooks: ScanHooks = {},
 ): Promise<ScanResult> {
   const started = Date.now();
+  // Open the degradation window FIRST, before workspace discovery, because
+  // `discoverWorkspace` is itself a degradation site (an unreadable
+  // package.json silently narrows a monorepo scan to the root package) and
+  // that is exactly the kind of loss this scan must report about itself. The
+  // window is an index, not a claim of ownership: a sibling scan running
+  // concurrently may contribute records, which can only over-count, never
+  // under-count. See src/engine/degradation-ledger.ts.
+  const degradationWindow = beginDegradationWindow();
   const requestedDuration = Number.isFinite(args.maxDurationMs)
     ? args.maxDurationMs
     : DEFAULT_MAX_DURATION_MS;
@@ -1388,11 +1447,27 @@ export async function runScan(
   // Scope containment: when the user targets a subdirectory of the
   // discovered project root (e.g. one package in a monorepo), scan ONLY
   // that subtree — sibling packages were never pointed at.
+  //
+  // Re-anchoring the ROOT is not containment on its own. `discoverWorkspace`
+  // already READ `package.json` from the DISCOVERED root, and that parsed
+  // object rides along in `discovered.packageJson`; carrying it into a
+  // re-anchored workspace meant `detectFrameworks` answered questions about
+  // the PARENT's manifest while claiming to describe the target. So a scan of
+  // `monorepo/packages/foo` reported jest because `monorepo/package.json`
+  // said so — a read outside the explicit scan root, and a framework claim
+  // about a tree the reader did not point at.
+  //
+  // The fix reads the manifest at the ANCHORED root. Framework detection
+  // then works from in-root evidence only (config files, the target's own
+  // `package.json`, its dependencies), and when that evidence is absent
+  // `detectFrameworks` already reports `frameworkDetectionUnknown: true` —
+  // which is the honest disclosure, and the reason V5-054's removal of the
+  // `postScan` consumer is deferred rather than rushed.
   const scanRoot =
     discovered &&
     discovered.root !== targetAbs &&
     targetAbs.startsWith(discovered.root + sep)
-      ? { ...discovered, root: targetAbs }
+      ? { ...discovered, root: targetAbs, packageJson: {} }
       : (discovered ?? fallbackWorkspace(targetAbs));
   const workspace = scanRoot;
   // Audit S3: verbose mode states the resolved root — operators can SEE
@@ -1565,6 +1640,7 @@ export async function runScan(
   rulesPartial = analysis.rulesPartial;
   parseFailed = analysis.parseFailed;
   const parseFallbacks = analysis.parseFallbacks;
+  const astFallbackFiles = analysis.astFallbackFiles;
   const scanned = analysis.scanned;
   const analyzed = analysis.analyzed;
 
@@ -1595,6 +1671,8 @@ export async function runScan(
     scopeUnrecognized,
     parseFailed,
     parseFallbacks,
+    astFallbackFiles,
+    degradations: summarizeDegradations(degradationsSince(degradationWindow)),
     scanned,
     analyzed,
     testFiles,

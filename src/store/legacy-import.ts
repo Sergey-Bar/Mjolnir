@@ -25,6 +25,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { digestOf, EvidenceStore } from "./evidence-store.js";
+import { isRecord } from "../lib/safe-json.js";
 
 /** The trust state a record carries. Legacy import only ever produces OPEN. */
 export type ImportedTrust =
@@ -74,10 +75,6 @@ export function legacyTrustAllows(
   if (use === "SOLE_BASIS_FOR_VERDICT") return trust.state === "VERIFIED";
   // An OPEN record is legitimate for everything that treats it as history.
   return true;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 const LEGACY_REASON =

@@ -46,6 +46,47 @@ export interface RunRulesResult {
 }
 
 /**
+ * Run ONE rule with crash isolation, and return what it produced.
+ *
+ * This is the block that was copy-pasted into all seven language adapters:
+ *
+ *   try { for (const f of rule.run(x)) emit(f, rule.id, rule.category); }
+ *   catch (error) { onCrash?.(rule.id, error); }
+ *
+ * Extracting it is worth doing for one reason beyond line count. Crash
+ * isolation is the mechanism that lets a third-party or experimental
+ * detector fail without ending a scan, and it is the mechanism the whole
+ * `rulesCrashed` count depends on. Seven copies means seven chances to
+ * write `catch {}` and lose the count, and `tests/contract/
+ * no-uncounted-degradation.spec.ts` can only audit what it can see.
+ *
+ * `null` means the rule CRASHED, which is not the same as an empty array:
+ * an empty array is the rule abstaining, and the adapters skip emission for
+ * both but the distinction is why the caller must not conflate them.
+ *
+ * Deliberately NOT extracted: the per-adapter filter chain and the budget
+ * check. Those genuinely differ — the TypeScript adapter injects an AST,
+ * framework tags, a lazy `codeText` getter, `appliesTo` scoping, config-only
+ * gating and `configGateMatches`, and it ABORTS the whole file on budget
+ * exhaustion where `runRulesShared` only `continue`s to the next rule.
+ * Routing every adapter through `runRulesShared` as written would silently
+ * change which rules run and when, which is precisely the unmeasured claim
+ * this program exists to delete. This helper takes the part they share.
+ */
+export function runRuleIsolated(
+  rule: UniversalRule,
+  file: ParsedFile,
+  onCrash?: (ruleId: string, error: unknown) => void,
+): Array<Omit<Finding, "ruleId" | "category">> | null {
+  try {
+    return rule.run(file);
+  } catch (error) {
+    onCrash?.(rule.id, error);
+    return null;
+  }
+}
+
+/**
  * The shared runRules execution pattern. Iterates rules, applies
  * filtering (framework tags + optional adapter-specific filter),
  * runs each rule, and emits findings with crash isolation.
@@ -75,14 +116,12 @@ export function runRulesShared(config: RunRulesConfig): RunRulesResult {
 
     result.rulesEvaluated++;
 
-    let findings: Array<Omit<Finding, "ruleId" | "category">>;
-    try {
-      findings = rule.run(file);
-    } catch (error) {
+    const ran = runRuleIsolated(rule, file, onCrash);
+    if (ran === null) {
       result.rulesCrashed.push(rule.id);
-      onCrash?.(rule.id, error);
       continue;
     }
+    const findings = ran;
 
     for (const f of findings) {
       emit(f, rule.id, rule.category);

@@ -1,0 +1,40 @@
+# Pre-cleanup branch tips recorded 2026-09-27T07:39:30.1304985+03:00
+# Plan: .kilo/plans/1790482999233-deploy-5-0-0-remote-source-of-truth.md (Phase 0 step 4)
+
+## Remote heads (git ls-remote --heads origin)
+1dbcbe04d898f6f03fbeb36078d2c05890280d81	refs/heads/V5
+2eb5729a358404338e168d8620662d8a1e33d451	refs/heads/V6
+fcf195f7578fe0211b6e9526b51e20d00b56af07	refs/heads/dependabot/github_actions/actions/labeler-7.0.0
+a5266356b3494861babf2cdc85f8a2653e0c25eb	refs/heads/dependabot/github_actions/actions/stale-11.0.0
+6dfaf252bbf04e80bb20e2597d1dc40c34bb0853	refs/heads/dependabot/github_actions/codecov/codecov-action-7.1.1
+9a3591673e9bf7728230af6fe58a138dcd9a7334	refs/heads/dependabot/github_actions/github/codeql-action/analyze-4.38.1
+9f40bb93776ba72c01ef8280ac160a003b6868f3	refs/heads/dependabot/github_actions/google/osv-scanner-action/dot-github/workflows/osv-scanner-reusable.yml-2.6.0
+6fb76906764c1c8c694b66804a7d4ae03a211b48	refs/heads/dependabot/npm_and_yarn/commitlint/cli-21.2.3
+648c01aa1cc50139b92bc7d6a985d9255dcb9aa6	refs/heads/dependabot/npm_and_yarn/commitlint/config-conventional-21.2.3
+75f635230f960735fffdb8b4113bbe2ed3fbe332	refs/heads/dependabot/npm_and_yarn/dev-dependencies-minor-patch-20be814a45
+788f788049733060aecd4505f0a2701ac7af7bf7	refs/heads/main
+563402b058e9a55a1e4fcdf153a2381a4ef8aefd	refs/heads/release/4.0.0-rc.1-rebind
+dd83dbbcf63438644e3eb5a8c07f9690956ca008	refs/heads/release/4.0.0-stable
+
+## Local branches (name -> tip sha)
+NewLight 788f788049733060aecd4505f0a2701ac7af7bf7 upstream=
+V5 1dbcbe04d898f6f03fbeb36078d2c05890280d81 upstream=origin/V5
+V6 2eb5729a358404338e168d8620662d8a1e33d451 upstream=origin/V6
+backup-before-split 9c982c6e1ca3b820b8ae5e5aeb7da5f29045f96b upstream=
+fix/stable-dist-tag e32b8c78cc95723232cb8c389fd336c944207f9a upstream=
+hardening/integrity-security-performance-program fd890f9594887f48a30b4db89d2f57ddbcaafb6b upstream=
+main 5f5b893844cfe75e8f8c103b367708b0f6896c2a upstream=
+release-4.0.0 788f788049733060aecd4505f0a2701ac7af7bf7 upstream=origin/main
+release/4.0.0-normalized 41548d4e81c1315a37daec862a15b3da83fbc9dc upstream=origin/release/4.0.0-normalized
+release/4.0.0-rc.1 2f44e703609f66bc651ed004a14c5d3221c5fb9d upstream=origin/release/4.0.0-rc.1
+release/4.0.0-rc.1-final 7b59175e34fc1d4cc56a63f54099064d5e189e9d upstream=origin/release/4.0.0-rc.1-rebind
+release/4.0.0-rc.1-isolated b586e8b74502ae211e0f5a27f01f088d29d8c3a0 upstream=origin/release/4.0.0-rc.1-rebind
+release/4.0.0-rc.1-rebind b586e8b74502ae211e0f5a27f01f088d29d8c3a0 upstream=
+release/4.0.0-rc.1-v2 fadbef5062e999d7f6b36f306d998753c2daf01b upstream=origin/release/4.0.0-rc.1-v2
+release/4.0.0-stable dd83dbbcf63438644e3eb5a8c07f9690956ca008 upstream=origin/release/4.0.0-stable
+
+## Worktrees (git worktree list)
+C:/VS-Code-Projects/Github/QA-Doctor                                  fd890f95 [hardening/integrity-security-performance-program]
+C:/Users/Sergey/AppData/Local/Temp/kilo/release-4.0.0                 dd83dbbc [release/4.0.0-stable]
+C:/VS-Code-Projects/Github/QA-Doctor/.kilo/worktrees/picturesque-puma d981ba35 (detached HEAD)
+C:/VS-Code-Projects/Github/QA-Doctor/.kilo/worktrees/v6               2eb5729a [V6]

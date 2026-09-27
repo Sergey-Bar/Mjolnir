@@ -12,6 +12,8 @@
 
 import { createHash } from "node:crypto";
 
+import { compareCodePoints } from "../lib/compare.js";
+
 export type FileChangeState = "added" | "modified" | "deleted" | "unchanged";
 
 export interface IncrementalConfig {
@@ -79,7 +81,10 @@ export function computeChangedFiles(
     }
   }
 
-  changed.sort((a, b) => a.path.localeCompare(b.path));
+  // Code-unit order. The SAFETY decision here is `SEMANTIC_INPUT_PATTERNS`,
+  // not this sort — but the sorted list is the report and the digest input
+  // beside it, so it must not read the ambient locale either.
+  changed.sort((a, b) => compareCodePoints(a.path, b.path));
   return changed;
 }
 

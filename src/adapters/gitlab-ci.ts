@@ -10,6 +10,7 @@ import { existsSync } from "node:fs";
 import { join } from "node:path";
 
 import { parse as parseYaml } from "yaml";
+import { isRecord } from "../lib/safe-json.js";
 
 export interface GitLabCiJob {
   stage?: string;
@@ -77,7 +78,7 @@ function getJobs(config: GitLabCiConfig): Array<[string, GitLabCiJob]> {
   const jobs: Array<[string, GitLabCiJob]> = [];
   for (const [key, value] of Object.entries(config)) {
     if (reserved.has(key)) continue;
-    if (typeof value === "object" && value !== null && !Array.isArray(value)) {
+    if (isRecord(value)) {
       jobs.push([key, value]);
     }
   }

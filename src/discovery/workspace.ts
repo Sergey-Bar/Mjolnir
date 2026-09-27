@@ -7,6 +7,8 @@
 import { existsSync, readFileSync } from "node:fs";
 import { dirname as pathDirname, join, resolve } from "node:path";
 
+import { recordDegradation } from "../engine/degradation-ledger.js";
+
 export interface Workspace {
   /** Absolute path of the workspace/project root. */
   root: string;
@@ -45,12 +47,27 @@ export function discoverWorkspace(rootDir: string): Workspace | null {
   if (!root) return null;
 
   let pkg: Record<string, unknown> = {};
-  try {
-    pkg = JSON.parse(
-      readFileSync(join(root, "package.json"), "utf8"),
-    ) as Record<string, unknown>;
-  } catch {
-    // Unreadable package.json — still scan, but with no metadata.
+  // ABSENT is not DEGRADED. A Python, Java, Go or Rust repository has no
+  // package.json at all, and "no manifest" is a normal repository shape, not
+  // a failure — counting it would mark every non-Node project partial. Only a
+  // manifest that EXISTS and cannot be read or parsed is a degradation, so
+  // the existence check is the discriminator, not the exception.
+  const manifestPath = join(root, "package.json");
+  if (existsSync(manifestPath)) {
+    try {
+      pkg = JSON.parse(readFileSync(manifestPath, "utf8")) as Record<
+        string,
+        unknown
+      >;
+    } catch {
+      // Counted, and the consequence is specific rather than general: the
+      // `workspaces` field lives in this file, so an unreadable manifest
+      // yields `workspaceGlobs: []`, and the walk then covers the ROOT
+      // package only. A monorepo scan silently narrowed to one package is a
+      // smaller scan that reports itself as the whole thing — the exact
+      // shape this program exists to delete.
+      recordDegradation("workspace-manifest-unreadable");
+    }
   }
 
   const rawWorkspaces = pkg["workspaces"];

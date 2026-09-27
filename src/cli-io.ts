@@ -34,9 +34,33 @@ export function internalErrorMessage(
 }
 
 /**
- * The single error-to-message derivation shared by every catch site:
- * Error instances render their message; anything else is stringified
- * honestly (a hostile non-Error throw must surface, not vanish).
+ * The ONE error-to-message derivation in `src/`.
+ *
+ * This tree carried four near-copies: two `errorMessage` (byte-identical) and
+ * two `errorText`. The two `errorText` copies were not identical, which is the
+ * part that mattered — `String(someObject)` renders `[object Object]`, so the
+ * copy that lost the payload turned a hostile non-Error throw into a message
+ * that names nothing. The richer arms are kept here, so every call site gets
+ * the informative one and the difference stops being a per-file accident.
+ *
+ * The arms, in order:
+ *   Error            -> `.message`. The 99% case, and the only one that
+ *                       carries a stack the caller may still want.
+ *   string           -> itself. A thrown string is already the message.
+ *   plain object     -> `JSON.stringify`. A non-Error throw of `{ code:
+ *                       "EISDIR" }` is a REAL failure shape in Node, and
+ *                       `[object Object]` hides the only field that says
+ *                       what went wrong.
+ *   anything else    -> `String(err)`. Symbols and undefined included, so
+ *                       nothing vanishes.
+ *
+ * The call this replaces was `err instanceof Error ? err.message : String(err)`
+ * in `src/mcp/server.ts` and `src/commands/doctor.ts`; `tests/cli/summary.spec.ts`
+ * already pins the object arm.
  */
-export const errorMessage = (err: unknown): string =>
-  err instanceof Error ? err.message : String(err);
+export function errorMessage(err: unknown): string {
+  if (err instanceof Error) return err.message;
+  if (typeof err === "string") return err;
+  if (typeof err === "object" && err !== null) return JSON.stringify(err);
+  return String(err);
+}

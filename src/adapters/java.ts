@@ -26,6 +26,8 @@ import { join } from "node:path";
 import { sharedWalk } from "../discovery/shared-walk.js";
 import { computeCodeText } from "../engine/code-text.js";
 import { parseJavaAst } from "../engine/tree-sitter-ast.js";
+import { recordDegradation } from "../engine/degradation-ledger.js";
+import { runRuleIsolated } from "../engine/shared-run-rules.js";
 import {
   frameworkFilterApplies,
   type FrameworkInfo,
@@ -165,13 +167,11 @@ export const javaAdapter: LanguageAdapter = {
         budget.onExceeded();
         return;
       }
-      try {
-        for (const f of rule.run(enriched)) {
-          emit(f, rule.id, rule.category);
-        }
-      } catch (error) {
-        // Crash isolation (§25) — counted and debuggable (R-9).
-        onCrash?.(rule.id, error);
+      // Crash isolation (§25) — counted and debuggable (R-9), in one place.
+      const produced = runRuleIsolated(rule, enriched, onCrash);
+      if (produced === null) continue;
+      for (const f of produced) {
+        emit(f, rule.id, rule.category);
       }
     }
   },
@@ -221,6 +221,12 @@ export function javaBuildFiles(root: string): string[] {
       /pom\.xml$|build\.gradle(?:\.kts)?$/.test(f),
     );
   } catch {
+    // Returning `[]` here does not mean "no build files" — it means "we
+    // could not look". A monorepo whose submodule poms went unreadable
+    // yields a java verdict built from the root module alone, which is a
+    // narrower scan wearing the same report. Counted so the result is
+    // partial rather than confidently incomplete.
+    recordDegradation("java-build-listing-unreadable");
     return [];
   }
 }

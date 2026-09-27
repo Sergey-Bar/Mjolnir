@@ -27,6 +27,7 @@ import { writeFileAtomic } from "../lib/fs-atomic.js";
 import type { Finding, ScanResult } from "../types.js";
 import { findingFingerprint } from "../engine/finding-identity.js";
 import { sectionHeader, plainContext } from "../reporter/ui.js";
+import { compareCodePoints } from "../lib/compare.js";
 
 const ui = plainContext();
 
@@ -301,8 +302,8 @@ export async function computeImpact(
     baseRef,
     headRef,
     ...(baseTreeTruncated ? { baseTreeTruncated } : {}),
-    resolved: resolved.sort((a, b) => a.file.localeCompare(b.file)),
-    introduced: introduced.sort((a, b) => a.file.localeCompare(b.file)),
+    resolved: resolved.sort((a, b) => compareCodePoints(a.file, b.file)),
+    introduced: introduced.sort((a, b) => compareCodePoints(a.file, b.file)),
     unknownFacts,
   };
 }
