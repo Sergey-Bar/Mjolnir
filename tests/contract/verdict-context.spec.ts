@@ -64,7 +64,11 @@ describe("the verdict-context tool", () => {
   });
 
   it("is reachable as an npm script", () => {
-    const pkg = JSON.parse(readFileSync(join(ROOT, "package.json"), "utf8"));
+    const pkg = JSON.parse(
+      readFileSync(join(ROOT, "package.json"), "utf8"),
+    ) as {
+      scripts: Record<string, string>;
+    };
     expect(pkg.scripts["corpus:verdict-context"]).toBe(
       "node scripts/verdict-context.mjs",
     );
