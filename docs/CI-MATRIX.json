@@ -4,8 +4,8 @@
   "generatedBy": "npm run docs:capability",
   "projectionOf": "mjolnir-capability-registry",
   "axis": "ci-provider",
-  "observedAt": "2026-09-26",
-  "baseSha": "1629c6183d8b2f2cc182fc0963318f0cd7ac400c",
+  "observedAt": "2026-09-28",
+  "baseSha": "a73248145130df8be7d57235066fec9fe1839509",
   "rowCount": 4,
   "rows": [
     {
