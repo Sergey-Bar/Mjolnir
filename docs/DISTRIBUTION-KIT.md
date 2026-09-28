@@ -32,12 +32,27 @@ every stable release (rc tags never move it — the same ruling as npm's
 ```
 
 The scan itself always runs the **published npm package**
-(`npx mjolnir-qa@5.0.0`) — never a build of this repo: the action
+(`npx mjolnir-qa@latest`) — never a build of this repo: the action
 works for consumers, not contributors. Leave `version` unset to take the
 Action's default, which is the last published stable release; or pin it
 explicitly to another published exact version
 (`with: version: 4.0.0`). Do not use `version: latest` in an enforcing gate,
 and do not pin a release candidate — it is not on the registry until it ships.
+
+### The same choice on npm
+
+```bash
+# What a reader should run. `@latest` always resolves to a published
+# stable release, so this can never 404 and never goes stale:
+npx mjolnir-qa@latest
+
+# What a gate should run. Exact, so the run is identical next month:
+npx mjolnir-qa@5.0.0
+```
+
+The Action has no `latest` alias — GitHub resolves only refs — which is why its
+mutable form is a major tag (`@v5`) and the immutable one is an exact tag
+(`@v5.0.0`) or a commit SHA.
 
 ## GitHub Actions Marketplace (P1.5)
 
@@ -107,7 +122,7 @@ since v0.5.37).
 | ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
 | modelcontextprotocol/servers | PR adding Mjölnir to the community servers README (line: `- [mjolnir-qa](”¦) — verification trust scanning: fails CI on tests that cannot fail; stdio MCP server with scan/explain/diff/verify/forensics/triage/pw-report tools`) | pending |
 | Smithery                     | `/smithery.yaml` ships with the repo; submit via smithery.ai "Add server" pointing at the repo                                                                                                                                    | pending |
-| PulseMCP                     | Directory entry form (owner: requires Sergey-Bar identity): name, description from smithery.yaml, stdio transport, install `npx -y mjolnir-qa@5.0.0 mcp`                                                                          | pending |
+| PulseMCP                     | Directory entry form (owner: requires Sergey-Bar identity): name, description from smithery.yaml, stdio transport, install `npx -y mjolnir-qa@latest mcp`                                                                         | pending |
 | mcp.so                       | Entry form with the same payload as PulseMCP                                                                                                                                                                                      | pending |
 
 ## Ministry of Testing (P1.6)
@@ -140,7 +155,7 @@ Body (HN/Reddit/LinkedIn variants — same facts, different tone):
 > capped to info, never gating. It scores what it finds, publishes the
 > score's full deduction table, and refuses to score an empty repo as a 100.
 >
-> Try it: `npx mjolnir-qa@5.0.0` (or in CI, `mjolnir ci install`).
+> Try it: `npx mjolnir-qa@latest` (or in CI, `mjolnir ci install`).
 > GitHub Action: `Sergey-Bar/Mjolnir@v5`. MIT.
 
 Comment-strategy note: lead with the FP-rate honesty angle on HN

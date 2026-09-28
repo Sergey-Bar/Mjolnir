@@ -73,24 +73,37 @@ describe("version surface envelope", () => {
     expect(violations.join(" ")).not.toContain("DISTRIBUTION-KIT.md");
   });
 
-  it("reports a mutable @latest", () => {
-    // The `@latest` rule is unconditional, so it holds on any version shape.
-    const violations = checkVersionSurfaceEnvelope(
-      version,
-      {
-        ...surfaces,
-        "smithery.yaml": (surfaces["smithery.yaml"] ?? "").replace(
-          `mjolnir-qa@${publishedStable}`,
-          "mjolnir-qa@latest",
-        ),
-      },
-      publishedStable,
-    );
-    expect(violations).toEqual(
+  it("allows @latest when the exact published pin sits beside it", () => {
+    // `@latest` is mutable: a gate copied from a README changes behaviour the
+    // day the next stable ships, with nothing in this repository having
+    // changed. It also cannot 404 and cannot go stale, which is what a reader
+    // running the command wants. Both are real, so the rule is not a ban — it
+    // is that the mutable form must arrive with the immutable one.
+    const mutable = "install with npx mjolnir-qa@latest";
+    expect(
+      checkVersionSurfaceEnvelope(version, surfaces, publishedStable),
+    ).toEqual([]);
+    expect(
+      checkVersionSurfaceEnvelope(
+        version,
+        { ...surfaces, "docs/DISTRIBUTION-KIT.md": mutable },
+        publishedStable,
+      ),
+    ).toEqual(
       expect.arrayContaining([
-        expect.stringContaining("mutable mjolnir-qa@latest is forbidden"),
+        expect.stringContaining("needs the exact published pin"),
       ]),
     );
+    expect(
+      checkVersionSurfaceEnvelope(
+        version,
+        {
+          ...surfaces,
+          "docs/DISTRIBUTION-KIT.md": `${mutable} or pin mjolnir-qa@${publishedStable}`,
+        },
+        publishedStable,
+      ),
+    ).toEqual([]);
   });
 
   it("reports an install surface naming a working version that is not published", () => {
