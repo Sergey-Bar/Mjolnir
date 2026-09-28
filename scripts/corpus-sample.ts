@@ -62,10 +62,8 @@ const VERDICTS_DIR = join(ROOT, "tests", "corpus", "verdicts");
  * measurement can PROVE; it does not bound what it costs to OBTAIN. A sample
  * is not a verdict: every one needs a human judgement with the code in front
  * of them, and `tests/corpus/verdicts/README.md` makes a committed verdict
- * immutable. Re-sampling at the raised cap produced 1,121 unadjudicated rows
- * across 42 rules, and the committed ceiling in
- * `tests/corpus/unclassified-ceiling.json` (31) then REFUSED to generate an
- * FP table at all:
+ * immutable. Re-sampling at the raised cap produced **1,121 unadjudicated
+ * rows across 42 rules**, and the committed ceiling refused outright:
  *
  *   FAIL: 1121 unclassified verdict row(s) exceed the committed ceiling of 31
  *   Blank "verdict" rows silently under-report the measured FP rates.
@@ -76,9 +74,10 @@ const VERDICTS_DIR = join(ROOT, "tests", "corpus", "verdicts");
  * adjudicated, which is a different and much more flattering number.
  *
  * So the cap is bounded by the ADJUDICATION BUDGET, and the budget is
- * whatever the ceiling file can honestly hold. Raising the cap and the ceiling
- * together would be a way of making the gate stop complaining without adding
- * evidence, which is the one thing this repository exists not to do.
+ * whatever `tests/corpus/verdicts/unclassified-ceiling.json` can honestly
+ * hold. Raising the cap and the ceiling together would be a way of making the
+ * gate stop complaining without adding evidence, which is the one thing this
+ * repository exists not to do.
  *
  * What the interval criterion actually needs is a decision about the CORE
  * CEILING, not about the sample: 10% is unreachable below n ≈ 35 for a
