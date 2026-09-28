@@ -3,13 +3,13 @@
  * second one — inside COMMENTS — was added in 6.0 because the repository's
  * comments turn out to be load-bearing.
  *
- * The concrete case: `src/commands/doctor.ts` documented a cap against
- * `tests/registry-ratchet.spec.ts`, which is really
- * `tests/rules/registry-ratchet.spec.ts`. The gate that "exists for exactly
- * this purpose" was checking npm script bodies only, so a comment pointing a
+ * The concrete case: `src/commands/doctor.ts` documented a cap against a spec
+ * path that the test-domain reorg (47e6c25) had moved into a subdirectory,
+ * and the comment was never updated. The gate that exists for exactly this
+ * purpose was checking npm script bodies only, so a comment pointing a
  * maintainer at a file that does not exist passed. The sweep that followed
- * found 70 such citations across 62 files, all traceable to the test-domain
- * reorg (47e6c25) and never fixed.
+ * found 70 such citations across 62 files, every one traceable to that
+ * reorg.
  *
  * These assertions pin the RULES, not just the pass, because the rules are
  * where this could go wrong: a historical-record allowance that is too broad
