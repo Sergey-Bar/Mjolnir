@@ -68,6 +68,7 @@
     "candidate:decision:engineering": "node scripts/check-candidate-decision.mjs --stage engineering",
     "candidate:decision:release": "node scripts/check-candidate-decision.mjs --stage release",
     "coverage:exemptions": "node scripts/check-coverage-exemption-ledger.mjs",
+    "unimported:check": "node scripts/check-unimported-modules.mjs",
     "test:watch": "vitest",
     "lint": "eslint . --max-warnings=0 && prettier --check .",
     "format": "prettier --write .",

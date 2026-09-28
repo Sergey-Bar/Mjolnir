@@ -53,6 +53,7 @@
       "command": "npm run coverage:exemptions"
     },
     { "id": "gate:verbs-budget", "command": "npm run verbs:budget" },
+    { "id": "gate:unimported-modules", "command": "npm run unimported:check" },
     { "id": "gate:tiers", "command": "node scripts/check-gate-tiers.mjs" },
 
     { "id": "stress-soak", "command": "node tests/stress/soak.mjs" },
