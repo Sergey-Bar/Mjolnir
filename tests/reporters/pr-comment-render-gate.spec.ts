@@ -342,6 +342,38 @@ describe("PR comment render gate — structural, not substring", () => {
     expect(enforceCommentLimit(short)).toBe(short.join("\n"));
   });
 
+  it("never exceeds the limit, at any input size", () => {
+    // The property, not the sample. The guard has three paths — fit, drop the
+    // collapsible blocks, then drop finding lines — and the last one appends
+    // a notice AFTER choosing where to stop. If that arithmetic is off by a
+    // few hundred characters the output silently goes over the cap again, and
+    // an over-cap comment is the exact failure the guard exists to prevent:
+    // GitHub rejects it and the posting step reports nothing.
+    //
+    // So this walks sizes and message lengths across the range where each path
+    // hands over to the next, and asserts the bound holds on every one.
+    for (const count of [0, 1, 25, 26, 75, 200]) {
+      for (const messageLength of [50, 500, 2_000, 8_000]) {
+        const findings = Array.from({ length: count }, (_, index) =>
+          makeFinding({
+            ruleId: `QA-TEST-${String(index).padStart(3, "0")}`,
+            file: `src/module-${index}/deeply/nested/file.test.ts`,
+            line: index + 1,
+            message: "x".repeat(messageLength),
+            fix: "y".repeat(messageLength),
+          }),
+        );
+        const markdown = renderUnifiedReport(
+          makeResult({ findings, trustSummary: makeSummary() }),
+        );
+        expect(
+          markdown.length,
+          `${count} findings × ${messageLength}-char messages`,
+        ).toBeLessThanOrEqual(GITHUB_COMMENT_LIMIT);
+      }
+    }
+  });
+
   it("pins the ceiling the renderer currently reaches", () => {
     // Not a claim that the guard fires — a measurement of how much headroom
     // the renderer has, so that "the guard is unreachable" is a checked fact
