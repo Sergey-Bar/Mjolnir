@@ -1,7 +1,7 @@
 # Rule Capability Matrix (v0)
 
 **Generated from the rule registry (`src/rules/index.ts` `RULES`) + `MEASURED_FP` + verdict data — do not edit by hand.**
-Regenerate: `npm run docs:capability`. Drift-locked by `tests/capability-matrix.spec.ts` and the generated-docs-drift CI job.
+Regenerate: `npm run docs:capability`. Drift-locked by `tests/rules/capability-matrix.spec.ts` and the generated-docs-drift CI job.
 
 Verification Trust Evolution Plan §04/§09. Unknown fields render as
 `UNCLASSIFIED` — visible gaps are the deliverable, not failures.
