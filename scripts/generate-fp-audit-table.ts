@@ -791,11 +791,19 @@ export function renderMeasuredFpAudit(
     const status =
       s.classified >= 10 && declared
         ? {
-            "MEASURED-CORE": "✅ core",
-            "MEASURED-EXTENDED": "⚠️ extended",
-            "MEASURED-QUARANTINE": "🔴 quarantine",
-            PROVISIONAL: "❓ provisional",
-            UNMEASURED: "❓ unmeasured",
+            "MEASURED-CORE": "… core",
+            "MEASURED-EXTENDED": "△ extended",
+            "MEASURED-QUARANTINE": "🕤 quarantine",
+            PROVISIONAL: "◐ provisional",
+            // 6.0. A straddling rule's measurement is valid and current but
+            // too thin to place it in a tier. Rendering it as "provisional"
+            // would be wrong — provisional means UNMEASURED or stale — and
+            // rendering it as either tier would be a claim the interval does
+            // not support. The arrow says which way it has to move, and the
+            // detail is in `mjolnir rules --explain`.
+            "TIER-STRADDLE":
+              "↔ straddling (interval crosses the tier boundary)",
+            UNMEASURED: "◐ unmeasured",
           }[ruleStatus(declared)]
         : s.classified >= 10
           ? s.fpRate !== null && s.fpRate <= 0.1

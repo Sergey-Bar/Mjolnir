@@ -7,13 +7,13 @@ contract enforces: **every external import in src/ must belong to the
 allowlist**, and the shipped surface (adapters, rules, flags, formats, exit
 codes) must match this document exactly.
 
-## Inventory: 341 files, 101010 LOC
+## Inventory: 343 files, 101389 LOC
 
 | Area              | Files | LOC   |
 | ----------------- | ----- | ----- |
 | src/engine        | 60    | 26137 |
 | src/commands      | 39    | 12751 |
-| src/rules         | 88    | 11758 |
+| src/rules         | 89    | 12038 |
 | src/v6            | 10    | 5769  |
 | src/reporter      | 16    | 3977  |
 | src/(root)        | 8     | 3883  |
@@ -40,9 +40,9 @@ codes) must match this document exactly.
 | src/certification | 2     | 568   |
 | src/config        | 3     | 559   |
 | src/scorer        | 3     | 537   |
+| src/lib           | 7     | 468   |
 | src/traceability  | 2     | 441   |
 | src/scope         | 2     | 427   |
-| src/lib           | 6     | 369   |
 | src/playwright    | 2     | 332   |
 | src/trust         | 2     | 278   |
 | src/anti-gaming   | 2     | 169   |
@@ -52,7 +52,7 @@ codes) must match this document exactly.
 | Module                          | Importers |
 | ------------------------------- | --------- |
 | src/types                       | 137       |
-| src/rules/rule                  | 82        |
+| src/rules/rule                  | 83        |
 | src/rules/shared/positions      | 62        |
 | src/lib/safe-json               | 24        |
 | src/cli-io                      | 21        |
@@ -63,8 +63,8 @@ codes) must match this document exactly.
 | src/rules/index                 | 15        |
 | src/engine/adapter              | 14        |
 | src/reporter/presentation       | 14        |
+| src/rules/measured-fp.generated | 14        |
 | src/engine/degradation-ledger   | 13        |
-| src/rules/measured-fp.generated | 13        |
 | src/discovery/ignores           | 11        |
 
 ## External dependency allowlist (containment)

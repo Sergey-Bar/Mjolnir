@@ -25,28 +25,45 @@
     "Approve the hosted, enterprise, and agent threat-model boundaries.",
     "Approve human adjudication and design-partner evidence collection."
   ],
-  "generatedAt": "2026-09-27",
+  "generatedAt": "2026-09-28",
   "identity": {
     "state": "WORKING_CANDIDATE",
-    "baseSha": "fcf59dea01adb82319f19d2af5a2aba1c4256a68",
+    "baseSha": "816b44c483d87e52648b492ba8af12cb2884fb77",
     "candidateSha": null,
     "version": "5.0.0",
     "packageSha256": "86cedb651a211946d76f1849e8391f391a8296be446b49a5c024be61d33004cb",
     "lockfileSha256": "7449664fe21f4ac61258c4732e83329b7afb89ee6f18d315b29aff6c34269ce8",
-    "workingTreeSha256": "1ba13f4889d6f398e256ff53e40e190ae24906bf154ac1fa6e6eb1c3c9ec9a9f",
-    "changedPathCount": 3,
+    "workingTreeSha256": "53efd11115279702ca14ae7ddc7093e33caf2900a576cb9c72dd08bc2774e542",
+    "changedPathCount": 12,
     "supportEnvelope": "self-hosted; hosted services require explicit consent and separate proof",
     "worktreeInventory": {
       "changedPaths": [
+        "docs/BLAST-RADIUS-AUDIT.md",
         "docs/RULE-CAPABILITY-MATRIX.json",
-        "scripts/generate-capability-matrix.ts"
+        "docs/RULE-CAPABILITY-MATRIX.md",
+        "scripts/corpus-sample.ts",
+        "scripts/generate-fp-audit-table.ts",
+        "scripts/lib/wilson.ts",
+        "src/rules/measurement.ts",
+        "tests/engine/adapters/tag-patterns-round2.spec.ts",
+        "tests/rules/capability-matrix.spec.ts",
+        "tests/rules/registry-ratchet.spec.ts"
       ],
-      "untrackedPaths": ["tests/contract/capability-matrix-recall.spec.ts"]
+      "untrackedPaths": ["src/lib/wilson.ts", "src/rules/tier-evidence.ts"]
     },
     "dirtyFiles": [
+      "docs/BLAST-RADIUS-AUDIT.md",
       "docs/RULE-CAPABILITY-MATRIX.json",
-      "scripts/generate-capability-matrix.ts",
-      "tests/contract/capability-matrix-recall.spec.ts"
+      "docs/RULE-CAPABILITY-MATRIX.md",
+      "scripts/corpus-sample.ts",
+      "scripts/generate-fp-audit-table.ts",
+      "scripts/lib/wilson.ts",
+      "src/lib/wilson.ts",
+      "src/rules/measurement.ts",
+      "src/rules/tier-evidence.ts",
+      "tests/engine/adapters/tag-patterns-round2.spec.ts",
+      "tests/rules/capability-matrix.spec.ts",
+      "tests/rules/registry-ratchet.spec.ts"
     ]
   },
   "claimRegistry": {
