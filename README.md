@@ -329,10 +329,10 @@ starter coverage for Cypress and Selenium. Nine of them, to show the shape:
 | QA-TEST-001  | Focused test committed (`.only`, `fit`)                           | error    | quarantine |
 | QA-TEST-003  | Test with no assertions                                           | error    | quarantine |
 | QA-TQUAL-009 | Unawaited promise assertion                                       | error    | quarantine |
-| QA-PW-002    | Unawaited locator assertion                                       | error    | extended       |
+| QA-PW-002    | Unawaited locator assertion                                       | error    | extended   |
 | QA-PW-004    | Brittle CSS/XPath selectors                                       | warning  | quarantine |
-| QA-PY-002    | Skipped test (`skip`, non-strict `xfail`)                         | warning  | extended       |
-| QA-CS-103    | Test method with no assertions                                    | error    | extended       |
+| QA-PY-002    | Skipped test (`skip`, non-strict `xfail`)                         | warning  | extended   |
+| QA-CS-103    | Test method with no assertions                                    | error    | extended   |
 
 The full catalog is generated from the registry, never maintained by hand:
 `mjolnir rules --md`, [`docs/rules/`](docs/rules/), or the
@@ -357,11 +357,11 @@ The full catalog is generated from the registry, never maintained by hand:
 | QA-TQUAL-002 | Quality    | Tautological assertion                                       | error    | quarantine |
 | QA-TQUAL-009 | Quality    | Unawaited promise assertion                                  | error    | quarantine |
 | QA-TQUAL-011 | Quality    | Commented-out tests                                          | warning  | extended   |
-| QA-PW-002    | Playwright | Unawaited locator assertion                                  | error    | extended       |
-| QA-PW-003    | Playwright | `page.pause()` / `test.only()` committed                     | error    | extended       |
+| QA-PW-002    | Playwright | Unawaited locator assertion                                  | error    | extended   |
+| QA-PW-003    | Playwright | `page.pause()` / `test.only()` committed                     | error    | extended   |
 | QA-PW-004    | Playwright | Brittle CSS/XPath selectors                                  | warning  | quarantine |
 | QA-PW-123    | Playwright | Hardcoded environment URLs                                   | warning  | quarantine |
-| QA-PW-140    | Playwright | Screenshot without `maxDiffPixelRatio`                       | warning  | extended       |
+| QA-PW-140    | Playwright | Screenshot without `maxDiffPixelRatio`                       | warning  | extended   |
 | QA-CI-001    | CI         | `continue-on-error` masks a failing gate                     | error    | quarantine |
 | QA-CI-002    | CI         | `\|\| true` swallows exit codes                              | error    | extended   |
 | QA-CI-005    | CI         | Report consumed but never generated                          | error    | quarantine |
@@ -369,18 +369,18 @@ The full catalog is generated from the registry, never maintained by hand:
 | QA-CI-008    | CI         | Always-success step masks failures                           | error    | quarantine |
 | QA-CI-009    | CI         | Exit code not propagated (`\|` without pipefail, `;` chains) | error    | extended   |
 | QA-CI-010    | CI         | Tests skipped where they must block                          | error    | quarantine |
-| QA-PY-002    | Python     | Skipped test (`skip`, non-strict `xfail`)                    | warning  | extended       |
+| QA-PY-002    | Python     | Skipped test (`skip`, non-strict `xfail`)                    | warning  | extended   |
 | QA-PY-003    | Python     | Test function with no assertions                             | error    | quarantine |
 | QA-PY-005    | Python     | `time.sleep()` in tests                                      | warning  | extended   |
 | QA-PY-012    | Python     | Tautological assertion                                       | error    | quarantine |
-| QA-JV-101    | Java       | Disabled test (`@Disabled`)                                  | warning  | extended       |
+| QA-JV-101    | Java       | Disabled test (`@Disabled`)                                  | warning  | extended   |
 | QA-JV-102    | Java       | Hard sleep (`Thread.sleep()`)                                | warning  | extended   |
 | QA-JV-103    | Java       | Test method with no assertions                               | error    | extended   |
-| QA-JV-105    | Java       | Playwright `waitForTimeout()` hard sleep                     | warning  | extended       |
+| QA-JV-105    | Java       | Playwright `waitForTimeout()` hard sleep                     | warning  | extended   |
 | QA-JV-106    | Java       | Brittle selector instead of role locator                     | warning  | quarantine |
-| QA-CS-101    | C#         | Skipped test (`[Ignore]`, `[Fact(Skip=)]`)                   | warning  | extended       |
-| QA-CS-102    | C#         | Hard sleep (`Thread.Sleep` / `Task.Delay`)                   | warning  | extended       |
-| QA-CS-103    | C#         | Test method with no assertions                               | error    | extended       |
+| QA-CS-101    | C#         | Skipped test (`[Ignore]`, `[Fact(Skip=)]`)                   | warning  | extended   |
+| QA-CS-102    | C#         | Hard sleep (`Thread.Sleep` / `Task.Delay`)                   | warning  | extended   |
+| QA-CS-103    | C#         | Test method with no assertions                               | error    | extended   |
 | QA-CS-105    | C#         | `WaitForTimeoutAsync()` hard sleep                           | warning  | extended   |
 | QA-CS-106    | C#         | Brittle selector instead of role locator                     | warning  | quarantine |
 
