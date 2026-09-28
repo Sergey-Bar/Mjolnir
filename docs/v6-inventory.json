@@ -3,17 +3,17 @@
   "artifact": "v6-inventory",
   "generatedBy": "npm run docs:v6-inventory",
   "wave": "0",
-  "baseSha": "1b2a4ef93a1d135c66dd53a4415eb15feb684e67",
+  "baseSha": "d17027be65cab65c2026faca8b42ba84cf1bdc98",
   "version": "5.0.0",
   "publishedStable": "5.0.0",
   "counts": {
-    "srcFiles": 336,
-    "testSpecs": 685,
+    "srcFiles": 324,
+    "testSpecs": 677,
     "rulesLive": 79,
     "rulesRetired": 22,
     "rulesMeasured": 74,
     "adapters": 11,
-    "commands": 39,
+    "commands": 38,
     "frameworks": 14,
     "ciProviders": 6,
     "qaDomains": 13,
@@ -54,8 +54,8 @@
     "measured": 74,
     "byTier": {
       "quarantine": 34,
-      "extended": 21,
-      "core": 24
+      "extended": 26,
+      "core": 19
     }
   },
   "ledgers": {
@@ -424,9 +424,9 @@
         "area": "AI / LLM QA",
         "state": "MISSING",
         "wave": "8",
-        "evidence": ["src/agent"],
+        "evidence": ["src/rules/index.ts"],
         "unverifiedEvidence": [],
-        "note": "src/agent is the agent surface, not LLM-app QA."
+        "note": "No LLM-application QA surface exists. The agent surface that stood in for one was unwired and is deleted; an LLM rule set would live in the registry beside every other rule."
       },
       {
         "specSection": "§33",
@@ -1125,23 +1125,20 @@
       {
         "specSection": "U1",
         "area": "Single Presentation Model",
-        "state": "PARTIALLY_COMPLETE",
+        "state": "ALREADY_COMPLETE",
         "wave": "10",
-        "evidence": [
-          "src/reporter/score-state.ts",
-          "src/reporter/evidence-tag.ts"
-        ],
+        "evidence": ["src/reporter/presentation.ts"],
         "unverifiedEvidence": [],
-        "note": "Two decision sites exist; the model does not."
+        "note": "The two competing decision sites were unwired and are deleted; the PR comment reads its band, label and colour from the one presentation model."
       },
       {
         "specSection": "U4",
         "area": "No naked numbers",
         "state": "MISSING",
         "wave": "5",
-        "evidence": ["src/reporter/evidence-tag.ts"],
+        "evidence": ["src/reporter/pr-report-shared.ts"],
         "unverifiedEvidence": [],
-        "note": "4 coarse values, no maturity/n/interval."
+        "note": "4 coarse values, no maturity/n/interval. The badge still prints a bare score and a 0-100% evidence number; nothing shows the Wilson interval or the sample size behind either."
       },
       {
         "specSection": "E6",
@@ -1157,7 +1154,7 @@
         "area": "Threshold registry",
         "state": "MISSING",
         "wave": "4",
-        "evidence": ["src/reporter/score-state.ts"],
+        "evidence": ["src/reporter/presentation.ts"],
         "unverifiedEvidence": [],
         "note": "Documented 3× cross-surface drift, class not closed."
       },

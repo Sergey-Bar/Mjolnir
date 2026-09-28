@@ -7,37 +7,33 @@ contract enforces: **every external import in src/ must belong to the
 allowlist**, and the shipped surface (adapters, rules, flags, formats, exit
 codes) must match this document exactly.
 
-## Inventory: 343 files, 101389 LOC
+## Inventory: 332 files, 89558 LOC
 
 | Area              | Files | LOC   |
 | ----------------- | ----- | ----- |
-| src/engine        | 60    | 26137 |
-| src/commands      | 39    | 12751 |
+| src/engine        | 57    | 21492 |
+| src/commands      | 38    | 12595 |
 | src/rules         | 89    | 12038 |
 | src/v6            | 10    | 5769  |
-| src/reporter      | 16    | 3977  |
 | src/(root)        | 8     | 3883  |
+| src/reporter      | 14    | 3838  |
 | src/forensics     | 17    | 3065  |
 | src/ledger        | 1     | 2780  |
 | src/governance    | 1     | 2744  |
 | src/frameworks    | 6     | 2656  |
-| src/detectors     | 1     | 2564  |
-| src/plugins       | 6     | 2295  |
+| src/plugins       | 5     | 1946  |
 | src/discovery     | 10    | 1794  |
 | src/adapters      | 11    | 1770  |
-| src/agent         | 1     | 1726  |
-| src/benchmark     | 3     | 1434  |
 | src/gaps          | 2     | 1390  |
 | src/integrations  | 9     | 1355  |
 | src/qa            | 1     | 1282  |
 | src/bench         | 5     | 1063  |
 | src/release       | 7     | 1004  |
-| src/research      | 1     | 995   |
 | src/mutation      | 6     | 831   |
 | src/mcp           | 3     | 825   |
 | src/brand         | 3     | 817   |
 | src/store         | 2     | 665   |
-| src/certification | 2     | 568   |
+| src/certification | 2     | 571   |
 | src/config        | 3     | 559   |
 | src/scorer        | 3     | 537   |
 | src/lib           | 7     | 468   |
@@ -45,35 +41,36 @@ codes) must match this document exactly.
 | src/scope         | 2     | 427   |
 | src/playwright    | 2     | 332   |
 | src/trust         | 2     | 278   |
+| src/benchmark     | 2     | 174   |
 | src/anti-gaming   | 2     | 169   |
 
 ## Internal fan-in — top 15 (change-blast candidates)
 
 | Module                          | Importers |
 | ------------------------------- | --------- |
-| src/types                       | 137       |
-| src/rules/rule                  | 83        |
+| src/types                       | 134       |
+| src/rules/rule                  | 82        |
 | src/rules/shared/positions      | 62        |
-| src/lib/safe-json               | 24        |
-| src/cli-io                      | 21        |
+| src/lib/safe-json               | 23        |
 | src/reporter/ui                 | 21        |
 | src/lib/compare                 | 20        |
+| src/cli-io                      | 20        |
 | src/forensics/types             | 20        |
-| src/lib/fs-atomic               | 19        |
+| src/lib/fs-atomic               | 18        |
 | src/rules/index                 | 15        |
 | src/engine/adapter              | 14        |
-| src/reporter/presentation       | 14        |
 | src/rules/measured-fp.generated | 14        |
 | src/engine/degradation-ledger   | 13        |
+| src/reporter/presentation       | 12        |
 | src/discovery/ignores           | 11        |
 
 ## External dependency allowlist (containment)
 
 | Dependency         | Files importing it |
 | ------------------ | ------------------ |
-| node:fs            | 70                 |
-| node:path          | 67                 |
-| node:crypto        | 28                 |
+| node:fs            | 68                 |
+| node:path          | 65                 |
+| node:crypto        | 21                 |
 | ts-morph           | 7                  |
 | node:url           | 4                  |
 | node:child_process | 4                  |

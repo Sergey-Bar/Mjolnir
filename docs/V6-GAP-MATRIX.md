@@ -2,7 +2,7 @@
 
 **Generated — do not edit by hand.** Regenerate: `npm run docs:v6-inventory`.
 
-Baseline commit `1b2a4ef93a1d135c66dd53a4415eb15feb684e67`.
+Baseline commit `d17027be65cab65c2026faca8b42ba84cf1bdc98`.
 
 Two sources, one table. Rows marked **Wave 0** were found by this
 inventory and were carried by no ledger before; rows marked **M26
@@ -143,7 +143,6 @@ the actual scope of v6, and it is much larger than the wave list suggests.
 | P4     | Claim budget / prose lint  | **MISSING**            | 0    |
 | P5     | FP/FN delta gate           | **MISSING**            | 4    |
 | P6     | Degradation ledger         | **MISSING**            | 4    |
-| U1     | Single Presentation Model  | **PARTIALLY_COMPLETE** | 10   |
 | U4     | No naked numbers           | **MISSING**            | 5    |
 | E6     | Parse-once fact store      | **MISSING**            | 11   |
 | L4     | Threshold registry         | **MISSING**            | 4    |

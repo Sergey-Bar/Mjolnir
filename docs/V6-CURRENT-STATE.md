@@ -2,7 +2,7 @@
 
 **Generated — do not edit by hand.** Regenerate: `npm run docs:v6-inventory`.
 
-Baseline commit `1b2a4ef93a1d135c66dd53a4415eb15feb684e67` · package version `5.0.0` · published stable `5.0.0`.
+Baseline commit `d17027be65cab65c2026faca8b42ba84cf1bdc98` · package version `5.0.0` · published stable `5.0.0`.
 
 This is the truth baseline v6 is built on. It is deliberately blunt: the
 interesting part of a current-state inventory is what the product _cannot_
@@ -30,14 +30,14 @@ demonstrate, not what it contains.
 | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
 | Package version                 | `5.0.0`                                                                                                                                 | `package.json`                      |
 | Published stable                | `5.0.0`                                                                                                                                 | `package.json`                      |
-| Source files (`src/**.ts`)      | 336                                                                                                                                     | derived                             |
-| Test specs (`tests/**.spec.ts`) | 685                                                                                                                                     | derived                             |
+| Source files (`src/**.ts`)      | 324                                                                                                                                     | derived                             |
+| Test specs (`tests/**.spec.ts`) | 677                                                                                                                                     | derived                             |
 | Live rules                      | 79                                                                                                                                      | `src/rules/index.ts`                |
 | Retired rule ids (preserved)    | 22                                                                                                                                      | `RETIRED_RULE_IDS`                  |
 | Rules with a valid measurement  | 74                                                                                                                                      | `MEASURED_FP` + `detectorRev`       |
-| Rule tiers                      | **core** 24 · **extended** 21 · **quarantine** 34                                                                                       | `effectiveTier`                     |
+| Rule tiers                      | **core** 19 · **extended** 26 · **quarantine** 34                                                                                       | `effectiveTier`                     |
 | Adapters                        | 11 (azure-pipelines, csharp, exit-code-integrity, github-actions, gitlab-ci, index, java, jenkins, python, typescript, workflow-bypass) | `src/adapters`                      |
-| Commands                        | 39                                                                                                                                      | `src/commands`                      |
+| Commands                        | 38                                                                                                                                      | `src/commands`                      |
 | Frameworks in the inventory     | 14                                                                                                                                      | `FRAMEWORK_INVENTORY`               |
 | CI providers                    | 6                                                                                                                                       | `CI_PROVIDER_IDS`                   |
 | QA domain records               | 13                                                                                                                                      | `QA_DOMAIN_RECORDS`                 |
@@ -49,18 +49,18 @@ demonstrate, not what it contains.
 
 ### Largest source areas
 
-- `src/rules/` — 88
-- `src/engine/` — 60
-- `src/commands/` — 39
+- `src/rules/` — 89
+- `src/engine/` — 57
+- `src/commands/` — 38
 - `src/forensics/` — 17
-- `src/reporter/` — 16
-- `src/integrations/` — 12
+- `src/reporter/` — 14
 - `src/adapters/` — 11
 - `src/discovery/` — 10
 - `src/v6/` — 10
+- `src/integrations/` — 9
+- `src/lib/` — 7
 - `src/release/` — 7
 - `src/frameworks/` — 6
-- `src/lib/` — 6
 
 ### Ledgers
 
@@ -97,11 +97,11 @@ Two surfaces are absent and must not be advertised at any maturity.
 
 113 spec sections classified from the repository, not from the spec's own description:
 
-- **ALREADY_COMPLETE** — 37
+- **ALREADY_COMPLETE** — 38
 - **BLOCKED** — 2
 - **INCORRECT** — 2
 - **MISSING** — 38
-- **PARTIALLY_COMPLETE** — 34
+- **PARTIALLY_COMPLETE** — 33
 
 | Spec § | Area                       | State                  | Wave | Evidence                                                                            | Note                                                                                                                                                                                                                                                                           |
 | ------ | -------------------------- | ---------------------- | ---- | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -136,7 +136,7 @@ Two surfaces are absent and must not be advertised at any maturity.
 | §29    | i18n / RTL                 | **MISSING**            | 8    | —                                                                                   | No pack.                                                                                                                                                                                                                                                                       |
 | §30    | Performance QA             | **MISSING**            | 8    | src/bench                                                                           | src/bench measures the tool, not load tests.                                                                                                                                                                                                                                   |
 | §31    | Security verification QA   | **BLOCKED**            | 8    | docs/M26-SUPPORT-MATRIX.json                                                        | Requires external scanners; zero-network default.                                                                                                                                                                                                                              |
-| §32    | AI / LLM QA                | **MISSING**            | 8    | src/agent                                                                           | src/agent is the agent surface, not LLM-app QA.                                                                                                                                                                                                                                |
+| §32    | AI / LLM QA                | **MISSING**            | 8    | src/rules/index.ts                                                                  | No LLM-application QA surface exists. The agent surface that stood in for one was unwired and is deleted; an LLM rule set would live in the registry beside every other rule.                                                                                                  |
 | §33    | Data / ETL QA              | **MISSING**            | 8    | —                                                                                   | No pack.                                                                                                                                                                                                                                                                       |
 | §34    | Chaos / resilience QA      | **MISSING**            | 8    | —                                                                                   | No pack.                                                                                                                                                                                                                                                                       |
 | §35    | Network / protocol QA      | **MISSING**            | 8    | —                                                                                   | No pack.                                                                                                                                                                                                                                                                       |
@@ -212,10 +212,10 @@ Two surfaces are absent and must not be advertised at any maturity.
 | P4     | Claim budget / prose lint  | **MISSING**            | 0    | —                                                                                   | Shipped in this wave: scripts/v6/check-claims-prose.mjs + check-claim-budget.mjs.                                                                                                                                                                                              |
 | P5     | FP/FN delta gate           | **MISSING**            | 4    | docs/FP-AUDIT.md                                                                    | A document, not a release signal.                                                                                                                                                                                                                                              |
 | P6     | Degradation ledger         | **MISSING**            | 4    | —                                                                                   | No ledger records what degrades, so a degraded run is indistinguishable from a clean one.                                                                                                                                                                                      |
-| U1     | Single Presentation Model  | **PARTIALLY_COMPLETE** | 10   | src/reporter/score-state.ts, src/reporter/evidence-tag.ts                           | Two decision sites exist; the model does not.                                                                                                                                                                                                                                  |
-| U4     | No naked numbers           | **MISSING**            | 5    | src/reporter/evidence-tag.ts                                                        | 4 coarse values, no maturity/n/interval.                                                                                                                                                                                                                                       |
+| U1     | Single Presentation Model  | **ALREADY_COMPLETE**   | 10   | src/reporter/presentation.ts                                                        | The two competing decision sites were unwired and are deleted; the PR comment reads its band, label and colour from the one presentation model.                                                                                                                                |
+| U4     | No naked numbers           | **MISSING**            | 5    | src/reporter/pr-report-shared.ts                                                    | 4 coarse values, no maturity/n/interval. The badge still prints a bare score and a 0-100% evidence number; nothing shows the Wilson interval or the sample size behind either.                                                                                                 |
 | E6     | Parse-once fact store      | **MISSING**            | 11   | src/types.ts                                                                        | Rules re-parse.                                                                                                                                                                                                                                                                |
-| L4     | Threshold registry         | **MISSING**            | 4    | src/reporter/score-state.ts                                                         | Documented 3× cross-surface drift, class not closed.                                                                                                                                                                                                                           |
+| L4     | Threshold registry         | **MISSING**            | 4    | src/reporter/presentation.ts                                                        | Documented 3× cross-surface drift, class not closed.                                                                                                                                                                                                                           |
 | R1     | Self-falsification suite   | **MISSING**            | 11   | tests/fuzz, tests/stress                                                            | Fuzz/stress exist; targeted self-harm does not.                                                                                                                                                                                                                                |
 | R2     | Golden-output corpus       | **PARTIALLY_COMPLETE** | 14   | tests/golden                                                                        | Does not lock render + exit code + digest per scenario.                                                                                                                                                                                                                        |
 

@@ -54,52 +54,35 @@ export default defineConfig({
         // subprocess's istanbul report cannot merge into the parent run —
         // same class as dist/** (bug-audit G6 precedent). All transport
         // logic lives in src/mcp/transport.ts and IS ratchet-covered.
+        // Every path below is a row in docs/COVERAGE-EXEMPTIONS.json, in the
+        // same order: the ledger validator compares the two as a set, and a
+        // hand-kept pair drifts the moment a module is deleted.
         "src/mcp/stdio.ts",
         "src/types.ts",
         "src/forensics/types.ts",
         "src/playwright/selector-health-types.ts",
-        // Wave 2+3 commands (added/expanded in this PR): per-file coverage
-        // sits below the 80% floor while dedicated unit tests land in
-        // follow-up PRs. These commands ARE exercised by
-        // tests/commands/ux-verification.spec.ts integration tests, and
-        // global totals remain ratcheted by scripts/check-coverage-ratchet.mjs.
         "src/commands/analyze.ts",
         "src/commands/ci-adapter.ts",
         "src/commands/dashboard.ts",
         "src/commands/exec-report.ts",
         "src/commands/policy.ts",
-        "src/commands/scan-cache.ts",
         "src/commands/trend.ts",
-        "src/plugins/npm-loader.ts",
-        "src/agent/decision-receipt.ts",
         "src/bench/m48-scale-operating-model.ts",
-        "src/benchmark/m47-false-green-benchmark.ts",
         "src/change-intelligence.ts",
-        "src/detectors/m45-detector-lifecycle.ts",
         "src/engine/m38-challenge-contract.ts",
-        "src/engine/m39-simulation-contract.ts",
         "src/engine/m40-language-expansion-contract.ts",
         "src/engine/m43-system-of-systems.ts",
         "src/engine/m44-historical-intelligence.ts",
-        "src/engine/m45-detector-lifecycle.ts",
         "src/engine/m49-experience-parity-contract.ts",
-        "src/engine/m50-release-proof-contract.ts",
         "src/engine/runtime-evidence-graph.ts",
         "src/frameworks/universal-pack-contract.ts",
         "src/governance/m33-m34-contract.ts",
         "src/mutation/failure-sensitivity.ts",
         "src/plugins/sdk-contract.ts",
         "src/qa/domain-model.ts",
-        "src/research/m46-reproducible-research-lab-contract.ts",
         "src/ledger/m26-validators.ts",
         "src/release/version-surface.ts",
-        // Forensics triage: intentionally deep recursive logic with
-        // low branch density; excluded from per-file ratchet while
-        // global totals stay gated by scripts/check-coverage-ratchet.mjs.
         "src/forensics/triage.ts",
-        // CLI entry point: Wave 2/3 subcommand registrations lower
-        // function coverage below floor; integration-exercised via
-        // the spawn test in tests/cli/mcp-dispatch.spec.ts.
         "src/cli.ts",
         "dist/**",
       ],

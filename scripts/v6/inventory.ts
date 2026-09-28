@@ -565,9 +565,14 @@ export const REQUIREMENT_CLASSIFICATION: readonly (RequirementClassification & {
     specSection: "§32",
     area: "AI / LLM QA",
     state: "MISSING",
-    evidence: ["src/agent"],
+    // Was `src/agent`, which held one unwired module and was deleted in 6.0.
+    // The gap is not "that directory is missing" — it is that no LLM-app QA
+    // surface exists. Pointing the citation at the rule registry is honest
+    // about where such rules would have to live, and a citation that
+    // resolves is one an auditor can check.
+    evidence: ["src/rules/index.ts"],
     wave: "8",
-    note: "src/agent is the agent surface, not LLM-app QA.",
+    note: "No LLM-application QA surface exists. The agent surface that stood in for one was unwired and is deleted; an LLM rule set would live in the registry beside every other rule.",
   },
   {
     specSection: "§33",
@@ -1188,18 +1193,35 @@ export const REQUIREMENT_CLASSIFICATION: readonly (RequirementClassification & {
   {
     specSection: "U1",
     area: "Single Presentation Model",
-    state: "PARTIALLY_COMPLETE",
-    evidence: ["src/reporter/score-state.ts", "src/reporter/evidence-tag.ts"],
+    // 6.0. This row used to name `src/reporter/score-state.ts` and
+    // `src/reporter/evidence-tag.ts` as its evidence, with the note "Two
+    // decision sites exist; the model does not." Both files were unwired —
+    // zero importers outside their own specs — and were deleted. So the two
+    // decision sites no longer exist either, and the row moves to COMPLETE
+    // with the evidence pointing at the single model that owns the decision.
+    //
+    // That model is `src/reporter/presentation.ts`: the PR comment's
+    // `renderScoreBadge` now calls its `deriveScoreState` (it previously
+    // called it into an unused `_state` local and threw the result away, so
+    // the band never rendered). §U4 below keeps its own row because "no naked
+    // numbers" is a different defect from "one model" and is not closed by
+    // this.
+    state: "ALREADY_COMPLETE",
+    evidence: ["src/reporter/presentation.ts"],
     wave: "10",
-    note: "Two decision sites exist; the model does not.",
+    note: "The two competing decision sites were unwired and are deleted; the PR comment reads its band, label and colour from the one presentation model.",
   },
   {
     specSection: "U4",
     area: "No naked numbers",
     state: "MISSING",
-    evidence: ["src/reporter/evidence-tag.ts"],
+    // Was `src/reporter/evidence-tag.ts`, which no longer exists. The gap is
+    // still real and still open — it is about the numbers a reader is shown,
+    // not about which module computes them — so the row stays MISSING and
+    // the evidence moves to what still renders them.
+    evidence: ["src/reporter/pr-report-shared.ts"],
     wave: "5",
-    note: "4 coarse values, no maturity/n/interval.",
+    note: "4 coarse values, no maturity/n/interval. The badge still prints a bare score and a 0-100% evidence number; nothing shows the Wilson interval or the sample size behind either.",
   },
   {
     specSection: "E6",
@@ -1213,7 +1235,12 @@ export const REQUIREMENT_CLASSIFICATION: readonly (RequirementClassification & {
     specSection: "L4",
     area: "Threshold registry",
     state: "MISSING",
-    evidence: ["src/reporter/score-state.ts"],
+    // Was `src/reporter/score-state.ts`, unwired and deleted in 6.0. The gap
+    // is still open — it is about ONE source of truth for tier thresholds
+    // across surfaces, and deleting a dead duplicate is not the same as
+    // having one. The evidence now points at the live module that owns the
+    // band decision, which is where a registry would have to live.
+    evidence: ["src/reporter/presentation.ts"],
     wave: "4",
     note: "Documented 3× cross-surface drift, class not closed.",
   },

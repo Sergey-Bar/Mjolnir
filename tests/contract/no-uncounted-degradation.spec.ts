@@ -512,69 +512,6 @@ const ALLOWED_VALUE_RETURNS: ReadonlyArray<{
       "direction here is the noisy one, which is the safe one.",
   },
   {
-    file: "detectors/m45-detector-lifecycle.ts",
-    line: 458,
-    direction: "fails-by-absence",
-    reason:
-      "Returns false. The probe could not complete, and the only thing this reports is that nothing was found. Absence is never read downstream as a pass: a capability, edge or capability-level with no evidence stays unproven, which is the direction that cannot manufacture a green.",
-  },
-  {
-    file: "detectors/m45-detector-lifecycle.ts",
-    line: 466,
-    direction: "fails-by-absence",
-    reason:
-      "Returns undefined. The probe could not complete, and the only thing this reports is that nothing was found. Absence is never read downstream as a pass: a capability, edge or capability-level with no evidence stays unproven, which is the direction that cannot manufacture a green.",
-  },
-  {
-    file: "detectors/m45-detector-lifecycle.ts",
-    line: 540,
-    direction: "fails-by-absence",
-    reason:
-      "Returns null. The probe could not complete, and the only thing this reports is that nothing was found. Absence is never read downstream as a pass: a capability, edge or capability-level with no evidence stays unproven, which is the direction that cannot manufacture a green.",
-  },
-  {
-    file: "detectors/m45-detector-lifecycle.ts",
-    line: 856,
-    direction: "fails-explicitly",
-    reason:
-      'Returns `"sha256:unavailable"`, which names the failure in the value itself rather than leaving the caller to infer it. A caller reading this sees a state it cannot promote, so a thrown check cannot read as a satisfied one.',
-  },
-  {
-    file: "detectors/m45-detector-lifecycle.ts",
-    line: 1247,
-    direction: "reducing",
-    reason:
-      "Returns `{`, which reports less than the check would have on success. The direction is downward: no field is asserted that the failed check did not establish.",
-  },
-  {
-    file: "detectors/m45-detector-lifecycle.ts",
-    line: 1558,
-    direction: "fails-explicitly",
-    reason:
-      'Returns `holdoutFailure("MALFORMED", "MALFORMED_EVIDENCE", [`, which names the failure in the value itself rather than leaving the caller to infer it. A caller reading this sees a state it cannot promote, so a thrown check cannot read as a satisfied one.',
-  },
-  {
-    file: "detectors/m45-detector-lifecycle.ts",
-    line: 1717,
-    direction: "reducing",
-    reason:
-      "Returns `{`, which reports less than the check would have on success. The direction is downward: no field is asserted that the failed check did not establish.",
-  },
-  {
-    file: "detectors/m45-detector-lifecycle.ts",
-    line: 2082,
-    direction: "fails-explicitly",
-    reason:
-      'Returns `promotionFailure("INCONCLUSIVE", "MALFORMED_REQUEST", [`, which names the failure in the value itself rather than leaving the caller to infer it. A caller reading this sees a state it cannot promote, so a thrown check cannot read as a satisfied one.',
-  },
-  {
-    file: "detectors/m45-detector-lifecycle.ts",
-    line: 2279,
-    direction: "reducing",
-    reason:
-      "Returns `transitionFailure(`, which reports less than the check would have on success. The direction is downward: no field is asserted that the failed check did not establish.",
-  },
-  {
     file: "engine/m38-challenge-contract.ts",
     line: 274,
     direction: "fails-explicitly",
@@ -612,62 +549,6 @@ const ALLOWED_VALUE_RETURNS: ReadonlyArray<{
   {
     file: "engine/m38-challenge-contract.ts",
     line: 740,
-    direction: "fails-explicitly",
-    reason:
-      'Returns `"UNKNOWN"`, which names the failure in the value itself rather than leaving the caller to infer it. A caller reading this sees a state it cannot promote, so a thrown check cannot read as a satisfied one.',
-  },
-  {
-    file: "engine/m39-simulation-contract.ts",
-    line: 435,
-    direction: "fails-by-absence",
-    reason:
-      "Returns null. The probe could not complete, and the only thing this reports is that nothing was found. Absence is never read downstream as a pass: a capability, edge or capability-level with no evidence stays unproven, which is the direction that cannot manufacture a green.",
-  },
-  {
-    file: "engine/m39-simulation-contract.ts",
-    line: 457,
-    direction: "fails-by-absence",
-    reason:
-      "Returns null. The probe could not complete, and the only thing this reports is that nothing was found. Absence is never read downstream as a pass: a capability, edge or capability-level with no evidence stays unproven, which is the direction that cannot manufacture a green.",
-  },
-  {
-    file: "engine/m39-simulation-contract.ts",
-    line: 740,
-    direction: "fails-explicitly",
-    reason:
-      "Returns `{ limits, valid: false, clamped }`, which names the failure in the value itself rather than leaving the caller to infer it. A caller reading this sees a state it cannot promote, so a thrown check cannot read as a satisfied one.",
-  },
-  {
-    file: "engine/m39-simulation-contract.ts",
-    line: 984,
-    direction: "reducing",
-    reason:
-      "Returns `{`, which reports less than the check would have on success. The direction is downward: no field is asserted that the failed check did not establish.",
-  },
-  {
-    file: "engine/m39-simulation-contract.ts",
-    line: 1083,
-    direction: "fails-by-absence",
-    reason:
-      "Returns null. The probe could not complete, and the only thing this reports is that nothing was found. Absence is never read downstream as a pass: a capability, edge or capability-level with no evidence stays unproven, which is the direction that cannot manufacture a green.",
-  },
-  {
-    file: "engine/m39-simulation-contract.ts",
-    line: 1424,
-    direction: "fails-explicitly",
-    reason:
-      "Returns `{ result: null, malformed: true }`, which names the failure in the value itself rather than leaving the caller to infer it. A caller reading this sees a state it cannot promote, so a thrown check cannot read as a satisfied one.",
-  },
-  {
-    file: "engine/m39-simulation-contract.ts",
-    line: 1781,
-    direction: "fails-explicitly",
-    reason:
-      'Returns `{ evidence: null, state: "MALFORMED", reason: "EVIDENCE_MALF`, which names the failure in the value itself rather than leaving the caller to infer it. A caller reading this sees a state it cannot promote, so a thrown check cannot read as a satisfied one.',
-  },
-  {
-    file: "engine/m39-simulation-contract.ts",
-    line: 2435,
     direction: "fails-explicitly",
     reason:
       'Returns `"UNKNOWN"`, which names the failure in the value itself rather than leaving the caller to infer it. A caller reading this sees a state it cannot promote, so a thrown check cannot read as a satisfied one.',
@@ -771,48 +652,6 @@ const ALLOWED_VALUE_RETURNS: ReadonlyArray<{
       "Returns `personaResults(`, which reports less than the check would have on success. The direction is downward: no field is asserted that the failed check did not establish.",
   },
   {
-    file: "engine/m50-release-proof-contract.ts",
-    line: 292,
-    direction: "fails-by-absence",
-    reason:
-      "Returns false. The probe could not complete, and the only thing this reports is that nothing was found. Absence is never read downstream as a pass: a capability, edge or capability-level with no evidence stays unproven, which is the direction that cannot manufacture a green.",
-  },
-  {
-    file: "engine/m50-release-proof-contract.ts",
-    line: 343,
-    direction: "fails-by-absence",
-    reason:
-      "Returns false. The probe could not complete, and the only thing this reports is that nothing was found. Absence is never read downstream as a pass: a capability, edge or capability-level with no evidence stays unproven, which is the direction that cannot manufacture a green.",
-  },
-  {
-    file: "engine/m50-release-proof-contract.ts",
-    line: 645,
-    direction: "fails-by-absence",
-    reason:
-      "Returns false. The probe could not complete, and the only thing this reports is that nothing was found. Absence is never read downstream as a pass: a capability, edge or capability-level with no evidence stays unproven, which is the direction that cannot manufacture a green.",
-  },
-  {
-    file: "engine/m50-release-proof-contract.ts",
-    line: 1462,
-    direction: "reducing",
-    reason:
-      "Returns `emptyParsedInput()`, which reports less than the check would have on success. The direction is downward: no field is asserted that the failed check did not establish.",
-  },
-  {
-    file: "engine/m50-release-proof-contract.ts",
-    line: 1557,
-    direction: "reducing",
-    reason:
-      "Returns `makeReadiness(state)`, which reports less than the check would have on success. The direction is downward: no field is asserted that the failed check did not establish.",
-  },
-  {
-    file: "engine/m50-release-proof-contract.ts",
-    line: 2002,
-    direction: "reducing",
-    reason:
-      "resolveContext returns the candidate binding it was handed, with evaluatedAt left empty when it could not be read. It is a context resolver, not a verdict: it reports less, never a passing proof, and an empty timestamp is visibly absent rather than a fresh one.",
-  },
-  {
     file: "engine/runtime-evidence-graph.ts",
     line: 828,
     direction: "reducing",
@@ -853,13 +692,6 @@ const ALLOWED_VALUE_RETURNS: ReadonlyArray<{
     direction: "fails-by-absence",
     reason:
       "Returns undefined. The probe could not complete, and the only thing this reports is that nothing was found. Absence is never read downstream as a pass: a capability, edge or capability-level with no evidence stays unproven, which is the direction that cannot manufacture a green.",
-  },
-  {
-    file: "research/m46-reproducible-research-lab-contract.ts",
-    line: 992,
-    direction: "fails-explicitly",
-    reason:
-      'Returns `malformedOutput("$")`, which names the failure in the value itself rather than leaving the caller to infer it. A caller reading this sees a state it cannot promote, so a thrown check cannot read as a satisfied one.',
   },
   {
     file: "v6/capability-registry.ts",
