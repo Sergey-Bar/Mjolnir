@@ -1,0 +1,177 @@
+# CodeRabbit review configuration.
+#
+# 6.0. The default review is wrong for this repository in three specific ways,
+# and all three produce false positives that teach a reviewer to skim:
+#
+#   1. The fixture corpora under `tests/` are real OSS code and hand-written
+#      defect EXHIBITS. They contain the anti-patterns the rules detect — a
+#      `.only` in a "must-not-fire" fixture is the point. Reviewing them
+#      reports the exhibit as a finding.
+#   2. The detector rules under `src/rules/` are deliberately UNREACHABLE
+#      until a corpus re-sample. The v6 gap matrix and
+#      `docs/QUARANTINE-REMEDIATION.md` are the record of which, and they are
+#      generated from the same data the rules are.
+#   3. The comment in a rule file is the EVIDENCE for its own detector
+#      revision — it states what the last measurement found and what the gate
+#      is. Suggesting that it be "documented elsewhere" removes the only
+#      record of why the detector is shaped the way it is.
+#
+# The `path_instructions` below state those conventions where they apply,
+# rather than disabling review for those paths, so the parts of those files
+# that are genuinely wrong still get read.
+
+language: en-US
+
+reviews:
+  profile: thorough
+  request_changes_workflow: true
+  high_level_summary: true
+  review_style: guided
+  enable_help_text: true
+  code_review:
+    # A comment explaining a DEFECT CLASS is the convention here, not a
+    # long comment — `src/rules/measurement.ts` and
+    # `src/reporter/pr-report-shared.ts` both lead with the failure this
+    # release exists to prevent. Inline that style rather than fighting it.
+    path_instructions:
+      - path: "src/rules/**"
+        instructions: >
+          Detector source. The file header records the detector's revision
+          history and the ADJUDICATED evidence behind it; keep it, and keep
+          it specific ("7 of 11 adjudicated findings were nested
+          single-statement blocks") rather than restating the title. When you
+          change the predicate, bump `detectorRevision` and state the
+          re-measurement — a measurement for a detector that no longer
+          exists is the claim this repository is trying to stop making.
+      - path: "src/engine/**"
+        instructions: >
+          Scan pipeline. `partial` means "this run lost something while doing
+          it" and drives `scanExitCode`, SARIF `executionSuccessful` and
+          whether generated CI blocks. Do not suggest folding a new input into
+          it; a new failure mode belongs in its own field. Anything that
+          would change findings for an ordinary non-strict scan is a scope
+          change, not a refactor.
+      - path: "src/reporter/**"
+        instructions: >
+          Presentation. This tree has been hit by three defects of the same
+          shape — a markdown string where HTML was required, an `<img>` whose
+          URL resolves to nothing, and a bare machine token printed in prose.
+          Treat any new markup as required to survive GitHub's sanitizer, and
+          check that every asset path exists before suggesting it.
+      - path: "src/v6/**"
+        instructions: >
+          Gap-matrix data. Files here are EVIDENCE: a row citing a module is a
+          claim that the module exists. Deleting a cited module falsifies the
+          claim, so re-point the citation or change the row's state.
+      - path: "tests/fixtures/**"
+        instructions: >
+          DATA, never source. These files deliberately contain the
+          anti-patterns the detectors look for — a `.only` in a
+          `must-not-fire` fixture is the fixture working. Do not report
+          anything inside them.
+      - path: "tests/corpus/**"
+        instructions: >
+          DATA and immutable evidence. `tests/corpus/verdicts/*.jsonl` is
+          immutable once committed (`apply-verdicts` enforces it): a new
+          verdict is a NEW row for the same (rule, file, line), never an
+          edit. Review the tooling around it, not the rows.
+      - path: "tests/golden/**"
+        instructions: >
+          DATA. A golden repository that is expected to produce findings.
+      - path: "scripts/**"
+        instructions: >
+          Gates and generators. A generator's output is drift-locked by
+          `.github/workflows/ci.yml`, so a generator must emit exactly what
+          prettier produces — the `generated-docs-drift` job compares bytes.
+          When a gate can fail, say what it returns and where; a gate whose
+          only failure mode is an exception is a gate that cannot report.
+      - path: "src/types.ts"
+        instructions: >
+          The shared type surface. `exactOptionalPropertyTypes` is on, so a
+          field typed `T | undefined` is NOT the same as an optional `T`:
+          the first permits an explicit `undefined`, the second does not.
+          Check which one a change means before suggesting a signature.
+
+  tool_specific_prompts:
+    - tools: ["*"]
+      prompts:
+        - prompt: >
+            Is the behaviour CHANGED by this, or only its shape? In this
+            repository the two are routinely confused, and the expensive
+            error is a signature that looks equivalent and changes a caller's
+            result.
+        - prompt: >
+            Does this comment state something the code does not do? The most
+            common real defect found in review here is a comment describing a
+            gate, a fixture path, or a threshold that has since moved. Check
+            the claim, not the phrasing.
+        - prompt: >
+            Is a generated artifact being edited by hand? If so, name the
+            generator and the script that produces it.
+        - prompt: >
+            Would this fail on Linux, macOS or Windows? Three defects this
+            release found were platform-shaped: a working-tree hash that
+            changed with line endings, a `junction` symlink type that is
+            Windows-only, and a path comparison using the platform separator.
+
+  enabled_tools: # Enabled for this repository — the default set plus the
+    # two that have caught real defects here.
+    - "@astral-sh/ast-grep/cli" # structural rules the regexes miss
+    - "shellcheck" # every gate here is a shell one-liner
+    - "actionlint" # 17 workflows, all shell-heavy
+    - "detect-secrets" # the token and registry material
+
+  path_filters: []
+  tools:
+    - tool: "@astral-sh/ast-grep/cli"
+      # `scripts/` and `src/` only: the DATA trees under `tests/` contain the
+      # patterns these rules match, and reporting them is the same false
+      # positive as reviewing the fixtures.
+      enable_by_default: false
+      enabled_for: ["src/**", "scripts/**"]
+
+  language_specific_prompts:
+    - language: "typescript"
+      prompts:
+        - prompt: >
+            Is a regex here vulnerable to catastrophic backtracking? This
+            repository gates that with `regexp/no-super-linear-backtracking`
+            at ERROR and `tests/rules/redos-gate.spec.ts`; a new
+            user-supplied pattern without a bound is a CI failure.
+        - prompt: >
+            Does this `catch` return a value? A catch that RETURNS can lie to
+            its caller; one that returns nothing cannot, because there is no
+            value to mistake for success. `tests/contract/no-uncounted-degradation.spec.ts`
+            keeps the list of the first kind and the gate is in `certify`.
+        - prompt: >
+            Does this identifier survive serialisation? A `Set` or `Map` in a
+            JSON contract serialises to `{}` and comes back wrong.
+
+# Pre-commit checks CodeRabbit expects a repository to have. Every one is
+# already enforced; the list is here so the review references the real gates
+# rather than proposing new ones.
+pre_merge_checks:
+  checklist:
+    - id: typecheck
+      instructions: "npx tsc --noEmit && npx tsc --noEmit -p tsconfig.test.json"
+    - id: lint
+      instructions: "npm run lint  (eslint --max-warnings=0 && prettier --check .)"
+    - id: tests
+      instructions: "npm test"
+    - id: gates
+      instructions: >
+        npm run certify:ci — the release chain. A change to a gate, a
+        generator, or a detector is not done until the chain passes; the
+        generated-artifact drift check compares bytes, so a hand-edited
+        generated file fails CI.
+    - id: no-unimported
+      instructions: >
+        npm run unimported:check — a module with no production importer must
+        be wired, deleted, or listed with a reason. The list is
+        scripts/check-unimported-modules.mjs and it fails in both directions.
+    - id: comment-paths
+      instructions: >
+        npm run script:paths — now also checks paths cited in COMMENTS. A
+        comment pointing at a renamed or deleted file sends the next
+        maintainer looking for something that is not there; the sweep that
+        added the check found 70 such citations in one pass.

@@ -7,13 +7,13 @@ contract enforces: **every external import in src/ must belong to the
 allowlist**, and the shipped surface (adapters, rules, flags, formats, exit
 codes) must match this document exactly.
 
-## Inventory: 332 files, 89978 LOC
+## Inventory: 332 files, 90022 LOC
 
 | Area              | Files | LOC   |
 | ----------------- | ----- | ----- |
 | src/engine        | 57    | 21615 |
 | src/commands      | 38    | 12610 |
-| src/rules         | 89    | 12246 |
+| src/rules         | 89    | 12290 |
 | src/v6            | 10    | 5769  |
 | src/(root)        | 8     | 3890  |
 | src/reporter      | 14    | 3838  |
@@ -87,7 +87,7 @@ codes) must match this document exactly.
 ## Shipped surface
 
 - **Adapters** (7): typescript, python, java, csharp, github-actions, azure-pipelines, jenkins
-- **Rules registry**: 79 live, 22 retired, 74 measured
+- **Rules registry**: 79 live, 22 retired, 73 measured
 - **CLI flags**: "--ascii" "--base" "--blocking" "--cache" "--category" "--classic" "--debug" "--enable-plugins" "--format" "--help" "--json" "--max-duration" "--monorepo" "--no-ascii" "--no-progress" "--record-milestones" "--require-full-coverage" "--scope" "--score" "--staged" "--strict" "--tone" "--verbose" "--width" "-h"
 - **Report formats**: codequality, json, mermaid, sarif, terminal
 - **Exit codes** (frozen): 0 clean · 1 findings at/above gate · 2 inconclusive (partial or unsupported analysis — a CI step should fail on it) · 10 usage error · 20 internal error (frozen, docs/VERSIONING.md)

@@ -20,7 +20,7 @@ entry condition.
   certification: the release-readiness record is separate and still names
   what is open.
   <!-- census:total-rules -->79 rules<!-- /census:total-rules -->,
-  <!-- census:measured -->74<!-- /census:measured --> of them carrying a
+  <!-- census:measured -->73<!-- /census:measured --> of them carrying a
   false-positive rate measured against real OSS code
   ([FP-AUDIT](/reference/fp-audit)); the unmeasured remainder is
   quarantined, never silently shipped.

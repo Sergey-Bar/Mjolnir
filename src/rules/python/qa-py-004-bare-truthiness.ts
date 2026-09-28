@@ -40,24 +40,69 @@ export const pyBareTruthinessAssert = defineRule({
   // (p.exists()/p.isdir()/p.check() — the check IS the assertion), mock
   // bookkeeping (.called), and truthiness followed by a precise assert
   // in the same test (an existence guard, not the only check).
-  detectorRevision: 3,
+  //
+  // detectorRevision 4 (6.0, EVIDENCE-BACKED — n=42 adjudicated): revisions 2
+  // and 3 answered each measured FP cluster by ADDING ITS METHOD NAME to
+  // `predicateRe`. Ten clusters later the list still missed pytest's own
+  // exception-info predicates, and 10 of the 12 adjudicated findings were
+  // `assert exc_info.group_contains(...)` / `assert excinfo.errisinstance(...)`.
+  // A vocabulary of names is the wrong shape for the fact being expressed:
+  // the list says "these calls return a meaningful boolean", which is a
+  // property of CALLS, not of any particular spelling.
+  //
+  // The rule's own premise already carries the structural criterion: "this
+  // passes for ANY truthy value — including a wrong one". A CALL does not pass
+  // for any truthy value — it passes for whatever that call computed. A bare
+  // identifier or an attribute chain does. So the gate is the call itself:
+  //
+  //   `assert result`                 -> flagged  (truthiness of an object)
+  //   `assert result.exception`       -> flagged  (truthiness of a sub-object)
+  //   `assert exc_info.group_contains(X)` -> exempt (the call IS the check)
+  //   `assert p.exists()`             -> exempt
+  //   `assert len(items)`             -> exempt
+  //
+  // The trade is explicit: `assert make_thing()` where the callee returns a
+  // complex object is now exempt, and that is a real (small) loss of recall.
+  // It is smaller than the alternative, which is a list that has to be
+  // extended once per library that returns something.
+  //
+  // The second change: a CONSTANT is not a complex object. `assert False` is
+  // how a test manufactures an AssertionError to assert on its traceback, and
+  // one adjudicated finding is exactly that.
+  //
+  // Re-measured against the same pinned corpus after the fix: the rule fires
+  // on 0 of the 12 adjudicated findings, down from 12. The 66.7% figure is
+  // therefore WITHDRAWN rather than corrected in place — its verdicts are
+  // revision 3, this rule is revision 4, so the measurement reads stale and
+  // the rule is UNMEASURED until a fresh sample at revision 4.
+  //
+  // What earns a measurement back is a corpus re-run, and the recall evidence
+  // says it will be a useful one: `tests/fixtures/QA-PY-004/must-fire/` holds
+  // the shapes the rule exists for (bare identifier, attribute chain, deep
+  // attribute chain, a non-conventional name) and all of them still fire.
+  // "Zero false positives" is only half a result — a detector that stopped
+  // firing would score the same and be worth nothing — so the recall side is
+  // asserted in the fixtures rather than assumed from the FP count.
+  detectorRevision: 4,
 
   run(ctx) {
     const text = ctx.codeText ?? ctx.text;
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
     if (!ctx.path.endsWith(".py")) return findings;
 
-    // `assert <identifier-or-call>` with no comparison/boolean operator.
+    // `assert <identifier-or-attribute>` or `assert <call>`, with no
+    // comparison or boolean operator.
     // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/rules/redos-gate.spec.ts
     const re = /^[ \t]*assert\s+([A-Za-z_][\w.]*(?:\([^()]*\))?)[ \t]*$/gm;
 
-    // Calls whose return value is a meaningful boolean predicate — the
-    // truthiness IS the check, so flagging them as "bare" is wrong.
-    // Wave 2 additions per the rev-2 delta sample: any()/all() aggregates,
-    // pytest path predicates (exists/isdir/check), re.match/search,
-    // isinstance, and string-content predicates.
-    const predicateRe =
-      /^(?:(?:any|all|isinstance)\s*\(|[\w.]*\.(?:startswith|endswith|exists|isdir|isfile|islink|ismount|check|isdigit|isalpha|isalnum|isnumeric|isdecimal|isspace|islower|isupper|istitle|isidentifier|isprintable|isascii)\s*\(|re\.(?:match|search|fullmatch)\s*\()/;
+    /**
+     * Constants. `assert False` / `assert None` are deliberate mechanisms —
+     * a test that manufactures an exception to assert on its shape — not a
+     * truthiness check whose wrong value would slip through.
+     */
+    const isConstant = (target: string): boolean =>
+      /^(?:True|False|None|NotImplemented|Ellipsis)$/.test(target) ||
+      /^["'\d]/.test(target);
 
     // A truthiness assert that is a GUARD followed by real use of the
     // same value within the SAME test is not the suite's only evidence:
@@ -96,12 +141,18 @@ export const pyBareTruthinessAssert = defineRule({
     let m: RegExpExecArray | null;
     while ((m = re.exec(text)) !== null) {
       const target = m[1] as string;
+      // A CALL is the check, not a truthiness test on a complex object. This
+      // replaces the hand-maintained method-name vocabulary of revisions 2
+      // and 3 — see the header for why a name list was the wrong shape.
+      if (target.includes("(")) continue;
+      // A constant is a deliberate assertion, not an object whose wrong value
+      // would slip through.
+      if (isConstant(target)) continue;
       // Skip obviously-boolean names (is_/has_/can_ conventions).
       if (/^(?:is|has|can|should|was|were)_/.test(target)) continue;
-      // Skip boolean-predicate calls (the measured FP clusters).
-      if (predicateRe.test(target)) continue;
       // Skip mock bookkeeping (`assert mock.called`) — the call record IS
-      // the observable contract.
+      // the observable contract. An attribute chain, so the call rule above
+      // does not cover it.
       if (/\.called$/.test(target)) continue;
       // Skip existence guards followed by real use of the same value in
       // the same test (wave-2 cluster: `assert stdout` then
