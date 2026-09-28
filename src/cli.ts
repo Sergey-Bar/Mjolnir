@@ -70,7 +70,7 @@ import { runStdioTransport } from "./mcp/transport.js";
  * identity can carry it without a cli.ts import cycle; this re-export
  * keeps every existing consumer stable.
  */
-import { ENGINE_VERSION as CLI_VERSION } from "./engine/version.js";
+import { BUILD_ID, ENGINE_VERSION as CLI_VERSION } from "./engine/version.js";
 export { CLI_VERSION };
 
 /** A usage-error detail: the offending token, when one exists. */
@@ -563,7 +563,14 @@ export async function main(
   io: { out: Output; err: Output } = { out, err },
 ): Promise<number> {
   if (argv[0] === "--version" || argv[0] === "-v") {
-    io.out(`mjolnir-qa ${CLI_VERSION}`);
+    // The release answers "what should I install"; the build answers "what
+    // exactly ran". A bug report with only the first is not reproducible when
+    // two local builds share a version.
+    io.out(
+      BUILD_ID
+        ? `mjolnir-qa ${CLI_VERSION} (build ${BUILD_ID})`
+        : `mjolnir-qa ${CLI_VERSION}`,
+    );
     return EXIT_CLEAN;
   }
   if (argv[0] === "--help" || argv[0] === "-h") {
