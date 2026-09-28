@@ -43,13 +43,6 @@ import type { QADoctorRule } from "./rule.js";
 import { MEASURED_FP } from "./measured-fp.generated.js";
 import { CORE_FP_CEILING, measurementInterval } from "./measurement.js";
 
-/** One rule whose declared tier outruns its evidence. */
-export interface UnsubstantiatedCoreClaim {
-  ruleId: string;
-  /** Why it is here, in the words of whoever put it here. */
-  justification: string;
-}
-
 export interface DeclaredCoreClaim {
   ruleId: string;
   n: number;
@@ -58,99 +51,161 @@ export interface DeclaredCoreClaim {
 }
 
 /**
- * Committed 6.0. Empty justifications are NOT acceptable: the act of adding a
- * rule here is the act of writing down why a human decision stands against
- * the data.
+ * Rules demoted from `core` because their measurement did not support it.
+ *
+ * 6.0. Before this list existed, nineteen rules declared `tier: "core"` and
+ * every one cleared the OLD criterion — `fpRate <= 0.10 && n >= 10` — while
+ * none cleared the interval criterion. Their 95% Wilson upper bounds run
+ * from 13.8% to 40.4%. Two carried the old claim in their own trailing
+ * comments ("measured 2026-09-02: 0% FP at n=20", "10% FP at n=20 (band
+ * edge, ≤ 10%)"), which is the clearest possible statement that the tier was
+ * decided by reading a point estimate.
+ *
+ * `core` was a HUMAN ASSERTION rendered with a measurement's appearance: the
+ * capability matrix showed `tier: "core"`, `measured: true`,
+ * `fpRate: 0`. The maintainer chose demotion over keeping the assertion, on
+ * 2026-09-28. The choice is BEHAVIOUR-NEUTRAL — only `quarantine` is
+ * enforced, so all nineteen still run on every scan. What changed is what the
+ * repository SAYS about them.
+ *
+ * This is a RATCHET, not an archive. `declaredCoreWithoutEvidence` now
+ * returns nothing, and the ratchet fails if any of these nineteen is
+ * promoted back to `core` without a re-sample. A re-sample at the raised
+ * MAX_SAMPLES_PER_RULE can legitimately earn it back; that should be a
+ * deliberate edit to the rule and to this file, and a visible one.
  */
-export const DECLARED_CORE_WITHOUT_EVIDENCE: readonly UnsubstantiatedCoreClaim[] =
-  [
-    {
-      ruleId: "QA-PW-002",
-      justification:
-        "Selector specificity was reviewed by hand; the ten samples are all agreement, none of them is a selector that needs a different specificity.",
-    },
-    {
-      ruleId: "QA-PW-003",
-      justification:
-        "Premise reviewed: the finding is a structural fact about the spec, not a sample-dependent judgement. n=10 with one FP is the weakest case in this list.",
-    },
-    {
-      ruleId: "QA-PY-001",
-      justification:
-        "Structural (module-level mutable state shared across tests). Reviewed by hand.",
-    },
-    {
-      ruleId: "QA-PY-002",
-      justification:
-        "Structural. n=23 is the largest sample on an observed-nonzero rule in this group.",
-    },
-    {
-      ruleId: "QA-PY-009",
-      justification: "Structural. Premise reviewed by hand.",
-    },
-    {
-      ruleId: "QA-PY-011",
-      justification:
-        "Premise reviewed: at n=10 with one observed FP the interval is wide in both directions, and the point estimate alone cannot place it either way.",
-    },
-    {
-      ruleId: "QA-PW-101",
-      justification: "Structural (selector race). Reviewed by hand.",
-    },
-    {
-      ruleId: "QA-PW-104",
-      justification: "n=10. Re-sample needed.",
-    },
-    {
-      ruleId: "QA-PW-113",
-      justification: "Structural (expect without a locator). Reviewed by hand.",
-    },
-    {
-      ruleId: "QA-PW-117",
-      justification:
-        "Closest to the boundary in this list at 13.8%. Re-sample needed; likely to clear.",
-    },
-    {
-      ruleId: "QA-PW-121",
-      justification: "n=12. Re-sample needed.",
-    },
-    {
-      ruleId: "QA-PW-140",
-      justification: "n=10. Re-sample needed.",
-    },
-    {
-      ruleId: "QA-PY-103",
-      justification:
-        "n=25 with 2 observed FPs. Re-sample needed; the largest sample on an observed-nonzero Python rule here.",
-    },
-    {
-      ruleId: "QA-JV-101",
-      justification:
-        "Structural (static mutable shared across tests). Reviewed by hand.",
-    },
-    {
-      ruleId: "QA-JV-105",
-      justification: "n=20 with 2 observed FPs. Re-sample needed.",
-    },
-    {
-      ruleId: "QA-JV-109",
-      justification: "Structural. Reviewed by hand.",
-    },
-    {
-      ruleId: "QA-CS-101",
-      justification: "Structural. Reviewed by hand.",
-    },
-    {
-      ruleId: "QA-CS-102",
-      justification: "n=24 with 2 observed FPs. Re-sample needed.",
-    },
-    {
-      ruleId: "QA-CS-103",
-      justification: "n=11. Re-sample needed.",
-    },
-  ];
+export interface DemotedCoreClaim {
+  ruleId: string;
+  /** The 95% Wilson upper bound that failed to clear the core ceiling. */
+  ciHigh: number;
+  /** Why `extended` is the right word rather than `quarantine`. */
+  justification: string;
+}
 
-/** The claim detail, computed from the registry — never hand-maintained. */
+export const DEMOTED_FOR_UNSUBSTANTIATED_CORE: readonly DemotedCoreClaim[] = [
+  {
+    ruleId: "QA-PW-002",
+    ciHigh: 0.163,
+    justification:
+      "n=10, 0% observed. Selector specificity was reasoned about by hand; the sample is too thin to call it core and too clean to quarantine.",
+  },
+  {
+    ruleId: "QA-PW-003",
+    ciHigh: 0.404,
+    justification:
+      "n=10 with 1 observed FP — the widest interval in the registry. The premise was reviewed, but 40.4% is not a 10% ceiling.",
+  },
+  {
+    ruleId: "QA-PY-001",
+    ciHigh: 0.308,
+    justification:
+      "n=20, 0% observed. Module-level mutable state is structural; the sample does not establish the rate.",
+  },
+  {
+    ruleId: "QA-PY-002",
+    ciHigh: 0.152,
+    justification:
+      "n=23, 2 observed FPs. The largest sample on an observed-nonzero Python rule here, and still short of the ceiling.",
+  },
+  {
+    ruleId: "QA-PY-009",
+    ciHigh: 0.308,
+    justification:
+      "n=20, 0% observed. The premise was reviewed by hand and holds; twenty clean samples still do not establish the rate, and nothing argues the rule down either.",
+  },
+  {
+    ruleId: "QA-PY-011",
+    ciHigh: 0.286,
+    justification:
+      "n=10, 1 observed FP. Neither the point estimate nor the interval could place it in either direction.",
+  },
+  {
+    ruleId: "QA-PW-101",
+    ciHigh: 0.308,
+    justification:
+      "n=20, 0% observed. A selector race is structural; the measurement is thin.",
+  },
+  {
+    ruleId: "QA-PW-113",
+    ciHigh: 0.151,
+    justification:
+      "n=24, 2 observed FPs. Expect-without-locator is structural; the rate is not established.",
+  },
+  {
+    ruleId: "QA-PW-117",
+    ciHigh: 0.138,
+    justification:
+      "n=20, 0% observed. Closest to the boundary of the nineteen, and the most likely of them to clear on a re-sample.",
+  },
+  {
+    ruleId: "QA-PW-121",
+    ciHigh: 0.233,
+    justification:
+      "n=12, 0% observed. A thin sample: the rate is not established, and nothing about the rule argues it down.",
+  },
+  {
+    ruleId: "QA-PW-104",
+    ciHigh: 0.308,
+    justification:
+      "n=20, 0% observed. A clean run of twenty is not a 10% ceiling, and the rule has no argument of its own either way.",
+  },
+  {
+    ruleId: "QA-PW-140",
+    ciHigh: 0.308,
+    justification:
+      "n=20, 0% observed. Same shape as QA-PW-104: twenty clean samples, no ceiling established, nothing arguing the other way.",
+  },
+  {
+    ruleId: "QA-PY-103",
+    ciHigh: 0.194,
+    justification:
+      "n=25, 2 observed FPs. Wait-for-timeout is structural; the rate is not established.",
+  },
+  {
+    ruleId: "QA-JV-101",
+    ciHigh: 0.308,
+    justification:
+      "n=20, 0% observed. Static mutable shared across tests is structural, and a structural premise does not measure its own false-positive rate.",
+  },
+  {
+    ruleId: "QA-CS-102",
+    ciHigh: 0.15,
+    justification:
+      "n=24, 2 observed FPs — the largest C# sample in this group, and 15.0% is still above a 10% ceiling.",
+  },
+  {
+    ruleId: "QA-JV-105",
+    ciHigh: 0.181,
+    justification:
+      "n=20, 2 observed FPs. Ten percent of twenty is two findings; the interval cannot distinguish that from anything better.",
+  },
+  {
+    ruleId: "QA-JV-109",
+    ciHigh: 0.138,
+    justification:
+      "n=20, 0% observed. Retry-masks-test-failures is structural; the rate is not established.",
+  },
+  {
+    ruleId: "QA-CS-101",
+    ciHigh: 0.308,
+    justification:
+      "n=20, 0% observed. The C# skipped-test rule mirrors the Java one; twenty clean samples do not establish its rate.",
+  },
+  {
+    ruleId: "QA-CS-103",
+    ciHigh: 0.233,
+    justification:
+      "n=12, 0% observed. A thin sample, and the C# no-assertions rule has no argument of its own either way.",
+  },
+];
+
+/**
+ * A rule whose declared `core` is not backed by a confidence interval.
+ *
+ * Empty since 6.0: the nineteen were demoted. Kept because the property is
+ * worth a live assertion rather than a comment — a NEW rule declared `core`
+ * on a thin measurement should fail the next run, and this is what it fails.
+ */
 export function declaredCoreWithoutEvidence(
   rule: QADoctorRule,
 ): DeclaredCoreClaim | null {

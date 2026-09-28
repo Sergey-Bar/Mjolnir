@@ -32,7 +32,13 @@ export const pwSerialNoJustification = defineRule({
       "tokens — the semantics are scheduling, not syntax",
   },
   introduced: "0.3.0",
-  tier: "core", // measured 2026-09-02: 0% FP at n=20
+  // 6.0: was "core". Demoted because the measurement does not support the
+  // claim — 0% observed over n=10..25 is a 95% Wilson interval of
+  // [0, 13.8%] to [0, 40.4%], which does not clear the 10% core ceiling. Only
+  // `quarantine` is enforced, so this is behaviour-neutral: the rule still
+  // runs on every scan. A re-sample at the raised MAX_SAMPLES_PER_RULE can
+  // earn it back; src/rules/tier-evidence.ts ratchets that.
+  tier: "extended",
 
   run(ctx) {
     const text = ctx.codeText ?? ctx.text;

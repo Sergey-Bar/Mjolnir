@@ -190,7 +190,13 @@ export const hardSleepFamily = definePatternFamily({
       // FP classes fixed at rev 2 (server delegates, infinite blocks,
       // WhenAny races, runner payload fixtures). Residues documented:
       // Task.Delay(1) yield + polling-cadence helper (2 rows).
-      tier: "core",
+      // 6.0: was "core". Demoted because the measurement does not support the
+      // claim — 0% observed over n=10..25 is a 95% Wilson interval of
+      // [0, 13.8%] to [0, 40.4%], which does not clear the 10% core ceiling. Only
+      // `quarantine` is enforced, so this is behaviour-neutral: the rule still
+      // runs on every scan. A re-sample at the raised MAX_SAMPLES_PER_RULE can
+      // earn it back; src/rules/tier-evidence.ts ratchets that.
+      tier: "extended",
       detectionStrategy: "AST",
       detectionNotes:
         "L2 tree-sitter invocation scoping (route/expose/server delegates, infinite blocks, WhenAny races, runner payload fixtures); regex fallback when no parse",

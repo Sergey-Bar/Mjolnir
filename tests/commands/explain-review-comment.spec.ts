@@ -30,19 +30,26 @@ function renderRule(rule: QADoctorRule): string {
 }
 
 describe("explain review-comment language", () => {
-  it("renders a copy-ready review comment for a core measured rule", () => {
-    const rule = firstRuleWhere(
-      (r) => effectiveTier(r) === "core" && MEASURED_FP[r.id] !== undefined,
-    );
-    expect(reviewBlock(renderRule(rule))).toMatchInlineSnapshot(`
-      "COPY-READY REVIEW COMMENT
-        Please fix this before merging: Playwright locator assertion is not awaited.
-        Why it weakens verification: Without \`await\`, the assertion promise is never resolved — the check
-        silently never runs and the test passes vacuously.
-        Confidence: high, evidence E2, tier core; measured FP 0% (20 verdicts).
-        Suggested fix: Add \`await\`: \`await expect(locator).toBeVisible()\`.
-        Verify with: mjolnir --scope changed, then mjolnir explain QA-PW-002 if the finding still appears."
-    `);
+  it("renders a copy-ready review comment that names the rule's tier and evidence", () => {
+    // Was "for a core measured rule". 6.0 demoted the nineteen rules whose
+    // declared core their measurement did not support, and that left the
+    // registry with ZERO core rules — so the fixture this asked for no longer
+    // existed, and the test failed with "missing rule fixture for test".
+    //
+    // The test is about the RENDERING, not about which tier a rule is in, so
+    // it now takes any measured rule. Asking for `core` also made it
+    // redundant with the tier ratchet, which is where "which rules are core"
+    // is actually decided.
+    const rule = firstRuleWhere((r) => MEASURED_FP[r.id] !== undefined);
+    // The snapshot names the tier, so it changes with the registry. The
+    // assertion that matters is that the line EXISTS and carries the
+    // measurement's provenance — that the reader can see both the tier and
+    // the n behind it.
+    const block = reviewBlock(renderRule(rule));
+    expect(block).toContain("COPY-READY REVIEW COMMENT");
+    expect(block).toMatch(/Confidence: \w+, evidence E\d, tier \w+/);
+    expect(block).toMatch(/measured FP \d+(?:\.\d+)?% \(\d+ verdicts\)/);
+    expect(block).toContain(`Verify with: mjolnir --scope changed`);
   });
 
   it("renders review language for an extended rule without changing machine contracts", () => {
@@ -112,9 +119,12 @@ describe("explain review-comment language", () => {
   });
 
   it("states fixture-derived guidance is unavailable when no example finding exists", () => {
-    const rule = firstRuleWhere(
-      (r) => effectiveTier(r) === "core" && MEASURED_FP[r.id] !== undefined,
-    );
+    // Was `effectiveTier(r) === "core" && MEASURED_FP[r.id] !== undefined`.
+    // The registry has no core rules since the 6.0 demotion, so this asked
+    // for a fixture that no longer exists. The tier is irrelevant to what this
+    // asserts — it is about what the block says when there is no example
+    // finding — so it takes any measured rule.
+    const rule = firstRuleWhere((r) => MEASURED_FP[r.id] !== undefined);
     // Render the same rule with no example: the review comment must not
     // claim guidance appears above, and must point at the catalog.
     const text = renderExplain({ ok: true, rule });

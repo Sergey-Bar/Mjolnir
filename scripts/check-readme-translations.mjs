@@ -1,5 +1,5 @@
 /**
- * Staleness report for the README translations (npm run
+ * Advisory staleness report for the README translations (npm run
  * docs:translations).
  *
  * English README.md is canonical; every README.<code>.md carries a
@@ -7,20 +7,32 @@
  * script compares that date against the last commit that touched
  * README.md and prints a per-language table.
  *
- * ADVISORY BY DEFAULT, ENFORCEABLE ON REQUEST. Without `--strict` the
- * report always exits 0, which is the intended default: translation drift
- * is resolved by community PRs porting the English change, not by a red
- * build. With `--strict` it exits 1 when any language is not `fresh`, and
- * `docs:translations:check` passes the flag.
+ * ADVISORY, AND THE MAINTAINER CONFIRMED IT SHOULD STAY THAT WAY.
+ * `docs:translations` — this script with no flag — always exits 0, and it is
+ * what `certify` and `certify:ci` run. `--strict` exits 1 on any language
+ * that is not fresh, and is available for local use via
+ * `docs:translations:check`.
  *
- * The header used to deny all three of these, and two denials were false:
- * it asserted the script could not block and that no strict mode existed,
- * while `docs:translations:check` has always passed the flag and the
- * strict branch is spawn-tested in tests/readme-release-status.spec.ts.
- * The third denial — that nothing runs it — was true, and was the real
- * defect: a gate nobody invokes is a gate nobody reads. A comment that
- * lies about its own script is worse than no comment, because the next
- * maintainer believes it.
+ * 6.0 history, because the reasoning is worth keeping and it CHANGED. The
+ * header used to deny all three of these: it claimed the script could not
+ * block, that no strict mode existed, and that it "is not a CI gate".
+ * `--strict` had existed since the script was written, and the second denial
+ * was the real defect. A3 repaired it by making the strict path real and
+ * wiring it. The maintainer then reviewed the consequence — 22 translations
+ * roughly 12 sections behind README.md, a gap that predates the repository's
+ * current shape and cannot be closed by a machine — and chose ADVISORY.
+ *
+ * So the strict variant is not in CI, deliberately. Removing the 6 command
+ * rows this release invalidated was done by hand, and the structural gap is
+ * a translation task, not a build failure. What survives from the repair is
+ * the part that was true all along: the strict path works, it is exercised
+ * by a spec, and the header no longer lies about what the script does.
+ *
+ * The honest cost: with this advisory, nothing in CI fails when a
+ * translation falls behind. That is the decision's real weakness and it is
+ * recorded here rather than discovered in six months. The mitigation is that
+ * `docs:translations` prints the table on every certify run, so the drift is
+ * visible in the log to anyone reading one.
  */
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
