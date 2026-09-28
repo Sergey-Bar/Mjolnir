@@ -66,10 +66,17 @@ describe("docs/QUARANTINE-REMEDIATION.md matches the live registry", () => {
   it("the P6 rework set carries its shipped detectorRevision", () => {
     // The reworks bumped these revisions; the ledger's disposition rows
     // are evidence claims about the SHIPPED state.
+    //
+    // QA-PY-007 moved 4 → 5 in 6.0. The rev-4 precision gate never fired
+    // for nested code, because `pythonWithRaisesBlocks` measured the OUTER
+    // `with`'s block when the raises call was nested inside it — and
+    // pytest-dev/pytest nests its capture tests, so the rule measured 75%
+    // false positives over n=12 while its own unit fixtures passed. Re-measured
+    // after the fix: 2 findings, both adjudicated true positives.
     const expected: Record<string, number> = {
       "QA-ENV-001": 4,
       "QA-PW-147": 2,
-      "QA-PY-007": 4,
+      "QA-PY-007": 5,
       "QA-TQUAL-009": 2,
     };
     for (const [id, rev] of Object.entries(expected)) {

@@ -497,9 +497,9 @@ that was never seen running can never claim it was. Definitions:
 
 ### How much of this is measured
 
-**<!-- census:measured-of-total -->75 of 79<!-- /census:measured-of-total --> rules carry a false-positive rate measured against real OSS code**
+**<!-- census:measured-of-total -->74 of 79<!-- /census:measured-of-total --> rules carry a false-positive rate measured against real OSS code**
 (at least 10 hand-classified findings each; see
-[docs/FP-AUDIT.md](docs/FP-AUDIT.md)). The other <!-- census:unmeasured -->4<!-- /census:unmeasured --> ship on the author's estimate and say so, rule by rule,
+[docs/FP-AUDIT.md](docs/FP-AUDIT.md)). The other <!-- census:unmeasured -->5<!-- /census:unmeasured --> ship on the author's estimate and say so, rule by rule,
 in `mjolnir explain`. `mjolnir rules --unmeasured` lists them, and every
 scan footer reports how many of the rules that actually _fired_ are
 measured.
@@ -770,7 +770,7 @@ Rule IDs (`QA-<FAMILY>-NNN`) are immutable once shipped and never reused.
   product does what the requirement asked for.
 - **A 100 is not proof of a good suite.** Whether your suite covers your
   real risk is a different question, and this tool does not answer it.
-- **<!-- census:unmeasured-of-total -->4 of 79<!-- /census:unmeasured-of-total --> rules ship on an estimate**, not a measured rate. Each one
+- **<!-- census:unmeasured-of-total -->5 of 79<!-- /census:unmeasured-of-total --> rules ship on an estimate**, not a measured rate. Each one
   says so on its own finding.
 - **E1 is not E2.** Heuristic findings are worth reading, not worth applying
   blindly.

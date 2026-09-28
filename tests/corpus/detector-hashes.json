@@ -224,8 +224,8 @@
     "detectorRevision": 1
   },
   "QA-PY-007": {
-    "logicHash": "e3fd4aeb50b9f807a421e8018328ad01791ccdfe2b79cb71f0ef8074ecb2c72a",
-    "detectorRevision": 4
+    "logicHash": "871c38c3fde103d0eeb1913ee2284c97c6e1760f8afec3c953396bd433886050",
+    "detectorRevision": 5
   },
   "QA-PY-009": {
     "logicHash": "f7f0afaa5a5169569cfb70af925aa1ab485fd5ee1b04de57ec245763fa7f4330",

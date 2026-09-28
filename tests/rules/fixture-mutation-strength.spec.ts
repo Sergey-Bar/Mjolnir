@@ -23,6 +23,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { RULES } from "../../src/rules/index.js";
 import { computeCodeText } from "../../src/engine/code-text.js";
+import { parsePythonAst } from "../../src/engine/tree-sitter-ast.js";
 
 const FIXTURES_ROOT = join(import.meta.dirname, "..", "fixtures");
 
@@ -48,10 +49,20 @@ function detectLanguage(
   return "typescript";
 }
 
-/** Build a rule context with codeText populated. */
-function buildCtx(file: string, text: string) {
-  const parsed = { path: file, text };
-  const codeText = computeCodeText(parsed, detectLanguage(file));
+/**
+ * Build a rule context with codeText populated — and, for Python, the AST.
+ *
+ * 6.0: this built `{ path, text }`, like the fixture harness did, so a rule
+ * whose precision lives in its AST arm was mutation-tested only through its
+ * regex fallback. The two specs now share the same rule about that: the
+ * context is the one the PIPELINE supplies, or the mutation test proves
+ * something about a code path nothing ships.
+ */
+async function buildCtx(file: string, text: string) {
+  const lang = detectLanguage(file);
+  const ast = lang === "python" ? await parsePythonAst(text) : undefined;
+  const parsed = { path: file, text, ...(ast === undefined ? {} : { ast }) };
+  const codeText = computeCodeText(parsed, lang);
   return { ...parsed, codeText };
 }
 
@@ -92,8 +103,10 @@ for (const rule of RULES) {
     for (const file of listFiles(mustFire)) {
       const original = readFileSync(join(mustFire, file), "utf8");
 
-      it(`still fires after whitespace mutation: ${file}`, () => {
-        const findings = rule.run(buildCtx(file, mutateWhitespace(original)));
+      it(`still fires after whitespace mutation: ${file}`, async () => {
+        const findings = rule.run(
+          await buildCtx(file, mutateWhitespace(original)),
+        );
         expect(
           findings.length,
           `${rule.id} stopped firing on "${file}" after only whitespace ` +
@@ -102,8 +115,8 @@ for (const rule of RULES) {
         ).toBeGreaterThan(0);
       });
 
-      it(`still fires with unrelated code around it: ${file}`, () => {
-        const findings = rule.run(buildCtx(file, padded(original, file)));
+      it(`still fires with unrelated code around it: ${file}`, async () => {
+        const findings = rule.run(await buildCtx(file, padded(original, file)));
         expect(
           findings.length,
           `${rule.id} stopped firing on "${file}" once surrounded by ` +
@@ -115,8 +128,10 @@ for (const rule of RULES) {
     for (const file of listFiles(mustNotFire)) {
       const original = readFileSync(join(mustNotFire, file), "utf8");
 
-      it(`still stays silent after whitespace mutation: ${file}`, () => {
-        const findings = rule.run(buildCtx(file, mutateWhitespace(original)));
+      it(`still stays silent after whitespace mutation: ${file}`, async () => {
+        const findings = rule.run(
+          await buildCtx(file, mutateWhitespace(original)),
+        );
         expect(
           findings,
           `${rule.id} started firing on "${file}" once whitespace changed ` +
@@ -126,8 +141,8 @@ for (const rule of RULES) {
         ).toHaveLength(0);
       });
 
-      it(`still stays silent with unrelated code around it: ${file}`, () => {
-        const findings = rule.run(buildCtx(file, padded(original, file)));
+      it(`still stays silent with unrelated code around it: ${file}`, async () => {
+        const findings = rule.run(await buildCtx(file, padded(original, file)));
         expect(
           findings,
           `${rule.id} started firing on "${file}" once surrounded by ` +

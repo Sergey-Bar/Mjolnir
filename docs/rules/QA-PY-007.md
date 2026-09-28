@@ -7,7 +7,7 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | Severity                              | warning                        |
 | Confidence                            | medium                         |
 | Tier                                  | quarantine                     |
-| Measured FP rate                      | 75% (n=12)                     |
+| Measured FP rate                      | not yet measured               |
 | Evidence level                        | E1                             |
 | QA impact                             | False-green risk (FALSE-GREEN) |
 | False-positive risk (author estimate) | medium                         |
@@ -27,7 +27,7 @@ Without match=, any exception of that type anywhere in the block passes — incl
 `pytest.raises` without a `match=` pattern.
 ```
 
-Example from this rule's own must-fire fixture: `tests/fixtures/QA-PY-007/must-fire/no-match.py`
+Example from this rule's own must-fire fixture: `tests/fixtures/QA-PY-007/must-fire/multi-statement-block.py`
 
 ## The fix
 

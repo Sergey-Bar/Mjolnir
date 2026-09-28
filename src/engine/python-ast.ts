@@ -57,28 +57,79 @@ function walk(node: TsNode, visit: (n: TsNode) => void): void {
 }
 
 /**
+ * The `pytest.raises` call that is a DIRECT context manager of `withNode`.
+ *
+ * Scopes the search to the with's own item list — `with_clause` for the
+ * plain form, and `parenthesized_with_items` for `with (A, B):` — rather
+ * than to the whole subtree. A call found deeper down belongs to an inner
+ * `with_statement`, which the walk reaches in its own right and which owns
+ * the block that actually gates it.
+ */
+function directRaisesItem(withNode: TsNode): TsNode | undefined {
+  let found: TsNode | undefined;
+  // Descend through the item wrappers rather than testing only the node it
+  // is handed: the call lives at with_clause → with_item → call, so a scan
+  // that returns on the first non-`call` node it sees returns on
+  // `with_clause` itself and finds nothing.
+  const scan = (n: TsNode) => {
+    if (found) return;
+    if (n.type === "call") {
+      const fn = n.childForFieldName("function");
+      if (fn && /(?:^|\.)raises$/.test(fn.text)) {
+        found = n;
+        return;
+      }
+    }
+    for (const child of n.children) scan(child);
+  };
+  for (const child of withNode.children) {
+    if (
+      child.type === "with_clause" ||
+      child.type === "parenthesized_with_items"
+    ) {
+      scan(child);
+    }
+  }
+  return found;
+}
+
+/**
  * Every `with pytest.raises(...)` (optionally `... as exc`) statement in
  * the tree, with the structural facts the rework needs. Tree-sitter-
  * python grammar: a `with_statement` wraps `with_item`s and a `block`;
  * the raises call is a `call` whose function is an attribute chain
  * ending in `.raises`.
+ *
+ * 6.0. The raises call is now required to be a DIRECT context manager of the
+ * `with_statement` being measured. It used to be found by walking the whole
+ * subtree, so a `with pytest.raises(...)` nested inside another `with`
+ * handed back the OUTER block's statement count — and `QA-PY-007`'s
+ * single-statement gate, which exists precisely to suppress that shape,
+ * could never fire for nested code.
+ *
+ * That is not a rare shape. In the pinned `pytest-dev/pytest` corpus, seven
+ * of the eleven adjudicated findings were single-statement raises nested
+ * inside `with saved_fd(1):`, and every one of them was counted as
+ * multi-statement because the surrounding block has a dozen statements. The
+ * rule measured the wrong block, which is why it measured 75% false
+ * positives while its own unit fixtures passed.
+ *
+ * Requiring a direct context manager also fixes the shape by construction:
+ * the outer `with` is examined, has no direct raises item, and is skipped;
+ * the inner one is examined with its own block.
  */
 export function pythonWithRaisesBlocks(tree: Tree): PythonRaisesBlock[] {
   const out: PythonRaisesBlock[] = [];
   const root = tree.rootNode as unknown as TsNode;
   walk(root, (node) => {
     if (node.type !== "with_statement") return;
-    let raisesCall: TsNode | undefined;
     let blockNode: TsNode | undefined;
     for (const child of node.children) {
       if (child.type === "block") blockNode = child;
     }
-    walk(node, (n) => {
-      if (raisesCall || n.type !== "call") return;
-      const fn = n.childForFieldName("function");
-      if (fn && /(?:^|\.)raises$/.test(fn.text)) raisesCall = n;
-    });
-    if (!raisesCall || !blockNode) return;
+    if (!blockNode) return;
+    const raisesCall = directRaisesItem(node);
+    if (!raisesCall) return;
 
     // Statement count of the with-block: named children are the parsed
     // statements (comments excluded — they carry no execution risk).
