@@ -603,6 +603,23 @@ export function checkUnsureAdjudication(
  * file (or of a rule's entry) yields revision 1 — the documented default
  * for the current, first-generation detectors.
  */
+/**
+ * The `detector-revisions.json` sidecar, and nothing else.
+ *
+ * 6.0: this function used to double as the revision LOOKUP, falling back to
+ * `1` for a rule with no sidecar entry. That was wrong for every rule that
+ * declares its own `detectorRevision`, and `QA-PY-007` is how it showed: no
+ * sidecar entry, rule declares 4, so the generated measurement claimed
+ * revision 1, the registry read it as stale, and the capability matrix
+ * called 74 of 75 entries measured — which two lock specs correctly flagged.
+ *
+ * The first fix merged the rules INTO this function, which broke the sidecar
+ * coverage spec: it asserts the FILE covers exactly the measured set, and a
+ * lookup that also returns unmeasured rules reports strays. Conflating "what
+ * the file says" with "which revision applies" is the same mistake the
+ * fallback was. So the two jobs are split: this reads the file,
+ * `effectiveDetectorRevisions` does the lookup.
+ */
 export function loadDetectorRevisions(): Record<string, number> {
   if (!existsSync(DETECTOR_REVISIONS_PATH)) return {};
   const parsed = JSON.parse(
@@ -612,6 +629,32 @@ export function loadDetectorRevisions(): Record<string, number> {
   for (const [id, v] of Object.entries(parsed)) {
     if (typeof v === "number" && Number.isInteger(v) && v >= 1) {
       revisions[id] = v;
+    }
+  }
+  return revisions;
+}
+
+/**
+ * The revision that actually applies: the sidecar where it has an entry,
+ * otherwise the revision the rule declares for itself, otherwise the
+ * documented default of 1.
+ *
+ * A rule that declares its revision is authoritative for itself. The sidecar
+ * exists for the rules that do not declare one, and the `1` default belongs
+ * to `measurement.ts` — applying it to a rule that has spoken creates two
+ * sources of truth for one number, and the second goes stale silently.
+ */
+export function effectiveDetectorRevisions(): Record<string, number> {
+  const revisions = { ...loadDetectorRevisions() };
+  for (const rule of RULES) {
+    if (revisions[rule.id] !== undefined) continue;
+    const declared = rule.detectorRevision;
+    if (
+      typeof declared === "number" &&
+      Number.isInteger(declared) &&
+      declared >= 1
+    ) {
+      revisions[rule.id] = declared;
     }
   }
   return revisions;
@@ -674,7 +717,7 @@ export function computeRuleStats(verdicts: Verdict[]): RuleStats[] {
 export const MEASURED_THRESHOLD = 10;
 
 export function renderMeasuredFpModule(verdicts: Verdict[]): string {
-  const revisions = loadDetectorRevisions();
+  const revisions = effectiveDetectorRevisions();
   const entries = computeRuleStats(verdicts)
     .filter((s) => s.classified >= MEASURED_THRESHOLD && s.fpRate !== null)
     .map((s) => {

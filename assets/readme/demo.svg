@@ -242,7 +242,7 @@
     <text class="ln" style="animation-delay:10.20s" x="22" y="3930.0" xml:space="preserve"><tspan fill="#ABB6C6">    </tspan><tspan fill="rgb(139,147,157)">Verify  </tspan><tspan fill="#ABB6C6">Re-run mjolnir after the change — deduction should drop by 1.</tspan></text>
 
     <text class="ln" style="animation-delay:10.30s" x="22" y="3968.0" xml:space="preserve"><tspan fill="#ABB6C6">  </tspan><tspan fill="rgb(55,171,189)">ℹ</tspan><tspan fill="#ABB6C6"> </tspan><tspan fill="rgb(55,171,189)">INFO   </tspan><tspan fill="#ABB6C6"> </tspan><tspan fill="rgb(234,238,245)">QA-PY-003 · tests/test_checkout_api.py:6</tspan></text>
-    <text class="ln" style="animation-delay:10.35s" x="22" y="3987.0" xml:space="preserve"><tspan fill="#ABB6C6">    </tspan><tspan fill="rgb(139,147,157)">[E0 · observation · measured FP 47% · n=30]</tspan></text>
+    <text class="ln" style="animation-delay:10.35s" x="22" y="3987.0" xml:space="preserve"><tspan fill="#ABB6C6">    </tspan><tspan fill="rgb(139,147,157)">[E0 · observation · measured FP 52% · n=33]</tspan></text>
     <text class="ln" style="animation-delay:10.40s" x="22" y="4006.0" xml:space="preserve"><tspan fill="#ABB6C6">    </tspan><tspan fill="rgb(200,203,207)">Finding </tspan><tspan fill="#ABB6C6">Test `test_checkout_endpoint_responds` contains no assertions.</tspan></text>
     <text class="ln" style="animation-delay:10.45s" x="22" y="4025.0" xml:space="preserve"><tspan fill="#ABB6C6">    </tspan><tspan fill="rgb(200,203,207)">Impact  </tspan><tspan fill="#ABB6C6">FALSE-GREEN — Without an assertion the test can only fail by</tspan></text>
     <text class="ln" style="animation-delay:10.50s" x="22" y="4044.0" xml:space="preserve"><tspan fill="#ABB6C6">            crashing — it cannot detect behavioral regressions.</tspan></text>
@@ -260,7 +260,7 @@
     <text class="ln" style="animation-delay:11.10s" x="22" y="4272.0" xml:space="preserve"><tspan fill="#ABB6C6">    </tspan><tspan fill="rgb(139,147,157)">Verify  </tspan><tspan fill="#ABB6C6">Re-run mjolnir after the change — deduction should drop by 3.</tspan></text>
 
     <text class="ln" style="animation-delay:11.20s" x="22" y="4310.0" xml:space="preserve"><tspan fill="#ABB6C6">  </tspan><tspan fill="rgb(55,171,189)">ℹ</tspan><tspan fill="#ABB6C6"> </tspan><tspan fill="rgb(55,171,189)">INFO   </tspan><tspan fill="#ABB6C6"> </tspan><tspan fill="rgb(234,238,245)">QA-PY-003 · tests/test_checkout_api.py:12</tspan></text>
-    <text class="ln" style="animation-delay:11.25s" x="22" y="4329.0" xml:space="preserve"><tspan fill="#ABB6C6">    </tspan><tspan fill="rgb(139,147,157)">[E0 · observation · measured FP 47% · n=30]</tspan></text>
+    <text class="ln" style="animation-delay:11.25s" x="22" y="4329.0" xml:space="preserve"><tspan fill="#ABB6C6">    </tspan><tspan fill="rgb(139,147,157)">[E0 · observation · measured FP 52% · n=33]</tspan></text>
     <text class="ln" style="animation-delay:11.30s" x="22" y="4348.0" xml:space="preserve"><tspan fill="#ABB6C6">    </tspan><tspan fill="rgb(200,203,207)">Finding </tspan><tspan fill="#ABB6C6">Test `test_refund_endpoint_accepts_request` contains no</tspan></text>
     <text class="ln" style="animation-delay:11.35s" x="22" y="4367.0" xml:space="preserve"><tspan fill="#ABB6C6">            assertions.</tspan></text>
     <text class="ln" style="animation-delay:11.40s" x="22" y="4386.0" xml:space="preserve"><tspan fill="#ABB6C6">    </tspan><tspan fill="rgb(200,203,207)">Impact  </tspan><tspan fill="#ABB6C6">FALSE-GREEN — Without an assertion the test can only fail by</tspan></text>

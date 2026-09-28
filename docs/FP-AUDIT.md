@@ -74,11 +74,11 @@ happen to have been sampled.
 | QA-PW-144    | 14%     | [0.0498, 0.3464] | 21         | 18  | 3   | 0      | 1           | △ extended                                        |
 | QA-PW-146    | 12%     | [0.0329, 0.3434] | 17         | 15  | 2   | 0      | 1           | 🕤 quarantine                                     |
 | QA-PY-001    | 0%      | [0, 0.2425]      | 12         | 12  | 0   | 0      | 1           | △ extended                                        |
-| QA-PY-002    | 4%      | [0.0077, 0.2099] | 23         | 22  | 1   | 0      | 1           | △ extended                                        |
-| QA-PY-003    | 47%     | [0.3023, 0.6386] | 30         | 16  | 14  | 0      | 4           | 🕤 quarantine                                     |
-| QA-PY-004    | 53%     | [0.3614, 0.6977] | 30         | 14  | 16  | 0      | 3           | 🕤 quarantine                                     |
+| QA-PY-002    | 12%     | [0.0417, 0.2996] | 25         | 22  | 3   | 0      | 1           | △ extended                                        |
+| QA-PY-003    | 52%     | [0.3522, 0.675]  | 33         | 16  | 17  | 0      | 4           | 🕤 quarantine                                     |
+| QA-PY-004    | 67%     | [0.5155, 0.7899] | 42         | 14  | 28  | 0      | 3           | 🕤 quarantine                                     |
 | QA-PY-005    | 13%     | [0.0454, 0.3213] | 23         | 20  | 3   | 0      | 1           | △ extended                                        |
-| QA-PY-007    | 100%    | —                | 1          | 0   | 1   | 0      | —           | ❓ unmeasured                                     |
+| QA-PY-007    | 75%     | [0.4677, 0.9111] | 12         | 3   | 9   | 0      | 4           | 🕤 quarantine                                     |
 | QA-PY-009    | 6%      | [0.0099, 0.2576] | 18         | 17  | 1   | 0      | 1           | △ extended                                        |
 | QA-PY-011    | 10%     | [0.0179, 0.4042] | 10         | 9   | 1   | 0      | 1           | △ extended                                        |
 | QA-PY-012    | 40%     | [0.2459, 0.5768] | 30         | 18  | 12  | 0      | 1           | 🕤 quarantine                                     |
@@ -111,7 +111,7 @@ happen to have been sampled.
 | 🔴 quarantine | > 30%   | Opt-in only (`--strict`)              |
 | ❓ unmeasured | n < 10  | Cannot ship in core until measured    |
 
-## Coverage: 74/79 rules measured (94%) at n ≥ 10
+## Coverage: 75/79 rules measured (95%) at n ≥ 10
 
-**5 rules carry no measured FP rate.** Any of them in the
+**4 rules carry no measured FP rate.** Any of them in the
 core tier is shipping on an unverified assumption.
