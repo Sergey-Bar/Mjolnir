@@ -44,11 +44,28 @@ describe("certification census claims vs live registry", () => {
     // classified findings fall below the n ≥ 10 measurement threshold
     // until the owner re-adjudicates the reworked output — the
     // QUARANTINE-REMEDIATION ledger tracks the gate).
-    expect(measured.length).toBeGreaterThanOrEqual(74);
+    //
+    // 6.0 added a fourth: QA-PY-004. Its measured 66.7% at n=42 turned out
+    // to be the same defect as QA-PY-007's — revisions 2 and 3 had answered
+    // each measured FP cluster by adding a METHOD NAME to a vocabulary, and
+    // ten of the twelve adjudicated findings were `exc_info.group_contains`
+    // / `excinfo.errisinstance`, neither of which was on the list. The gate
+    // is now structural (a call is the check; an identifier or attribute
+    // chain is a truthiness test) and the rule fires on 0 of the 12.
+    //
+    // 77 - 4 = 73. A measurement can only be invalidated by a revision bump
+    // backed by adjudication, which is why the floor moves in steps of one
+    // and each step names its rule.
+    expect(measured.length).toBeGreaterThanOrEqual(73);
     // Every unmeasured rule must be either a §15.5 born-quarantine
     // addition or a §07-invalidated P6 rework — the measured set never
     // shrinks for any other reason.
-    const p6Invalidated = new Set(["QA-PW-147", "QA-PY-007", "QA-TQUAL-009"]);
+    const p6Invalidated = new Set([
+      "QA-PW-147",
+      "QA-PY-007",
+      "QA-PY-004",
+      "QA-TQUAL-009",
+    ]);
     for (const r of active.filter((x) => MEASURED_FP[x.id] === undefined)) {
       const bornOrInvalidated =
         r.tier === "quarantine" &&

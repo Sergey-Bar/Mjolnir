@@ -336,21 +336,31 @@ describe("declaredCoreWithoutEvidence", () => {
   } as unknown as Parameters<typeof declaredCoreWithoutEvidence>[0];
 
   /**
-   * A synthetic `core` rule carrying QA-PY-004's REAL measurement.
+   * A synthetic `core` rule carrying a REAL, current, wide measurement.
    *
-   * The revision is the part that is easy to get wrong and is the reason the
-   * first attempt returned null: a measurement is only VALID when its
-   * `detectorRevision` matches the rule's, so a fixture without one is stale
-   * and takes the early return that this test is trying to avoid.
+   * Three things this fixture got wrong first, each of which made it return
+   * null and read as a broken assertion rather than a stale fixture:
+   *   - QA-PY-004, whose measurement was INVALIDATED when its detector was
+   *     reworked in 6.0 — a stale measurement has no interval, so the
+   *     function takes the "no valid measurement" early return;
+   *   - omitting `detectorRevision`, so `hasValidMeasurement` was false for
+   *     the same reason;
+   *   - a `tier: undefined` literal, which `exactOptionalPropertyTypes` makes
+   *     a different type from an omitted key.
+   *
+   * `QA-ENV-001` is used instead: measured 100% FP at n=20, current
+   * revision, so its interval genuinely reaches past the ceiling.
    */
   const coreClaim = () => {
-    const measured = MEASURED_FP["QA-PY-004"];
+    const measured = MEASURED_FP["QA-ENV-001"];
     if (measured === undefined) {
-      throw new Error("QA-PY-004 must carry a measurement for this fixture");
+      throw new Error(
+        "QA-ENV-001 must carry a current measurement for this fixture",
+      );
     }
     return {
       ...base,
-      id: "QA-PY-004",
+      id: "QA-ENV-001",
       tier: "core" as const,
       detectorRevision: measured.detectorRevision,
     };
@@ -362,7 +372,7 @@ describe("declaredCoreWithoutEvidence", () => {
     // shown the case it exists for is not a guard.
     const claim = declaredCoreWithoutEvidence(coreClaim());
     expect(claim).not.toBeNull();
-    expect(claim?.ruleId).toBe("QA-PY-004");
+    expect(claim?.ruleId).toBe("QA-ENV-001");
     expect(claim?.ciHigh).toBeGreaterThan(CORE_FP_CEILING);
     expect(claim?.n).toBeGreaterThan(0);
   });
@@ -387,7 +397,14 @@ describe("declaredCoreWithoutEvidence", () => {
     // A revision bump makes hasValidMeasurement false, so the interval is
     // undefined. Reporting it here would count one rule in two lists: this
     // ratchet and the §20.5 revision ratchet.
-    const rule = RULES.find((r) => r.id === "QA-PY-004");
+    //
+    // QA-ENV-001 rather than QA-PY-004: the latter's measurement was
+    // INVALIDATED when its detector was reworked in 6.0, so it has no entry
+    // left to be stale AGAINST, and `hasStaleMeasurement` is correctly
+    // false for a rule with no measurement at all. A fixture that fails
+    // because the thing it needed no longer exists is a fixture pointing at
+    // the wrong rule.
+    const rule = RULES.find((r) => r.id === "QA-ENV-001");
     expect(rule).toBeDefined();
     if (rule === undefined) return;
     const drifted = { ...rule, tier: "core" as const, detectorRevision: 99 };

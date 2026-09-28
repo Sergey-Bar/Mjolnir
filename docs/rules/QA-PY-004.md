@@ -7,7 +7,7 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | Severity                              | warning                        |
 | Confidence                            | medium                         |
 | Tier                                  | quarantine                     |
-| Measured FP rate                      | 67% (n=42)                     |
+| Measured FP rate                      | not yet measured               |
 | Evidence level                        | E1                             |
 | QA impact                             | False-green risk (FALSE-GREEN) |
 | False-positive risk (author estimate) | medium                         |
@@ -35,7 +35,7 @@ Assert the specific expected value or property: `assert result.id == expected`, 
 
 ## Confirmed NOT to fire on the corresponding clean pattern
 
-Verified against `tests/fixtures/QA-PY-004/must-not-fire/predicate-calls.py` — a legitimate, similar-looking pattern this rule correctly leaves alone.
+Verified against `tests/fixtures/QA-PY-004/must-not-fire/excinfo-predicates.py` — a legitimate, similar-looking pattern this rule correctly leaves alone.
 
 ## Corpus-measured false-positive risk
 

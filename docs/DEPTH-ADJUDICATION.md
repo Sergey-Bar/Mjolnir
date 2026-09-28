@@ -99,7 +99,7 @@ evidence supported it:
 - **QA-PY-001** (0% FP at n=12): pytest.skip/xfail/parametrize marks are runner decorators and module-level calls; the detector matches those exact tokens on the code-only text — the semantics are runner skip state
 - **QA-PY-002** (12% FP at n=25): pytest.mark.skip/xfail are runner marker decorators — exact runner tokens; a syntax tree re-derives the same call shape with no added classification power
 - **QA-PY-003** (52% FP at n=33): assertion-less pytest bodies are runner-outcome semantics (the runner reports a pass that proves nothing); the detector matches the test-def plus body shapes on the code-only text — pytest's pass contract is runner behavior
-- **QA-PY-004** (67% FP at n=42): bare truthiness asserts (assert obj) are assertion-semantics on the code-only text; the detector matches the bare-assert shapes — the AST re-derives the same call
+- **QA-PY-004** (unmeasured): bare truthiness asserts (assert obj) are assertion-semantics on the code-only text; the detector matches the bare-assert shapes — the AST re-derives the same call
 - **QA-PY-007** (unmeasured): pytest.raises without match is a runner exception-contract semantic; the detector matches the raises-call plus its argumentless form — the runner's exception contract, not a syntax property
 - **QA-PY-011** (10% FP at n=10): pytest fixture mutation is fixture-lifecycle semantics (autouse/scope keys plus mutation calls); the detector matches the runner's fixture decorator tokens plus the mutation shapes
 - **QA-PY-012** (40% FP at n=30): tautological assertions in Python (assert x == x) are assertion-semantics on the code-only text; the detector matches the tautology shapes — the AST re-derives the same comparison
