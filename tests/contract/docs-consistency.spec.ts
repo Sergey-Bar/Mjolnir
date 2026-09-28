@@ -390,12 +390,22 @@ describe("public version and install docs match the current package line", () =>
     expect(publishing).not.toMatch(/`?latest`?\s+is\s+\*\*(?:0|1)\./);
   });
 
-  it("public action examples use the published major and the published version", () => {
+  it("public action examples use the published major and the latest dist-tag", () => {
     // An install command that names an unpublished version is an instruction
     // that 404s on copy-paste. While the candidate is a release candidate the
     // public install surfaces must name `publishedStable`; the working version
     // belongs in IDENTITY prose (the roadmap, PUBLISHING.md), not in a command
     // a reader is meant to run.
+    //
+    // The npm surfaces use `@latest` rather than a version number, and that is
+    // the stronger form of the same rule: a dist-tag always resolves to
+    // something that is published, so the command cannot 404 at all. It also
+    // cannot go stale — a README that says `@5.0.0` keeps saying it after
+    // 5.1.0 ships, and starts lying about what the newest release is.
+    //
+    // Pinning is still a legitimate choice and is still documented; a reader
+    // who wants reproducibility writes the version out. What must not happen
+    // is the *default* instruction naming a version at all.
     const actionMajor = pkg.version.includes("-") ? "3" : major;
     const installVersion = pkg.publishedStable ?? pkg.version;
     for (const [name, text] of [
@@ -405,9 +415,12 @@ describe("public version and install docs match the current package line", () =>
       expect(text, `${name} should use the published action major`).toContain(
         `Sergey-Bar/Mjolnir@v${actionMajor}`,
       );
-      expect(text, `${name} should show the exact published pin`).toContain(
-        `mjolnir-qa@${installVersion}`,
+      expect(text, `${name} should install the latest dist-tag`).toContain(
+        "mjolnir-qa@latest",
       );
+      // The unpublished working version must not appear in a runnable command.
+      // During a release that is the one that would 404; afterwards it is
+      // simply out of date.
       if (installVersion !== pkg.version) {
         expect(
           text,

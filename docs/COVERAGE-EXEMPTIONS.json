@@ -430,11 +430,11 @@
       "owner": "maintainers",
       "reviewBy": "2026-12-31",
       "removalPlan": "V5-007 — single-source the version identity, then cover the drift-detection branches.",
-      "justification": "Runs inside `npm run version:check` on every certify. Version drift detection that is itself untested is exactly the class of defect this ledger exists to expose. The signatures are the drift rules themselves: dropping one of them would let a surface install a version that does not exist on the registry, and nothing else would notice.",
+      "justification": "Runs inside `npm run version:check` on every certify. Version drift detection that is itself untested is exactly the class of defect this ledger exists to expose. The signatures are the drift rules themselves: dropping one of them would let a surface install a version that does not exist on the registry, or hand a reader a mutable tag with no way to pin it, and nothing else would notice.",
       "defectSignatures": [
         "export function checkVersionSurfaceEnvelope\\(",
         "export function checkActionDefaultVersion\\(",
-        "mutable mjolnir-qa@latest is forbidden"
+        "needs the exact published pin"
       ]
     },
     {

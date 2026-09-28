@@ -27,6 +27,25 @@ export const INSTALL_SURFACE_PATHS = [
   "docs/DISTRIBUTION-KIT.md",
 ] as const;
 
+/**
+ * Install surfaces a human actually reads.
+ *
+ * The split is who consumes the text. A page a person reads may offer the
+ * mutable `@latest`, and must then also say how to pin — that is what the
+ * envelope checks. A manifest a machine executes must name a version and gets
+ * none of that latitude: `smithery.yaml`'s `start.command` is run, not read, and
+ * a mutable tag there is a liability with nobody around to notice it moved.
+ */
+export const READER_FACING_SURFACES: ReadonlySet<string> = new Set<string>([
+  "README.md",
+  "README.br.md",
+  "docs/DISTRIBUTION-KIT.md",
+  "site/guide/getting-started.md",
+  "site/guide/ci.md",
+  "site/guide/forensics.md",
+  "site/.vitepress/theme/Home.vue",
+]);
+
 export const VERSION_SURFACE_PATHS = [
   ...IDENTITY_SURFACE_PATHS,
   ...INSTALL_SURFACE_PATHS,
@@ -196,8 +215,28 @@ export function checkVersionSurfaceEnvelope(
   }
 
   for (const path of INSTALL_SURFACE_PATHS) {
-    if (surfaces[path]?.includes("mjolnir-qa@latest")) {
-      violations.push(`${path}: mutable mjolnir-qa@latest is forbidden`);
+    const text = surfaces[path];
+    if (!text?.includes("mjolnir-qa@latest")) continue;
+    // A machine-read surface — an MCP registry manifest — is not a place to
+    // hand a reader a mutable tag, and it is not a place a reader visits at
+    // all. Only the surfaces people read are asked to carry the exact pin.
+    if (!READER_FACING_SURFACES.has(path)) continue;
+    // `@latest` resolves to whatever is published, so it can never 404 and can
+    // never go stale — which is what a reader running the command wants. It is
+    // also mutable: a gate copied from this page changes behaviour the day
+    // 5.1.0 ships, with nothing in this repository having changed.
+    //
+    // Both are real, so the rule is no longer "forbidden". It is that a surface
+    // may only hand a reader the mutable tag if it also tells them how to stop
+    // being mutable. `mjolnir-qa@<publishedStable>` appearing alongside is the
+    // pin, and it is the part that has to be checked: without it the reader has
+    // no way to get a reproducible run out of the same page.
+    if (!text.includes(`mjolnir-qa@${publishedStable}`)) {
+      violations.push(
+        `${path}: mjolnir-qa@latest needs the exact published pin ` +
+          `(mjolnir-qa@${publishedStable}) beside it, or a reader has no way to ` +
+          `pin the version they are being shown`,
+      );
     }
   }
 
@@ -227,6 +266,7 @@ export function synchronizeVersionSurfaceEnvelope(
     replacement: string,
     from = 0,
     replaceAll = false,
+    skipValues: readonly string[] = [],
   ) => {
     const content = next[path];
     if (typeof content !== "string") throw new Error(`${path}: missing`);
@@ -248,6 +288,16 @@ export function synchronizeVersionSurfaceEnvelope(
       if (relativeEnd < 0)
         throw new Error(`${path}: version literal is malformed`);
       const end = valueStart + relativeEnd;
+      // A value the author wrote deliberately, and which the envelope accepts,
+      // is left exactly as it is. Rewriting it would undo the intent on every
+      // run — which is what a self-healing sync must never do to a decision
+      // someone made on purpose.
+      const current = output.slice(valueStart, end);
+      if (skipValues.includes(current)) {
+        offset = end;
+        if (!replaceAll) break;
+        continue;
+      }
       output = `${output.slice(0, valueStart)}${replacement}${output.slice(end)}`;
       offset = valueStart + replacement.length;
       if (!replaceAll) break;
@@ -295,9 +345,26 @@ export function synchronizeVersionSurfaceEnvelope(
       actionVersionStart,
     );
   }
+  // `@latest` survives the sync, but only where a human reads it.
+  //
+  // It is the dist-tag, not a version, and the envelope accepts it only when the
+  // exact published pin sits beside it. Everywhere the literal is read by a
+  // machine instead — an MCP registry manifest, where `start.command` is
+  // executed rather than read — the published version is the right thing and
+  // the mutable one is a liability, so those surfaces are still normalised.
+
   for (const path of INSTALL_SURFACE_PATHS) {
     if (path === "action.yml") continue;
-    replaceValue(path, "mjolnir-qa@", installVersion, 0, true);
+    // `latest` is left alone where it is a deliberate instruction. Every other
+    // value is normalised to the published version exactly as before.
+    replaceValue(
+      path,
+      "mjolnir-qa@",
+      installVersion,
+      0,
+      true,
+      READER_FACING_SURFACES.has(path) ? ["latest"] : [],
+    );
     if (path === "smithery.yaml") {
       replaceValue(path, '"version": "', installVersion);
     }

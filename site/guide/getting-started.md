@@ -9,14 +9,22 @@ rule ID, a location, and a fix.
 Run it with no install:
 
 ```bash
-npx mjolnir-qa@5.0.0
+npx mjolnir-qa@latest
 ```
 
 Or install globally:
 
 ```bash
-npm i -g mjolnir-qa@5.0.0
+npm i -g mjolnir-qa@latest
 ```
+
+`@latest` is the dist-tag, not a version number, and it is deliberate: it always
+resolves to the newest published stable release, so an instruction in a README
+can never 404 because a version was renamed or a release was withdrawn.
+
+It is also mutable. If you are copying this into a gate that has to behave the
+same next month, pin the version instead — that is the whole difference between
+`npx mjolnir-qa@5.0.0` and the lines above.
 
 Requires Node.js ≥ 22.18. Works on Windows, macOS, and Linux.
 
