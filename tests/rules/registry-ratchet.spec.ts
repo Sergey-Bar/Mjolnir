@@ -291,6 +291,133 @@ describe("the nineteen unsubstantiated core claims were demoted, not kept", () =
     }
   });
 });
+
+/**
+ * The ratchet's own mechanism, covered branch by branch.
+ *
+ * `declaredCoreWithoutEvidence` is what makes the demotion self-enforcing, and
+ * it is the function whose every early return encodes a reason a rule is NOT
+ * a violation. Leaving it at 28% line coverage meant the three early returns
+ * were never executed by anything — which is how a ratchet can read as armed
+ * and not be.
+ *
+ * The three reasons a rule is exempt, each with a case:
+ *   1. it does not declare `core` (the demoted nineteen, and every rule whose
+ *      tier is `extended` or `quarantine`);
+ *   2. it has no VALID measurement — a stale `detectorRevision`, which is a
+ *      different failure the §20.5 ratchet already reports, and counting one
+ *      rule in two lists would overstate the problem;
+ *   3. its interval DOES clear the ceiling, which is the promotion path.
+ *
+ * Plus the one case that must be reported: a declared `core` whose interval
+ * reaches past the ceiling. That case is unrepresentable in the live registry
+ * today — it is exactly what the demotion removed — so it is built
+ * synthetically, which is also the only way to prove the function would still
+ * catch a regression.
+ */
+describe("declaredCoreWithoutEvidence", () => {
+  const base = {
+    category: "QA-TEST",
+    title: "fixture",
+    severity: "warning",
+    confidence: "high",
+    findingType: "deterministic-defect",
+    qaImpact: "FALSE-GREEN",
+    appliesTo: "python",
+    languages: ["python"],
+    frameworks: ["pytest"],
+    falsePositiveRisk: "medium",
+    autofix: false,
+    detectionStrategy: "LEXICAL",
+    introduced: "0.3.0",
+    tier: "core",
+    severityFallback: "warning",
+    strategyJustification: { reasonCode: "runner-semantic", detail: "fixture" },
+  } as unknown as Parameters<typeof declaredCoreWithoutEvidence>[0];
+
+  /**
+   * A synthetic `core` rule carrying QA-PY-004's REAL measurement.
+   *
+   * The revision is the part that is easy to get wrong and is the reason the
+   * first attempt returned null: a measurement is only VALID when its
+   * `detectorRevision` matches the rule's, so a fixture without one is stale
+   * and takes the early return that this test is trying to avoid.
+   */
+  const coreClaim = () => {
+    const measured = MEASURED_FP["QA-PY-004"];
+    if (measured === undefined) {
+      throw new Error("QA-PY-004 must carry a measurement for this fixture");
+    }
+    return {
+      ...base,
+      id: "QA-PY-004",
+      tier: "core" as const,
+      detectorRevision: measured.detectorRevision,
+    };
+  };
+
+  it("reports a declared core whose interval reaches past the ceiling", () => {
+    // Synthetic on purpose: this is the violation the demotion removed, so
+    // no registry rule can produce it any more. A guard that has never been
+    // shown the case it exists for is not a guard.
+    const claim = declaredCoreWithoutEvidence(coreClaim());
+    expect(claim).not.toBeNull();
+    expect(claim?.ruleId).toBe("QA-PY-004");
+    expect(claim?.ciHigh).toBeGreaterThan(CORE_FP_CEILING);
+    expect(claim?.n).toBeGreaterThan(0);
+  });
+
+  it("exempts a rule that does not declare core", () => {
+    for (const tier of ["extended", "quarantine"] as const) {
+      expect(
+        declaredCoreWithoutEvidence({ ...coreClaim(), tier }),
+        `a ${tier} rule is not an unsubstantiated core claim`,
+      ).toBeNull();
+    }
+    // An OMITTED tier, not `tier: undefined`. `exactOptionalPropertyTypes` is
+    // on, so an explicit `undefined` is a different type from a missing key —
+    // and the omitted case is the one that matters, because an undeclared
+    // rule resolving on its measurement is exactly the path the 6.0
+    // criterion changed.
+    const { tier: _omitted, ...withoutTier } = coreClaim();
+    expect(declaredCoreWithoutEvidence(withoutTier)).toBeNull();
+  });
+
+  it("exempts a core rule whose measurement is STALE, which is a different failure", () => {
+    // A revision bump makes hasValidMeasurement false, so the interval is
+    // undefined. Reporting it here would count one rule in two lists: this
+    // ratchet and the §20.5 revision ratchet.
+    const rule = RULES.find((r) => r.id === "QA-PY-004");
+    expect(rule).toBeDefined();
+    if (rule === undefined) return;
+    const drifted = { ...rule, tier: "core" as const, detectorRevision: 99 };
+    expect(hasStaleMeasurement(drifted)).toBe(true);
+    expect(declaredCoreWithoutEvidence(drifted)).toBeNull();
+  });
+
+  it("exempts a core rule whose interval already clears the ceiling", () => {
+    // The promotion path. Unreachable from live data TODAY, and deliberately
+    // not faked: it requires a core rule whose measurement clears the
+    // ceiling, and the demotion removed the only such candidates because
+    // none existed. Re-earning core is what makes this branch reachable
+    // again, and `declaredCoreWithoutEvidence` then flips to reporting a
+    // rule that has NOT earned it — which is the regression this function
+    // exists to catch.
+    //
+    // Asserted as a documented unreachability rather than simulated by
+    // mutating `CORE_FP_CEILING`, which is a const and would need a test
+    // seam added to production code purely to reach a branch.
+    const earning = RULES.filter((rule) => {
+      const interval = measurementInterval(rule);
+      return interval !== undefined && interval.ciHigh <= CORE_FP_CEILING;
+    });
+    expect(
+      earning.map((rule) => rule.id),
+      "a rule now clears the ceiling; this branch is live again and the function " +
+        "must be re-read to confirm it still reports one that does not",
+    ).toEqual([]);
+  });
+});
 describe("registry ratchet: evidence-state monotonicity (§20.1)", () => {
   it("(b) no unmeasured rule sits in effective core (new or old)", () => {
     // (b) restated mechanically: the only way an unmeasured rule enters
