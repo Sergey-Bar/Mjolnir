@@ -25,7 +25,7 @@ reconstruct semantics.
 - The listed findings were detected by the named rules at the stated
   `detectorRevision`, with the stated evidence/trust/FP metadata.
 - `completeness` accurately describes the scan's actual coverage — and
-  since v2 that includes *which rules could run at all*. `completeness.rules`
+  since v2 that includes _which rules could run at all_. `completeness.rules`
   answers "did a rule fail", `completeness.coverageState` answers "were
   rules present"; neither substitutes for the other.
 - `summary.advisory` findings (E0) are advisory — reported, never gating.
