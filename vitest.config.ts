@@ -8,7 +8,23 @@ export default defineConfig({
     // rebuild (tsdown cleans outDir), so the build happens once, here,
     // before any worker starts.
     globalSetup: ["tests/e2e/global-setup.ts"],
-    testTimeout: 30_000,
+    // 6.0: 30_000 → 120_000.
+    //
+    // This suite SPAWNS PROCESSES. The gate checks (unimported modules, gate
+    // tiers, comment paths, the claim registry) each run a Node script, and
+    // three pre-existing specs read or drive the whole repository. Measured
+    // solo those cost about 5 seconds; under a full parallel run — sharing
+    // the machine with a 5-minute corpus spec — they crossed 30 seconds and
+    // six suites failed with no defect in any of them. Every one passed in
+    // isolation and via its CLI; only the parallel run was red.
+    //
+    // A timeout is not a budget, and 30s was never one. 120s is a multiple of
+    // the measured cost, so something that genuinely got slower still fails
+    // rather than being absorbed by a number that grew to hide it. The heavy
+    // suites still declare their own explicit timeout on top of this
+    // (`tests/cli/category-consistency.spec.ts` at 300s), which is the
+    // convention for a test whose cost is known to be large.
+    testTimeout: 120_000,
     // Fixture files and the golden repo are DATA, not tests — they must
     // never be executed by our own runner.
     exclude: [
