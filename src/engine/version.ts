@@ -7,6 +7,7 @@
  * spec. cli.ts re-exports this as CLI_VERSION.
  */
 import { execFileSync } from "node:child_process";
+import { resolveGitPath } from "../scope/git-resolve.js";
 
 export const ENGINE_VERSION = "5.0.0";
 
@@ -34,9 +35,15 @@ export const ENGINE_VERSION = "5.0.0";
 export const BUILD_ID: string | undefined = resolveBuildId();
 
 function resolveBuildId(): string | undefined {
-  const git = (args: string[]): string | undefined => {
+  // The ABSOLUTE path, never the bare name. On Windows `CreateProcess` searches
+  // the current directory before PATH, so a `git.exe` or `git.bat` sitting in
+  // an untrusted checkout would answer `rev-parse` with whatever it liked and
+  // this function would print it as a build identity.
+  const git = resolveGitPath();
+  if (!git) return undefined;
+  const run = (args: string[]): string | undefined => {
     try {
-      return execFileSync("git", args, {
+      return execFileSync(git, args, {
         encoding: "utf8",
         timeout: 2_000,
         stdio: ["ignore", "pipe", "ignore"],
@@ -46,11 +53,11 @@ function resolveBuildId(): string | undefined {
     }
   };
 
-  const sha = git(["rev-parse", "--short=12", "HEAD"]);
+  const sha = run(["rev-parse", "--short=12", "HEAD"]);
   if (!sha) return undefined;
   // An unstaged or staged change means the build is not the commit it claims
   // to be. Saying so is the whole value: a clean-looking hash on a dirty tree
   // is a hash that will not reproduce.
-  const status = git(["status", "--porcelain"]);
+  const status = run(["status", "--porcelain"]);
   return status ? `${sha}-dirty` : sha;
 }
