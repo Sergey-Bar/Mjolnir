@@ -184,7 +184,7 @@ export function getRule(id: string): QADoctorRule | undefined {
  * rule lifecycle policy (docs/RULE-LIFECYCLE.md). Frozen contracts law:
  * rule IDs are never reused. Listing a retired ID here (rather than
  * simply deleting all trace of it) is what makes that promise checkable
- * — see tests/rules.registry.spec.ts's "never reissue a retired ID"
+ * — see tests/rules/registry.spec.ts's "never reissue a retired ID"
  * test.
  *
  * OWNER RULING (2026-09-08, E-1 of the MVP recon audit): this array is

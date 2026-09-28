@@ -11,7 +11,7 @@
  * The animation is decoration only. The underlying content is a valid,
  * complete static SVG: every line is present from the first frame, just
  * transparent until its reveal delay (and fully opaque under
- * prefers-reduced-motion). `tests/demo-asset-reproducibility.spec.ts`
+ * prefers-reduced-motion). `tests/contract/demo-asset-reproducibility.spec.ts`
  * asserts the committed file still matches the current reporter output.
  *
  * Usage: npm run docs:demo

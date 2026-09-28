@@ -3,7 +3,7 @@
  *
  * The last several pushes to origin/main failed `npm test` specifically
  * on macos-latest: the packed CLI produced zero output when invoked as
- * a real child process (tests/package-smoke.spec.ts). Root-cause
+ * a real child process (tests/integrations/package-smoke.spec.ts). Root-cause
  * hypothesis: the module-is-entry-point guard at the bottom of cli.ts
  * compared import.meta.url to pathToFileURL(process.argv[1]).href by
  * raw string equality. On macOS, os.tmpdir() can return a path under

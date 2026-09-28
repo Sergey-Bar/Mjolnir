@@ -4,7 +4,7 @@
  * Task 27, Master-Stabilization-Plan.md).
  *
  * Pure rendering logic lives in src/commands/rule-docs.ts and is unit
- * tested there (tests/rule-docs.spec.ts); this file is the disk-writing
+ * tested there (tests/rules/docs-generator.spec.ts); this file is the disk-writing
  * entrypoint only.
  */
 

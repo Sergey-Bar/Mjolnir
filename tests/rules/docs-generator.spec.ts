@@ -62,7 +62,7 @@ describe("generateAllRuleDocs — 100% of registered rules", () => {
       // Task 30's anti-pattern catalog has a richer, still fully-real
       // explanation for this specific rule (never both — the catalog
       // entry supersedes, it doesn't duplicate) — verified separately
-      // and in depth by tests/anti-pattern-catalog.spec.ts.
+      // and in depth by tests/rules/anti-pattern-catalog.spec.ts.
       const richContent = getAntiPatternContent(id);
       if (richContent) {
         expect(md).toContain(richContent);

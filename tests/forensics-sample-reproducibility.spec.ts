@@ -7,7 +7,7 @@
  * silently dropped login.spec.ts (65/100) — on the page whose whole
  * argument is that forensics reads real run data instead of guessing.
  *
- * Mirrors tests/hero-asset-reproducibility.spec.ts: regenerate through
+ * Mirrors tests/contract/hero-asset-reproducibility.spec.ts: regenerate through
  * the exact code path `npm run docs:forensics-samples` uses and assert
  * the committed files match.
  */

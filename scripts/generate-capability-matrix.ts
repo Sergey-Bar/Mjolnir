@@ -18,7 +18,7 @@
  * each rule (the Phase 2 D6 migration); undeclared values render
  * UNCLASSIFIED.
  *
- * Drift-locked by tests/capability-matrix.spec.ts and the
+ * Drift-locked by tests/rules/capability-matrix.spec.ts and the
  * generated-docs-drift CI job (which runs this script and fails on any
  * git diff). No timestamps: the artifact must be byte-stable (see the
  * fp-audit generator's note on the removed non-deterministic stamps).
@@ -32,7 +32,7 @@ import { prettify } from "./lib/prettify.js";
 import { isMainModule } from "./lib/is-main-module.js";
 import { wilsonInterval } from "./lib/wilson.js";
 
-// Re-exported for compatibility — tests/capability-matrix.spec.ts (and
+// Re-exported for compatibility — tests/rules/capability-matrix.spec.ts (and
 // any library consumer) imports the interval math from this module, but
 // the single implementation lives in scripts/lib/wilson.ts so the FP
 // regression-governance comparison (§20.2) uses the identical math.
@@ -173,7 +173,7 @@ export type DetectionStrategyEnum =
 
 /**
  * The declared `detectionStrategy` IS the §09.6 enum since the Phase 2
- * D6 migration (src/rules/rule.ts types it, tests/rules.registry.spec.ts
+ * D6 migration (src/rules/rule.ts types it, tests/rules/registry.spec.ts
  * ratchets it). This function now exists for the contract surface and for
  * defensive rendering: an undeclared strategy (or an out-of-contract
  * value smuggled in via a synthetic rule object) renders UNCLASSIFIED
@@ -545,7 +545,7 @@ export function renderMatrixMd(data: MatrixData): string {
     "# Rule Capability Matrix (v0)",
     "",
     "**Generated from the rule registry (`src/rules/index.ts` `RULES`) + `MEASURED_FP` + verdict data — do not edit by hand.**",
-    "Regenerate: `npm run docs:capability`. Drift-locked by `tests/capability-matrix.spec.ts` and the generated-docs-drift CI job.",
+    "Regenerate: `npm run docs:capability`. Drift-locked by `tests/rules/capability-matrix.spec.ts` and the generated-docs-drift CI job.",
     "",
     "Verification Trust Evolution Plan §04/§09. Unknown fields render as",
     "`UNCLASSIFIED` — visible gaps are the deliverable, not failures.",

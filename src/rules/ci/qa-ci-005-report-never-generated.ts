@@ -74,7 +74,7 @@ interface WorkflowDoc {
 const COVERAGE_PRODUCERS: RegExp[] = [
   // rev-1 JS vocabulary, kept: flag-style coverage on the runners that
   // pass it on the CLI.
-  // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern; [^\n]* is linear and non-exchanging — ReDoS authoritatively gated by regexp/no-super-linear-backtracking (error) + tests/redos-audit.spec.ts
+  // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern; [^\n]* is linear and non-exchanging — ReDoS authoritatively gated by regexp/no-super-linear-backtracking (error) + tests/rules/redos-gate.spec.ts
   /\b(?:npx\s+)?(?:vitest|jest|nyc)\b[^\n]*--coverage\b/i,
   /--coverage\b/i,
   // script-name coverage: test:coverage / coverage:report etc. — the

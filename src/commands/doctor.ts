@@ -274,7 +274,7 @@ export interface MeasurementBlock {
  * cap instead of a decorative sentence. Verification Trust Evolution
  * Phase 1 (§11.2 Step 2/§11 exit gate) closed the hole in code: the
  * omitted-tier default is measurement-dependent and the registry
- * ratchet (tests/registry-ratchet.spec.ts) fails on ANY unmeasured
+ * ratchet (tests/rules/registry-ratchet.spec.ts) fails on ANY unmeasured
  * effective-core rule, so the only value this cap can take is 0.
  * Kept as an explicit constant so the law stays visible in the doctor
  * report rather than dissolving into a test file.
@@ -415,8 +415,23 @@ export function checkAntiCreep(
       `Core tier has ${count} rules — exceeds cap of ${CORE_CAP}. ` +
         `Promoting a rule to core requires demoting another first.`,
     );
-    // List the newest additions to help identify what to demote
+    // List the rules over the cap, so the reader can see which to demote.
+    //
+    // The comment here used to say "the NEWEST additions", and it was a
+    // positional `slice(CORE_CAP)` over an array whose order is not
+    // recency — so it named a subset of the overflow while claiming to name
+    // the most recently added, which is the sort of helpful-looking detail
+    // that sends a maintainer to demote the wrong rule.
+    //
+    // `coreRules` is now sorted by id (the same code-point order the PR
+    // comment uses for its revision inventory), so "the overflow" is what is
+    // printed. If recency is ever the right thing to show, the field to sort
+    // on has to exist first — `rule.tier` has no date and the registry
+    // carries no `addedAt`.
     const overflow = coreRules.slice(CORE_CAP);
+    if (overflow.length > 0) {
+      details.push(`  ${overflow.length} rule(s) over the cap, listed by id:`);
+    }
     for (const r of overflow.slice(0, 5)) {
       details.push(`  overflow: ${r.id} — ${r.title}`);
     }

@@ -10,7 +10,7 @@
  * (docs/COVERAGE-EXEMPTIONS.json), the committed exclusion list, and the real
  * import graph, and reports every way the three can disagree. The CLI script
  * (scripts/check-coverage-exemption-ledger.mjs) and the guard spec
- * (tests/config/coverage-exemption-ledger.spec.ts) both call it, so a gate
+ * (tests/contract/coverage-exemption-truth.spec.ts) both call it, so a gate
  * that can drift from its own evidence is not a gate.
  */
 

@@ -16,7 +16,7 @@
  *
  * The scan options MUST stay identical to generate-readme-hero.ts, or
  * the three tabs would show three different scans — the exact class of
- * drift this site's law exists to prevent. `tests/site-formats.spec.ts`
+ * drift this site's law exists to prevent. `tests/contract/site-formats.spec.ts`
  * asserts the scores agree.
  */
 

@@ -82,7 +82,7 @@ function regexArm(ctx: {
 
     // An assertion has to be a real `expect(...)` / `assert...` call in
     // THIS callback — `res.text()` and `.map(...)` no longer count.
-    // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
+    // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/rules/redos-gate.spec.ts
     if (!/\bexpect\s*\(|\bassert(?:\.\w+)?\s*\(/.test(callbackText)) continue;
 
     // Walk backwards over chained lines (`.method(...)` continuations)
@@ -182,7 +182,7 @@ function astArm(
   for (const thenAccess of thenCalls) {
     const call = thenAccess.getParent() as ts.CallExpression;
     const callbackText = call.getText();
-    // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
+    // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/rules/redos-gate.spec.ts
     if (!/\bexpect\s*\(|\bassert(?:\.\w+)?\s*\(/.test(callbackText)) continue;
 
     // Root receiver of the chain: unwrap PropertyAccess/Call/As-expression

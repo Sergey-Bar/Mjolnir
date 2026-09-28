@@ -241,7 +241,7 @@ describe("honesty-surface numbers match the FP-AUDIT coverage line and the regis
   /** Registry truth: rules with n ≥ 10 classified verdicts — deliberately the
    * same definition the FP-AUDIT generator uses (generate-fp-audit-table.ts's
    * coverage count); revision staleness is owned by
-   * tests/measured-fp-generated.spec.ts, not here. */
+   * tests/rules/measured-fp.spec.ts, not here. */
 
   it("FP-AUDIT's own coverage line exists and is parseable", () => {
     // The generated line is the source of truth every claim is checked

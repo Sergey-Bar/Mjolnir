@@ -271,7 +271,7 @@ function removePagePause(
       refused: "code masking unavailable for this file — edit refused",
     };
   }
-  // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
+  // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/rules/redos-gate.spec.ts
   const PAUSE_ONLY = /^\s*(?:await\s+)?page\.pause\s*\(\s*\)\s*(?:;\s*)?$/;
   const PAUSE_CALL = /\bpage\.pause\s*\(\s*\)/;
   const lines = text.split("\n");

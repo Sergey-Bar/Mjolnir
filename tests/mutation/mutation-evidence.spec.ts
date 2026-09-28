@@ -41,7 +41,7 @@ const STRYKER_REPORT = {
   schemaVersion: "1.0",
   thresholds: { high: 80, low: 60 },
   files: {
-    "src/auth.spec.ts": {
+    "tests/golden/repo/src/auth.spec.ts": {
       source: "function login(a, b) { return a && b; }",
       mutants: [
         {
@@ -95,7 +95,7 @@ function finding(over: Partial<Finding> = {}): Finding {
     confidence: "high",
     findingType: "heuristic-risk",
     qaImpact: "HYGIENE",
-    file: "src/auth.spec.ts",
+    file: "tests/golden/repo/src/auth.spec.ts",
     line: 1,
     column: 1,
     message: "m",
@@ -114,7 +114,7 @@ describe("Stryker JSON parser (P5)", () => {
     expect(r.killed).toBe(1);
     expect(r.noCoverage).toBe(1);
     expect(r.survived[0]).toMatchObject({
-      file: "src/auth.spec.ts",
+      file: "tests/golden/repo/src/auth.spec.ts",
       mutator: "ConditionalExpression",
       startLine: 1, // Stryker 0-based line 0 → engine 1-based
       endLine: 1,
@@ -381,7 +381,7 @@ describe("mjolnir mutation command end-to-end (report-only, never a gate)", () =
           { cwd: dir, encoding: "utf8" },
         );
         expect(out).toContain("1 survived");
-        expect(out).toContain("src/auth.spec.ts");
+        expect(out).toContain("tests/golden/repo/src/auth.spec.ts");
       } finally {
         rmSync(dir, { recursive: true, force: true });
       }
@@ -398,7 +398,7 @@ describe("mjolnir mutation command end-to-end (report-only, never a gate)", () =
           join(dir, "mutation-report.json"),
           JSON.stringify(STRYKER_REPORT),
         );
-        // A finding in the same file as the survived mutant (src/auth.spec.ts):
+        // A finding in the same file as the survived mutant (tests/golden/repo/src/auth.spec.ts):
         // Stryker reports mutants over SOURCE files, and a scan surfaces
         // findings wherever they are — the intersection is the point.
         mkdirSync(join(dir, "src"), { recursive: true });

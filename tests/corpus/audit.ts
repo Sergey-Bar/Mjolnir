@@ -267,9 +267,11 @@ export const CORPUS: CorpusRepo[] = [
   //    on the Playwright bindings themselves; these additions add
   //    application corpora on both axes plus CI-workflow density. Chosen
   //    by evaluating each candidate's unmeasured-rule fire count at HEAD
-  //    before committing (scripts/lib/eval-repo.ts); repos whose scan
-  //    truncated against the 60s budget (n8n, posthog, vscode) were
-  //    rejected — a partial scan can never be count-locked.
+  //    before committing; repos whose scan truncated against the 60s budget
+  //    (n8n, posthog, vscode) were rejected — a partial scan can never be
+  //    count-locked. (The helper that did the evaluation,
+  //    `scripts/lib/eval-repo.ts`, has since been deleted; the corpus and
+  //    the rejections it produced are what remain.)
   {
     name: "vitest-dev-vitest",
     url: "https://github.com/vitest-dev/vitest.git",

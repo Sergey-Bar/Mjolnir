@@ -83,7 +83,7 @@ export const commentedOutTest = defineRule({
  * the line. `await` is allowed because `// await test('x')` is still a
  * disabled test; a `.skip`/`.only` modifier is allowed for the same reason.
  */
-// eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
+// eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/rules/redos-gate.spec.ts
 const COMMENTED_TEST_RE = /^(?:await\s+)?(?:it|test)(?:\.\w+)?\s*\(/;
 
 /**
