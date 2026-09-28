@@ -7,7 +7,10 @@
  *     (MEASURED-CORE … UNMEASURED);
  *   - `M40_LANGUAGE_CERTIFICATION_STATES` — fourteen language-level states
  *     (DISCOVERED … UNKNOWN);
- *   - the detector lifecycle in `src/engine/m45-detector-lifecycle.ts`.
+ *   - the detector lifecycle, which was `src/engine/m45-detector-lifecycle.ts`
+ *     and `src/detectors/m45-detector-lifecycle.ts`. Both were unwired and
+ *     were deleted in 6.0, so the detector lifecycle named here is not
+ *     implemented in this tree yet.
  *
  * Three ladders, none of which could be compared to the others. A rule could
  * be `MEASURED-CORE` while its language sat at `PARSEABLE`, and nothing

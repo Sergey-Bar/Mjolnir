@@ -141,15 +141,33 @@ describe("mjolnir.yml (the PR feedback loop workflow)", () => {
     expect(String(script)).toContain("updateComment");
   });
 
-  it("publishes only after the gate passed, not merely after the scan ran", () => {
+  it("publishes on a FAILED gate, because that is when the comment is needed", () => {
     const wf = loadPrWorkflow();
     expect(wf.jobs.publish?.needs).toBe("scan");
-    // The scan job's result is now the gate's result, because the gate is the
-    // last step in that job. A comment must never imply a clean scan that the
-    // gate rejected.
-    expect(String(wf.jobs.publish?.if)).toContain(
-      "needs.scan.result == 'success'",
-    );
+    // This asserted the INVERSION. The rationale was sound — a comment must
+    // not imply a clean scan the gate rejected — but the gate lives INSIDE
+    // the scan job as its last step, so `result == 'success'` meant a failing
+    // gate skipped the publish entirely. The comment appeared when it had
+    // nothing to say and vanished when it had everything to say, which is the
+    // opposite of the job's own stated purpose.
+    //
+    // The concern it encoded is real and is now handled at the right layer:
+    // the RENDERER states what the scan was and never claims to gate the
+    // merge, and the render gate asserts it cannot.
+    const condition = String(wf.jobs.publish?.if);
+    expect(condition).toContain("always()");
+    expect(condition).not.toContain("needs.scan.result == 'success'");
+    // Cancelled and skipped have no report to post, and posting an empty
+    // body would overwrite a good comment with a worse one.
+    expect(condition).toContain("needs.scan.result != 'cancelled'");
+    expect(condition).toContain("needs.scan.result != 'skipped'");
+  });
+
+  it("gives the publish job pull-request write and nothing more", () => {
+    const wf = loadPrWorkflow();
+    const permissions = wf.jobs.publish?.permissions as Record<string, string>;
+    expect(permissions["pull-requests"]).toBe("write");
+    expect(permissions.contents).toBe("read");
   });
 
   it("does not leave dead github.rest.checks references", () => {

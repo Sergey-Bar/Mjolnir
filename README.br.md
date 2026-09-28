@@ -194,19 +194,13 @@ npx mjolnir-qa@5.0.0 --scope changed
 | `mjolnir`                                     | Trust Report: veredito, confiança, próxima ação               |
 | `mjolnir --scope changed`                     | Só o que sua branch introduziu (a forma para CI)              |
 | `mjolnir ci install`                          | Gera o workflow consultivo de PR (baseado na action)          |
-| `mjolnir business-case`                       | ROI estimate: projected savings per finding                   |
-| `mjolnir release-report`                      | Release readiness: GO, CONDITIONAL GO, or NO-GO               |
 | `mjolnir release-trust`                       | 12-dimension release assurance verdict                        |
-| `mjolnir report`                              | Generate a Playwright-compatible report                       |
 | `mjolnir trend`                               | Record, show, or diff local quality snapshots                 |
 | `mjolnir policy`                              | Initialize, validate, or check policy gates                   |
-| `mjolnir quarantine`                          | Review deterministic proposals (prototype)                    |
 | `mjolnir analyze --cross-file`                | Bounded cross-file analysis                                   |
 | `mjolnir ci-adapter github .`                 | Generate CI templates for supported providers                 |
 | `mjolnir dashboard`                           | Generate a self-contained quality dashboard                   |
 | `mjolnir exec-report`                         | Executive KPIs and recommendations (advisory)                 |
-| `mjolnir enterprise`                          | Self-hosted templates (prototype)                             |
-| `mjolnir maturity`                            | Assess maturity or display maturity levels                    |
 | `mjolnir mutation tests/mutation-report.json` | Analyze mutation reports; never promotes trust                |
 | `mjolnir mcp`                                 | Read-only MCP tools over stdio                                |
 | `mjolnir explain QA-CI-001`                   | O quê, por quê e correção, mais a taxa de FP medida           |

@@ -174,11 +174,15 @@ export const TRUST_INVARIANTS: readonly TrustInvariant[] = [
   },
   {
     id: "TI-018",
-    description: "Same PrCommentModelV1 → byte-identical rendered Markdown",
+    description: "PR-comment rendering is deterministic",
     scope: "PR Comments",
     status: "CURRENT",
     verificationTest: "tests/reporters/pr-comment-determinism.spec.ts",
-    verificationCase: "soak: 50 renders produce identical output",
+    // Was "soak: 50 renders produce identical output", which asserted
+    // determinism of `renderPrComment` — a function with NO production
+    // importer. The live renderer is `renderUnifiedReport`, so the invariant
+    // was `CURRENT` while verifying code no user could reach.
+    verificationCase: "soak: 50 renders of each shape are identical",
   },
   {
     id: "TI-019",
@@ -196,6 +200,48 @@ export const TRUST_INVARIANTS: readonly TrustInvariant[] = [
     status: "CURRENT",
     verificationTest: "tests/integrations/github/stale-guard-ti020.spec.ts",
     verificationCase: "does not overwrite for mismatched SHA",
+  },
+  // TI-021..TI-024 are one failure mode recorded four times: a gate that
+  // cannot fail is indistinguishable from a gate that passed. Each was a
+  // live silent success with no test and no CI wiring — a three-state
+  // result flattened to two by a ternary, an exit code nothing could
+  // reach, a filter over a word no row carried, and a banner that said
+  // "exit 0 by design" while exiting 1.
+  {
+    id: "TI-021",
+    description: "A gate that did not run cannot report success",
+    scope: "Exit",
+    status: "CURRENT",
+    verificationTest: "tests/contract/gate-exit-codes.spec.ts",
+    verificationCase:
+      "maps PASS, BLOCKED and FAIL to three distinct exit codes",
+  },
+  {
+    id: "TI-022",
+    description: "A gate cannot rewrite the artifact it is asserted against",
+    scope: "Exit",
+    status: "CURRENT",
+    verificationTest: "tests/contract/gate-exit-codes.spec.ts",
+    verificationCase:
+      "--check leaves the tracked artifact byte-identical and still reports red",
+  },
+  {
+    id: "TI-023",
+    description:
+      "An unverifiable gap never reports as a cleared release blocker",
+    scope: "Exit",
+    status: "CURRENT",
+    verificationTest: "tests/contract/gate-exit-codes.spec.ts",
+    verificationCase:
+      "reports every release-blocker row that is not provably cleared",
+  },
+  {
+    id: "TI-024",
+    description: "A staleness report that can enforce must be wired to enforce",
+    scope: "Exit",
+    status: "CURRENT",
+    verificationTest: "tests/contract/gate-exit-codes.spec.ts",
+    verificationCase: "is advisory without the flag and enforcing with it",
   },
 ] as const;
 

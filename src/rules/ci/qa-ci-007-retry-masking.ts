@@ -129,10 +129,10 @@ export const retryMasking = defineRule({
           // (vault while-read), and even comment text ("Check for X in …") —
           // adjudicated FPs, 2026-09-04.
           const LOOP_RE =
-            // eslint-disable-next-line security/detect-unsafe-regex, regexp/no-contradiction-with-assertion -- bounded literal one-line patterns; ReDoS authoritatively gated by regexp/no-super-linear-backtracking (error) + tests/redos-audit.spec.ts
+            // eslint-disable-next-line security/detect-unsafe-regex, regexp/no-contradiction-with-assertion -- bounded literal one-line patterns; ReDoS authoritatively gated by regexp/no-super-linear-backtracking (error) + tests/rules/redos-gate.spec.ts
             /\bfor\b[^\n]*\$\(\s*(?:seq|range)\b|\bfor\b[^\n]*\{\d+\.\.\d+\}|\bfor\s+\w+\s+in\s+\d+(?:[,\t ]+\d+)*[;\s]*do\b|\bwhile\b[^\n]*\btrue\b|\bwhile\s+:;|\bmax_attempts\b|\buntil\b[^\n]*\bsucceed\b/i;
           const TEST_GATE_RE =
-            // eslint-disable-next-line security/detect-unsafe-regex, regexp/no-useless-character-class -- bounded literal one-line patterns; ReDoS authoritatively gated by regexp/no-super-linear-backtracking (error) + tests/redos-audit.spec.ts
+            // eslint-disable-next-line security/detect-unsafe-regex, regexp/no-useless-character-class -- bounded literal one-line patterns; ReDoS authoritatively gated by regexp/no-super-linear-backtracking (error) + tests/rules/redos-gate.spec.ts
             /\b(?:npm|yarn|pnpm|bun)\s+(?:run\s+)?(?:test|t)\b|\bnpx\s+(?:vitest|jest|mocha|ava|playwright\s+test)\b|\b(?:vitest|jest|mocha|ava|tap)\b|\bplaywright\s+test\b|\b(?:pytest|tox|nox)\b|\bpython\s+-m\s+(?:pytest|unittest)\b|\bmvn[wd]?\b[^\n]+\b(?:test|verify)\b|\b(?:[.]\/)?gradlew?\b[^\n]+\btest\b|\bdotnet\s+test\b|\bgo\s+test\b|\bcargo\s+test\b|\bmake\s+[\w./\\-]*test\b/i;
           const isCurlProbe =
             /\b(?:curl|wget)\b/.test(step.run) && !TEST_GATE_RE.test(step.run);

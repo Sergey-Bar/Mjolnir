@@ -532,6 +532,30 @@ export interface ScanResult {
      */
     rulesCrashed?: number;
     parseFallbacks?: number;
+    /**
+     * How much of the rule registry this scan could see.
+     *
+     * ORTHOGONAL TO `partial`, and that is the contract. `partial` means
+     * "this run lost something while doing it" and is what `scanExitCode`,
+     * SARIF `executionSuccessful` and generated-CI gating read. A rule
+     * removed from the set before the walk started never ran, so nothing
+     * about it was lost mid-run — and folding it into `partial` would make
+     * every ordinary non-`--strict` scan exit 2, at which point nobody
+     * reads the field.
+     *
+     * `PARTIAL` means at least one quarantined rule was withheld. It is the
+     * disclosure that `analysisStatus.rules: "complete"` cannot make: a
+     * scan can read every file it was given, parse all of them, crash no
+     * rule, and still have run 45 of 79 detectors.
+     */
+    coverageState?: "COMPLETE" | "PARTIAL";
+    /**
+     * Rules that ran, and rules withheld from the run. Their sum is the
+     * rule set this scan was offered; the registry total is in
+     * `coverageState`'s reason (`coverage:quarantine:<n>` in `reasons`).
+     */
+    rulesApplied?: number;
+    rulesWithheld?: number;
   };
   /**
    * Scoring model version stamped into the result (ENGINE-001). Allows
@@ -540,6 +564,22 @@ export interface ScanResult {
    * this field.
    */
   scoringModelVersion?: string;
+  /**
+   * Why `score` is 99 when the scorer computed 100 (contract v2).
+   *
+   * Two sites clamp: a degraded scope, and a partial scan. The clamp itself
+   * is right — 100 is the strongest claim the scorer makes and neither
+   * condition permits it — but the RESULT was byte-identical to a genuine 99,
+   * so a reader could not distinguish "withheld to 99" from "scored 99"
+   * without reading the pipeline. The presentation surfaces render the
+   * reason rather than the bare number.
+   *
+   * Absent means the score is exactly what the scorer computed. The field
+   * lives on `ScanResult`, NOT inside `runIdentity`: it describes the score,
+   * and `runIdentity` is the machine anchor whose digest must not change
+   * because a presentation reason was added.
+   */
+  scoreClampReason?: "scope-degraded" | "partial-scan";
   /**
    * Scope Integrity block (product-gap master plan §7, R4c): the
    * claimed-vs-analyzed accounting. `scopeVerdict` is PROVEN only when

@@ -114,37 +114,23 @@ Subcommands — Maintenance:
     build and query the verification evidence graph
   framework-maturity [--framework <name>] [--json]
     track framework maturity levels, especially Playwright F4→F5
-  capability [--json] [--kind <k>] [--maturity M0..M5] [--id <substring>]
+  rules capability [--json] [--kind <k>] [--maturity M0..M5] [--id <substring>]
     the capability registry: every capability at the maturity the machine can prove
   suppression-gate [path] [--policy <file>] [--json]
     enforce suppression policy governance gate
-  business-case [path] [--incident-cost <n>] [--strict]
-    measured false-positive rates per finding; a cost figure only with --incident-cost
-  release-report [path] [--since <ref>] [--history <json>]
-    release readiness verdict: GO, CONDITIONAL GO, or NO-GO
-  report [path] [--output <file>]                 generate a Playwright-compatible
-                                                  report from scan results
   trend <record|show|diff> [path] [--limit <N>]   record, show, or diff local quality
                                                   trend snapshots
   exec-report [path]                              generate executive quality KPIs, risk,
                                                   and recommendations (advisory)
-  quarantine <list|review|stats> [path]           review deterministic quarantine
-                                                  proposals (read-only prototype)
   analyze [path] --cross-file                     run bounded cross-file analysis with
                                                   explicit findings
   dashboard [path] [--output <file>]              generate a self-contained quality
                                                   dashboard HTML artifact
-  enterprise config [output-dir]                  capability manifest for deployment
-                                                  review — records what this product
-                                                  does NOT provide (no server, no SSO,
-                                                  no hosted tier, no compliance packet)
-  maturity <assess|levels> [path]                 presence of named QA artifacts (a
-                                                  signal, not a maturity score)
 
 Subcommands — Meta:
   rules [--md] [--unmeasured|--measured] [--external] | [--stats] | [--health]
-  [--limit=N]
-    rule catalog + empirical-measurement stats/health (md/json/stats/health)
+  [--limit=N] | capability
+    rule catalog + empirical-measurement stats/health (md/json/stats/health/capability)
   explain <RULE-ID> [--fixtures-root <dir>]       what/why/fix + measured FP rate for
                                                   one rule
   why <file>:<line> [path] [--json <mjolnir.json>]
@@ -346,21 +332,12 @@ Subcommands — Maintenance:
   framework-maturity [--framework <name>] [--json]
     track framework maturity levels, especially Playwright
     F4→F5
-  capability [--json] [--kind <k>] [--maturity M0..M5] [--id
-  <substring>]
+  rules capability [--json] [--kind <k>] [--maturity M0..M5]
+  [--id <substring>]
     the capability registry: every capability at the
     maturity the machine can prove
   suppression-gate [path] [--policy <file>] [--json]
     enforce suppression policy governance gate
-  business-case [path] [--incident-cost <n>] [--strict]
-    measured false-positive rates per finding; a cost figure
-    only with --incident-cost
-  release-report [path] [--since <ref>] [--history <json>]
-    release readiness verdict: GO, CONDITIONAL GO, or NO-GO
-  report [path] [--output <file>]                 generate a
-                                                  Playwright-compatible
-                                                  report from scan
-                                                  results
   trend <record|show|diff> [path] [--limit <N>]   record, show, or
                                                   diff local
                                                   quality trend
@@ -371,12 +348,6 @@ Subcommands — Maintenance:
                                                   risk, and
                                                   recommendations
                                                   (advisory)
-  quarantine <list|review|stats> [path]           review
-                                                  deterministic
-                                                  quarantine
-                                                  proposals
-                                                  (read-only
-                                                  prototype)
   analyze [path] --cross-file                     run bounded
                                                   cross-file
                                                   analysis with
@@ -387,28 +358,12 @@ Subcommands — Maintenance:
                                                   quality
                                                   dashboard HTML
                                                   artifact
-  enterprise config [output-dir]                  capability
-                                                  manifest for
-                                                  deployment
-                                                  review — records
-                                                  what this
-                                                  product does NOT
-                                                  provide (no
-                                                  server, no SSO,
-                                                  no hosted tier,
-                                                  no compliance
-                                                  packet)
-  maturity <assess|levels> [path]                 presence of
-                                                  named QA
-                                                  artifacts (a
-                                                  signal, not a
-                                                  maturity score)
 
 Subcommands — Meta:
   rules [--md] [--unmeasured|--measured] [--external] |
-  [--stats] | [--health] [--limit=N]
+  [--stats] | [--health] [--limit=N] | capability
     rule catalog + empirical-measurement stats/health
-    (md/json/stats/health)
+    (md/json/stats/health/capability)
   explain <RULE-ID> [--fixtures-root <dir>]       what/why/fix +
                                                   measured FP rate
                                                   for one rule

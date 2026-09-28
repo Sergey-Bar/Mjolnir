@@ -22,6 +22,7 @@ import {
   toolCatalogDigest,
 } from "../../src/mcp/server.js";
 import type { ScanResult } from "../../src/types.js";
+import { CONTRACT_VERSION } from "../../src/engine/machine-contract.js";
 
 const createdDirs: string[] = [];
 function tmpRepo(prefix: string): string {
@@ -166,7 +167,7 @@ describe("scan tool — canonical semantics through the transport", () => {
     };
     expect(Array.isArray(result.findings)).toBe(true);
     // The machine contract rides the transport unchanged.
-    expect(result.contract?.contractVersion).toBe(1);
+    expect(result.contract?.contractVersion).toBe(CONTRACT_VERSION);
     // Findings carry identity fields (§22.1) — no parsing of prose.
     const pw = (result.findings ?? []).find((f) => f.ruleId === "QA-PW-101");
     if (pw) expect(pw.detectorRevision).toBe(1);

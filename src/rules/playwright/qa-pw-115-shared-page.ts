@@ -44,7 +44,7 @@ export const pwSharedPage = defineRule({
     // fixture-injected `page` is a test parameter; a module-level one is
     // shared mutable state across parallel workers.
     const re =
-      // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/redos-audit.spec.ts
+      // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/rules/redos-gate.spec.ts
       /^(?:export\s+)?(?:let|var|const)\s+(?:page|browser|context|browserContext)\b/gm;
     let m: RegExpExecArray | null;
     while ((m = re.exec(text)) !== null) {

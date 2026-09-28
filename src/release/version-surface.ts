@@ -5,7 +5,6 @@ import { isValidSemver } from "./version-consistency.js";
  */
 export const IDENTITY_SURFACE_PATHS = [
   "src/engine/version.ts",
-  "src/commands/enterprise.ts",
   "src/mcp/server.ts",
   "src/reporter/sarif.ts",
 ] as const;
@@ -123,13 +122,6 @@ export function checkVersionSurfaceEnvelope(
   const required = new Map<string, string[]>([
     // --- identity surfaces: the working version -------------------------
     ["src/engine/version.ts", [`export const ENGINE_VERSION = "${version}";`]],
-    [
-      "src/commands/enterprise.ts",
-      [
-        'import { ENGINE_VERSION } from "../engine/version.js"',
-        "version: ENGINE_VERSION",
-      ],
-    ],
     [
       "src/mcp/server.ts",
       [

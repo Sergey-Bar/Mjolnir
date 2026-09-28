@@ -9,8 +9,6 @@ export {
   type PrCommentValidationError,
 } from "./pr-comment-contract.js";
 
-export { renderPrComment } from "./pr-comment-renderer.js";
-
 export {
   prioritizeFindings,
   type FindingDisplayGroup,

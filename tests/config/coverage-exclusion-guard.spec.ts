@@ -14,7 +14,7 @@
  * stops shipping) fails here rather than rotting in a JSON file.
  */
 
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
@@ -104,10 +104,25 @@ describe("coverage exclusion truth ledger (V5-000)", () => {
     expect(reachable.has("src/ledger/m26-validators.ts")).toBe(true);
     expect(reachable.has("src/release/version-surface.ts")).toBe(true);
     // A contract nothing reaches is not.
-    expect(reachable.has("src/engine/m50-release-proof-contract.ts")).toBe(
+    //
+    // Repointed 6.0. This named `src/engine/m50-release-proof-contract.ts`
+    // and `src/agent/decision-receipt.ts`, which asserted "not reachable"
+    // about files that were DELETED in the same release — a vacuous pass,
+    // because `reachable.has("…")` is false for a path that does not exist.
+    // The two below are live, unwired modules, so the assertion says what it
+    // looks like it says.
+    expect(reachable.has("src/integrations/github/stale-guard.ts")).toBe(false);
+    expect(reachable.has("src/integrations/github/github-permissions.ts")).toBe(
       false,
     );
-    expect(reachable.has("src/agent/decision-receipt.ts")).toBe(false);
+    // And the property that makes those two meaningful: they are on disk.
+    expect(
+      existsSync(join(ROOT, "src/integrations/github/stale-guard.ts")),
+      "the reachability assertion is vacuous if the file does not exist",
+    ).toBe(true);
+    expect(
+      existsSync(join(ROOT, "src/integrations/github/github-permissions.ts")),
+    ).toBe(true);
   });
 
   it("the ledger is a record of reality, not a claim: a misclassified entry fails", () => {

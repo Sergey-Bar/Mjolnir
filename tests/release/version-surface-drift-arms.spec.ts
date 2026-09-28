@@ -57,9 +57,6 @@ function cleanSurfaces(): Surfaces {
       ].join("\n");
     } else if (path === "src/engine/version.ts") {
       surfaces[path] = `export const ENGINE_VERSION = "${VERSION}";\n`;
-    } else if (path === "src/commands/enterprise.ts") {
-      surfaces[path] =
-        'import { ENGINE_VERSION } from "../engine/version.js"\nconst manifest = { version: ENGINE_VERSION };\n';
     } else if (path === "src/mcp/server.ts") {
       surfaces[path] =
         'import { ENGINE_VERSION as CLI_VERSION } from "../engine/version.js"\nconst info = { version: CLI_VERSION };\n';

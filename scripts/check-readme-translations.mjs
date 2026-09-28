@@ -1,14 +1,26 @@
 /**
- * Advisory staleness report for the README translations (npm run
+ * Staleness report for the README translations (npm run
  * docs:translations).
  *
  * English README.md is canonical; every README.<code>.md carries a
  * machine-assisted-translation marker with a "Last synced" date. This
  * script compares that date against the last commit that touched
- * README.md and prints a per-language table. It is advisory by design:
- * it NEVER blocks (exit 0 always), has no --strict mode, and is not a
- * CI gate — translation drift is resolved by community PRs porting the
- * English change, never by a red build (honesty over enforcement).
+ * README.md and prints a per-language table.
+ *
+ * ADVISORY BY DEFAULT, ENFORCEABLE ON REQUEST. Without `--strict` the
+ * report always exits 0, which is the intended default: translation drift
+ * is resolved by community PRs porting the English change, not by a red
+ * build. With `--strict` it exits 1 when any language is not `fresh`, and
+ * `docs:translations:check` passes the flag.
+ *
+ * The header used to deny all three of these, and two denials were false:
+ * it asserted the script could not block and that no strict mode existed,
+ * while `docs:translations:check` has always passed the flag and the
+ * strict branch is spawn-tested in tests/readme-release-status.spec.ts.
+ * The third denial — that nothing runs it — was true, and was the real
+ * defect: a gate nobody invokes is a gate nobody reads. A comment that
+ * lies about its own script is worse than no comment, because the next
+ * maintainer believes it.
  */
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -147,11 +159,15 @@ for (const r of rows) {
     `${pad(r.label, w.label)}  ${pad(r.file, w.file)}  ${pad(r.synced, w.synced)}  ${r.status}`,
   );
 }
+const strict = process.argv.includes("--strict");
 console.log("");
 console.log(
-  "Advisory only — exit 0 by design. To re-sync a stale language, port the",
+  strict
+    ? `Enforcing: ${issues} language(s) not fresh → exit 1. To re-sync one, port the`
+    : "Advisory only (no --strict) — exit 0 by design. Add --strict to enforce.",
+);
+console.log(
   "README.md change into README.<code>.md, translate it, and bump its",
   '"Last synced" date to the README.md change date.',
 );
-const strict = process.argv.includes("--strict");
 process.exitCode = strict && issues > 0 ? 1 : 0;

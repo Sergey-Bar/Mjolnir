@@ -3,17 +3,17 @@
   "artifact": "v6-inventory",
   "generatedBy": "npm run docs:v6-inventory",
   "wave": "0",
-  "baseSha": "933371fe224f3adb3c150e29c4de73ede3a7e00a",
-  "version": "4.0.0-rc.1",
-  "publishedStable": "3.0.0",
+  "baseSha": "d17027be65cab65c2026faca8b42ba84cf1bdc98",
+  "version": "5.0.0",
+  "publishedStable": "5.0.0",
   "counts": {
-    "srcFiles": 326,
-    "testSpecs": 644,
+    "srcFiles": 324,
+    "testSpecs": 677,
     "rulesLive": 79,
     "rulesRetired": 22,
     "rulesMeasured": 74,
     "adapters": 11,
-    "commands": 45,
+    "commands": 38,
     "frameworks": 14,
     "ciProviders": 6,
     "qaDomains": 13,
@@ -44,8 +44,8 @@
       "F0": 1
     },
     "qaDomainCoverage": {
-      "BLOCKED": 9,
-      "TESTED": 4
+      "BLOCKED": 10,
+      "TESTED": 3
     }
   },
   "ruleRegistry": {
@@ -54,24 +54,27 @@
     "measured": 74,
     "byTier": {
       "quarantine": 34,
-      "extended": 21,
-      "core": 24
+      "extended": 26,
+      "core": 19
     }
   },
   "ledgers": {
     "gapLedger": {
       "total": 17,
       "byStatus": {
-        "open": 15,
-        "fixed": 2
+        "CONFIRMED_STILL_OPEN": 14,
+        "STALE_UNVERIFIABLE": 2,
+        "ALREADY_FIXED": 1
       },
       "bySeverity": {
         "high": 6,
         "release-blocker": 11
       },
       "openReleaseBlockers": [
+        "GAP-M26-002",
         "GAP-M26-003",
         "GAP-M26-004",
+        "GAP-M26-005",
         "GAP-M26-008",
         "GAP-M26-009",
         "GAP-M26-010",
@@ -84,17 +87,18 @@
     "supportMatrix": {
       "total": 136,
       "byDisposition": {
-        "TESTED": 90,
-        "BLOCKED": 44,
+        "TESTED": 65,
+        "BLOCKED": 69,
         "NOT_APPLICABLE": 2
       }
     },
     "issueDispositions": {
       "total": 429,
       "byDisposition": {
-        "CLOSED_NOT_PLANNED": 121,
-        "CARRY_FORWARD": 229,
-        "CLOSED_UNVERIFIED": 79
+        "CARRY_FORWARD": 417,
+        "FIX_IN_BITTERSWEET": 1,
+        "CLOSED_WONT_FIX": 8,
+        "CLOSED_SHIPPED": 3
       },
       "openIssues": 229
     },
@@ -420,9 +424,9 @@
         "area": "AI / LLM QA",
         "state": "MISSING",
         "wave": "8",
-        "evidence": ["src/agent"],
+        "evidence": ["src/rules/index.ts"],
         "unverifiedEvidence": [],
-        "note": "src/agent is the agent surface, not LLM-app QA."
+        "note": "No LLM-application QA surface exists. The agent surface that stood in for one was unwired and is deleted; an LLM rule set would live in the registry beside every other rule."
       },
       {
         "specSection": "§33",
@@ -483,9 +487,12 @@
         "area": "Quarantine governance",
         "state": "ALREADY_COMPLETE",
         "wave": "9",
-        "evidence": ["src/commands/quarantine.ts"],
+        "evidence": [
+          "src/rules/measurement-status.ts",
+          "docs/QUARANTINE-REMEDIATION.md"
+        ],
         "unverifiedEvidence": [],
-        "note": "Quarantine is a first-class governance surface with its own command."
+        "note": "Quarantine is a first-class governance surface: quarantined rules are a ledger with a status machine and a generated remediation artifact. The read-only `quarantine` prototype command was removed in 5.0 — a proposal list nobody could action was not a governance surface."
       },
       {
         "specSection": "§40",
@@ -678,12 +685,9 @@
         "area": "Release readiness",
         "state": "ALREADY_COMPLETE",
         "wave": "14",
-        "evidence": [
-          "src/commands/release-report.ts",
-          "src/commands/release-trust.ts"
-        ],
+        "evidence": ["src/commands/release-trust.ts"],
         "unverifiedEvidence": [],
-        "note": "Release report and release-trust both exist as commands."
+        "note": "release-trust is the one release-readiness command. The `release-report` GO/NO-GO command was removed in 5.0: a second verdict authority is the sprawl the canonical proof exists to remove."
       },
       {
         "specSection": "§61",
@@ -1121,23 +1125,20 @@
       {
         "specSection": "U1",
         "area": "Single Presentation Model",
-        "state": "PARTIALLY_COMPLETE",
+        "state": "ALREADY_COMPLETE",
         "wave": "10",
-        "evidence": [
-          "src/reporter/score-state.ts",
-          "src/reporter/evidence-tag.ts"
-        ],
+        "evidence": ["src/reporter/presentation.ts"],
         "unverifiedEvidence": [],
-        "note": "Two decision sites exist; the model does not."
+        "note": "The two competing decision sites were unwired and are deleted; the PR comment reads its band, label and colour from the one presentation model."
       },
       {
         "specSection": "U4",
         "area": "No naked numbers",
         "state": "MISSING",
         "wave": "5",
-        "evidence": ["src/reporter/evidence-tag.ts"],
+        "evidence": ["src/reporter/pr-report-shared.ts"],
         "unverifiedEvidence": [],
-        "note": "4 coarse values, no maturity/n/interval."
+        "note": "4 coarse values, no maturity/n/interval. The badge still prints a bare score and a 0-100% evidence number; nothing shows the Wilson interval or the sample size behind either."
       },
       {
         "specSection": "E6",
@@ -1153,7 +1154,7 @@
         "area": "Threshold registry",
         "state": "MISSING",
         "wave": "4",
-        "evidence": ["src/reporter/score-state.ts"],
+        "evidence": ["src/reporter/presentation.ts"],
         "unverifiedEvidence": [],
         "note": "Documented 3× cross-surface drift, class not closed."
       },

@@ -33,3 +33,77 @@ jobs:
         run: npm run corpus:regression
         env:
           NODE_OPTIONS: --max-old-space-size=8192
+
+  # The nightly tier proper (gates/nightly.json, D5).
+  #
+  # Two things live here and nowhere else. First, the twelve `scripts/v6`
+  # gates: every one of them is a real gate with a real exit code and not
+  # one of them ran in CI, so a green build said nothing about any of them.
+  # Second, the release certification chain. `ecosystem:gaps` exits 3 on
+  # BLOCKED — the corpus cache is absent on a fresh runner, which is the
+  # honest "this did not run" state — and it only reaches PASS once
+  # `corpus:regression` has populated that cache, so the corpus job and the
+  # gate jobs must share a cache. They are the same job for that reason and
+  # not for tidiness.
+  nightly-gates:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22.18.0
+          cache: npm
+      - run: npm ci
+      - name: Release certification chain
+        run: npm run ci-local
+      - name: Release-tier gates not chained by ci-local
+        run: |
+          set -euo pipefail
+          npm run ci:standard
+          node dist/cli.mjs src --json
+      - name: The twelve v6 gates
+        run: |
+          set -euo pipefail
+          status=0
+          run_gate() {
+            local label="$1"; shift
+            echo "::group::$label"
+            if "$@"; then
+              echo "  PASS  $label"
+            else
+              local code=$?
+              echo "::error::$label exited $code"
+              status=1
+            fi
+            echo "::endgroup::"
+          }
+          run_gate registry:check        npm run registry:check
+          run_gate qa-ir:parity           npm run qa-ir:parity
+          run_gate rules:quality:check    npm run rules:quality:check
+          run_gate issue-disposition     npm run issue-disposition:check
+          run_gate claims:prose:strict   npm run claims:prose:strict
+          run_gate claim:budget          npm run claim:budget
+          run_gate ecosystem:census      npm run ecosystem:census
+          run_gate ecosystem:gaps        npm run ecosystem:gaps
+          run_gate v6:archive:check      npm run v6:archive:check
+          run_gate thresholds:parity     npm run thresholds:parity
+          run_gate coverage:exemptions   npm run coverage:exemptions
+          run_gate unimported:modules     npm run unimported:check
+          run_gate verbs:budget          npm run verbs:budget
+          run_gate build:determinism     npm run build:determinism
+          run_gate m26:integrity         npm run m26:audit
+          run_gate candidate:readiness   npm run candidate:readiness
+          run_gate gate-tiers            node scripts/check-gate-tiers.mjs
+          exit "$status"
+      - name: Generated docs are not stale
+        run: |
+          set -euo pipefail
+          npm run docs:regen
+          if ! git diff --exit-code -- docs/; then
+            echo "::error::generated docs are stale — run 'npm run docs:regen' and commit"
+            git --no-pager diff --stat -- docs/
+            exit 1
+          fi

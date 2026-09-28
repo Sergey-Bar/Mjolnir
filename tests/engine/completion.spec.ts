@@ -15,15 +15,47 @@ describe("deriveCompletion", () => {
     });
     expect(result).toEqual({
       partial: false,
+      coverageState: "COMPLETE",
       analysisStatus: {
         discovery: "complete",
         rules: "complete",
         skippedFiles: 0,
         rulesCrashed: 0,
         parseFallbacks: 0,
+        // A caller that did not measure the withheld set has not shown it
+        // was empty, so the default is 0/0 rather than a guess. Absence
+        // reads as COMPLETE: a producer predating the field is the one case
+        // where claiming PARTIAL would be a fabricated new failure.
+        rulesApplied: 0,
+        rulesWithheld: 0,
         reasons: [],
       },
     });
+  });
+
+  it("reports the withheld set as PARTIAL coverage without touching partial", () => {
+    // The governing constraint, as a test: `partial` gains no input from
+    // coverage. A whole scan over 45 of 79 detectors is `partial: false`,
+    // `coverageState: "PARTIAL"`, and its `reasons` stay empty — a
+    // withheld rule is not an in-flight degradation.
+    const result = deriveCompletion({
+      discoveryTruncated: false,
+      rulesPartial: false,
+      skippedFiles: 0,
+      rulesCrashed: 0,
+      truncationReasons: [],
+      scopeIgnored: 0,
+      scopeUnrecognized: 0,
+      parseFailed: 0,
+      rulesApplied: 45,
+      rulesWithheld: 34,
+    });
+    expect(result.partial).toBe(false);
+    expect(result.coverageState).toBe("PARTIAL");
+    expect(result.analysisStatus.rules).toBe("complete");
+    expect(result.analysisStatus.rulesApplied).toBe(45);
+    expect(result.analysisStatus.rulesWithheld).toBe(34);
+    expect(result.analysisStatus.reasons).toEqual([]);
   });
 
   it("derives partial rules and a reason when rules crash", () => {

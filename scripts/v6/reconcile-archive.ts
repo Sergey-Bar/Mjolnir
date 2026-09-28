@@ -15,6 +15,12 @@
  * exists to prevent.
  *
  * Exit codes: `0` reconciled · `1` unreconciled · `2` malformed input.
+ *
+ * Arguments: `--check` evaluates and exits without writing anything;
+ * `--write` (the default) also refreshes the tracked artifact. The file
+ * header documented both the exit codes and the `--check` flag through 5.x
+ * and implemented neither — there was no argv handling at all, so every
+ * invocation silently took the writing path and exit 2 was unreachable.
  */
 
 import { writeFileSync } from "node:fs";
@@ -29,6 +35,13 @@ import {
 } from "./inventory.js";
 
 const ARCHIVE_JSON = join(ROOT, "docs", "V6-ARCHIVE-RECONCILIATION.json");
+
+/**
+ * Documented but unimplemented through 5.x: nothing could reach it, so the
+ * header's promise of a distinct code for unreadable input was a promise
+ * about an outcome no caller could observe.
+ */
+export const EXIT_MALFORMED_INPUT = 2;
 
 export interface ArchiveCheck {
   status: "RECONCILED" | "UNRECONCILED";
@@ -92,19 +105,49 @@ export function checkArchive(root = ROOT): ArchiveCheck {
 }
 
 async function main(): Promise<void> {
+  const argv = process.argv.slice(2);
+  const known = new Set(["--check", "--write"]);
+  const unknown = argv.filter((arg) => !known.has(arg));
+  if (unknown.length > 0) {
+    console.error(
+      `usage: reconcile-archive.ts [--check | --write]\n` +
+        `  --check  evaluate only; never write docs/V6-ARCHIVE-RECONCILIATION.json\n` +
+        `  --write  evaluate and refresh the artifact (the default)\n` +
+        `unknown argument(s): ${unknown.join(", ")}`,
+    );
+    process.exit(EXIT_MALFORMED_INPUT);
+  }
+  // Default to --write, but say so. A gate invoked as `v6:archive:check`
+  // used to write a tracked artifact on every run whether or not anyone
+  // asked it to, so a `git diff --exit-code` drift check would fail
+  // because the gate itself had just rewritten the file it checks.
+  const checkOnly = argv.includes("--check");
+
+  let archive: ArchiveReconciliation;
+  try {
+    archive = reconcileArchive(ROOT);
+  } catch (err) {
+    console.error(
+      `v6:archive:check could not read the roadmap: ${
+        err instanceof Error ? err.message : String(err)
+      }`,
+    );
+    process.exit(EXIT_MALFORMED_INPUT);
+  }
   const check = checkArchive(ROOT);
-  // The artifact is written on every run so the reconciliation is
-  // reviewable, not just asserted at CI time.
-  writeFileSync(
-    ARCHIVE_JSON,
-    JSON.stringify(reconcileArchive(ROOT), null, 2) + "\n",
-  );
-  await prettify(ARCHIVE_JSON);
+  if (!checkOnly) {
+    // The artifact is written only on an explicit refresh, so the
+    // reconciliation is reviewable without making every gate run a
+    // mutation.
+    writeFileSync(ARCHIVE_JSON, JSON.stringify(archive, null, 2) + "\n");
+    await prettify(ARCHIVE_JSON);
+  }
   console.log(
     JSON.stringify(
       {
         status: check.status,
         gate: "v6:archive:check",
+        mode: checkOnly ? "check" : "write",
         facts: check.facts,
         errors: check.errors,
       },

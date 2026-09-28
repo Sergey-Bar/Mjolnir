@@ -19,14 +19,30 @@ import { ENGINE_VERSION } from "../engine/version.js";
 
 const SCAN_COMMAND = `npx --yes mjolnir-qa@${ENGINE_VERSION} --blocking error`;
 
+/**
+ * Least privilege for a read-only scan job.
+ *
+ * A workflow with no `permissions:` key inherits the repository's default
+ * `GITHUB_TOKEN` scope, which on many repositories is `contents: write`.
+ * This generator emits a job that only reads code, so the block is
+ * declared rather than inherited — the same choice, and the same
+ * structurally-tested assertion, as src/integrations/ci-install.ts, which
+ * is the sibling emitter in this repository that gets it right.
+ */
 function generateGitHubWorkflow(): string {
   return `name: QA Check
 on: [push, pull_request]
+permissions:
+  contents: read
 jobs:
   qa:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Install dependencies
         run: npm ci
       - name: Run Mjölnir scan

@@ -22,7 +22,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 // runs the scan engine at least once — `impact` runs it twice plus
 // materializes a prior commit's tree file-by-file via `git show`. On
 // Windows CI that legitimately exceeds Vitest's 5s default; this is real
-// work, not a hang. Same remedy as tests/scale-benchmark.spec.ts.
+// work, not a hang. Same remedy as tests/stress/scale-benchmark.spec.ts.
 vi.setConfig({ testTimeout: 30_000 });
 
 import {

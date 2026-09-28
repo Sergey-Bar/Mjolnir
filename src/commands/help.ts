@@ -182,27 +182,28 @@ export const HELP_ENTRIES: HelpEntry[] = [
     examples: ["mjolnir explain QA-TEST-001", "mjolnir rules --unmeasured"],
   },
   {
-    verb: "capability",
+    verb: "rules capability",
     summary:
       "the capability registry: every capability at the maturity the machine can prove",
     usage:
-      "mjolnir capability [--json] [--kind <k>] [--maturity M0..M5] [--id <substring>]",
+      "mjolnir rules capability [--json] [--kind <k>] [--maturity M0..M5] [--id <substring>]",
     // No --set and no --promote, and that absence is the contract:
-    // maturity is derived from evidence (ADR 0001), so this verb shows and
-    // checks. A verb that could raise a level would be a verb that could
-    // lie about one.
+    // maturity is derived from evidence (ADR 0001), so this subcommand
+    // shows and checks. A verb that could raise a level would be a verb
+    // that could lie about one. It lives under `rules` because the
+    // capability registry and the rule catalog are the same evidence.
     examples: [
-      "mjolnir capability",
-      "mjolnir capability --maturity M2",
-      "mjolnir capability --json > registry.json",
+      "mjolnir rules capability",
+      "mjolnir rules capability --maturity M2",
+      "mjolnir rules capability --json > registry.json",
     ],
   },
   {
     verb: "rules",
     summary:
-      "rule catalog + empirical-measurement stats/health (md/json/stats/health)",
+      "rule catalog + empirical-measurement stats/health (md/json/stats/health/capability)",
     usage:
-      "mjolnir rules [--md] [--unmeasured|--measured] [--external] | [--stats] | [--health] [--limit=N]",
+      "mjolnir rules [--md] [--unmeasured|--measured] [--external] | [--stats] | [--health] [--limit=N] | capability",
     examples: [
       "mjolnir rules --md --unmeasured",
       "mjolnir rules --stats",
@@ -317,18 +318,6 @@ export const HELP_ENTRIES: HelpEntry[] = [
     examples: ["mjolnir mcp"],
   },
   {
-    verb: "release-report",
-    summary: "release readiness verdict: GO, CONDITIONAL GO, or NO-GO",
-    usage: "mjolnir release-report [path] [--since <ref>] [--history <json>]",
-    examples: ["mjolnir release-report . --since HEAD~1"],
-  },
-  {
-    verb: "report",
-    summary: "generate a Playwright-compatible report from scan results",
-    usage: "mjolnir report [path] [--output <file>]",
-    examples: ["mjolnir report . --output playwright-report.json"],
-  },
-  {
     verb: "trend",
     summary: "record, show, or diff local quality trend snapshots",
     usage: "mjolnir trend <record|show|diff> [path] [--limit <N>]",
@@ -351,12 +340,6 @@ export const HELP_ENTRIES: HelpEntry[] = [
     ],
   },
   {
-    verb: "quarantine",
-    summary: "review deterministic quarantine proposals (read-only prototype)",
-    usage: "mjolnir quarantine <list|review|stats> [path]",
-    examples: ["mjolnir quarantine list .", "mjolnir quarantine stats"],
-  },
-  {
     verb: "analyze",
     summary: "run bounded cross-file analysis with explicit findings",
     usage: "mjolnir analyze [path] --cross-file",
@@ -373,31 +356,6 @@ export const HELP_ENTRIES: HelpEntry[] = [
     summary: "generate a self-contained quality dashboard HTML artifact",
     usage: "mjolnir dashboard [path] [--output <file>]",
     examples: ["mjolnir dashboard . --output dashboard.html"],
-  },
-  {
-    verb: "enterprise",
-    summary:
-      "capability manifest for deployment review — records what this product does NOT provide (no server, no SSO, no hosted tier, no compliance packet)",
-    usage: "mjolnir enterprise config [output-dir]",
-    examples: ["mjolnir enterprise config ./enterprise-output"],
-    next: "sso and compliance subcommands were removed in 4.0 — they wrote artifacts describing capabilities Mjölnir does not have. Read the manifest's `notProvided` list instead.",
-  },
-  {
-    verb: "business-case",
-    summary:
-      "measured false-positive rates per finding; a cost figure only with --incident-cost",
-    usage: "mjolnir business-case [path] [--incident-cost <n>] [--strict]",
-    examples: [
-      "mjolnir business-case .",
-      "mjolnir business-case . --incident-cost 25000",
-    ],
-    next: "Mjölnir will not estimate the cost of a false-green incident for you — that number has to come from your own incident history.",
-  },
-  {
-    verb: "maturity",
-    summary: "presence of named QA artifacts (a signal, not a maturity score)",
-    usage: "mjolnir maturity <assess|levels> [path]",
-    examples: ["mjolnir maturity assess .", "mjolnir maturity levels"],
   },
 ];
 
@@ -544,18 +502,12 @@ const GROUPS: Array<{ title: string; verbs: string[] }> = [
       "trust-trend",
       "evidence-graph",
       "framework-maturity",
-      "capability",
+      "rules capability",
       "suppression-gate",
-      "business-case",
-      "release-report",
-      "report",
       "trend",
       "exec-report",
-      "quarantine",
       "analyze",
       "dashboard",
-      "enterprise",
-      "maturity",
     ],
   },
   {

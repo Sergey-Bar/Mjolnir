@@ -1,5 +1,5 @@
 /**
- * The `capability` verb (Wave 1, §1).
+ * The `rules capability` subcommand (Wave 1, §1).
  *
  * It exists so the registry is inspectable by the people who would
  * otherwise be tempted to edit a support list. The command's whole value
@@ -8,6 +8,11 @@
  * derived from evidence, so the only verbs this command has are *show*
  * and *check*.
  *
+ * It is a subcommand of `rules` rather than a verb of its own: the
+ * capability registry and the rule catalog are rendered from the same
+ * evidence, so splitting them across two top-level verbs was surface the
+ * product did not need.
+ *
  * Exit-code contract (stable, e2e-locked):
  *   0  — the registry is well-formed and nothing over-claims
  *   1  — a violation: an over-claim, a stale reference, a missing gap
@@ -15,8 +20,8 @@
  *   20 — internal error
  *
  * `--json` prints the machine contract and nothing else, so
- * `mjolnir capability --json > registry.json` is a clean file. The exit
- * code is the gate; the JSON is the evidence.
+ * `mjolnir rules capability --json > registry.json` is a clean file. The
+ * exit code is the gate; the JSON is the evidence.
  */
 
 import type { Output } from "../cli-io.js";
@@ -179,9 +184,9 @@ export function runCapabilityCommand(
 ): number {
   const { query, json, unknown } = parseCapabilityArgs(argv);
   if (unknown.length > 0) {
-    io.err(`capability: unknown argument ${unknown[0] ?? ""}\n`);
+    io.err(`rules capability: unknown argument ${unknown[0] ?? ""}\n`);
     io.err(
-      "  usage: mjolnir capability [--json] [--kind <k>] [--maturity M0..M5] [--id <substring>]\n",
+      "  usage: mjolnir rules capability [--json] [--kind <k>] [--maturity M0..M5] [--id <substring>]\n",
     );
     io.err(
       "  note: there is deliberately no --set or --promote. Maturity is derived\n" +

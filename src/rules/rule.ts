@@ -115,7 +115,7 @@ export interface RuleMeta {
   /**
    * How detection works, as an enforced enum (plan §09.6/§12.1 — D6
    * closed). Free-text declarations were migrated to the enum in
-   * Phase 2; the registry ratchet (tests/rules.registry.spec.ts) makes
+   * Phase 2; the registry ratchet (tests/rules/registry.spec.ts) makes
    * omission or a bad value a CI failure, so new rules must declare it.
    */
   detectionStrategy?: DetectionStrategy;

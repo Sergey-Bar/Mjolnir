@@ -11,7 +11,7 @@
     },
     "reviewBySemantics": "A passed reviewBy fails the gate. The date is a deadline to either cover the file or delete it — never a silent renewal.",
     "defectSignatureSemantics": "A SHIPPED_SURFACE entry carries EITHER `defectSignatures` (regexes that MUST still match the named source file) OR a `closureState` (the asserted defect is closed and no surface of it remains) — never neither, never both. A signature is a DRIFT ALARM, not a defect prover: its job is to fire when anything about the thing the entry is about changes, so fixing code forces a ledger update in the same commit. A signature that stops matching fails the gate with 'defect closed or drifted — remove or reclassify'. This is deliberately the same mechanism as tests/corpus/detector-hashes.json: a recorded fingerprint of source that CI diffs. PERMANENT_STRUCTURAL entries are exempt — they are evidenced by a structural reason, not by a defect.",
-    "shippedSurfaceCeiling": 16,
+    "shippedSurfaceCeiling": 10,
     "shippedSurfaceCeilingMeaning": "Ratchet over shipped surfaces that are not PERMANENT_STRUCTURAL, not a target. The count may fall (removal, merge, real tests) and may never rise. Structural entries are excluded from the count because they are evidenced by a structural reason rather than a removable gap."
   },
   "entries": [
@@ -58,25 +58,17 @@
       "defectSignatures": ["process\\.cwd\\(\\)"]
     },
     {
-      "path": "src/commands/business-case.ts",
-      "classification": "SHIPPED_SURFACE",
-      "shippedSurface": true,
-      "owner": "maintainers",
-      "reviewBy": "2026-12-31",
-      "removalPlan": "V5-090 — deprecate then remove in 5.0. The remaining arithmetic is a user's incident cost multiplied by a measured FP rate, and that is a spreadsheet, not a product.",
-      "justification": "Shipped as `business-case`; the verb still ships, so the file stays excluded until V5-090 removes it. This is removal debt, not a live defect.",
-      "closureState": "CLOSED (2026-09-26, [Unreleased] breaking changes). The invented incident-cost table, `--history` and `--projected` are gone: a dollar figure now exists only when the reader supplies `--incident-cost`, so the number's source is theirs. The residual surface is the reader's own arithmetic and a measured FP rate, which is honest output rather than a fabricated one."
-    },
-    {
       "path": "src/commands/ci-adapter.ts",
       "classification": "SHIPPED_SURFACE",
       "shippedSurface": true,
       "owner": "maintainers",
       "reviewBy": "2026-12-31",
-      "removalPlan": "V5-035 — regenerate Azure/Jenkins templates with least-privilege permissions, then cover them.",
-      "justification": "Shipped as `ci-adapter`; the emitted GitHub workflow declares no `permissions:` block, so the job runs on the repository default token scope, and the GitLab/Jenkins templates carry no security-scope statement at all. Fix the emitted workflows, then cover them.",
+      "removalPlan": "V5-035 — the GitHub half landed in 6.0 (least-privilege permissions, structural test). Remaining: give the GitLab and Jenkins templates a security-scope statement, then cover them.",
+      "justification": "Shipped as `ci-adapter`. The GitHub half of V5-035 landed: the emitted workflow now declares `permissions: contents: read` at both workflow and job level and sets `persist-credentials: false`, and tests/integrations/ci-adapter-template.spec.ts YAML-parses all three and asserts the keys. The signatures below were re-pinned by that fix, which is the mechanism working — they pinned the ABSENCE of the permissions block, so closing the defect had to break them. What is left is coverage, plus the GitLab and Jenkins templates, which still carry no security-scope statement at all.",
       "defectSignatures": [
-        "name: QA Check\\non: \\[push, pull_request\\]\\njobs:",
+        "name: QA Check\\non: \\[push, pull_request\\]\\npermissions:\\n  contents: read",
+        "    permissions:\\n      contents: read",
+        "          persist-credentials: false",
         "- uses: actions/checkout@[0-9a-f]{40}"
       ]
     },
@@ -91,16 +83,6 @@
       "closureState": "CLOSED on both asserted defects (2026-09-26). The hardcoded zeros are gone — every figure is now `!== null ? … : \"N/A\"` — the score band reads src/reporter/presentation.ts instead of a private 60-point split, and the determination comes from the shared `decideClaim`. What remains is a rendering projection, and V5-083 has not landed."
     },
     {
-      "path": "src/commands/enterprise.ts",
-      "classification": "SHIPPED_SURFACE",
-      "shippedSurface": true,
-      "owner": "maintainers",
-      "reviewBy": "2026-12-31",
-      "removalPlan": "V5-090 — deprecate then remove in 5.0. The honest answer (a capability manifest recording what is NOT provided) is a document, not a command.",
-      "justification": "Shipped as `enterprise`; the verb still ships, so the file stays excluded until V5-090 removes it. This is removal debt, not a live defect.",
-      "closureState": "CLOSED (2026-09-26, [Unreleased] breaking changes). `enterprise sso` and `enterprise compliance` now refuse with a reason and write nothing; the fabricated SOC 2 / HIPAA / PCI-DSS templates are gone; `enterprise config` emits a capability manifest whose `notProvided` list records the absences. What remains is an honest manifest, and V5-090 has not landed."
-    },
-    {
       "path": "src/commands/exec-report.ts",
       "classification": "SHIPPED_SURFACE",
       "shippedSurface": true,
@@ -109,16 +91,6 @@
       "removalPlan": "V5-001 — landed: the fabricated values are removed; V5-083 — make it a proof projection.",
       "justification": "Shipped as `exec-report`; the verb still ships, so the file stays excluded until V5-083 makes it a proof projection. This is removal debt, not a live defect.",
       "closureState": "CLOSED on the asserted defect (2026-09-26). Numbers that had no provenance were deleted, and the report no longer carries an independent release verdict: it defers to the one determination function and states plainly that business risk, ROI and release readiness are decisions this tool has no evidence for."
-    },
-    {
-      "path": "src/commands/maturity.ts",
-      "classification": "SHIPPED_SURFACE",
-      "shippedSurface": true,
-      "owner": "maintainers",
-      "reviewBy": "2026-12-31",
-      "removalPlan": "V5-090 — deprecate then remove in 5.0. A file-existence proxy is not a maturity measurement.",
-      "justification": "Shipped as `maturity`; the verb still ships, so the file stays excluded until V5-090 removes it. This is removal debt, not a live defect.",
-      "closureState": "CLOSED (2026-09-26). The ledger previously claimed this file carried 'hardcoded 75/70/65/30 scores and a ruleCount = 79 fallback invented from file existence'. That was already false: the scores and the fallback were removed, the module header records the removal, and the command now reports named, checkable artifacts with an explicit `doesNotSay` on each. The stale claim is the reason this entry carries a closure state instead of a signature — there is no surface of the asserted defect left to pin."
     },
     {
       "path": "src/commands/policy.ts",
@@ -134,53 +106,6 @@
       ]
     },
     {
-      "path": "src/commands/quarantine.ts",
-      "classification": "SHIPPED_SURFACE",
-      "shippedSurface": true,
-      "owner": "maintainers",
-      "reviewBy": "2026-12-31",
-      "removalPlan": "V5-001 — landed: static findings can no longer become proposals; V5-090 — merge review/stats into the suppression ledger.",
-      "justification": "Shipped as `quarantine`. The three asserted defects were fixed — no proposal is derived from a static finding, no zero statistics are printed, and nothing claims to have been updated — but the residual surface is exactly the guarantee, and it is the guarantee the signatures below pin so it cannot silently return.",
-      "defectSignatures": [
-        "export function proposalsFromStaticFindings\\(",
-        "A static scan has no runtime behaviour to observe"
-      ]
-    },
-    {
-      "path": "src/commands/release-report.ts",
-      "classification": "SHIPPED_SURFACE",
-      "shippedSurface": true,
-      "owner": "maintainers",
-      "reviewBy": "2026-12-31",
-      "removalPlan": "V5-083 — become a proof projection; a GO/NO-GO verdict computed here is the verdict-spl sprawl the canonical proof removes.",
-      "justification": "Shipped as `release-report`. The hardcoded zeros and the partial-ignoring GO are gone, but the report still computes its OWN GO/NO-GO rather than projecting the single determination, so the residual surface is a second verdict authority — the signature below is that refusal to grade a truncated scan, which is what a future edit would be most likely to break.",
-      "defectSignatures": ["A partial scan cannot support a GO verdict"]
-    },
-    {
-      "path": "src/commands/report-playwright.ts",
-      "classification": "SHIPPED_SURFACE",
-      "shippedSurface": true,
-      "owner": "maintainers",
-      "reviewBy": "2026-12-31",
-      "removalPlan": "V5-001 — landed: no Playwright entries are fabricated from static findings; V5-090 — hand rendering to the reporter package.",
-      "justification": "Shipped as `report`. V5-001 landed twice: the suite block is always empty, and (2026-09-26) the TOP-LEVEL status is no longer derived from the findings. It used to be `partial ? \"interrupted\" : hasError ? \"failed\" : \"passed\"`, so a clean scan published `{status: \"passed\", totalTests: 0}` — a green test run over zero tests, in the first field a Playwright consumer reads. The status is now the literal `interrupted` and the scan's own outcome moved to `mjolnir.scanOutcome`. The signatures below are written against that post-fix state, which is why this task had to land after it.",
-      "defectSignatures": [
-        "\\n  status: \"interrupted\";\\n",
-        "\\n    suites: \\[\\],\\n",
-        "\\n      scanOutcome,\\n"
-      ]
-    },
-    {
-      "path": "src/commands/scan-cache.ts",
-      "classification": "DEAD_CODE",
-      "shippedSurface": false,
-      "owner": "maintainers",
-      "reviewBy": "2026-12-31",
-      "removalPlan": "V5-090 — delete the unwired command; src/engine/scan-cache.ts is the real, wired implementation and must survive.",
-      "justification": "Zero importers. The real cache lives in src/engine/scan-cache.ts, which is wired into the scan path and must not be deleted.",
-      "defectSignatures": ["export function cachePath\\b"]
-    },
-    {
       "path": "src/commands/trend.ts",
       "classification": "SHIPPED_SURFACE",
       "shippedSurface": true,
@@ -194,26 +119,6 @@
       ]
     },
     {
-      "path": "src/plugins/npm-loader.ts",
-      "classification": "DEAD_CODE",
-      "shippedSurface": false,
-      "owner": "maintainers",
-      "reviewBy": "2026-12-31",
-      "removalPlan": "V5-091 — delete; src/plugins/load.ts is the single real plugin runtime and gains SDK enforcement.",
-      "justification": "Zero importers. A parallel re-implementation of the plugin loader that never shipped.",
-      "defectSignatures": ["export async function loadNpmPlugins\\b"]
-    },
-    {
-      "path": "src/agent/decision-receipt.ts",
-      "classification": "CONTRACT_ONLY",
-      "shippedSurface": false,
-      "owner": "maintainers",
-      "reviewBy": "2026-12-31",
-      "removalPlan": "V5-074 — integrate receipts into fix/verify so the schema governs a real workflow.",
-      "justification": "Strong schema, zero production importers. Contract test only.",
-      "defectSignatures": ["export function validateDecisionReceipt\\b"]
-    },
-    {
       "path": "src/bench/m48-scale-operating-model.ts",
       "classification": "CONTRACT_ONLY",
       "shippedSurface": false,
@@ -222,16 +127,6 @@
       "removalPlan": "V5-100/V5-102 — make the budgets real against the FileExecutor pool, or state canBlock:false honestly.",
       "justification": "Scale budgets with no executor behind them; contract test only.",
       "defectSignatures": ["export function canTransitionM48State\\b"]
-    },
-    {
-      "path": "src/benchmark/m47-false-green-benchmark.ts",
-      "classification": "CONTRACT_ONLY",
-      "shippedSurface": false,
-      "owner": "maintainers",
-      "reviewBy": "2026-12-31",
-      "removalPlan": "W9/W10 — run the benchmark over the false-green corpus so it measures deception instead of describing it.",
-      "justification": "No runner invokes it; contract test only.",
-      "defectSignatures": ["export function canonicalM47Json\\b"]
     },
     {
       "path": "src/change-intelligence.ts",
@@ -244,16 +139,6 @@
       "defectSignatures": ["export function calculateAffectedPaths\\b"]
     },
     {
-      "path": "src/detectors/m45-detector-lifecycle.ts",
-      "classification": "DEAD_CODE",
-      "shippedSurface": false,
-      "owner": "maintainers",
-      "reviewBy": "2026-12-31",
-      "removalPlan": "V5-093 — retire the duplicate re-export once the three lifecycle vocabularies unify into one machine state machine.",
-      "justification": "Imported only by src/engine/m45-detector-lifecycle.ts, which itself has no importer. A re-export of a re-export.",
-      "defectSignatures": ["export function computeDetectorDifferential\\b"]
-    },
-    {
       "path": "src/engine/m38-challenge-contract.ts",
       "classification": "CONTRACT_ONLY",
       "shippedSurface": false,
@@ -262,16 +147,6 @@
       "removalPlan": "V5-063 — add the production challenge executor that persists results.",
       "justification": "Caller-driven challenge contract; contract test only.",
       "defectSignatures": ["export function evaluateM38Challenges\\b"]
-    },
-    {
-      "path": "src/engine/m39-simulation-contract.ts",
-      "classification": "CONTRACT_ONLY",
-      "shippedSurface": false,
-      "owner": "maintainers",
-      "reviewBy": "2026-12-31",
-      "removalPlan": "V5-064 — add the copy-on-write simulation wrapper with no side effects.",
-      "justification": "Caller-driven simulation contract; contract test only.",
-      "defectSignatures": ["export function createM39CopyOnWriteWorkspace\\b"]
     },
     {
       "path": "src/engine/m40-language-expansion-contract.ts",
@@ -304,18 +179,6 @@
       "defectSignatures": ["export function validateM44History\\b"]
     },
     {
-      "path": "src/engine/m45-detector-lifecycle.ts",
-      "classification": "CONTRACT_ONLY",
-      "shippedSurface": false,
-      "owner": "maintainers",
-      "reviewBy": "2026-12-31",
-      "removalPlan": "V5-093 — unify RuleStatus, the M45 lifecycle, and docs/RULE-LIFECYCLE.md into one machine state machine.",
-      "justification": "Second of three rule-lifecycle vocabularies; contract test only.",
-      "defectSignatures": [
-        "export \\* from \"\\.\\./detectors/m45-detector-lifecycle\\.js\""
-      ]
-    },
-    {
       "path": "src/engine/m49-experience-parity-contract.ts",
       "classification": "CONTRACT_ONLY",
       "shippedSurface": false,
@@ -326,16 +189,6 @@
       "defectSignatures": [
         "export function createM49CanonicalResultViewModel\\b"
       ]
-    },
-    {
-      "path": "src/engine/m50-release-proof-contract.ts",
-      "classification": "CONTRACT_ONLY",
-      "shippedSurface": false,
-      "owner": "maintainers",
-      "reviewBy": "2026-12-31",
-      "removalPlan": "V5-070 — evolve into src/engine/verification/proof.ts rather than adding a parallel model.",
-      "justification": "Validates proof syntax, never proof bytes; no assembler exists.",
-      "defectSignatures": ["export function createM50ReleaseProof\\b"]
     },
     {
       "path": "src/engine/runtime-evidence-graph.ts",
@@ -400,16 +253,6 @@
       "defectSignatures": ["export function validateQaDomainModel\\b"]
     },
     {
-      "path": "src/research/m46-reproducible-research-lab-contract.ts",
-      "classification": "CONTRACT_ONLY",
-      "shippedSurface": false,
-      "owner": "maintainers",
-      "reviewBy": "2026-12-31",
-      "removalPlan": "Deferred past 5.0 — research lab stays catalogued and gated.",
-      "justification": "Research contract with no executor; contract test only.",
-      "defectSignatures": ["export function m46ResearchRecordDigest\\b"]
-    },
-    {
       "path": "src/ledger/m26-validators.ts",
       "classification": "SHIPPED_SURFACE",
       "shippedSurface": true,
@@ -458,9 +301,7 @@
       "reviewBy": "2026-12-31",
       "removalPlan": "V5-080 — generate VERBS, help, README, and the site reference from one command manifest, which makes the entry point fully reachable by tests.",
       "justification": "The shipped entry point. Every verb registration is a branch; a generated command manifest (V5-080) is what lifts it above the floor. The signature is the hand-written dispatch table — when V5-080 replaces it with generated code, this signature stops matching and the entry is re-reviewed rather than silently outliving its own removal plan.",
-      "defectSignatures": [
-        "report: \\(a, o\\) => runReportPlaywrightCommand\\(a, o\\),"
-      ]
+      "defectSignatures": ["scan: \\(a, o\\) => runScanCommand\\(a, o\\),"]
     },
     {
       "path": "dist/**",

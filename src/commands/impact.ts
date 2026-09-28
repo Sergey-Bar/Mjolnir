@@ -14,7 +14,7 @@
  * "CI minutes saved" — inventing such a number would be worse than useless,
  * it would be the exact kind of fake-precision this product exists to
  * catch in *other* tools. Local-only, zero network (verified by
- * tests/privacy-network-isolation.spec.ts, which scans this file too).
+ * tests/contract/privacy-network-isolation.spec.ts, which scans this file too).
  */
 
 import { execFileSync } from "node:child_process";

@@ -108,9 +108,20 @@ jobs:
   # The report is the deliverable and must appear whether or not the gate
   # passed. This job runs after the scan job produced a valid report; the
   # scan job's own gate remains the finding authority.
+  #
+  # 6.0: the condition was `always() && needs.scan.result == 'success'`, and
+  # the gate step lives INSIDE the scan job — so a scan that failed the gate
+  # failed the job, and this job was skipped. The comment, the one artefact a
+  # reviewer reads, appeared exactly when it had nothing to say and vanished
+  # exactly when it had something to say. The comment above this block already
+  # described the intended behaviour; the condition contradicted it.
+  #
+  # `cancelled` and `skipped` are excluded because there is no report to post
+  # in those cases, and posting an empty one would overwrite a good comment
+  # with a worse one.
   publish:
     needs: scan
-    if: ${{ always() && needs.scan.result == 'success' }}
+    if: ${{ always() && needs.scan.result != 'cancelled' && needs.scan.result != 'skipped' }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:

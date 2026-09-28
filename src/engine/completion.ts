@@ -25,19 +25,51 @@ export interface CompletionInput {
    * skipped". Any non-empty value forces `partial`.
    */
   degradations?: readonly DegradationCount[];
+  /**
+   * Rules that were WITHHELD from this run — the quarantine tier, removed
+   * from the rule set unless `--strict` (scan-pipeline.ts). Counted, not
+   * fed into `partial`: see `coverageState`.
+   */
+  rulesWithheld?: number;
+  /**
+   * Rules that actually ran. The denominator for `coverageState`: a scan
+   * that ran 45 of 79 rules is a PARTIAL-coverage scan whether or not
+   * anything went wrong inside those 45.
+   */
+  rulesApplied?: number;
   scopeDegraded?: string;
   runtimeIncomplete?: boolean;
   identityIncomplete?: boolean;
 }
 
+/**
+ * How much of the RULE REGISTRY this scan could see.
+ *
+ * Orthogonal to `partial` by construction, and the whole point of the field.
+ * `partial` answers "did this run lose something it was in the middle of
+ * doing" — a truncated walk, a crash-isolated rule, a swallowed parser
+ * error. `coverageState` answers a different question: "were rules removed
+ * from the run before it started". A scan that reads every file it was
+ * given, parses all of them, and finds nothing is `partial: false` — and
+ * was still run with a third of the registry switched off. Folding that
+ * into `partial` would be wrong in the direction that matters: `partial`
+ * drives `scanExitCode`, SARIF `executionSuccessful`, and whether generated
+ * CI blocks, so adding a withheld-rule input would turn every non-`--strict`
+ * scan into a non-zero exit and teach everyone to pass `--strict`.
+ */
+export type CoverageState = "COMPLETE" | "PARTIAL";
+
 export interface CompletionState {
   partial: boolean;
+  coverageState: CoverageState;
   analysisStatus: {
     discovery: AnalysisStatus;
     rules: AnalysisStatus;
     skippedFiles: number;
     rulesCrashed: number;
     parseFallbacks: number;
+    rulesApplied: number;
+    rulesWithheld: number;
     truncationReasons?: string[];
     degradations?: DegradationCount[];
     reasons: string[];
@@ -104,14 +136,26 @@ export function deriveCompletion(input: CompletionInput): CompletionState {
     // then thrown away, which is strictly worse than not counting.
     degradations.length > 0;
 
+  const rulesWithheld = input.rulesWithheld ?? 0;
+  // Computed from the withheld count, never from anything that also feeds
+  // `partial`. `analysisStatus.rules` deliberately does NOT become
+  // "partial" here: that field is about rules that were attempted and
+  // failed, and overloading it would make the two questions
+  // indistinguishable in the one place a reader is most likely to look.
+  const coverageState: CoverageState =
+    rulesWithheld > 0 ? "PARTIAL" : "COMPLETE";
+
   return {
     partial,
+    coverageState,
     analysisStatus: {
       discovery: discoveryPartial ? "partial" : "complete",
       rules: rulesPartial ? "partial" : "complete",
       skippedFiles: input.skippedFiles,
       rulesCrashed: input.rulesCrashed,
       parseFallbacks: input.parseFallbacks ?? 0,
+      rulesApplied: input.rulesApplied ?? 0,
+      rulesWithheld,
       ...(truncationReasons.length > 0 ? { truncationReasons } : {}),
       ...(degradations.length > 0 ? { degradations } : {}),
       reasons: [...reasons].sort(),

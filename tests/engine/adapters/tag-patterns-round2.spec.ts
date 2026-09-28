@@ -15,6 +15,7 @@ import type { Tree } from "web-tree-sitter";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { javaAdapter } from "../../../src/adapters/java.js";
+import { wilsonInterval } from "../../../src/lib/wilson.js";
 import { csharpAdapter } from "../../../src/adapters/csharp.js";
 import { pythonAdapter, pythonFileTags } from "../../../src/adapters/python.js";
 import {
@@ -22,8 +23,12 @@ import {
   frameworkTagsFromImports,
 } from "../../../src/adapters/typescript.js";
 import {
+  CORE_FP_CEILING,
+  QUARANTINE_FP_FLOOR,
   declaredDetectorRevision,
   effectiveTier,
+  measurementInterval,
+  ruleStatus,
   hasStaleMeasurement,
   hasValidMeasurement,
   measurementFor,
@@ -315,14 +320,44 @@ describe("measurement helpers (§11.2/§07)", () => {
     expect(hasStaleMeasurement(fakeRule("QA-NOPE-000", 1))).toBe(false);
   });
 
-  it("effectiveTier: omitted tier → measurement-dependent default", () => {
-    // Measured-at-current-rev rule with no declared tier → core.
-    expect(effectiveTier(fakeRule("QA-JV-103", 2))).toBe("core");
+  it("effectiveTier: omitted tier → resolved by the measurement's interval", () => {
+    // 6.0: the omitted-tier default is the CONFIDENCE INTERVAL, not the
+    // point estimate. This test used to assert `core` for any measured
+    // undeclared rule; the new criterion is `ciHigh <= 0.10`, and no rule in
+    // the registry clears it on measurement alone (the ratchet pins that as
+    // a count of zero). So the "core" branch is asserted on the ARITHMETIC
+    // here, and the registry case is asserted as what it actually is.
+    const jv103 = fakeRule("QA-JV-103", 2);
+    const interval = measurementInterval(jv103);
+    expect(
+      interval,
+      "QA-JV-103 should carry a valid measurement",
+    ).toBeDefined();
+    expect(interval!.ciHigh).toBeGreaterThan(CORE_FP_CEILING);
+    expect(
+      effectiveTier(jv103),
+      "a measured undeclared rule whose interval crosses the ceiling must not be core",
+    ).toBe("extended");
+    expect(ruleStatus(jv103)).toBe("TIER-STRADDLE");
+
     // Unknown rule (no measurement) with no declared tier → extended.
     expect(effectiveTier(fakeRule("QA-NOPE-000"))).toBe("extended");
     // Declared tier always wins.
     expect(
       effectiveTier(fakeRule("QA-NOPE-000", undefined, "quarantine")),
     ).toBe("quarantine");
+
+    // The core branch, stated as the arithmetic it is: a rule observing zero
+    // false positives needs n ≈ 35 before its interval clears a 10% ceiling.
+    // Without this, the branch would be asserted nowhere and could break
+    // silently.
+    expect(wilsonInterval(0, 35).ciHigh).toBeLessThanOrEqual(CORE_FP_CEILING);
+    expect(wilsonInterval(0, 10).ciHigh).toBeGreaterThan(CORE_FP_CEILING);
+    // ...and the quarantine branch needs evidence in the other direction
+    // too: one sample cannot quarantine a rule, ten can.
+    expect(wilsonInterval(1, 1).ciLow).toBeLessThan(QUARANTINE_FP_FLOOR);
+    expect(wilsonInterval(10, 10).ciLow).toBeGreaterThanOrEqual(
+      QUARANTINE_FP_FLOOR,
+    );
   });
 });

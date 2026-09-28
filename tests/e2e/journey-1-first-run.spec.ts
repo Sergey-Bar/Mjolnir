@@ -152,6 +152,31 @@ describe("E2E journey 1: first run from the packed tarball", () => {
       expect(result.analysisStatus.skippedFiles).toBe(0);
       expect(typeof result.analysisStatus.durationMs).toBe("number");
       expect(result.analysisStatus.rulesCrashed).toBe(0);
+      // The installed package must be able to LOAD the tree-sitter grammars.
+      //
+      // 6.0: this assertion is the second half of a shipping defect. The
+      // grammar lookup probed `<dist>/../node_modules` and
+      // `<dist>/../../node_modules`, both correct for a checkout and both
+      // wrong for an installed package, where npm hoists
+      // `tree-sitter-wasms` one level higher again. So every Java, C# and
+      // Python file in the published package silently fell back to its regex
+      // path, with the comment/string false-positive firewall off.
+      //
+      // The `exit 1` assertion above is what caught it, indirectly: adding a
+      // degradation record for a failed grammar load made the tarball run
+      // exit 2 (EXIT_PARTIAL), which is the honest answer for a run that
+      // parsed nothing structurally. Asserting the degradation directly says
+      // what is actually meant, so a future change to `files`, to the bundle
+      // layout, or to npm's hoisting cannot take it away silently again.
+      expect(
+        result.analysisStatus.degradations ?? [],
+        "the packed install could not load its tree-sitter grammars",
+      ).toEqual([]);
+      expect(
+        (result.analysisStatus as { astGrammarLoaded?: boolean })
+          .astGrammarLoaded,
+        "the report does not say whether the AST stage was available",
+      ).not.toBe(false);
       // Every reported rule is a registered catalog rule — no phantom IDs
       // from the packed build. (The per-rule EXPECTATIONS live in the
       // golden-repo lock; the demo repo here only proves the verdict band.)

@@ -67,8 +67,14 @@ function makeScanResult(overrides: Partial<ScanResult> = {}): ScanResult {
 }
 
 describe("Machine Contract", () => {
-  it("CONTRACT_VERSION is 1", () => {
-    expect(CONTRACT_VERSION).toBe(1);
+  it("CONTRACT_VERSION is 2 — the coverage-set bump", () => {
+    // A literal on purpose, and a test title that says why. v2 exists
+    // because `coverageState`/`rulesWithheld` and `degradations` are
+    // semantic fields that participate in the digest: a stored v1 artifact
+    // that still verified would be a contract claiming more than it does.
+    // Bumping this to 3 should be a deliberate edit with a reason, which is
+    // what the title forces.
+    expect(CONTRACT_VERSION).toBe(2);
   });
 
   it("ANNOTATIONS_LIMIT is 50", () => {
@@ -129,7 +135,7 @@ describe("Machine Contract", () => {
   it("contract has required top-level fields", () => {
     const result = makeScanResult();
     const contract = buildMachineContract(result);
-    expect(contract.contractVersion).toBe(1);
+    expect(contract.contractVersion).toBe(CONTRACT_VERSION);
     expect(contract.summary).toBeDefined();
     expect(contract.annotations).toBeDefined();
     expect(contract.annotationsTruncated).toBeDefined();

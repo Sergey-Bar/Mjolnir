@@ -3,8 +3,8 @@
   "artifact": "capability-registry",
   "generatedBy": "npm run docs:capability",
   "registryId": "mjolnir-capability-registry",
-  "observedAt": "2026-09-26",
-  "baseSha": "1629c6183d8b2f2cc182fc0963318f0cd7ac400c",
+  "observedAt": "2026-09-28",
+  "baseSha": "a73248145130df8be7d57235066fec9fe1839509",
   "counts": {
     "entries": 27,
     "kind:ci-cd-provider": 4,
@@ -51,7 +51,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-CI-001",
         "digest": null,
-        "observedAt": "2026-09-26",
+        "observedAt": "2026-09-28",
         "authority": "provider-capability-contract"
       }
     },
@@ -91,7 +91,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-CI-001",
         "digest": null,
-        "observedAt": "2026-09-26",
+        "observedAt": "2026-09-28",
         "authority": "provider-capability-contract"
       }
     },
@@ -131,7 +131,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-CI-001",
         "digest": null,
-        "observedAt": "2026-09-26",
+        "observedAt": "2026-09-28",
         "authority": "provider-capability-contract"
       }
     },
@@ -171,7 +171,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-CI-001",
         "digest": null,
-        "observedAt": "2026-09-26",
+        "observedAt": "2026-09-28",
         "authority": "provider-capability-contract"
       }
     },
@@ -425,9 +425,9 @@
       "blocksAxes": ["Domain Coverage"],
       "observedUpstreamMajor": null,
       "adapter": null,
-      "declaredDisposition": "TESTED",
-      "blockedReason": null,
-      "revisitTrigger": null,
+      "declaredDisposition": "BLOCKED",
+      "blockedReason": "The evidence this row cited no longer exists.",
+      "revisitTrigger": "A runnable test is written for this capability.",
       "proven": "M1_DECLARED",
       "maturity": "M1_DECLARED",
       "nextLevelGap": {
@@ -643,7 +643,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-CYP-001",
         "digest": null,
-        "observedAt": "2026-09-26",
+        "observedAt": "2026-09-28",
         "authority": "framework-inventory"
       }
     },
@@ -682,7 +682,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-JV-104",
         "digest": null,
-        "observedAt": "2026-09-26",
+        "observedAt": "2026-09-28",
         "authority": "framework-inventory"
       }
     },
@@ -719,7 +719,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-TEST-001",
         "digest": null,
-        "observedAt": "2026-09-26",
+        "observedAt": "2026-09-28",
         "authority": "framework-inventory"
       }
     },
@@ -756,7 +756,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-TEST-001",
         "digest": null,
-        "observedAt": "2026-09-26",
+        "observedAt": "2026-09-28",
         "authority": "framework-inventory"
       }
     },
@@ -809,7 +809,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-PW-002",
         "digest": null,
-        "observedAt": "2026-09-26",
+        "observedAt": "2026-09-28",
         "authority": "framework-inventory"
       }
     },
@@ -856,7 +856,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-PY-003",
         "digest": null,
-        "observedAt": "2026-09-26",
+        "observedAt": "2026-09-28",
         "authority": "framework-inventory"
       }
     },
@@ -923,7 +923,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-TEST-001",
         "digest": null,
-        "observedAt": "2026-09-26",
+        "observedAt": "2026-09-28",
         "authority": "framework-inventory"
       }
     },
@@ -962,7 +962,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-JV-104",
         "digest": null,
-        "observedAt": "2026-09-26",
+        "observedAt": "2026-09-28",
         "authority": "framework-inventory"
       }
     },
@@ -999,7 +999,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-TEST-001",
         "digest": null,
-        "observedAt": "2026-09-26",
+        "observedAt": "2026-09-28",
         "authority": "framework-inventory"
       }
     }

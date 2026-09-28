@@ -49,7 +49,26 @@ const CACHE_DIR = join(ROOT, "tests", "corpus", ".cache");
 const REVIEW_DIR = join(ROOT, "tests", "corpus", "review");
 const VERDICTS_DIR = join(ROOT, "tests", "corpus", "verdicts");
 
-const MAX_SAMPLES_PER_RULE = 20;
+/**
+ * How many samples a rule may contribute to one measurement pass.
+ *
+ * Raised 20 → 60 in 6.0, and the number is derived rather than chosen: since
+ * `effectiveTier` now promotes a rule to core on `ciHigh <= 0.10`, a rule
+ * observing ZERO false positives needs about n = 35 for its Wilson upper
+ * bound to fall under that ceiling. At the old cap of 20 no rule could ever
+ * reach core on a clean measurement, so the cap was not a sampling policy —
+ * it was a ceiling on what the measurement could possibly prove.
+ *
+ * 60 leaves headroom past the 35 needed for the zero-FP case, so a rule that
+ * does observe a false positive or two can still narrow into range rather
+ * than sitting permanently at the boundary.
+ *
+ * The cost is adjudication volume: verdicts are classified by a human or by
+ * `apply-verdicts`, so this is a real queue, not a free knob. The committed
+ * unclassified ceiling in `generate-fp-audit-table.ts` (31 rows) is the
+ * other end of the same trade and is unchanged by this value.
+ */
+const MAX_SAMPLES_PER_RULE = 60;
 const CONTEXT_LINES = 5; // lines above and below the finding
 
 /**

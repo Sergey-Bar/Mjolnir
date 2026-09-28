@@ -29,15 +29,24 @@ import { RETIRED_RULE_IDS, RULES } from "../../src/rules/index.js";
 import { MEASURED_FP } from "../../src/rules/measured-fp.generated.js";
 import { capForTier } from "../../src/engine/tier-policy.js";
 import {
+  CORE_FP_CEILING,
+  QUARANTINE_FP_FLOOR,
   declaredDetectorRevision,
   effectiveTier,
   hasStaleMeasurement,
   hasValidMeasurement,
   isProvisional,
   isRetiredRule,
+  isTierStraddling,
   measurementFor,
+  measurementInterval,
   ruleStatus,
+  straddleDetail,
 } from "../../src/rules/measurement.js";
+import {
+  DECLARED_CORE_WITHOUT_EVIDENCE,
+  declaredCoreWithoutEvidence,
+} from "../../src/rules/tier-evidence.js";
 
 const ROOT = join(import.meta.dirname, "..", "..");
 const BASELINE_DIR = join(ROOT, "tests", "corpus", "baseline");
@@ -46,34 +55,100 @@ const CHANGELOG = readFileSync(join(ROOT, "CHANGELOG.md"), "utf8");
 const PREEXISTING_SET_MARKER = "0.5.0";
 
 describe("registry ratchet: no unmeasured rule in effective core (§20.3, plan §11.2)", () => {
-  it("every effective-core rule has a valid MEASURED_FP entry at a matching detectorRevision", () => {
+  it("every rule the measurement PROMOTED to core clears the core ceiling", () => {
+    // 6.0: the tier criterion is now the CONFIDENCE INTERVAL, not the point
+    // estimate. The old version asked for `fpRate <= 0.1 && n >= 10`, which
+    // a rule at n=10 with zero observed false positives satisfies — and such
+    // a rule's interval is [0, 27.8%]. That is not a rule which has defended
+    // a 10% ceiling; it is a rule with ten samples.
+    //
+    // Scoped to rules the measurement PROMOTED. A DECLARED tier is a
+    // reviewed human decision and measurement does not overrule it; those
+    // are enumerated in the sibling test below, which is why the answer is
+    // "none" rather than a failure.
+    const promoted: string[] = [];
     const offenders: string[] = [];
     for (const rule of RULES) {
+      if (rule.tier !== undefined) continue;
       if (effectiveTier(rule) !== "core") continue;
-      const m = MEASURED_FP[rule.id];
-      if (!m) {
-        offenders.push(`${rule.id}: effective core, no measurement`);
+      promoted.push(rule.id);
+      const interval = measurementInterval(rule);
+      if (!interval) {
+        offenders.push(
+          `${rule.id}: promoted to core with no valid measurement`,
+        );
         continue;
       }
-      if (m.detectorRevision !== declaredDetectorRevision(rule)) {
+      if (interval.ciHigh > CORE_FP_CEILING) {
         offenders.push(
-          `${rule.id}: measurement detectorRevision=${m.detectorRevision} ` +
-            `but rule declares ${declaredDetectorRevision(rule)} (stale → provisional)`,
+          `${rule.id}: promoted to core but its 95% interval reaches ` +
+            `${(interval.ciHigh * 100).toFixed(1)}% (> ${(CORE_FP_CEILING * 100).toFixed(0)}% ceiling)`,
         );
-      }
-      if (m.fpRate > 0.1) {
-        offenders.push(
-          `${rule.id}: effective core with measured FP ${(m.fpRate * 100).toFixed(0)}% (> 10% ceiling)`,
-        );
-      }
-      if (m.n < 10) {
-        offenders.push(`${rule.id}: effective core with n=${m.n} (< 10)`);
       }
     }
     expect(
       offenders,
-      `unmeasured/stale/over-FP rules in effective core (D3 policy hole reopened):\n${offenders.join("\n")}`,
+      `rules promoted to core whose interval does not clear the ceiling:\n${offenders.join("\n")}`,
     ).toEqual([]);
+    // Not a failure: a record of the current state. If a future corpus run
+    // earns a rule a place in core on evidence, this count rises and the
+    // promotion is real.
+    expect(
+      promoted.length,
+      `promoted-to-core rules: ${promoted.join(", ") || "none"}`,
+    ).toBeGreaterThanOrEqual(0);
+  });
+
+  it("no rule is placed in core or quarantine on a straddling measurement", () => {
+    // The other half of the criterion: a rule whose interval crosses a
+    // boundary must land in neither tier. A straddling rule in core is the
+    // original defect; a straddling rule in quarantine would be a new one —
+    // a rule disabled on four samples is as unfounded as one promoted on ten.
+    const offenders: string[] = [];
+    for (const rule of RULES) {
+      if (!isTierStraddling(rule)) continue;
+      const tier = effectiveTier(rule);
+      if (tier === "core" || tier === "quarantine") {
+        offenders.push(`${rule.id}: straddling yet resolved to ${tier}`);
+      }
+    }
+    expect(
+      offenders,
+      `straddling rules placed in a tier:\n${offenders.join("\n")}`,
+    ).toEqual([]);
+  });
+
+  it("every straddling rule says what would resolve it", () => {
+    // A status with no actionable detail is the "classified as unknown"
+    // problem again. The detail is the only part a reader can act on, and
+    // the n it quotes is derived from the ceiling rather than guessed.
+    const straddle = RULES.filter((rule) => isTierStraddling(rule));
+    // If this ever reaches zero the criterion has been met and the status
+    // is dead code — stated here so that is a visible test change.
+    expect(
+      straddle.length,
+      "no rule straddles — re-derive whether TIER-STRADDLE is still reachable",
+    ).toBeGreaterThan(0);
+    for (const rule of straddle) {
+      const detail = straddleDetail(rule);
+      expect(detail, rule.id).toBeDefined();
+      expect(detail, rule.id).toMatch(
+        /samples would settle it|detector change/,
+      );
+      expect(ruleStatus(rule), rule.id).toBe("TIER-STRADDLE");
+    }
+  });
+
+  it("a declared tier is never overridden by the measurement", () => {
+    // The policy is one-directional on purpose: a rule that declares its tier
+    // is stating a decision a human made (usually "I have looked at this and
+    // it belongs here"), and a 20-sample corpus must not silently overrule
+    // it. Measurement moves only the OMITTED case.
+    for (const rule of RULES) {
+      if (rule.tier === undefined) continue;
+      expect(effectiveTier(rule), rule.id).toBe(rule.tier);
+      expect(isTierStraddling(rule), rule.id).toBe(false);
+    }
   });
 
   it("every measured entry's revision matches the rule's declared revision (§20.5)", () => {
@@ -109,7 +184,99 @@ describe("registry ratchet: no unmeasured rule in effective core (§20.3, plan �
     expect(ruleStatus(drifted)).toBe("PROVISIONAL");
     // And the core ratchet would fail for the drifted state — the path
     // Regex → AST → "old measurement says Core" → Core is blocked.
+    //
+    // "core" here because the rule DECLARES it, and measurement does not
+    // overrule a declaration. The measurement is stale, so the status is
+    // PROVISIONAL and the claim is not a measured one — which is the same
+    // distinction the committed list below makes explicit for the 19 rules
+    // whose measurement is valid but too thin.
     expect(effectiveTier(drifted)).toBe("core");
+    expect(declaredCoreWithoutEvidence(drifted)).toBeNull();
+  });
+});
+
+/**
+ * The disclosure the old point-estimate ratchet could not make.
+ *
+ * 19 rules declare `tier: "core"`. All 19 clear the point criterion
+ * (`fpRate <= 0.10 && n >= 10`) and NONE clear the interval criterion
+ * (`ciHigh <= 0.10`) — their intervals reach 13.8% to 40.4%. Zero rules earn
+ * core on measurement alone; five undeclared rules straddle.
+ *
+ * So "core" in this registry is a HUMAN ASSERTION, not a measurement result.
+ * That may well be right — a maintainer who has read the code has information
+ * no sample of ten findings contains. But it is an assertion, and before this
+ * release nothing said so: the matrix rendered `tier: "core"`, `measured: true`
+ * and `fpRate: 0`, which reads as a measurement.
+ *
+ * The demotion decision is deliberately NOT taken here. Demoting 19 rules is
+ * a product decision about what "core" means, not a code cleanup, and
+ * `core`/`extended` are not enforced by the pipeline (only `quarantine` is),
+ * so nothing is currently gating on the distinction. What this file does is
+ * put the list in front of whoever makes that decision.
+ */
+describe("declared-core claims are enumerated and justified", () => {
+  it("every declared-core rule whose interval misses the ceiling is on the list", () => {
+    const computed = RULES.filter(
+      (rule) => declaredCoreWithoutEvidence(rule) !== null,
+    )
+      .map((rule) => rule.id)
+      .sort();
+    const committed = DECLARED_CORE_WITHOUT_EVIDENCE.map(
+      (entry) => entry.ruleId,
+    ).sort();
+    // The comparison, not a non-empty check. A test that computes the set and
+    // asserts it is non-empty asserts only that the problem still exists.
+    // This one fails when a declared-core rule with a wide interval is added
+    // until someone writes down why a human decision stands against the
+    // data, and fails when one is removed from the list until they remove it
+    // from the code. That is what committing the list buys.
+    expect(
+      computed,
+      "the committed list is out of date — update src/rules/tier-evidence.ts with a justification for each addition",
+    ).toEqual(committed);
+  });
+
+  it("every entry carries a justification, and no entry is stale", () => {
+    for (const entry of DECLARED_CORE_WITHOUT_EVIDENCE) {
+      const rule = RULES.find((candidate) => candidate.id === entry.ruleId);
+      if (rule === undefined) {
+        throw new Error(
+          `${entry.ruleId} is on the list but not in the registry`,
+        );
+      }
+      expect(
+        entry.justification.trim().length,
+        `${entry.ruleId} has no justification — being on this list IS the claim that a human decision stands against the data, and the reader is owed the reason`,
+      ).toBeGreaterThan(20);
+      expect(
+        declaredCoreWithoutEvidence(rule),
+        `${entry.ruleId} is on the list but its interval now clears the ceiling — remove it`,
+      ).not.toBeNull();
+    }
+  });
+
+  it("the list is non-empty and every id is unique", () => {
+    const ids = DECLARED_CORE_WITHOUT_EVIDENCE.map((entry) => entry.ruleId);
+    expect(ids.length, "the disclosure list is empty").toBeGreaterThan(0);
+    expect(new Set(ids).size, "a rule appears twice on the list").toBe(
+      ids.length,
+    );
+  });
+
+  it("a STALE measurement never produces a core claim entry", () => {
+    // The interval helper returns undefined for a stale measurement, so a
+    // rule whose detector was revised cannot appear here as "core without
+    // evidence". It is a different failure — reported by the §20.5 revision
+    // ratchet — and counting one rule in two lists would overstate the
+    // problem.
+    const drifted = RULES.map((rule) => ({
+      rule: { ...rule, detectorRevision: (rule.detectorRevision ?? 1) + 1 },
+    }));
+    const leaked = drifted
+      .filter(({ rule }) => declaredCoreWithoutEvidence(rule) !== null)
+      .map(({ rule }) => rule.id);
+    expect(leaked).toEqual([]);
   });
 });
 
@@ -190,12 +357,31 @@ describe("registry ratchet: quarantine integrity (§11.2 Step 2 display contract
       if (rule.tier !== undefined) {
         expect(["core", "extended", "quarantine"]).toContain(rule.tier);
       }
-      // Omitted tier is legitimate (§11.2 Step 2); it must resolve to
-      // extended for every unmeasured rule — never to core.
+      // Omitted tier is legitimate (§11.2 Step 2); it must resolve to core
+      // only when the measurement's INTERVAL clears the ceiling, and to
+      // quarantine only when the lower bound clears the floor. Everything
+      // else is extended.
+      //
+      // 6.0 changed the core branch from "has any valid measurement" to "the
+      // interval clears CORE_FP_CEILING". A straddling rule resolves to
+      // extended, which is what `isTierStraddling` reports and what the
+      // straddle-detail test above pins as a non-empty, actionable set.
       if (rule.tier === undefined) {
-        expect(effectiveTier(rule), rule.id).toBe(
-          hasValidMeasurement(rule) ? "core" : "extended",
-        );
+        const interval = measurementInterval(rule);
+        const expected =
+          interval === undefined
+            ? "extended"
+            : interval.ciHigh <= CORE_FP_CEILING
+              ? "core"
+              : interval.ciLow >= QUARANTINE_FP_FLOOR
+                ? "quarantine"
+                : "extended";
+        expect(effectiveTier(rule), rule.id).toBe(expected);
+        // The invariant the old version asserted, restated so it still holds
+        // under the new criterion: an unmeasured rule is never core.
+        if (!hasValidMeasurement(rule)) {
+          expect(effectiveTier(rule), rule.id).not.toBe("core");
+        }
       }
       if (isProvisional(rule)) {
         expect(hasValidMeasurement(rule), rule.id).toBe(false);

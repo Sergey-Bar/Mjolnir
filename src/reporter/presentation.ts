@@ -228,7 +228,7 @@ export function headlineFor(state: ScoreState, findings: number): string {
 
 /**
  * Contract-stable three-band verdict (property-locked in
- * tests/scoring-precision.spec.ts). Delegates to the ScoreState model —
+ * tests/engine/scoring/scoring-precision.spec.ts). Delegates to the ScoreState model —
  * 100 keeps returning WORTHY here; the FORGED premium treatment lives
  * in the dedicated block, not in this public mapping.
  *

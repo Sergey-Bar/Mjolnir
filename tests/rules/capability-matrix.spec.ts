@@ -17,6 +17,10 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import {
+  CORE_FP_CEILING,
+  QUARANTINE_FP_FLOOR,
+} from "../../src/rules/measurement.js";
+import {
   buildMatrixJson,
   buildRows,
   crossCheckDeclaredVsMeasured,
@@ -159,6 +163,14 @@ describe("capability matrix generation", () => {
     // MEASURED-QUARANTINE (promotion is a human decision, never derived
     // from the rate). The rate band only applies to rules without an
     // explicit tier.
+    //
+    // 6.0: the band for an undeclared rule is computed from the row's own
+    // CONFIDENCE INTERVAL, recomputed here from `row.fpRate` and `row.n`
+    // rather than read from the generator, so a generator regression is still
+    // caught. The previous version recomputed the band from the point
+    // estimate, which is precisely the criterion the tier policy no longer
+    // uses — so it now checks that the generator agrees with a rule nobody
+    // follows.
     for (const row of data.rows) {
       if (typeof row.fpRate !== "number") continue;
       const declared = RULES.find((r) => r.id === row.id);
@@ -166,12 +178,20 @@ describe("capability matrix generation", () => {
         expect(row.status, row.id).toBe(ruleStatus(declared));
         continue;
       }
+      if (typeof row.n !== "number") continue;
+      const interval = wilsonInterval(row.fpRate * row.n, row.n);
+      // Three outcomes, not four, and that is a consequence of the new
+      // criterion rather than an omission: an undeclared rule with a VALID
+      // measurement now either clears a boundary or straddles one, because
+      // "extended with a valid measurement" is exactly the set that
+      // straddles. MEASURED-EXTENDED is now reachable only through a
+      // declared `tier: "extended"`.
       const expected =
-        row.fpRate <= 0.1
+        interval.ciHigh <= CORE_FP_CEILING
           ? "MEASURED-CORE"
-          : row.fpRate <= 0.3
-            ? "MEASURED-EXTENDED"
-            : "MEASURED-QUARANTINE";
+          : interval.ciLow >= QUARANTINE_FP_FLOOR
+            ? "MEASURED-QUARANTINE"
+            : "TIER-STRADDLE";
       expect(row.status, row.id).toBe(expected);
     }
   });

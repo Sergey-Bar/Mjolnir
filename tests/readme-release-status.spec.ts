@@ -48,7 +48,7 @@ describe("README release status synchronization", () => {
     const synced = syncTranslation(translation, source, "2026-09-25");
     expect(synced).toContain("## Release status (English canonical)");
     expect(synced).toContain("Machine-assisted canonical text");
-    expect(synced).toContain("| `mjolnir release-report`");
+    expect(synced).toContain("| `mjolnir release-trust`");
     expect(synced).toContain("Source hash: `");
     expect(synced).toContain("Last synced: 2026-09-25");
   });

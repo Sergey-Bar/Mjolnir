@@ -47,6 +47,7 @@ function finding(overrides: Partial<Finding>): Finding {
 function scanResult(
   findings: Finding[],
   scope?: "all" | "changed",
+  overrides: Partial<ScanResult> = {},
 ): ScanResult {
   return {
     schemaVersion: 1,
@@ -71,7 +72,22 @@ function scanResult(
       provisionalRuleIds: [],
       ceilingReasons: [],
     },
+    ...overrides,
   };
+}
+
+/**
+ * The score cell, extracted from the hero table.
+ *
+ * A `<td>` here is a single line, so the cell is everything between the
+ * `<td>` and its close. Scoping the assertion to the cell is what keeps a
+ * test about score arithmetic from depending on how the cell is marked up.
+ */
+function scoreCell(body: string): string {
+  const cells = Array.from(body.matchAll(/<td[^>]*>([\s\S]*?)<\/td>/g));
+  const cell = cells.find((match) => match[1]?.includes("Score"))?.[1];
+  expect(cell, "no score cell in the hero table").toBeDefined();
+  return cell as string;
 }
 
 describe("renderPrComment — rendering against fixture scan results", () => {
@@ -137,7 +153,7 @@ describe("renderPrComment — rendering against fixture scan results", () => {
 
   it("shows the plain score when no baseline score exists (older baselines)", () => {
     const body = renderPrComment(scanResult([finding({})]));
-    expect(body).toContain("**88**/100 WORTHY");
+    expect(body).toContain("88</b>/100<br><small>WORTHY</small>");
     expect(body).not.toContain("since baseline");
   });
 
@@ -148,7 +164,14 @@ describe("renderPrComment — rendering against fixture scan results", () => {
     const after = { ...scanResult([finding({})]), score: 88 };
     const diff = diffAgainstBaseline(after, baseline);
     const body = renderPrComment(after, { diff });
-    expect(body).toContain("**88**/100 WORTHY (+5)");
+    // The delta arithmetic, not the markup around it. Asserting the exact
+    // HTML couples a test about `diffAgainstBaseline` to a presentation
+    // decision, and the coupling is what made these four assertions rewrite
+    // every time the score cell was touched.
+    const cell = scoreCell(body);
+    expect(cell).toContain("88");
+    expect(cell).toContain("WORTHY");
+    expect(cell).toContain("(+5)");
   });
 
   it("renders a negative delta without a plus sign", () => {
@@ -157,7 +180,11 @@ describe("renderPrComment — rendering against fixture scan results", () => {
     const after = { ...scanResult([finding({})]), score: 72 };
     const diff = diffAgainstBaseline(after, baseline);
     const body = renderPrComment(after, { diff });
-    expect(body).toContain("**72**/100 NEEDS WORK (-18)");
+    const cell = scoreCell(body);
+    expect(cell).toContain("72");
+    expect(cell).toContain("NEEDS WORK");
+    expect(cell).toContain("(-18)");
+    expect(cell).not.toContain("+-18");
   });
 
   it("evidence tags appear on finding lines, with measured FP when present", () => {
@@ -221,7 +248,11 @@ describe("renderPrComment — rendering against fixture scan results", () => {
       unchangedCount: 0,
     };
     const body = renderPrComment(scanResult([]), { diff });
-    expect(body).toContain("**88**/100 WORTHY (+18)");
+    const cell = scoreCell(body);
+    expect(cell).toContain("88");
+    expect(cell).toContain("(+18)");
+    // The drift line degrades to 'unknown' because the diff has no commit.
+    expect(body).toContain("baseline `unknown`");
   });
 
   it("buildBaseline omits the score field when the scan found no tests", () => {
@@ -327,10 +358,30 @@ describe("renderPrComment — rendering against fixture scan results", () => {
     expect(body).toContain("lines this PR changed");
   });
 
-  it("always states the comment blocks merging when the CI gate reports findings", () => {
+  it("never claims the comment itself gates the merge", () => {
+    // The footer used to say "blocks merging when the CI gate reports
+    // findings at the configured severity", and this test is the one that
+    // required it. That sentence is a statement about the PUBLISHER's
+    // configuration, made by a pure function that cannot see the workflow,
+    // the gate level, or whether the check is even required — and it was
+    // wrong in the run where it mattered most: a scan that exited 2 on
+    // `--require-full-coverage` has `partial: false`, so the renderer took
+    // the else-branch and advertised a clean gate on a run the gate had just
+    // failed.
+    //
+    // What the renderer CAN state is what the scan was, and where the gating
+    // decision lives.
     const body = renderPrComment(scanResult([finding({})]));
-    expect(body.toLowerCase()).toContain("blocks merging");
-    expect(body.toLowerCase()).toContain("ci gate");
+    expect(body.toLowerCase()).not.toContain("blocks merging");
+    expect(body.toLowerCase()).toContain("not a merge decision");
+    expect(body.toLowerCase()).toContain("ci check");
+  });
+
+  it("says no verdict is claimed when the analysis is incomplete", () => {
+    const body = renderPrComment(
+      scanResult([finding({})], "changed", { partial: true }),
+    );
+    expect(body.toLowerCase()).toContain("no release verdict is claimed");
   });
 });
 
@@ -338,7 +389,7 @@ describe("renderPrComment — redesign structure (plan M5)", () => {
   it("headers the unified comment and carries a verdict headline", () => {
     const body = renderPrComment(scanResult([finding({})]));
     expect(body).toContain("Mjölnir Verification Report");
-    expect(body).toContain("**88**/100 WORTHY");
+    expect(body).toContain("88</b>/100<br><small>WORTHY</small>");
     expect(body).toContain("Held in worthy hands");
   });
 

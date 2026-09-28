@@ -34,7 +34,9 @@
         "artifact": null,
         "digest": null,
         "observedAt": null,
-        "authority": "NONE"
+        "authority": "NONE",
+        "verificationTest": "tests/contract/version-surface.spec.ts",
+        "verificationCase": "binds every executable release surface to the package version"
       },
       "authority": "release-owner",
       "expiry": "on version or support-envelope change",
@@ -67,7 +69,9 @@
         "artifact": null,
         "digest": null,
         "observedAt": null,
-        "authority": "NONE"
+        "authority": "NONE",
+        "verificationTest": "tests/rules/registry-ratchet.spec.ts",
+        "verificationCase": "every measured entry's revision matches the rule's declared revision (§20.5)"
       },
       "authority": "rule-owner",
       "expiry": "on rule or detector revision change",
@@ -89,7 +93,7 @@
       ],
       "corpus": [
         "tests/cli/pr-comment.spec.ts",
-        "tests/integrations/github/pr-comment-renderer.spec.ts"
+        "tests/reporters/pr-comment-render-gate.spec.ts"
       ],
       "benchmark": "N/A",
       "candidateProof": "npm run ci-local",
@@ -98,7 +102,9 @@
         "artifact": null,
         "digest": null,
         "observedAt": null,
-        "authority": "NONE"
+        "authority": "NONE",
+        "verificationTest": "tests/reporters/pr-comment-determinism.spec.ts",
+        "verificationCase": "output carries the shipped structural markers"
       },
       "authority": "release-owner",
       "expiry": "on reporter or workflow change",
@@ -126,7 +132,9 @@
         "artifact": null,
         "digest": null,
         "observedAt": null,
-        "authority": "NONE"
+        "authority": "NONE",
+        "verificationTest": "tests/contract/m26-support-matrix.spec.ts",
+        "verificationCase": "keeps every evidence reference relative and present"
       },
       "authority": "security-owner",
       "expiry": "on model, data-flow, or boundary change",

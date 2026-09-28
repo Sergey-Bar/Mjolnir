@@ -6,6 +6,28 @@ import { join } from "node:path";
 
 export const MANIFEST_PATH = "candidate-trust-manifest.json";
 
+/**
+ * STAMP ORDER, because it has bitten three times in one release.
+ *
+ * `identity.changedPathCount` and `dirtyFiles` describe the WORKING TREE at
+ * the moment the stamp is taken, so a stamp is only valid for the commit it
+ * is part of if nothing else was uncommitted when it was taken. The sequence
+ * that is always correct:
+ *
+ *     1. commit everything
+ *     2. npm run candidate:manifest:update
+ *     3. commit the stamp, alone
+ *
+ * Skip a step and the committed stamp describes a tree state that never
+ * existed — which fails `check-candidate-manifest.mjs` on every fresh
+ * checkout, because CI has all those files committed and sees a different
+ * `changedPathCount` than the one recorded. That failure looks like a
+ * tampering alarm and is not one.
+ *
+ * The stamp is self-consistent here: `pathsFromGit` drops `MANIFEST_PATH`
+ * from every list (line 28), so the tree hash does not depend on the
+ * manifest's own contents and committing the stamp changes no count.
+ */
 function git(root, args, encoding = "utf8") {
   const result = spawnSync("git", args, {
     cwd: root,

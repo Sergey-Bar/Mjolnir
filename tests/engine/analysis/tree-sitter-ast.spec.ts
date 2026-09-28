@@ -123,7 +123,7 @@ describe("web-tree-sitter dependency pin — guards a real, found incompatibilit
     };
     // D2 moved web-tree-sitter to runtime dependencies; the exact-pin
     // guarantee must hold wherever it lives (it must always be a runtime
-    // dependency now — checked by tests/package-smoke.spec.ts).
+    // dependency now — checked by tests/integrations/package-smoke.spec.ts).
     const pinned =
       pkg.dependencies?.["web-tree-sitter"] ??
       pkg.devDependencies?.["web-tree-sitter"];

@@ -3,7 +3,7 @@
  *
  * Local-only cumulative counters ("47 hard sleeps removed all-time"). No
  * telemetry, no network (verified by
- * tests/privacy-network-isolation.spec.ts, which scans this file too).
+ * tests/contract/privacy-network-isolation.spec.ts, which scans this file too).
  *
  * HONESTY CONSTRAINT: this command can only count what it has personally
  * witnessed. It accumulates from this repo's own "mjolnir diff" runs —
