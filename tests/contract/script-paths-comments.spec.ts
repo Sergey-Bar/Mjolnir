@@ -57,16 +57,28 @@ function run(dir?: string): Result {
 /**
  * The checker's own summary line.
  *
- * The LAST non-empty line, not the last line: `console.log` terminates with a
- * newline, so `split("\n").pop()` is the empty string and parsing it throws
- * "Unexpected end of JSON input" — an error in the test that looks nothing
- * like the thing it is testing.
+ * The LAST JSON-shaped line, not the last line. The checker writes its
+ * findings to stderr and its summary to stdout, and on failure stdout can be
+ * empty — so `lines[lines.length - 1]` is the error text, and
+ * `JSON.parse` throws "Unexpected token 's', 'script:paths...' is not valid
+ * JSON". Which is a confusing way for a test to report that the gate it is
+ * exercising FAILED.
+ *
+ * Finding the last parseable line instead means a failing gate produces a
+ * failing assertion about the gate, not a parse error in the test.
  */
 function lastJsonLine(output: string): unknown {
-  const lines = output.split("\n").filter((line) => line.trim() !== "");
+  const lines = output
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.startsWith("{"));
   const last = lines[lines.length - 1];
-  expect(last, `no output to parse:\n${output}`).toBeDefined();
-  return JSON.parse(last as string);
+  if (last === undefined) {
+    throw new Error(
+      `the gate produced no JSON summary, so it failed. Output:\n${output}`,
+    );
+  }
+  return JSON.parse(last);
 }
 
 /**

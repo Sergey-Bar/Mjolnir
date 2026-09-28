@@ -83,6 +83,47 @@ describe("candidate trust manifest", () => {
     expect(output).toContain('"releaseAuthorizationState":"NOT_AUTHORIZED"');
   });
 
+  it("records a stamp taken on a SETTLED tree", () => {
+    // The stamp records the working tree as it was when it was taken, so a
+    // stamp committed alongside the changes it describes can never verify:
+    // CI checks out a clean tree, sees count 0, and compares it against a
+    // manifest that says 2. That is the `changedPathCount drift` this test
+    // exists to stop.
+    //
+    // It has been committed wrong four times in this release, so the ordering
+    // — commit everything, stamp, commit the stamp alone — is now checked
+    // rather than remembered. The check is only meaningful when the tree IS
+    // clean, which is what the test above establishes first, so the two run
+    // in order and the failure names the fix.
+    const manifest = JSON.parse(
+      readFileSync(join(root, "candidate-trust-manifest.json"), "utf8"),
+    ) as { identity: { changedPathCount: number; dirtyFiles: string[] } };
+    const dirty = execFileSync("git", ["status", "--porcelain"], {
+      cwd: root,
+      encoding: "utf8",
+    })
+      .split("\n")
+      .filter((line) => line.trim() !== "");
+    if (dirty.length > 0) {
+      // A dirty tree is a legitimate state to stamp; this assertion is about
+      // a stamp that was committed alongside its own changes.
+      expect(
+        manifest.identity.changedPathCount,
+        "the tree is dirty, so this assertion is not meaningful right now",
+      ).toBeGreaterThanOrEqual(0);
+      return;
+    }
+    expect(
+      manifest.identity.changedPathCount,
+      "the committed manifest was stamped while " +
+        `${manifest.identity.dirtyFiles.length} path(s) were uncommitted ` +
+        `(${manifest.identity.dirtyFiles.join(", ")}). Re-stamp on a clean ` +
+        "tree: commit everything, npm run candidate:manifest:update, then " +
+        "commit the stamp alone.",
+    ).toBe(0);
+    expect(manifest.identity.dirtyFiles).toEqual([]);
+  });
+
   it("reports readiness blockers without promoting the candidate", () => {
     const result = spawnSync(
       process.execPath,
