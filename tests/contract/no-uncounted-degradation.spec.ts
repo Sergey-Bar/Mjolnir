@@ -749,6 +749,13 @@ const ALLOWED_VALUE_RETURNS: ReadonlyArray<{
     reason:
       "Returns null. The probe could not complete, and the only thing this reports is that nothing was found. Absence is never read downstream as a pass: a capability, edge or capability-level with no evidence stays unproven, which is the direction that cannot manufacture a green.",
   },
+  {
+    file: "engine/version.ts",
+    line: 51,
+    direction: "fails-by-absence",
+    reason:
+      "Resolving git failed, so `BUILD_ID` is `undefined` and `--version` prints the version with no build rather than a build that was not measured. Absence is the only safe direction for a claim about which code ran: a fallback, or a reused version string, would print something that looks like evidence and is not. It is also the same shape a plain npm install already produces, where no checkout exists.",
+  },
 ];
 
 function listSourceFiles(dir: string): string[] {
