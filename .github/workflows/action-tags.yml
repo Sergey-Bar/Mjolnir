@@ -44,6 +44,7 @@ jobs:
         env:
           DISPATCH_MAJOR: ${{ inputs.major }}
           EVENT_NAME: ${{ github.event_name }}
+          TAG_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
           if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
@@ -64,6 +65,21 @@ jobs:
           # from the tag being pushed is the only rule that stays true as the
           # majors move.
           MAJOR_TAG="v$MAJOR"
+          # The tag has to exist locally before a ref can be pushed.
           git tag -f "$MAJOR_TAG" "$TARGET"
-          git push origin "refs/tags/$MAJOR_TAG" --force
+          # `actions/checkout` was configured with `persist-credentials: false`,
+          # which is right for a job that only reads and wrong for the one step
+          # here that pushes. With no credential in the remote, the push failed
+          # with "could not read Username for 'https://github.com'" — and because
+          # the previous major was hardcoded to 3, a v5 run exited before ever
+          # reaching this line, so the failure was never visible. The job that
+          # had always "succeeded" had never actually moved a tag.
+          #
+          # The token is passed explicitly and scoped to this one command rather
+          # than persisted in `.git/config`, so it is not left behind for a later
+          # step to use by accident.
+          git -c user.name="github-actions[bot]" \
+              -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+              push "https://x-access-token:${TAG_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" \
+              "refs/tags/$MAJOR_TAG" --force
           echo "moved $MAJOR_TAG to $TARGET"
