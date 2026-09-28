@@ -28,54 +28,21 @@
   "generatedAt": "2026-09-28",
   "identity": {
     "state": "WORKING_CANDIDATE",
-    "baseSha": "c2b1a33c75bf1e29a3db5b259e664fa9f3a7739c",
+    "baseSha": "252af5c576567be75a39ea95edb1d231ca0391f5",
     "candidateSha": null,
     "version": "5.0.0",
     "packageSha256": "bb799723118c2b0f665d58387e0a68c3d35561f73894f826f2253a81bf2a9279",
     "lockfileSha256": "7449664fe21f4ac61258c4732e83329b7afb89ee6f18d315b29aff6c34269ce8",
-    "workingTreeSha256": "84500bb715181b8baf07699af6f7d4c7b07e09a9874d32363032ac5a0ad6e214",
-    "changedPathCount": 17,
+    "workingTreeSha256": "d41dde5002fda7dca139e1706d2d481530aca55b51313b1d87cfd1b04dfed08d",
+    "changedPathCount": 2,
     "supportEnvelope": "self-hosted; hosted services require explicit consent and separate proof",
     "worktreeInventory": {
-      "changedPaths": [
-        "README.md",
-        "docs/BLAST-RADIUS-AUDIT.md",
-        "docs/CERTIFICATION-POLICY.md",
-        "docs/DEPTH-ADJUDICATION.md",
-        "docs/FP-AUDIT.md",
-        "docs/QUARANTINE-REMEDIATION.md",
-        "docs/README.md",
-        "docs/RULE-CAPABILITY-MATRIX.json",
-        "docs/RULE-CAPABILITY-MATRIX.md",
-        "docs/rules/QA-PY-004.md",
-        "site/reference/roadmap.md",
-        "src/rules/measured-fp.generated.ts",
-        "src/rules/python/qa-py-004-bare-truthiness.ts",
-        "tests/contract/certification.spec.ts",
-        "tests/corpus/detector-hashes.json",
-        "tests/fixtures/QA-PY-004/must-not-fire/excinfo-predicates.py",
-        "tests/rules/registry-ratchet.spec.ts"
-      ],
-      "untrackedPaths": []
+      "changedPaths": ["scripts/candidate-manifest.mjs"],
+      "untrackedPaths": ["tests/certification/manifest-line-endings.spec.ts"]
     },
     "dirtyFiles": [
-      "README.md",
-      "docs/BLAST-RADIUS-AUDIT.md",
-      "docs/CERTIFICATION-POLICY.md",
-      "docs/DEPTH-ADJUDICATION.md",
-      "docs/FP-AUDIT.md",
-      "docs/QUARANTINE-REMEDIATION.md",
-      "docs/README.md",
-      "docs/RULE-CAPABILITY-MATRIX.json",
-      "docs/RULE-CAPABILITY-MATRIX.md",
-      "docs/rules/QA-PY-004.md",
-      "site/reference/roadmap.md",
-      "src/rules/measured-fp.generated.ts",
-      "src/rules/python/qa-py-004-bare-truthiness.ts",
-      "tests/contract/certification.spec.ts",
-      "tests/corpus/detector-hashes.json",
-      "tests/fixtures/QA-PY-004/must-not-fire/excinfo-predicates.py",
-      "tests/rules/registry-ratchet.spec.ts"
+      "scripts/candidate-manifest.mjs",
+      "tests/certification/manifest-line-endings.spec.ts"
     ]
   },
   "claimRegistry": {

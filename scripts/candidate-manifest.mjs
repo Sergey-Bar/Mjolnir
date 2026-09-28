@@ -4,6 +4,57 @@ import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
+/**
+ * Line-ending normalisation for the working-tree hash.
+ *
+ * 6.0. `workingTreeSha256` hashed the working-tree bytes directly, which made
+ * it a property of the CHECKOUT rather than of the repository: git's
+ * `core.autocrlf` gives a Windows working tree CRLF and a Linux one LF for
+ * the same commit, so a manifest stamped on one platform failed
+ * `check-candidate-manifest` on the other. It went unnoticed because the
+ * stamp and the check both ran on the author's machine, and CI — which runs
+ * Linux — is the first place the two could ever have disagreed.
+ *
+ * A "working tree hash" that changes when the file content does not is not a
+ * working tree hash. Normalising CRLF keeps the property that matters — an
+ * unstaged edit changes the hash — and drops the one that does not.
+ *
+ * Implemented at the BYTE level, not via a string round-trip. The first
+ * version did `buffer.toString("utf8").replaceAll(...)`, and a spec asserting
+ * binary passthrough caught it immediately: decoding invalid UTF-8 replaces
+ * every bad byte with U+FFFD, so every binary asset in the tree — images,
+ * the WASM grammars, the packed icon — would hash differently from a byte
+ * mangling nobody chose. That is a worse cross-platform defect than the one
+ * this replaces, and it was introduced by the fix for the first one.
+ *
+ * A buffer-level `CRLF -> LF` rewrite cannot touch a byte it was not told
+ * to, so a binary file with no CRLF pair is bit-identical afterwards.
+ *
+ * A lone `0D` is deliberately left alone. It is a line ending in old-Mac
+ * Python source, but it is also a legitimate byte inside a string literal, and
+ * normalising it would change the meaning of the file it claims to describe.
+ *
+ * Exported so the property is testable WITHOUT mutating a tracked file: a
+ * test that rewrites a file in the working tree races every parallel worker
+ * that hashes the tree, which is how the first version of this suite made
+ * `candidate-manifest.spec.ts` fail intermittently three suites away from the
+ * cause.
+ */
+export function normalizeForHash(buffer) {
+  // Fast path: most files contain no CRLF at all, and a scan is cheaper than
+  // building a second copy of the content.
+  if (!buffer.includes(0x0d)) return buffer;
+  const out = Buffer.allocUnsafe(buffer.length);
+  let written = 0;
+  for (let i = 0; i < buffer.length; i += 1) {
+    const byte = buffer[i];
+    if (byte === 0x0d && buffer[i + 1] === 0x0a) continue;
+    out[written] = byte;
+    written += 1;
+  }
+  return out.subarray(0, written);
+}
+
 export const MANIFEST_PATH = "candidate-trust-manifest.json";
 
 /**
@@ -77,7 +128,7 @@ export function inspectCandidateWorktree(root) {
   const treeParts = treePaths.flatMap((path) => {
     const absolutePath = join(root, path);
     const content = existsSync(absolutePath)
-      ? readFileSync(absolutePath)
+      ? normalizeForHash(readFileSync(absolutePath))
       : Buffer.from("deleted");
     return [Buffer.from(`${path}\0`), content];
   });
