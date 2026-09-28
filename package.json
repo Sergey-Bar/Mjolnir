@@ -131,6 +131,7 @@
     "prepare": "husky",
     "prepublishOnly": "npm run build",
     "docs:architecture": "tsx scripts/generate-readme-architecture.ts",
+    "docs:how-it-works": "tsx scripts/readme-how-it-works.ts",
     "brand:tokens": "tsx scripts/generate-brand-tokens.ts",
     "brand:doctor": "node scripts/brand-doctor.mjs",
     "brand:doctor:selftest": "node scripts/brand-doctor-selftest.mjs",
@@ -138,11 +139,12 @@
     "brand:fonts:check": "tsx scripts/vendor-fonts.ts --check",
     "brand:marks": "tsx scripts/generate-brand-marks.ts",
     "brand:marks:update": "node scripts/update-mark-hashes.mjs",
-    "docs:regen": "npm run docs:rules && npm run fp-audit:generate && npm run docs:capability && npm run docs:counts && npm run docs:depth-adjudication && npm run docs:machine-contract && npm run brand:tokens && npm run golden:update && npm run docs:hero && npm run docs:demo && npm run docs:readme-brand && npm run detector-hashes:update",
+    "docs:regen": "npm run docs:rules && npm run fp-audit:generate && npm run docs:capability && npm run docs:counts && npm run docs:depth-adjudication && npm run docs:machine-contract && npm run brand:tokens && npm run golden:update && npm run docs:hero && npm run docs:architecture && npm run docs:how-it-works && npm run docs:demo && npm run docs:readme-brand && npm run detector-hashes:update",
     "docs:refresh": "node scripts/refresh-generated.mjs",
     "docs:refresh:check": "node scripts/refresh-generated.mjs --check",
     "skip:budget": "node scripts/check-skip-budget.mjs",
-    "skip:budget:init": "node scripts/skip-budget-init.mjs"
+    "skip:budget:init": "node scripts/skip-budget-init.mjs",
+    "build:determinism": "node scripts/verify-build-determinism.mjs"
   },
   "keywords": [
     "qa",

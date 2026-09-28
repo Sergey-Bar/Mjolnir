@@ -93,6 +93,7 @@ jobs:
           run_gate coverage:exemptions   npm run coverage:exemptions
           run_gate unimported:modules     npm run unimported:check
           run_gate verbs:budget          npm run verbs:budget
+          run_gate build:determinism     npm run build:determinism
           run_gate m26:integrity         npm run m26:audit
           run_gate candidate:readiness   npm run candidate:readiness
           run_gate gate-tiers            node scripts/check-gate-tiers.mjs

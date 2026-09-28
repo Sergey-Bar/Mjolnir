@@ -34,6 +34,10 @@
     { "id": "changelog", "command": "npm run changelog:check" },
 
     { "id": "corpus-regression", "command": "npm run corpus:regression" },
+    {
+      "id": "build-determinism",
+      "command": "npm run build:determinism"
+    },
 
     { "id": "gate:registry", "command": "npm run registry:check" },
     { "id": "gate:qa-ir-parity", "command": "npm run qa-ir:parity" },

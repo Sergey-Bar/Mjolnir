@@ -36,8 +36,8 @@
  *              the module is unwired AND it is the record of a known gap.
  */
 
-import { existsSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath, URL } from "node:url";
 
 import { importGraphSnapshot } from "./lib/coverage-exemption-ledger.mjs";
@@ -181,6 +181,176 @@ function unimportedModules(root) {
 const actual = new Set(unimportedModules(ROOT));
 const committed = new Set(Object.keys(COMMITTED));
 
+/**
+ * Scripts nothing invokes.
+ *
+ * A script that no npm script, workflow, or action references cannot be run
+ * by anyone, which makes it either a defect — a generator whose artifact is
+ * committed but never regenerated, so nothing ever checks it for drift — or
+ * deliberate history, a one-shot tool from a wave that has already landed.
+ *
+ * `assets/readme/how-it-works.svg` was the first kind and nobody could tell:
+ * `readme-how-it-works.ts` generated it, the SVG was committed, and no npm
+ * script ran the generator, so the file was exactly as checkable as a
+ * hand-written one. 6.0 wired it into `docs:regen`; the artifact turned out
+ * to be byte-identical on regeneration, so nothing was stale — but the gate
+ * that would have said so now exists.
+ *
+ * The rest are the second kind, and deleting them unilaterally is not this
+ * gate's call: an `author-wave3.mts` is a record of how a wave's fixtures
+ * were made, which is provenance a reviewer may want. So they are listed with
+ * a reason, and a NEW unreferenced script fails.
+ */
+const ORPHAN_SCRIPTS = {
+  "scripts/complete-lockfile.mjs":
+    "TOOL — a manual maintenance command with an explicit usage line (`node scripts/complete-lockfile.mjs <known-good-ref>`). It is run by a human, deliberately, when a lockfile needs the optional platform entries a single-platform generation cannot produce. Not a gate and not a fixture author.",
+  "scripts/compute-release.mjs":
+    "TOOL — pure release-bump decision logic kept for planning and reporting. The header states it does not publish, version, tag or update any branch, and that a release-publishing CLI wrapper was the intended caller. That wrapper was never written, so the logic is currently reachable by nobody — the honest description of an unwired tool, and a candidate for either a wrapper or deletion.",
+  "scripts/corpus-pairs.ts":
+    "TOOL — builds the side-by-side pair view the human classifier uses to keep verdicts consistent across a cross-language rule family. Its output is a review aid, not a gate, so it is invoked by hand during a corpus pass.",
+  "scripts/list-unimported-modules.mjs":
+    "TOOL — the regenerator for THIS file's script list, named in the guard's header. Run by a human when a script is added or removed; it prints only the diff a reviewer needs.",
+  "scripts/release-changelog.mjs":
+    "TOOL — a deterministic CHANGELOG transform for a reviewed release branch. The Release Candidate workflow VALIDATES the resulting version and changelog rather than invoking this helper, which is what the header says and what the workflow does. A human runs it on a release branch.",
+  "scripts/adjudicate-fixtures-0609.mts":
+    "HISTORY — one-shot adjudicator from the 2026-06-09 fixture pass. Its verdicts are committed in tests/corpus/verdicts/; the tool that wrote them is the record of how.",
+  "scripts/adjudicate-harvest-0609.mts":
+    "HISTORY — the harvest half of the same 2026-06-09 pass.",
+  "scripts/apply-depth-adjudications.ts":
+    "HISTORY — the P8 depth-sweep applier. It patches `strategyJustification` into the rule sources from a hand-authored table; the patch is applied, the table is in the source, and re-running it is a no-op. Kept because the table is the adjudication record.",
+  "scripts/author-closure-final.mts":
+    "HISTORY — one-shot fixture author for the closure pass.",
+  "scripts/author-closure-fixtures.mts":
+    "HISTORY — one-shot fixture author for the closure pass.",
+  "scripts/author-fixtures-0609.mts":
+    "HISTORY — one-shot fixture author for the 2026-06-09 pass.",
+  "scripts/author-pw116.mts":
+    "HISTORY — one-shot author for QA-PW-116's fixtures.",
+  "scripts/author-wave10.mts": "HISTORY — one-shot fixture author for wave 10.",
+  "scripts/author-wave2.mts": "HISTORY — one-shot fixture author for wave 2.",
+  "scripts/author-wave3.mts": "HISTORY — one-shot fixture author for wave 3.",
+  "scripts/author-wave4.mts": "HISTORY — one-shot fixture author for wave 4.",
+  "scripts/author-wave5.mts": "HISTORY — one-shot fixture author for wave 5.",
+  "scripts/author-wave6.mts": "HISTORY — one-shot fixture author for wave 6.",
+  "scripts/author-wave7.mts": "HISTORY — one-shot fixture author for wave 7.",
+  "scripts/author-wave8.mts": "HISTORY — one-shot fixture author for wave 8.",
+  "scripts/author-wave9.mts": "HISTORY — one-shot fixture author for wave 9.",
+  "scripts/omitted-tier.mts":
+    "HISTORY — a five-line probe that printed the omitted-tier default, kept because its answer is quoted in src/rules/measurement.ts's header.",
+  "scripts/overlap-audit.mts":
+    "HISTORY — a one-off overlap audit whose findings are recorded in the gap matrix.",
+  "scripts/rev-dump.mts": "HISTORY — a review-dump helper.",
+  "scripts/sync-census-0609.mts":
+    "HISTORY — one-shot census sync for the 2026-06-09 pass.",
+  "scripts/sync-sarif-version.cjs":
+    "HISTORY — a manual SARIF version sync, superseded by the release workflow's own version stamping.",
+  "scripts/sync-smithery-version.cjs":
+    "HISTORY — a manual smithery version sync, same.",
+  "scripts/unmeasured-map.mts":
+    "HISTORY — a one-off map of unmeasured rules; the answer is now the `recallStatus` column in the capability matrix.",
+  "scripts/verdict-census.mts":
+    "HISTORY — a one-off verdict census; superseded by docs/RULE-CAPABILITY-MATRIX.md.",
+};
+
+/**
+ * Module specifiers named by an import/export/require statement.
+ *
+ * The same helper the ledger uses for its import walk, for the same reason:
+ * a substring search over a file's text matches a path inside a comment or a
+ * docstring, and every such match would have made a genuinely orphaned script
+ * look referenced.
+ */
+function specifiersIn(line) {
+  const out = [];
+  const importMatch = line.match(/from\s+["']([^"']+)["']/);
+  if (importMatch) out.push(importMatch[1]);
+  const bareImport = line.match(/^\s*import\s+["']([^"']+)["']/);
+  if (bareImport) out.push(bareImport[1]);
+  const requireMatch = line.match(/require\(\s*["']([^"']+)["']\s*\)/);
+  if (requireMatch) out.push(requireMatch[1]);
+  return out;
+}
+
+/**
+ * Does `importerPath` import `targetPath`?
+ *
+ * Resolves the specifier RELATIVE TO THE IMPORTER and compares whole repo
+ * paths. Matching on the file's stem alone is wrong: `scripts/roadmap/validate.ts`
+ * shares a stem with a dozen other `validate.*` modules, and a stem match
+ * would have reported a genuinely orphaned script as referenced.
+ */
+function importsScript(root, importerPath, targetPath) {
+  const importerDir = dirname(importerPath);
+  const target = normalizePath(join(root, targetPath));
+  for (const line of readFileSync(importerPath, "utf8").split("\n")) {
+    for (const specifier of specifiersIn(line)) {
+      if (!specifier.startsWith(".")) continue;
+      const resolved = join(importerDir, specifier);
+      // Source imports are written with a runtime extension against a
+      // different source extension, exactly as the ledger's import walk
+      // accounts for.
+      const candidates = [
+        resolved,
+        resolved.replace(/\.js$/, ".ts"),
+        resolved.replace(/\.js$/, ".tsx"),
+        resolved.replace(/\.mjs$/, ".mts"),
+        resolved.replace(/\.cjs$/, ".cts"),
+      ];
+      if (candidates.some((c) => normalizePath(c) === target)) return true;
+    }
+  }
+  return false;
+}
+
+function normalizePath(path) {
+  return path.replaceAll("\\", "/");
+}
+
+/** A script no npm script, workflow or action names, and that no script imports. */
+function unreferencedScripts(root) {
+  const pkg = readFileSync(join(root, "package.json"), "utf8");
+  const workflowDir = join(root, ".github", "workflows");
+  const surface = [
+    pkg,
+    ...(existsSync(workflowDir)
+      ? readdirSync(workflowDir).map((file) =>
+          readFileSync(join(workflowDir, file), "utf8"),
+        )
+      : []),
+    ...["action.yml", "action-pr.yml"]
+      .filter((file) => existsSync(join(root, file)))
+      .map((file) => readFileSync(join(root, file), "utf8")),
+  ].join("\n");
+
+  const files = walkScripts(join(root, "scripts"));
+
+  return files
+    .map((path) => normalizePath(relative(root, path)))
+    .filter((path) => {
+      if (path.includes(".spec.") || path.startsWith("scripts/lib/"))
+        return false;
+      // A workflow invokes a script by writing its path in a `run:` line, or
+      // package.json does. Both name the PATH; a bare filename match would
+      // fire on any mention of the word.
+      if (surface.includes(path)) return false;
+      for (const file of files) {
+        if (normalizePath(relative(root, file)) === path) continue;
+        if (importsScript(root, file, path)) return false;
+      }
+      return true;
+    });
+}
+
+function walkScripts(dir) {
+  const out = [];
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const path = join(dir, entry.name);
+    if (entry.isDirectory()) out.push(...walkScripts(path));
+    else if (/\.(ts|mts|cts|mjs|cjs|js)$/.test(entry.name)) out.push(path);
+  }
+  return out;
+}
+
 const problems = [];
 for (const path of [...actual].sort()) {
   if (committed.has(path)) continue;
@@ -201,6 +371,26 @@ for (const path of [...committed].sort()) {
   );
 }
 
+const actualScripts = new Set(unreferencedScripts(ROOT));
+const committedScripts = new Set(Object.keys(ORPHAN_SCRIPTS));
+for (const path of [...actualScripts].sort()) {
+  if (committedScripts.has(path)) continue;
+  problems.push(
+    `${path}: no npm script, workflow or action invokes it — wire it, delete ` +
+      `it, or add it to scripts/check-unimported-modules.mjs with a reason`,
+  );
+}
+for (const path of [...committedScripts].sort()) {
+  if (actualScripts.has(path)) continue;
+  if (!existsSync(join(ROOT, path))) {
+    problems.push(`${path}: on the orphan list but the file does not exist`);
+    continue;
+  }
+  problems.push(
+    `${path}: on the orphan list but something now invokes it — remove it`,
+  );
+}
+
 if (problems.length > 0) {
   console.error("check-unimported-modules: FAILED");
   for (const problem of problems) console.error(`  - ${problem}`);
@@ -217,6 +407,9 @@ console.log(
       callerRoots: CALLER_ROOTS,
       /** Entries on the committed list, each with a class and a reason. */
       committed: committed.size,
+      /** Scripts no npm script, workflow or action invokes. */
+      orphanScripts: actualScripts.size,
+      committedOrphanScripts: committedScripts.size,
     },
     null,
     2,

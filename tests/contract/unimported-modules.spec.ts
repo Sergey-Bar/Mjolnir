@@ -90,6 +90,27 @@ function fixtureTree({ wireBeta }: { wireBeta: boolean }): string {
   mkdirSync(join(dir, "src", "alpha"), { recursive: true });
   mkdirSync(join(dir, "src", "beta"), { recursive: true });
   mkdirSync(join(dir, "scripts", "lib"), { recursive: true });
+  mkdirSync(join(dir, ".github", "workflows"), { recursive: true });
+  // The guard reads package.json and the workflows to decide what a human or
+  // CI can invoke, so a fixture without them is not a faithful tree — the
+  // orphan half of the check would throw ENOENT rather than test anything.
+  writeFileSync(
+    join(dir, "package.json"),
+    `${JSON.stringify(
+      {
+        name: "fixture",
+        // The checker's own copy is invoked here, as its real counterpart is.
+        // Without this it would be the one orphan script in the fixture and
+        // the "healthy" case would fail for a reason unrelated to the module
+        // graph under test.
+        scripts: {
+          "unimported:check": "node scripts/check-unimported-modules.mjs",
+        },
+      },
+      null,
+      2,
+    )}\n`,
+  );
   cpSync(
     LEDGER_LIB,
     join(dir, "scripts", "lib", "coverage-exemption-ledger.mjs"),
@@ -108,7 +129,10 @@ function fixtureTree({ wireBeta }: { wireBeta: boolean }): string {
   }
 
   const source = readFileSync(CHECKER, "utf8");
-  const reduced = source.replace(
+  // Both committed lists are reduced, not just the module one: the fixture has
+  // no orphan scripts beyond its own (invocable) copy, so leaving the real
+  // list in place would report 29 nonexistent files on every fixture run.
+  const withModules = source.replace(
     /const COMMITTED = \{[\s\S]*?\n\};/,
     [
       "const COMMITTED = {",
@@ -117,7 +141,12 @@ function fixtureTree({ wireBeta }: { wireBeta: boolean }): string {
       "};",
     ].join("\n"),
   );
-  expect(reduced, "the COMMITTED block was not replaced").not.toBe(source);
+  const reduced = withModules.replace(
+    /const ORPHAN_SCRIPTS = \{[\s\S]*?\n\};/,
+    "const ORPHAN_SCRIPTS = {};",
+  );
+  expect(reduced, "the committed lists were not replaced").not.toBe(source);
+  expect(reduced, "ORPHAN_SCRIPTS was not replaced").not.toBe(withModules);
   writeFileSync(join(dir, "scripts", "check-unimported-modules.mjs"), reduced);
   return dir;
 }
@@ -129,6 +158,15 @@ afterEach(() => {
   }
 });
 
+/** The `ORPHAN_SCRIPTS` keys, read from the checker's own source. */
+function orphanScriptEntries(): string[] {
+  return [
+    ...readFileSync(CHECKER, "utf8").matchAll(/^ {2}"(scripts\/[^"]+)":/gm),
+  ]
+    .map((entry) => entry[1])
+    .filter((path): path is string => path !== undefined);
+}
+
 describe("the unimported-module guard", () => {
   it("passes on the committed tree, and the list is exactly the set", () => {
     const { code, output } = runChecker();
@@ -137,10 +175,27 @@ describe("the unimported-module guard", () => {
     const report = JSON.parse(output) as {
       unimported: number;
       committed: number;
+      orphanScripts: number;
+      committedOrphanScripts: number;
     };
     // Exact equality, not ">= 0". A guard whose two sides can disagree is a
     // guard whose list is decoration.
     expect(report.committed).toBe(report.unimported);
+    expect(report.committedOrphanScripts).toBe(report.orphanScripts);
+  });
+
+  it("the orphan-script list is a subset of scripts nothing invokes", () => {
+    // Every entry is a `scripts/` file that exists — asserted below — and
+    // nothing else. A list that mixed in wired scripts would make the
+    // "something now invokes it" branch fire on every run, which trains
+    // people to ignore the gate.
+    const entries = orphanScriptEntries();
+    expect(entries.length, "the orphan-script list is empty").toBeGreaterThan(
+      0,
+    );
+    for (const path of entries) {
+      expect(path.startsWith("scripts/"), path).toBe(true);
+    }
   });
 
   it("the lister agrees the list is current", () => {
