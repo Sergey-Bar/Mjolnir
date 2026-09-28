@@ -751,7 +751,7 @@ const ALLOWED_VALUE_RETURNS: ReadonlyArray<{
   },
   {
     file: "engine/version.ts",
-    line: 51,
+    line: 76,
     direction: "fails-by-absence",
     reason:
       "Resolving git failed, so `BUILD_ID` is `undefined` and `--version` prints the version with no build rather than a build that was not measured. Absence is the only safe direction for a claim about which code ran: a fallback, or a reused version string, would print something that looks like evidence and is not. It is also the same shape a plain npm install already produces, where no checkout exists.",
