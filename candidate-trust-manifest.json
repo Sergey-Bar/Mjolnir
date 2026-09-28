@@ -28,19 +28,26 @@
   "generatedAt": "2026-09-28",
   "identity": {
     "state": "WORKING_CANDIDATE",
-    "baseSha": "03f3b463ba06c11a56470f9922d3a587c595581a",
+    "baseSha": "3314b275d1821c6eaa10bf4a4ebc864c01b7d6db",
     "candidateSha": null,
     "version": "5.0.0",
-    "packageSha256": "bb799723118c2b0f665d58387e0a68c3d35561f73894f826f2253a81bf2a9279",
+    "packageSha256": "c048d058efaf819ddacc9dc5acd62002febd4c032c451e77115c65d58d797b06",
     "lockfileSha256": "7449664fe21f4ac61258c4732e83329b7afb89ee6f18d315b29aff6c34269ce8",
-    "workingTreeSha256": "54ba5b2bab0a7e057fe1c5c4986a8ecaa5930c1f35adf0ba033cfc5c79a1aef6",
-    "changedPathCount": 0,
+    "workingTreeSha256": "0f21dcee4ce4bc7800ce214f35f49ae45f8bff66493158a8845d998807b3f851",
+    "changedPathCount": 3,
     "supportEnvelope": "self-hosted; hosted services require explicit consent and separate proof",
     "worktreeInventory": {
-      "changedPaths": [],
-      "untrackedPaths": []
+      "changedPaths": ["package.json"],
+      "untrackedPaths": [
+        "docs/RESAMPLE-2026-09-28.md",
+        "scripts/resample-unmeasured.ts"
+      ]
     },
-    "dirtyFiles": []
+    "dirtyFiles": [
+      "docs/RESAMPLE-2026-09-28.md",
+      "package.json",
+      "scripts/resample-unmeasured.ts"
+    ]
   },
   "claimRegistry": {
     "path": "docs/claim-registry.json",

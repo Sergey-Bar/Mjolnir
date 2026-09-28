@@ -81,6 +81,7 @@
     "detector-hashes:update": "tsx scripts/generate-detector-hashes.ts",
     "corpus:regression": "tsx tests/corpus/audit.ts",
     "corpus:apply-verdicts": "tsx scripts/lib/apply-verdicts.ts",
+    "corpus:resample": "tsx scripts/resample-unmeasured.ts",
     "corpus:verdict-context": "node scripts/verdict-context.mjs",
     "corpus:regression:update": "tsx tests/corpus/audit.ts --update",
     "corpus:regression:refresh-provenance": "tsx tests/corpus/audit.ts --refresh-provenance",
