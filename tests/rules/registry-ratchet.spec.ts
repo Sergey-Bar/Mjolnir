@@ -44,7 +44,7 @@ import {
   straddleDetail,
 } from "../../src/rules/measurement.js";
 import {
-  DECLARED_CORE_WITHOUT_EVIDENCE,
+  DEMOTED_FOR_UNSUBSTANTIATED_CORE,
   declaredCoreWithoutEvidence,
 } from "../../src/rules/tier-evidence.js";
 
@@ -185,101 +185,239 @@ describe("registry ratchet: no unmeasured rule in effective core (§20.3, plan �
     // And the core ratchet would fail for the drifted state — the path
     // Regex → AST → "old measurement says Core" → Core is blocked.
     //
-    // "core" here because the rule DECLARES it, and measurement does not
-    // overrule a declaration. The measurement is stale, so the status is
-    // PROVISIONAL and the claim is not a measured one — which is the same
-    // distinction the committed list below makes explicit for the 19 rules
-    // whose measurement is valid but too thin.
-    expect(effectiveTier(drifted)).toBe("core");
+    // "extended" here, where it was "core" before 6.0: QA-PW-002 is one of
+    // the nineteen that were demoted, because its measurement is valid but
+    // too thin to support a 10% ceiling. The DEMOTION still holds for a
+    // drifted rule, which is the point — a stale measurement cannot
+    // re-promote a rule, and it cannot demote one either, because
+    // measurement does not overrule a declaration in either direction.
+    //
+    // The status is PROVISIONAL because the measurement belongs to an older
+    // detector, and `declaredCoreWithoutEvidence` is null because a STALE
+    // measurement is a different failure from a wide interval — reporting it
+    // here would count one rule into two lists.
+    expect(effectiveTier(drifted)).toBe("extended");
     expect(declaredCoreWithoutEvidence(drifted)).toBeNull();
   });
 });
 
 /**
- * The disclosure the old point-estimate ratchet could not make.
+ * The demotion ratchet.
  *
- * 19 rules declare `tier: "core"`. All 19 clear the point criterion
- * (`fpRate <= 0.10 && n >= 10`) and NONE clear the interval criterion
- * (`ciHigh <= 0.10`) — their intervals reach 13.8% to 40.4%. Zero rules earn
- * core on measurement alone; five undeclared rules straddle.
+ * Before 6.0, nineteen rules declared `tier: "core"`. Every one cleared the
+ * OLD criterion — `fpRate <= 0.10 && n >= 10` — and none cleared the interval
+ * criterion: their 95% Wilson upper bounds run from 13.8% to 40.4%. Two carried
+ * the claim in their own trailing comments ("measured 2026-09-02: 0% FP at
+ * n=20", "10% FP at n=20 (band edge, ≤ 10%)"), which is the clearest possible
+ * statement that the tier was decided by reading a point estimate.
  *
- * So "core" in this registry is a HUMAN ASSERTION, not a measurement result.
- * That may well be right — a maintainer who has read the code has information
- * no sample of ten findings contains. But it is an assertion, and before this
- * release nothing said so: the matrix rendered `tier: "core"`, `measured: true`
- * and `fpRate: 0`, which reads as a measurement.
+ * The maintainer chose demotion over keeping the assertion, on 2026-09-28.
+ * It is BEHAVIOUR-NEUTRAL: only `quarantine` is enforced, so all nineteen
+ * still run on every scan. What changed is what the repository says about
+ * them.
  *
- * The demotion decision is deliberately NOT taken here. Demoting 19 rules is
- * a product decision about what "core" means, not a code cleanup, and
- * `core`/`extended` are not enforced by the pipeline (only `quarantine` is),
- * so nothing is currently gating on the distinction. What this file does is
- * put the list in front of whoever makes that decision.
+ * So the assertion is now the negative one, and it is the stronger shape: a
+ * rule cannot quietly reappear in `core` because nobody re-read this file.
  */
-describe("declared-core claims are enumerated and justified", () => {
-  it("every declared-core rule whose interval misses the ceiling is on the list", () => {
-    const computed = RULES.filter(
+describe("the nineteen unsubstantiated core claims were demoted, not kept", () => {
+  it("no rule claims a core its measurement does not support", () => {
+    const offenders = RULES.filter(
       (rule) => declaredCoreWithoutEvidence(rule) !== null,
-    )
-      .map((rule) => rule.id)
-      .sort();
-    const committed = DECLARED_CORE_WITHOUT_EVIDENCE.map(
-      (entry) => entry.ruleId,
-    ).sort();
-    // The comparison, not a non-empty check. A test that computes the set and
-    // asserts it is non-empty asserts only that the problem still exists.
-    // This one fails when a declared-core rule with a wide interval is added
-    // until someone writes down why a human decision stands against the
-    // data, and fails when one is removed from the list until they remove it
-    // from the code. That is what committing the list buys.
+    ).map((rule) => {
+      const claim = declaredCoreWithoutEvidence(rule);
+      return `${rule.id}: declared core with a 95% interval reaching ${(
+        (claim?.ciHigh ?? 0) * 100
+      ).toFixed(1)}%`;
+    });
     expect(
-      computed,
-      "the committed list is out of date — update src/rules/tier-evidence.ts with a justification for each addition",
-    ).toEqual(committed);
+      offenders,
+      `a rule is in core on a thin measurement — run a re-sample, or demote it: ${offenders.join(", ")}`,
+    ).toEqual([]);
   });
 
-  it("every entry carries a justification, and no entry is stale", () => {
-    for (const entry of DECLARED_CORE_WITHOUT_EVIDENCE) {
+  it("every demoted rule is actually extended, so none can re-appear in core", () => {
+    const notDemoted: string[] = [];
+    for (const entry of DEMOTED_FOR_UNSUBSTANTIATED_CORE) {
       const rule = RULES.find((candidate) => candidate.id === entry.ruleId);
       if (rule === undefined) {
         throw new Error(
-          `${entry.ruleId} is on the list but not in the registry`,
+          `${entry.ruleId} is on the demotion list but not in the registry`,
         );
       }
+      if (rule.tier !== "extended") {
+        notDemoted.push(`${entry.ruleId} is ${rule.tier ?? "undeclared"}`);
+      }
+    }
+    expect(
+      notDemoted,
+      "a demoted rule was promoted back to core without a re-sample. If the " +
+        "re-sample earned it, that is legitimate — but it must be a deliberate " +
+        "edit to the rule AND to src/rules/tier-evidence.ts, not a reversion.",
+    ).toEqual([]);
+  });
+
+  it("every demotion records the interval that caused it", () => {
+    for (const entry of DEMOTED_FOR_UNSUBSTANTIATED_CORE) {
+      expect(
+        entry.ciHigh,
+        `${entry.ruleId} has no recorded ciHigh`,
+      ).toBeGreaterThan(CORE_FP_CEILING);
       expect(
         entry.justification.trim().length,
-        `${entry.ruleId} has no justification — being on this list IS the claim that a human decision stands against the data, and the reader is owed the reason`,
+        `${entry.ruleId} has no justification — the reason a rule sits in extended rather than core is the only thing a reader of the matrix has to go on`,
       ).toBeGreaterThan(20);
-      expect(
-        declaredCoreWithoutEvidence(rule),
-        `${entry.ruleId} is on the list but its interval now clears the ceiling — remove it`,
-      ).not.toBeNull();
     }
   });
 
-  it("the list is non-empty and every id is unique", () => {
-    const ids = DECLARED_CORE_WITHOUT_EVIDENCE.map((entry) => entry.ruleId);
-    expect(ids.length, "the disclosure list is empty").toBeGreaterThan(0);
-    expect(new Set(ids).size, "a rule appears twice on the list").toBe(
+  it("the demotion list is the nineteen, no duplicates", () => {
+    const ids = DEMOTED_FOR_UNSUBSTANTIATED_CORE.map((entry) => entry.ruleId);
+    expect(ids.length, "the demotion list is empty").toBeGreaterThan(0);
+    expect(new Set(ids).size, "a rule appears twice on the demotion list").toBe(
       ids.length,
     );
   });
 
-  it("a STALE measurement never produces a core claim entry", () => {
-    // The interval helper returns undefined for a stale measurement, so a
-    // rule whose detector was revised cannot appear here as "core without
-    // evidence". It is a different failure — reported by the §20.5 revision
-    // ratchet — and counting one rule in two lists would overstate the
-    // problem.
-    const drifted = RULES.map((rule) => ({
-      rule: { ...rule, detectorRevision: (rule.detectorRevision ?? 1) + 1 },
-    }));
-    const leaked = drifted
-      .filter(({ rule }) => declaredCoreWithoutEvidence(rule) !== null)
-      .map(({ rule }) => rule.id);
-    expect(leaked).toEqual([]);
+  it("demotion did not disable anything", () => {
+    // The strongest available statement that this was behaviour-neutral, and
+    // the one a reader who worries "did I just turn off nineteen checks?"
+    // needs: none of the nineteen is quarantined, and only `quarantine` is
+    // enforced by the pipeline.
+    for (const entry of DEMOTED_FOR_UNSUBSTANTIATED_CORE) {
+      const rule = RULES.find((candidate) => candidate.id === entry.ruleId);
+      expect(
+        rule?.tier,
+        `${entry.ruleId} was demoted to ${rule?.tier}`,
+      ).not.toBe("quarantine");
+    }
   });
 });
 
+/**
+ * The ratchet's own mechanism, covered branch by branch.
+ *
+ * `declaredCoreWithoutEvidence` is what makes the demotion self-enforcing, and
+ * it is the function whose every early return encodes a reason a rule is NOT
+ * a violation. Leaving it at 28% line coverage meant the three early returns
+ * were never executed by anything — which is how a ratchet can read as armed
+ * and not be.
+ *
+ * The three reasons a rule is exempt, each with a case:
+ *   1. it does not declare `core` (the demoted nineteen, and every rule whose
+ *      tier is `extended` or `quarantine`);
+ *   2. it has no VALID measurement — a stale `detectorRevision`, which is a
+ *      different failure the §20.5 ratchet already reports, and counting one
+ *      rule in two lists would overstate the problem;
+ *   3. its interval DOES clear the ceiling, which is the promotion path.
+ *
+ * Plus the one case that must be reported: a declared `core` whose interval
+ * reaches past the ceiling. That case is unrepresentable in the live registry
+ * today — it is exactly what the demotion removed — so it is built
+ * synthetically, which is also the only way to prove the function would still
+ * catch a regression.
+ */
+describe("declaredCoreWithoutEvidence", () => {
+  const base = {
+    category: "QA-TEST",
+    title: "fixture",
+    severity: "warning",
+    confidence: "high",
+    findingType: "deterministic-defect",
+    qaImpact: "FALSE-GREEN",
+    appliesTo: "python",
+    languages: ["python"],
+    frameworks: ["pytest"],
+    falsePositiveRisk: "medium",
+    autofix: false,
+    detectionStrategy: "LEXICAL",
+    introduced: "0.3.0",
+    tier: "core",
+    severityFallback: "warning",
+    strategyJustification: { reasonCode: "runner-semantic", detail: "fixture" },
+  } as unknown as Parameters<typeof declaredCoreWithoutEvidence>[0];
+
+  /**
+   * A synthetic `core` rule carrying QA-PY-004's REAL measurement.
+   *
+   * The revision is the part that is easy to get wrong and is the reason the
+   * first attempt returned null: a measurement is only VALID when its
+   * `detectorRevision` matches the rule's, so a fixture without one is stale
+   * and takes the early return that this test is trying to avoid.
+   */
+  const coreClaim = () => {
+    const measured = MEASURED_FP["QA-PY-004"];
+    if (measured === undefined) {
+      throw new Error("QA-PY-004 must carry a measurement for this fixture");
+    }
+    return {
+      ...base,
+      id: "QA-PY-004",
+      tier: "core" as const,
+      detectorRevision: measured.detectorRevision,
+    };
+  };
+
+  it("reports a declared core whose interval reaches past the ceiling", () => {
+    // Synthetic on purpose: this is the violation the demotion removed, so
+    // no registry rule can produce it any more. A guard that has never been
+    // shown the case it exists for is not a guard.
+    const claim = declaredCoreWithoutEvidence(coreClaim());
+    expect(claim).not.toBeNull();
+    expect(claim?.ruleId).toBe("QA-PY-004");
+    expect(claim?.ciHigh).toBeGreaterThan(CORE_FP_CEILING);
+    expect(claim?.n).toBeGreaterThan(0);
+  });
+
+  it("exempts a rule that does not declare core", () => {
+    for (const tier of ["extended", "quarantine"] as const) {
+      expect(
+        declaredCoreWithoutEvidence({ ...coreClaim(), tier }),
+        `a ${tier} rule is not an unsubstantiated core claim`,
+      ).toBeNull();
+    }
+    // An OMITTED tier, not `tier: undefined`. `exactOptionalPropertyTypes` is
+    // on, so an explicit `undefined` is a different type from a missing key —
+    // and the omitted case is the one that matters, because an undeclared
+    // rule resolving on its measurement is exactly the path the 6.0
+    // criterion changed.
+    const { tier: _omitted, ...withoutTier } = coreClaim();
+    expect(declaredCoreWithoutEvidence(withoutTier)).toBeNull();
+  });
+
+  it("exempts a core rule whose measurement is STALE, which is a different failure", () => {
+    // A revision bump makes hasValidMeasurement false, so the interval is
+    // undefined. Reporting it here would count one rule in two lists: this
+    // ratchet and the §20.5 revision ratchet.
+    const rule = RULES.find((r) => r.id === "QA-PY-004");
+    expect(rule).toBeDefined();
+    if (rule === undefined) return;
+    const drifted = { ...rule, tier: "core" as const, detectorRevision: 99 };
+    expect(hasStaleMeasurement(drifted)).toBe(true);
+    expect(declaredCoreWithoutEvidence(drifted)).toBeNull();
+  });
+
+  it("exempts a core rule whose interval already clears the ceiling", () => {
+    // The promotion path. Unreachable from live data TODAY, and deliberately
+    // not faked: it requires a core rule whose measurement clears the
+    // ceiling, and the demotion removed the only such candidates because
+    // none existed. Re-earning core is what makes this branch reachable
+    // again, and `declaredCoreWithoutEvidence` then flips to reporting a
+    // rule that has NOT earned it — which is the regression this function
+    // exists to catch.
+    //
+    // Asserted as a documented unreachability rather than simulated by
+    // mutating `CORE_FP_CEILING`, which is a const and would need a test
+    // seam added to production code purely to reach a branch.
+    const earning = RULES.filter((rule) => {
+      const interval = measurementInterval(rule);
+      return interval !== undefined && interval.ciHigh <= CORE_FP_CEILING;
+    });
+    expect(
+      earning.map((rule) => rule.id),
+      "a rule now clears the ceiling; this branch is live again and the function " +
+        "must be re-read to confirm it still reports one that does not",
+    ).toEqual([]);
+  });
+});
 describe("registry ratchet: evidence-state monotonicity (§20.1)", () => {
   it("(b) no unmeasured rule sits in effective core (new or old)", () => {
     // (b) restated mechanically: the only way an unmeasured rule enters

@@ -32,9 +32,9 @@ happen to have been sampled.
 | QA-CI-008    | 10%     | [0.0179, 0.4042] | 10         | 9   | 1   | 0      | 4           | 🕤 quarantine                                     |
 | QA-CI-009    | 0%      | [0, 0.2775]      | 10         | 10  | 0   | 0      | 3           | △ extended                                        |
 | QA-CI-010    | 10%     | [0.0179, 0.4042] | 10         | 9   | 1   | 0      | 2           | 🕤 quarantine                                     |
-| QA-CS-101    | 0%      | [0, 0.1611]      | 20         | 20  | 0   | 0      | 1           | … core                                            |
-| QA-CS-102    | 8%      | [0.0232, 0.2585] | 24         | 22  | 2   | 0      | 2           | … core                                            |
-| QA-CS-103    | 0%      | [0, 0.2588]      | 11         | 11  | 0   | 0      | 2           | … core                                            |
+| QA-CS-101    | 0%      | [0, 0.1611]      | 20         | 20  | 0   | 0      | 1           | △ extended                                        |
+| QA-CS-102    | 8%      | [0.0232, 0.2585] | 24         | 22  | 2   | 0      | 2           | △ extended                                        |
+| QA-CS-103    | 0%      | [0, 0.2588]      | 11         | 11  | 0   | 0      | 2           | △ extended                                        |
 | QA-CS-104    | 0%      | [0, 0.2775]      | 10         | 10  | 0   | 0      | 1           | △ extended                                        |
 | QA-CS-105    | 25%     | [0.1018, 0.495]  | 16         | 12  | 4   | 0      | 2           | △ extended                                        |
 | QA-CS-106    | 33%     | [0.1381, 0.6094] | 12         | 8   | 4   | 0      | 2           | 🕤 quarantine                                     |
@@ -44,46 +44,46 @@ happen to have been sampled.
 | QA-CYP-002   | 0%      | [0, 0.2775]      | 10         | 10  | 0   | 0      | 1           | 🕤 quarantine                                     |
 | QA-CYP-003   | 0%      | [0, 0.2775]      | 10         | 10  | 0   | 0      | 1           | 🕤 quarantine                                     |
 | QA-ENV-001   | 100%    | [0.8389, 1]      | 20         | 0   | 20  | 0      | 4           | 🕤 quarantine                                     |
-| QA-JV-101    | 0%      | [0, 0.1431]      | 23         | 23  | 0   | 0      | 1           | … core                                            |
+| QA-JV-101    | 0%      | [0, 0.1431]      | 23         | 23  | 0   | 0      | 1           | △ extended                                        |
 | QA-JV-102    | 26%     | [0.1255, 0.4647] | 23         | 17  | 6   | 0      | 1           | △ extended                                        |
 | QA-JV-103    | 26%     | [0.1635, 0.3838] | 58         | 43  | 15  | 0      | 2           | △ extended                                        |
 | QA-JV-104    | 20%     | [0.0567, 0.5098] | 10         | 8   | 2   | 0      | 1           | △ extended                                        |
-| QA-JV-105    | 10%     | [0.0279, 0.301]  | 20         | 18  | 2   | 0      | 2           | … core                                            |
+| QA-JV-105    | 10%     | [0.0279, 0.301]  | 20         | 18  | 2   | 0      | 2           | △ extended                                        |
 | QA-JV-106    | 33%     | [0.1381, 0.6094] | 12         | 8   | 4   | 0      | 2           | 🕤 quarantine                                     |
 | QA-JV-107    | 0%      | [0, 0.2775]      | 10         | 10  | 0   | 0      | 1           | △ extended                                        |
-| QA-JV-109    | 0%      | [0, 0.1759]      | 18         | 18  | 0   | 0      | 1           | … core                                            |
-| QA-PW-002    | 0%      | [0, 0.1611]      | 20         | 20  | 0   | 0      | 1           | … core                                            |
-| QA-PW-003    | 10%     | [0.0179, 0.4042] | 10         | 9   | 1   | 0      | 1           | … core                                            |
+| QA-JV-109    | 0%      | [0, 0.1759]      | 18         | 18  | 0   | 0      | 1           | △ extended                                        |
+| QA-PW-002    | 0%      | [0, 0.1611]      | 20         | 20  | 0   | 0      | 1           | △ extended                                        |
+| QA-PW-003    | 10%     | [0.0179, 0.4042] | 10         | 9   | 1   | 0      | 1           | △ extended                                        |
 | QA-PW-004    | 43%     | [0.2138, 0.6741] | 14         | 8   | 6   | 0      | 2           | 🕤 quarantine                                     |
-| QA-PW-101    | 0%      | [0, 0.1611]      | 20         | 20  | 0   | 0      | 1           | … core                                            |
+| QA-PW-101    | 0%      | [0, 0.1611]      | 20         | 20  | 0   | 0      | 1           | △ extended                                        |
 | QA-PW-102    | 10%     | [0.0179, 0.4042] | 10         | 9   | 1   | 0      | 2           | 🕤 quarantine                                     |
-| QA-PW-104    | 0%      | [0, 0.2775]      | 10         | 10  | 0   | 0      | 1           | … core                                            |
-| QA-PW-113    | 0%      | [0, 0.2588]      | 11         | 11  | 0   | 0      | 1           | … core                                            |
+| QA-PW-104    | 0%      | [0, 0.2775]      | 10         | 10  | 0   | 0      | 1           | △ extended                                        |
+| QA-PW-113    | 0%      | [0, 0.2588]      | 11         | 11  | 0   | 0      | 1           | △ extended                                        |
 | QA-PW-115    | 56%     | [0.3318, 0.769]  | 16         | 7   | 9   | 0      | 1           | 🕤 quarantine                                     |
 | QA-PW-116    | 0%      | [0, 0.2775]      | 10         | 10  | 0   | 0      | 1           | ↔ straddling (interval crosses the tier boundary) |
-| QA-PW-117    | 0%      | [0, 0.138]       | 24         | 24  | 0   | 0      | 1           | … core                                            |
-| QA-PW-121    | 0%      | [0, 0.2425]      | 12         | 12  | 0   | 0      | 1           | … core                                            |
+| QA-PW-117    | 0%      | [0, 0.138]       | 24         | 24  | 0   | 0      | 1           | △ extended                                        |
+| QA-PW-121    | 0%      | [0, 0.2425]      | 12         | 12  | 0   | 0      | 1           | △ extended                                        |
 | QA-PW-122    | 6%      | [0.027, 0.1381]  | 80         | 75  | 5   | 0      | 1           | △ extended                                        |
 | QA-PW-123    | 45%     | [0.2127, 0.7199] | 11         | 6   | 5   | 0      | 1           | 🕤 quarantine                                     |
 | QA-PW-124    | 7%      | [0.0119, 0.2982] | 15         | 14  | 1   | 0      | 2           | ↔ straddling (interval crosses the tier boundary) |
 | QA-PW-125    | 0%      | [0, 0.2775]      | 10         | 10  | 0   | 0      | 2           | △ extended                                        |
-| QA-PW-140    | 0%      | [0, 0.2775]      | 10         | 10  | 0   | 0      | 1           | … core                                            |
+| QA-PW-140    | 0%      | [0, 0.2775]      | 10         | 10  | 0   | 0      | 1           | △ extended                                        |
 | QA-PW-141    | 9%      | [0.0314, 0.2357] | 33         | 30  | 3   | 0      | 1           | △ extended                                        |
 | QA-PW-142    | 18%     | [0.0514, 0.477]  | 11         | 9   | 2   | 0      | 1           | △ extended                                        |
 | QA-PW-143    | 6%      | [0.027, 0.1381]  | 80         | 75  | 5   | 0      | 1           | △ extended                                        |
 | QA-PW-144    | 14%     | [0.0498, 0.3464] | 21         | 18  | 3   | 0      | 1           | △ extended                                        |
 | QA-PW-146    | 12%     | [0.0329, 0.3434] | 17         | 15  | 2   | 0      | 1           | 🕤 quarantine                                     |
-| QA-PY-001    | 0%      | [0, 0.2425]      | 12         | 12  | 0   | 0      | 1           | … core                                            |
-| QA-PY-002    | 4%      | [0.0077, 0.2099] | 23         | 22  | 1   | 0      | 1           | … core                                            |
-| QA-PY-003    | 47%     | [0.3023, 0.6386] | 30         | 16  | 14  | 0      | 4           | 🕤 quarantine                                     |
-| QA-PY-004    | 53%     | [0.3614, 0.6977] | 30         | 14  | 16  | 0      | 3           | 🕤 quarantine                                     |
+| QA-PY-001    | 0%      | [0, 0.2425]      | 12         | 12  | 0   | 0      | 1           | △ extended                                        |
+| QA-PY-002    | 12%     | [0.0417, 0.2996] | 25         | 22  | 3   | 0      | 1           | △ extended                                        |
+| QA-PY-003    | 52%     | [0.3522, 0.675]  | 33         | 16  | 17  | 0      | 4           | 🕤 quarantine                                     |
+| QA-PY-004    | 67%     | [0.5155, 0.7899] | 42         | 14  | 28  | 0      | 3           | 🕤 quarantine                                     |
 | QA-PY-005    | 13%     | [0.0454, 0.3213] | 23         | 20  | 3   | 0      | 1           | △ extended                                        |
-| QA-PY-007    | 100%    | —                | 1          | 0   | 1   | 0      | —           | ❓ unmeasured                                     |
-| QA-PY-009    | 6%      | [0.0099, 0.2576] | 18         | 17  | 1   | 0      | 1           | … core                                            |
-| QA-PY-011    | 10%     | [0.0179, 0.4042] | 10         | 9   | 1   | 0      | 1           | … core                                            |
+| QA-PY-007    | 75%     | [0.4677, 0.9111] | 12         | 3   | 9   | 0      | 4           | 🕤 quarantine                                     |
+| QA-PY-009    | 6%      | [0.0099, 0.2576] | 18         | 17  | 1   | 0      | 1           | △ extended                                        |
+| QA-PY-011    | 10%     | [0.0179, 0.4042] | 10         | 9   | 1   | 0      | 1           | △ extended                                        |
 | QA-PY-012    | 40%     | [0.2459, 0.5768] | 30         | 18  | 12  | 0      | 1           | 🕤 quarantine                                     |
 | QA-PY-101    | 0%      | [0, 0.2775]      | 10         | 10  | 0   | 0      | 1           | ↔ straddling (interval crosses the tier boundary) |
-| QA-PY-103    | 8%      | [0.0222, 0.2497] | 25         | 23  | 2   | 0      | 1           | … core                                            |
+| QA-PY-103    | 8%      | [0.0222, 0.2497] | 25         | 23  | 2   | 0      | 1           | △ extended                                        |
 | QA-PY-104    | 0%      | [0, 0.2775]      | 10         | 10  | 0   | 0      | 2           | 🕤 quarantine                                     |
 | QA-PY-105    | 0%      | [0, 0.2425]      | 12         | 12  | 0   | 0      | 2           | 🕤 quarantine                                     |
 | QA-PY-106    | 0%      | [0, 0.2153]      | 14         | 14  | 0   | 0      | 1           | ↔ straddling (interval crosses the tier boundary) |
@@ -111,7 +111,7 @@ happen to have been sampled.
 | 🔴 quarantine | > 30%   | Opt-in only (`--strict`)              |
 | ❓ unmeasured | n < 10  | Cannot ship in core until measured    |
 
-## Coverage: 74/79 rules measured (94%) at n ≥ 10
+## Coverage: 75/79 rules measured (95%) at n ≥ 10
 
-**5 rules carry no measured FP rate.** Any of them in the
+**4 rules carry no measured FP rate.** Any of them in the
 core tier is shipping on an unverified assumption.

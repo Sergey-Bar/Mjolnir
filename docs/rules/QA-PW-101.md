@@ -6,7 +6,7 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | ------------------------------------- | ---------------------------- |
 | Severity                              | error                        |
 | Confidence                            | high                         |
-| Tier                                  | core                         |
+| Tier                                  | extended                     |
 | Measured FP rate                      | 0% (n=20)                    |
 | Evidence level                        | E2                           |
 | QA impact                             | Flaky-test risk (FLAKY-RISK) |

@@ -35,7 +35,13 @@ export const pyCommentedOutTest = defineRule({
   introduced: "0.3.0",
 
   // Measured 2026-09-02 (corpus wave 5): FP ≤ 10% but n < 20 — measured-extended until the core DoD n ≥ 20 is met (plan §23).
-  tier: "core",
+  // 6.0: was "core". Demoted because the measurement does not support the
+  // claim — 0% observed over n=10..25 is a 95% Wilson interval of
+  // [0, 13.8%] to [0, 40.4%], which does not clear the 10% core ceiling. Only
+  // `quarantine` is enforced, so this is behaviour-neutral: the rule still
+  // runs on every scan. A re-sample at the raised MAX_SAMPLES_PER_RULE can
+  // earn it back; src/rules/tier-evidence.ts ratchets that.
+  tier: "extended",
   run(ctx) {
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
     if (!ctx.path.endsWith(".py")) return findings;

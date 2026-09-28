@@ -76,10 +76,17 @@ describe("the verdict-context tool", () => {
 });
 
 describe("the unclassified verdict backlog", () => {
-  it("is the size the PR declares, so the claim cannot silently go stale", () => {
-    // A count, asserted. "28 unclassified rows" is a claim the release
-    // description makes; if it is closed, this fails and the number has to
-    // be updated in the same commit rather than quietly becoming wrong.
+  it("has no unclassified rows left", () => {
+    // The count this file asserted was 28, and it existed so the number
+    // could not go quietly stale in either direction. All 28 were classified
+    // on 2026-09-28 against the code at each corpus's pinned commit, so the
+    // assertion flips rather than being deleted — a removed assertion is
+    // how a backlog quietly refills.
+    //
+    // What the classification bought is larger than the number: three of the
+    // four rules involved were QUARANTINED and one of them, QA-PY-007, had
+    // never been measured at all. It now measures 75% false positives at
+    // n=12.
     const dir = join(ROOT, "tests", "corpus", "verdicts");
     let blank = 0;
     for (const file of readdirSync(dir).filter((f) => f.endsWith(".jsonl"))) {
@@ -90,6 +97,9 @@ describe("the unclassified verdict backlog", () => {
         if (row.verdict === "" || row.verdict === undefined) blank += 1;
       }
     }
-    expect(blank).toBe(28);
+    expect(
+      blank,
+      "unclassified verdict rows: run `npm run corpus:verdict-context` to see the code behind them",
+    ).toBe(0);
   });
 });

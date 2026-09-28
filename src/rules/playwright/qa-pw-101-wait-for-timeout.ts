@@ -14,7 +14,13 @@ export const pwWaitForTimeout = defineRule({
   // adjudicated TP across next-auth and sveltejs/kit — every sampled
   // call is a load-bearing, false-pass-prone hard sleep (plan §11.5
   // UNSURE adjudication; was the D5 "parked on 20 UNSURE" defect).
-  tier: "core",
+  // 6.0: was "core". Demoted because the measurement does not support the
+  // claim — 0% observed over n=10..25 is a 95% Wilson interval of
+  // [0, 13.8%] to [0, 40.4%], which does not clear the 10% core ceiling. Only
+  // `quarantine` is enforced, so this is behaviour-neutral: the rule still
+  // runs on every scan. A re-sample at the raised MAX_SAMPLES_PER_RULE can
+  // earn it back; src/rules/tier-evidence.ts ratchets that.
+  tier: "extended",
   category: "QA-PW",
   title: "Hard sleep via waitForTimeout",
   severity: "error",
