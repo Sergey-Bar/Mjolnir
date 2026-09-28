@@ -28,30 +28,30 @@
   "generatedAt": "2026-09-28",
   "identity": {
     "state": "WORKING_CANDIDATE",
-    "baseSha": "002090f31de6055d3dfdd2310e7cdb64f4052d72",
+    "baseSha": "5aea36d249b8b2af19dd95f56ee256e8bf241465",
     "candidateSha": null,
     "version": "5.0.0",
-    "packageSha256": "88d68435b2a9a979ddc3155bd22aa8d234363fcd88640348f9b7d7022ac7065e",
+    "packageSha256": "7fbbf9b2fcc27b1d63eec28e8f3aba89f89a1b88a65f361278800c036286a50d",
     "lockfileSha256": "7449664fe21f4ac61258c4732e83329b7afb89ee6f18d315b29aff6c34269ce8",
-    "workingTreeSha256": "36a004b046ff533182afd9fcfc9980a993747e87cffa2a4ff55f8163f5638707",
+    "workingTreeSha256": "f96d919bc7ef5514e2e953756aba5a0ac0d258885534b2a4587b6b7bf44b849f",
     "changedPathCount": 5,
     "supportEnvelope": "self-hosted; hosted services require explicit consent and separate proof",
     "worktreeInventory": {
       "changedPaths": [
-        ".github/workflows/corpus-audit.yml",
-        "gates/nightly.json",
+        "docs/claim-registry.json",
         "package.json",
+        "scripts/check-claim-registry.mjs",
         "scripts/check-unimported-modules.mjs",
-        "tests/contract/unimported-modules.spec.ts"
+        "tests/claims/claim-registry.spec.ts"
       ],
       "untrackedPaths": []
     },
     "dirtyFiles": [
-      ".github/workflows/corpus-audit.yml",
-      "gates/nightly.json",
+      "docs/claim-registry.json",
       "package.json",
+      "scripts/check-claim-registry.mjs",
       "scripts/check-unimported-modules.mjs",
-      "tests/contract/unimported-modules.spec.ts"
+      "tests/claims/claim-registry.spec.ts"
     ]
   },
   "claimRegistry": {

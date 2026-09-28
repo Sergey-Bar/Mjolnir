@@ -1,6 +1,50 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
+import ts from "typescript";
+
+/**
+ * Literal `it("…")` / `test("…")` titles in a spec, with a real body.
+ *
+ * Parsed, not grepped. A title has to be a string-literal ARGUMENT of an
+ * `it`/`test` call whose callback has a non-empty block body — which is
+ * exactly the shape the vitest AST check in
+ * `tests/engine/trust-invariants.spec.ts` accepts, so a claim and an
+ * invariant cannot be bound to titles that mean different things.
+ */
+function specCaseTitles(file) {
+  const source = ts.createSourceFile(
+    file,
+    readFileSync(file, "utf8"),
+    ts.ScriptTarget.ES2022,
+    true,
+  );
+  const cases = [];
+  function visit(node) {
+    if (
+      ts.isCallExpression(node) &&
+      ts.isIdentifier(node.expression) &&
+      ["it", "test"].includes(node.expression.text)
+    ) {
+      const title = node.arguments[0];
+      const callback = node.arguments[node.arguments.length - 1];
+      if (
+        title &&
+        ts.isStringLiteral(title) &&
+        callback &&
+        (ts.isArrowFunction(callback) || ts.isFunctionExpression(callback)) &&
+        ts.isBlock(callback.body) &&
+        callback.body.statements.length > 0
+      ) {
+        cases.push(title.text);
+      }
+    }
+    ts.forEachChild(node, visit);
+  }
+  visit(source);
+  return cases;
+}
+
 const root = process.argv[2] ?? process.cwd();
 const registry = JSON.parse(
   readFileSync(join(root, "docs", "claim-registry.json"), "utf8"),
@@ -59,6 +103,42 @@ for (const claim of registry.claims) {
     }
     if (!existsSync(join(root, claim.proof.artifact))) {
       throw new Error(`${claim.id}: proof artifact missing`);
+    }
+  }
+  // 6.0: a claim names the SPEC that would settle it.
+  //
+  // All four claims are BLOCKED, and `blockedReason` says why in prose. What
+  // was missing is the other half: which check, run where, would move the
+  // claim. A block with no named verifier is indistinguishable from one nobody
+  // looked at, and the fix for that is to record the verifier — not to
+  // declare the claim proven.
+  //
+  // The title is checked by AST against the named spec, not by substring, for
+  // the reason `TRUST_INVARIANTS` does the same: a substring check is
+  // satisfied by a comment or a string, so it proves that the words appear
+  // somewhere rather than that a test with that title exists.
+  if (typeof claim.proof.verificationTest !== "string") {
+    throw new Error(
+      `${claim.id}: proof.verificationTest is required — name the spec that would settle this claim`,
+    );
+  }
+  if (typeof claim.proof.verificationCase !== "string") {
+    throw new Error(
+      `${claim.id}: proof.verificationCase is required — name the it() title in that spec`,
+    );
+  }
+  if (!existsSync(join(root, claim.proof.verificationTest))) {
+    throw new Error(
+      `${claim.id}: proof.verificationTest does not exist: ${claim.proof.verificationTest}`,
+    );
+  }
+  {
+    const cases = specCaseTitles(join(root, claim.proof.verificationTest));
+    if (!cases.includes(claim.proof.verificationCase)) {
+      throw new Error(
+        `${claim.id}: proof.verificationCase is not an it()/test() title in ` +
+          `${claim.proof.verificationTest}. Present: ${cases.join(" | ")}`,
+      );
     }
   }
   for (const field of ["implementation", "tests", "corpus"]) {

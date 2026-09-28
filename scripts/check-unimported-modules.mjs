@@ -88,7 +88,8 @@ const COMMITTED = {
 
   // ── ORPHANS: behaviour, no caller. The C2 class. ────────────────────────
   "src/change-intelligence.ts":
-    "ORPHAN — the diff-scoped affected-path computation. 6.0 wires it; until then it is a prerequisite with no caller.",
+    "GAP — the diff-scoped affected-path computation (M37). It is NOT a small wiring job: `calculateAffectedPaths` takes `ChangeRecord[]`, and nothing in the tree builds those. They need a git diff turned into SEMANTIC and DEPENDENCY records, which means a dependency graph the scanner does not have. `src/scope/changed.ts` computes which files a PR touched, which is coarser and is what the diff-scoped comment uses today.\n\n" +
+    'An earlier commit here said "6.0 wires it" and that was not done. The reason is the size of the work, and the honest description of an unwired module is the one above rather than a promise.',
   "src/v6/tool-coverage.ts":
     "ORPHAN — the tool-coverage v6 check. Its only would-be caller (test-doubles) is itself an orphan, so the pair is dead as a unit.",
   "src/store/legacy-import.ts":
