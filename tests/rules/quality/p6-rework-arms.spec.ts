@@ -163,12 +163,48 @@ def test_x():
     expect(findings).toHaveLength(1);
   });
 
-  it("fires on a broad root exception type even in a single-statement block", async () => {
+  it("stays silent on a broad root exception type in a single-statement block", async () => {
+    // WAS "fires … even in a single-statement block". That assertion encoded
+    // the rev-4 gate, and it was the last thing standing between the rule and
+    // a 0% FP rate.
+    //
+    // The rev-4 reasoning was "a broad root type always fires — the type
+    // alone pins nothing", and that is true only when the block has OTHER
+    // lines: an earlier line can raise `Exception` before the intended one.
+    // With one statement there is no earlier line, so the diagnosis cannot
+    // hold however broad the type is.
+    //
+    // The evidence is the adjudication, not the argument. Two of the eleven
+    // findings adjudicated against pytest-dev/pytest at f9554ee5 —
+    // `testing/test_compat.py:97` and `:107` — are exactly this shape, and
+    // both were adjudicated false positives. After widening, the rule fires on
+    // 2 of the 12 recorded findings and both are the adjudicated TRUE
+    // POSITIVES.
     const text = `import pytest
 
 def test_x():
     with pytest.raises(Exception):
         do_thing(1)
+`;
+    const ast = await parsePythonAst(text);
+    const findings = pyRaisesWithoutMatch.run({
+      path: "test_x.py",
+      text,
+      ast,
+    });
+    expect(findings).toHaveLength(0);
+  });
+
+  it("still fires on a broad root exception type in a MULTI-statement block", async () => {
+    // The case the rev-4 reasoning was actually about, kept so the widening
+    // is not a blanket exemption: with a setup line in front, `Exception` can
+    // come from anywhere and the diagnosis holds.
+    const text = `import pytest
+
+def test_x():
+    with pytest.raises(Exception):
+        helper = build()
+        do_thing(helper)
 `;
     const ast = await parsePythonAst(text);
     const findings = pyRaisesWithoutMatch.run({

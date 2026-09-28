@@ -19,6 +19,7 @@ import { describe, expect, it } from "vitest";
 import {
   computeRuleStats,
   loadDetectorRevisions,
+  effectiveDetectorRevisions,
   MEASURED_THRESHOLD,
   renderMeasuredFpModule,
   type Verdict,
@@ -76,10 +77,24 @@ describe("measured-fp.generated.ts", () => {
     expect(dataLines(actual)).toEqual(dataLines(expected));
   });
 
-  it("contains exactly the rules with >= 10 classified verdicts", () => {
+  it("contains exactly the rules with >= 10 classified verdicts AT THE CURRENT REVISION", () => {
+    // 6.0: the criterion is "≥10 classified verdicts AND a recorded
+    // revision that matches the rule's current one". A measurement whose
+    // revision has been left behind describes a detector that no longer
+    // exists, and `renderMeasuredFpModule` drops it for the same reason —
+    // without the same filter here, this assertion said the file SHOULD
+    // contain a row that the generator deliberately omits.
+    const recorded = effectiveDetectorRevisions();
+    const declared = new Map(
+      RULES.map((rule) => [rule.id, rule.detectorRevision ?? 1]),
+    );
     const measuredIds = new Set(
       computeRuleStats(verdicts)
-        .filter((s) => s.classified >= MEASURED_THRESHOLD)
+        .filter(
+          (s) =>
+            s.classified >= MEASURED_THRESHOLD &&
+            (recorded[s.ruleId] ?? 1) === (declared.get(s.ruleId) ?? 1),
+        )
         .map((s) => s.ruleId),
     );
     expect(new Set(Object.keys(MEASURED_FP))).toEqual(measuredIds);
@@ -117,9 +132,26 @@ describe("detector-revisions.json sidecar (Verification Trust Evolution Plan §0
     // A rule measured but missing from the sidecar means a measurement
     // shipping without an implementation revision (the D8 hole); a stray
     // sidecar entry names a rule that no longer carries a measurement.
-    expect(Object.keys(revisions).sort()).toEqual(
-      Object.keys(MEASURED_FP).sort(),
+    //
+    // 6.0: the sidecar keeps a revision for a rule whose measurement has
+    // gone STALE — `QA-PY-007` is recorded at 4 against a rule at 5, and the
+    // generated module now omits it. So "the measured set" is not
+    // "everything with verdicts"; it is "everything with verdicts at a
+    // revision that still matches". A sidecar entry for a stale
+    // measurement is not a stray, it is the record that the measurement
+    // exists and needs re-taking.
+    const stale = new Set(
+      Object.keys(revisions).filter(
+        (id) =>
+          (revisions[id] ?? 1) !==
+          (RULES.find((r) => r.id === id)?.detectorRevision ?? 1),
+      ),
     );
+    expect(
+      Object.keys(revisions)
+        .filter((id) => !stale.has(id))
+        .sort(),
+    ).toEqual(Object.keys(MEASURED_FP).sort());
   });
 
   it("every MEASURED_FP entry carries a positive integer revision", () => {

@@ -395,13 +395,6 @@ export const MEASURED_FP: Readonly<Record<string, MeasuredFp>> = {
     ciLow: 0.0454,
     ciHigh: 0.3213,
   },
-  "QA-PY-007": {
-    fpRate: 0.75,
-    n: 12,
-    detectorRevision: 4,
-    ciLow: 0.4677,
-    ciHigh: 0.9111,
-  },
   "QA-PY-009": {
     fpRate: 0.056,
     n: 18,

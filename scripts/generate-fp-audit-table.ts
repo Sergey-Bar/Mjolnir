@@ -718,8 +718,28 @@ export const MEASURED_THRESHOLD = 10;
 
 export function renderMeasuredFpModule(verdicts: Verdict[]): string {
   const revisions = effectiveDetectorRevisions();
+  const ruleRevisions = new Map(
+    RULES.map((rule) => [rule.id, rule.detectorRevision]),
+  );
   const entries = computeRuleStats(verdicts)
     .filter((s) => s.classified >= MEASURED_THRESHOLD && s.fpRate !== null)
+    // A measurement whose recorded revision does not match the rule's CURRENT
+    // revision describes a detector that no longer exists, and must not be
+    // shipped in the file every consumer reads as "current measurements".
+    //
+    // 6.0: `QA-PY-007`'s verdicts are revision 4 and the rule is revision 5,
+    // so the entry was being written with `detectorRevision: 4` — which the
+    // registry ratchet correctly read as "a measurement crossed an
+    // implementation change" and `measurement.ts` correctly read as stale.
+    // Two mechanisms, the same fact, and neither was wrong; the generator was
+    // emitting a row that could not be true of any rule. The rule is now
+    // UNMEASURED, which is the state the plan's §07 asks for: bump the
+    // revision, re-measure, and until then do not claim a rate.
+    .filter((s) => {
+      const recorded = revisions[s.ruleId] ?? 1;
+      const current = ruleRevisions.get(s.ruleId) ?? 1;
+      return recorded === current;
+    })
     .map((s) => {
       // 3 dp is plenty for a rate over ≤20 samples; Number() drops
       // trailing zeros so the literal matches what prettier would keep.
@@ -881,7 +901,23 @@ export function renderMeasuredFpAudit(
   lines.push("| ❓ unmeasured | n < 10 | Cannot ship in core until measured |");
   lines.push("");
 
-  const measured = stats.filter((s) => s.classified >= 10).length;
+  // A rule counts as measured only if its recorded revision matches the
+  // rule's CURRENT one — the same filter `renderMeasuredFpModule` applies
+  // when it writes the shipped file. 6.0: the two disagreed, and the audit
+  // claimed 75/79 while the census said 74, because the audit counted from
+  // the verdicts alone and ignored that `QA-PY-007`'s verdicts are revision 4
+  // against a rule at revision 5. An audit that counts a rate the product
+  // refuses to ship is the same defect as claiming it.
+  const currentRevisions = effectiveDetectorRevisions();
+  const declaredRevisions = new Map(
+    RULES.map((rule) => [rule.id, rule.detectorRevision ?? 1]),
+  );
+  const measured = stats.filter(
+    (s) =>
+      s.classified >= 10 &&
+      (currentRevisions[s.ruleId] ?? 1) ===
+        (declaredRevisions.get(s.ruleId) ?? 1),
+  ).length;
   // The denominator is the REGISTRY, not the set of rules that happen to have
   // verdicts. Reporting "3/6 measured" when 6 was the sampled count while the
   // registry holds 91 rules overstated coverage by more than an order of

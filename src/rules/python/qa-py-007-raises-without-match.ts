@@ -48,13 +48,48 @@ export const pyRaisesWithoutMatch = defineRule({
   // name (assert, expect, or assignment-then-assert).
   // detectorRevision 4 (P6 rework, plan 1789009691197 R3 — AST substrate):
   // when the tree-sitter python tree is available the detector fires only
-  // on the risky shapes — a with-block holding ≥2 statements (an unrelated
-  // bug can raise before the intended line) or a broad root exception
-  // type (Exception/BaseException/ExceptionGroup — the type alone pins
-  // nothing). Single-statement blocks with a specific exception type are
-  // the adjudicated FP core (the intended line is the only line). The
-  // regex fallback (no tree) keeps the rev-3 behavior.
-  detectorRevision: 4,
+  // on the risky shapes — a with-block holding ≥2 statements or a broad
+  // root exception type.
+  // detectorRevision 5 (EVIDENCE-BACKED, 6.0 — n=12 adjudicated): the
+  // rev-4 gate never fired for NESTED code, because `pythonWithRaisesBlocks`
+  // found the raises call by walking a with-statement's whole subtree and
+  // then measured that with's block. A `with pytest.raises(...)` inside
+  // `with saved_fd(1):` inherited the outer block's statement count, so the
+  // "single statement" shape — the adjudicated FP core — was scored as
+  // multi-statement. Seven of the eleven adjudicated findings were exactly
+  // that shape, and pytest-dev/pytest nests its capture tests inside
+  // `with saved_fd(...)`, so it measured 75% FP while its unit fixtures
+  // passed. `pythonWithRaisesBlocks` now requires the raises call to be a
+  // DIRECT context manager of the with it measures.
+  //
+  // The second change is the gate itself: a single-statement block is now
+  // exempt REGARDLESS of exception type. The rev-4 note said "broad root
+  // types always fire — the type alone pins nothing", which is true only
+  // when the block has other lines: an earlier line can raise the broad
+  // type before the intended one. With one statement there is no earlier
+  // line, so the diagnosis cannot hold however broad the type is. The two
+  // remaining adjudicated findings were `pytest.raises(Exception)` and
+  // `(BaseException)` around a one-line body whose only action is the
+  // intended raise.
+  //
+  // Re-measured against the same pinned corpus after the fix: the rule
+  // fires on 2 of the 12 recorded findings, and both are the adjudicated
+  // TRUE POSITIVES (pytest-dev/pytest `testing/test_recwarn.py:123` and
+  // `:127`). 0 false positives, down from 9.
+  //
+  // The 75% figure is therefore WITHDRAWN, not corrected in place: the
+  // verdicts behind it were taken at revision 4, so `detector-hashes.json`
+  // keeps `QA-PY-007: 4` and this rule declares 5, which makes the
+  // measurement stale and the rule UNMEASURED. That is the correct end state
+  // rather than a loss — a 75% rate for a detector that no longer exists
+  // would be the claim to stop making, exactly as a 9-of-79 rule claiming
+  // `core` was.
+  //
+  // What earns a measurement back is a fresh corpus sample at revision 5.
+  // The evidence says it will be a good one: 2 of 2 surviving findings are
+  // true positives, and the FP clusters the fix removes were 7 nested
+  // single-statement blocks and 2 broad-type single-statement blocks.
+  detectorRevision: 5,
 
   run(ctx) {
     const findings: Omit<Finding, "ruleId" | "category">[] = [];
@@ -131,16 +166,17 @@ function matchParen(text: string, open: number): number {
 }
 
 /**
- * AST arm (detectorRevision 4 — P6 rework): candidates come from the
- * parsed `with pytest.raises(...)` statements. Two structural gates
- * suppress the adjudicated FP core:
- *  - the with-block holds a SINGLE statement AND the exception type is
- *    specific → the intended line is the only line; the "unrelated bug
- *    raises first" diagnosis cannot hold;
- *  - the fallback's excinfo-use skip (`as exc` + downstream use) is
- *    mirrored on the raw text.
- * Broad root types (Exception/BaseException/…Group) always fire — the
- * type alone pins nothing.
+ * AST arm (detectorRevision 5 — P6 rework, widened on adjudicated evidence):
+ * candidates come from the parsed `with pytest.raises(...)` statements, and
+ * the raises call must be a DIRECT context manager of the with whose block
+ * is measured (see `pythonWithRaisesBlocks` for why).
+ *
+ * The gate: a block with fewer than two statements is exempt. That covers
+ * the adjudicated FP core — pytest-dev/pytest nests its capture tests inside
+ * `with saved_fd(1):`, and every one of those was scored as multi-statement
+ * until the block resolution was fixed. A broad root type (Exception /
+ * BaseException / …Group) still fires on a MULTI-statement block, where an
+ * earlier line can raise it before the intended one.
  */
 function astArm(
   ctx: { path: string; text: string; ast?: unknown },
@@ -159,9 +195,12 @@ function astArm(
       // eslint-disable-next-line security/detect-non-literal-regexp -- name is an [A-Za-z_]\w* identifier captured from `as <name>` — no metacharacters
       if (new RegExp(`\\b${name}\\b`).test(tail)) continue;
     }
-    // The P6 precision gate: single-statement block + specific exception
-    // type = the adjudicated FP core.
-    if (block.blockStatements < 2 && !block.broadException) continue;
+    // The P6 precision gate, widened at rev 5: a single-statement block is
+    // exempt whatever the exception type, because the "an unrelated bug can
+    // raise first" diagnosis needs an earlier line and a one-line body has
+    // none. The broad-type escape only ever mattered for multi-statement
+    // blocks, where an earlier line CAN raise the broad type.
+    if (block.blockStatements < 2) continue;
     findings.push({
       severity: "warning",
       confidence: "medium",

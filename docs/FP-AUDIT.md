@@ -78,7 +78,7 @@ happen to have been sampled.
 | QA-PY-003    | 52%     | [0.3522, 0.675]  | 33         | 16  | 17  | 0      | 4           | 🕤 quarantine                                     |
 | QA-PY-004    | 67%     | [0.5155, 0.7899] | 42         | 14  | 28  | 0      | 3           | 🕤 quarantine                                     |
 | QA-PY-005    | 13%     | [0.0454, 0.3213] | 23         | 20  | 3   | 0      | 1           | △ extended                                        |
-| QA-PY-007    | 75%     | [0.4677, 0.9111] | 12         | 3   | 9   | 0      | 4           | 🕤 quarantine                                     |
+| QA-PY-007    | 75%     | [0.4677, 0.9111] | 12         | 3   | 9   | 0      | 4           | ◐ unmeasured                                      |
 | QA-PY-009    | 6%      | [0.0099, 0.2576] | 18         | 17  | 1   | 0      | 1           | △ extended                                        |
 | QA-PY-011    | 10%     | [0.0179, 0.4042] | 10         | 9   | 1   | 0      | 1           | △ extended                                        |
 | QA-PY-012    | 40%     | [0.2459, 0.5768] | 30         | 18  | 12  | 0      | 1           | 🕤 quarantine                                     |
@@ -111,7 +111,7 @@ happen to have been sampled.
 | 🔴 quarantine | > 30%   | Opt-in only (`--strict`)              |
 | ❓ unmeasured | n < 10  | Cannot ship in core until measured    |
 
-## Coverage: 75/79 rules measured (95%) at n ≥ 10
+## Coverage: 74/79 rules measured (94%) at n ≥ 10
 
-**4 rules carry no measured FP rate.** Any of them in the
+**5 rules carry no measured FP rate.** Any of them in the
 core tier is shipping on an unverified assumption.

@@ -12,7 +12,7 @@ tier promotion, never statistical proof: a rule that meets its bar is
 ## Summary
 
 - Registry size: **79 rules**
-- Measured (n ≥ 10 classified verdicts at a matching detectorRevision): **75/79 (95%)**
+- Measured (n ≥ 10 classified verdicts at a matching detectorRevision): **74/79 (94%)**
 - Explicit tier declarations: **74/79** — 5 rules resolve via the measurement-dependent omitted-tier default (plan §11.2 Step 2: omitted ⇒ extended/PROVISIONAL unless validly measured)
 - Unmeasured rules in effective core: **0** (Phase 1 exit gate: 0)
 - Declared-vs-measured cross-check: **0 mismatch(es)** (ledger class D9)
@@ -97,7 +97,7 @@ Unmeasured rules currently sitting in effective core (D3 — closed in Phase 1: 
 | QA-PY-003    | Test function with no assertions                                 | QA-TEST  | python                 | pytest                                   | LEXICAL                   | Low            | runner-semantic          | yes      | 52%          | 33           | 33          | 3                | not-yet-measured  | high       | quarantine                     | MEASURED-QUARANTINE | UNCLASSIFIED      | UNCLASSIFIED          | core       |
 | QA-PY-004    | Bare truthiness assert on complex object                         | QA-TQUAL | python                 | pytest                                   | LEXICAL                   | Low            | runner-semantic          | yes      | 67%          | 42           | 42          | 3                | not-yet-measured  | medium     | quarantine                     | MEASURED-QUARANTINE | UNCLASSIFIED      | UNCLASSIFIED          | core       |
 | QA-PY-005    | time.sleep() in test                                             | QA-TEST  | python                 | pytest                                   | LEXICAL                   | Low            | exact-key-match          | yes      | 13%          | 23           | 23          | 3                | not-yet-measured  | high       | extended                       | MEASURED-EXTENDED   | UNCLASSIFIED      | UNCLASSIFIED          | core       |
-| QA-PY-007    | pytest.raises without match                                      | QA-TQUAL | python                 | pytest                                   | LEXICAL                   | Low            | runner-semantic          | yes      | 75%          | 12           | 12          | 2                | not-yet-measured  | medium     | quarantine                     | MEASURED-QUARANTINE | UNCLASSIFIED      | UNCLASSIFIED          | core       |
+| QA-PY-007    | pytest.raises without match                                      | QA-TQUAL | python                 | pytest                                   | LEXICAL                   | Low            | runner-semantic          | no       | UNCLASSIFIED | UNCLASSIFIED | 12          | 2                | not-yet-measured  | medium     | quarantine                     | UNMEASURED          | UNCLASSIFIED      | UNCLASSIFIED          | core       |
 | QA-PY-009    | Commented-out test                                               | QA-TQUAL | python                 | pytest                                   | LEXICAL                   | Low            | lexical-artifact         | yes      | 6%           | 18           | 18          | 4                | not-yet-measured  | high       | extended                       | MEASURED-EXTENDED   | UNCLASSIFIED      | UNCLASSIFIED          | core       |
 | QA-PY-011    | Mutable fixture shared across tests                              | QA-TQUAL | python                 | pytest                                   | LEXICAL                   | Low            | runner-semantic          | yes      | 10%          | 10           | 10          | 3                | not-yet-measured  | medium     | extended                       | MEASURED-EXTENDED   | UNCLASSIFIED      | UNCLASSIFIED          | core       |
 | QA-PY-012    | Tautological assertion                                           | QA-TQUAL | python                 | pytest                                   | LEXICAL                   | Low            | runner-semantic          | yes      | 40%          | 30           | 30          | 6                | not-yet-measured  | high       | quarantine                     | MEASURED-QUARANTINE | UNCLASSIFIED      | UNCLASSIFIED          | core       |
@@ -139,7 +139,7 @@ Unmeasured rules currently sitting in effective core (D3 — closed in Phase 1: 
 The reference state every ratchet measures against:
 
 - Registry: 79 rules, 22 retired ID(s) reserved (docs/RULE-LIFECYCLE.md).
-- Measured coverage: 75/79 (per-rule detail above; authoritative rates in `docs/FP-AUDIT.md`).
+- Measured coverage: 74/79 (per-rule detail above; authoritative rates in `docs/FP-AUDIT.md`).
 - Declared-vs-measured mismatches: 0.
 - Locked reference artifacts: `tests/golden/golden-expected.json` (golden lock), `docs/COUNT-LOCK.md` (corpus count lock), `docs/FP-AUDIT.md` (measured rates), `assets/readme/*` (demo/docs reproducibility).
 
