@@ -28,30 +28,26 @@
   "generatedAt": "2026-09-28",
   "identity": {
     "state": "WORKING_CANDIDATE",
-    "baseSha": "5aea36d249b8b2af19dd95f56ee256e8bf241465",
+    "baseSha": "851c0032d3207f2ef010d8904e5aa01690652eb8",
     "candidateSha": null,
     "version": "5.0.0",
     "packageSha256": "7fbbf9b2fcc27b1d63eec28e8f3aba89f89a1b88a65f361278800c036286a50d",
     "lockfileSha256": "7449664fe21f4ac61258c4732e83329b7afb89ee6f18d315b29aff6c34269ce8",
-    "workingTreeSha256": "f96d919bc7ef5514e2e953756aba5a0ac0d258885534b2a4587b6b7bf44b849f",
-    "changedPathCount": 5,
+    "workingTreeSha256": "60e0eadf03576f928f8971e50d03634cbff28a69540b13617d3a6861b1097ae4",
+    "changedPathCount": 4,
     "supportEnvelope": "self-hosted; hosted services require explicit consent and separate proof",
     "worktreeInventory": {
-      "changedPaths": [
-        "docs/claim-registry.json",
-        "package.json",
-        "scripts/check-claim-registry.mjs",
-        "scripts/check-unimported-modules.mjs",
-        "tests/claims/claim-registry.spec.ts"
-      ],
-      "untrackedPaths": []
+      "changedPaths": ["README.md", "docs/VERSIONING.md"],
+      "untrackedPaths": [
+        "docs/MIGRATION-CONTRACT-2.md",
+        "tests/contract/contract-migration-quartet.spec.ts"
+      ]
     },
     "dirtyFiles": [
-      "docs/claim-registry.json",
-      "package.json",
-      "scripts/check-claim-registry.mjs",
-      "scripts/check-unimported-modules.mjs",
-      "tests/claims/claim-registry.spec.ts"
+      "README.md",
+      "docs/MIGRATION-CONTRACT-2.md",
+      "docs/VERSIONING.md",
+      "tests/contract/contract-migration-quartet.spec.ts"
     ]
   },
   "claimRegistry": {

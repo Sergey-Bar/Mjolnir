@@ -799,6 +799,7 @@ The full docs site is at <https://sergey-bar.github.io/Mjolnir/>.
 | [SUPPORT.md](SUPPORT.md)                                           | Where to ask, report and get help                         |
 | [SECURITY.md](SECURITY.md)                                         | Vulnerability reporting                                   |
 | [docs/MIGRATION-3.0.0.md](docs/MIGRATION-3.0.0.md)                 | 3.0.0 migration checklist                                 |
+| [docs/MIGRATION-CONTRACT-2.md](docs/MIGRATION-CONTRACT-2.md)       | Machine-contract v2: `coverageState` and degraded scans   |
 | [docs/INSTALLATION-3.0.0.md](docs/INSTALLATION-3.0.0.md)           | Reproducible CLI, Action, and MCP installation            |
 | [docs/ROLLBACK-3.0.0.md](docs/ROLLBACK-3.0.0.md)                   | Rollback and corrective-release procedure                 |
 | [docs/RELEASE-3.0.0-READINESS.md](docs/RELEASE-3.0.0-READINESS.md) | 3.0.0 release gates, migration, QA, and rollout checklist |
