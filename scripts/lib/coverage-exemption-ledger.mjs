@@ -72,7 +72,16 @@ function productionSourceFiles(root) {
     });
 }
 
-/** Module specifiers named by an import/export/require statement. */
+/**
+ * Module specifiers named by an import/export/require statement.
+ *
+ * The graph's dead-code detector reported this as unreachable on 2026-09-28,
+ * alongside `productionImporters`, and removing it broke
+ * `importGraphSnapshot` with a ReferenceError. It is used at the one place
+ * that matters most: the import walk behind
+ * `scripts/check-unimported-modules.mjs`. A detector that cannot see a use in
+ * a file it is reporting on is a reason to verify, not to act.
+ */
 function specifiersIn(line) {
   const out = [];
   const importMatch = line.match(/from\s+["']([^"']+)["']/);
@@ -84,40 +93,16 @@ function specifiersIn(line) {
   return out;
 }
 
-/** Does `specifier`, imported from `importerPath`, resolve to `targetPath`? */
-function resolvesTo(root, importerPath, specifier, targetPath) {
-  if (!specifier.startsWith(".")) return false;
-  const importerDir = join(root, importerPath, "..");
-  const resolved = resolvePath(importerDir, specifier);
-  // Source imports are written with a .js extension against .ts files.
-  const candidates = [
-    resolved,
-    resolved.replace(/\.js$/, ".ts"),
-    resolved.replace(/\.mjs$/, ".mts"),
-    resolved.replace(/\.js$/, ".tsx"),
-  ];
-  const target = resolvePath(root, targetPath);
-  return candidates.some((candidate) => candidate === target);
-}
-
-/**
- * Production modules that import `targetPath`, excluding the file itself.
- * A glob entry (`dist/**`) is not a module and resolves to nothing.
- */
-export function productionImporters(root, targetPath) {
-  if (targetPath.includes("*")) return [];
-  return productionSourceFiles(root).filter(
-    (importer) =>
-      importer !== targetPath &&
-      readFileSync(join(root, importer), "utf8")
-        .split("\n")
-        .some((line) =>
-          specifiersIn(line).some((specifier) =>
-            resolvesTo(root, importer, specifier, targetPath),
-          ),
-        ),
-  );
-}
+// 6.0: `productionImporters` and `resolvesTo` were removed.
+//
+//   `productionImporters` was exported and imported by nothing — dead code in
+//   the file whose whole job is to police dead code.
+//   `resolvesTo` was private and reachable only from it. Its candidate list is
+//   inlined at the one remaining call site, so the duplication went with it.
+//
+// `specifiersIn` looked dead in the same pass and was NOT: `importGraphSnapshot`
+// uses it, and eslint caught the ReferenceError that removing it caused. The
+// detector's list is a set of candidates, not verdicts.
 
 /**
  * Entry points a user or a release pipeline can actually reach.
