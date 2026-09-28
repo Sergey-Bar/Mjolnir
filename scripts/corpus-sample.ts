@@ -52,23 +52,40 @@ const VERDICTS_DIR = join(ROOT, "tests", "corpus", "verdicts");
 /**
  * How many samples a rule may contribute to one measurement pass.
  *
- * Raised 20 → 60 in 6.0, and the number is derived rather than chosen: since
- * `effectiveTier` now promotes a rule to core on `ciHigh <= 0.10`, a rule
- * observing ZERO false positives needs about n = 35 for its Wilson upper
- * bound to fall under that ceiling. At the old cap of 20 no rule could ever
- * reach core on a clean measurement, so the cap was not a sampling policy —
- * it was a ceiling on what the measurement could possibly prove.
+ * 6.0 raised this 20 → 60, on arithmetic that was correct: since
+ * `effectiveTier` promotes a rule to core on `ciHigh <= 0.10`, a rule observing
+ * ZERO false positives needs about n = 35 for its Wilson upper bound to fall
+ * under that ceiling, and at a cap of 20 no rule could ever reach core on a
+ * clean measurement.
  *
- * 60 leaves headroom past the 35 needed for the zero-FP case, so a rule that
- * does observe a false positive or two can still narrow into range rather
- * than sitting permanently at the boundary.
+ * **The raise was reverted on the same day.** The arithmetic bounds what a
+ * measurement can PROVE; it does not bound what it costs to OBTAIN. A sample
+ * is not a verdict: every one needs a human judgement with the code in front
+ * of them, and `tests/corpus/verdicts/README.md` makes a committed verdict
+ * immutable. Re-sampling at the raised cap produced 1,121 unadjudicated rows
+ * across 42 rules, and the committed ceiling in
+ * `tests/corpus/unclassified-ceiling.json` (31) then REFUSED to generate an
+ * FP table at all:
  *
- * The cost is adjudication volume: verdicts are classified by a human or by
- * `apply-verdicts`, so this is a real queue, not a free knob. The committed
- * unclassified ceiling in `generate-fp-audit-table.ts` (31 rows) is the
- * other end of the same trade and is unchanged by this value.
+ *   FAIL: 1121 unclassified verdict row(s) exceed the committed ceiling of 31
+ *   Blank "verdict" rows silently under-report the measured FP rates.
+ *
+ * That refusal is the gate working. Blank rows are DROPPED rather than
+ * counted, so a corpus where most rows are blank does not report a low false
+ * positive rate — it reports a rate measured on whatever subset happened to be
+ * adjudicated, which is a different and much more flattering number.
+ *
+ * So the cap is bounded by the ADJUDICATION BUDGET, and the budget is
+ * whatever the ceiling file can honestly hold. Raising the cap and the ceiling
+ * together would be a way of making the gate stop complaining without adding
+ * evidence, which is the one thing this repository exists not to do.
+ *
+ * What the interval criterion actually needs is a decision about the CORE
+ * CEILING, not about the sample: 10% is unreachable below n ≈ 35 for a
+ * clean rule, so either the ceiling moves or core stays unearned. Both are
+ * product calls, and neither is made by a constant in this file.
  */
-const MAX_SAMPLES_PER_RULE = 60;
+const MAX_SAMPLES_PER_RULE = 20;
 const CONTEXT_LINES = 5; // lines above and below the finding
 
 /**
