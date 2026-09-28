@@ -34,6 +34,31 @@ export const ENGINE_VERSION = "5.0.0";
  */
 export const BUILD_ID: string | undefined = resolveBuildId();
 
+/** What `runGit` must do: answer a git query, or `undefined` if it cannot. */
+export type GitQuery = (args: string[]) => string | undefined;
+
+/**
+ * The decision, with the process boundary already behind `runGit`.
+ *
+ * Separated so every branch is reachable from a test: a runner that throws and
+ * a runner that answers are both things that happen, and both are what this
+ * function exists to survive. What it must never do is invent an answer.
+ */
+export function buildIdFrom(runGit: GitQuery): string | undefined {
+  const sha = runGit(["rev-parse", "--short=12", "HEAD"]);
+  if (!sha) return undefined;
+  // An unstaged or staged change means the build is not the commit it claims
+  // to be. Saying so is the whole value: a clean-looking hash on a dirty tree
+  // is a hash that will not reproduce.
+  const status = runGit(["status", "--porcelain"]);
+  // `undefined` and `""` are not the same answer, and collapsing them is the
+  // bug this branch exists to catch. `""` is a clean tree, measured. `undefined`
+  // is a query that failed, unmeasured — and an unmeasured tree must not be
+  // reported as a clean one.
+  if (status === undefined) return `${sha}-dirty`;
+  return status ? `${sha}-dirty` : sha;
+}
+
 function resolveBuildId(): string | undefined {
   // The ABSOLUTE path, never the bare name. On Windows `CreateProcess` searches
   // the current directory before PATH, so a `git.exe` or `git.bat` sitting in
@@ -41,7 +66,7 @@ function resolveBuildId(): string | undefined {
   // this function would print it as a build identity.
   const git = resolveGitPath();
   if (!git) return undefined;
-  const run = (args: string[]): string | undefined => {
+  const runGit: GitQuery = (args) => {
     try {
       return execFileSync(git, args, {
         encoding: "utf8",
@@ -52,12 +77,5 @@ function resolveBuildId(): string | undefined {
       return undefined;
     }
   };
-
-  const sha = run(["rev-parse", "--short=12", "HEAD"]);
-  if (!sha) return undefined;
-  // An unstaged or staged change means the build is not the commit it claims
-  // to be. Saying so is the whole value: a clean-looking hash on a dirty tree
-  // is a hash that will not reproduce.
-  const status = run(["status", "--porcelain"]);
-  return status ? `${sha}-dirty` : sha;
+  return buildIdFrom(runGit);
 }

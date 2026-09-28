@@ -8,12 +8,14 @@
  * because it looks like evidence.
  */
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
-import { BUILD_ID, ENGINE_VERSION } from "../../src/engine/version.js";
+import {
+  BUILD_ID,
+  ENGINE_VERSION,
+  buildIdFrom,
+  type GitQuery,
+} from "../../src/engine/version.js";
 
 const sha12 = /^[0-9a-f]{12}(?:-dirty)?$/;
 
@@ -21,29 +23,37 @@ function git(args: string[]): string {
   return execFileSync("git", args, { encoding: "utf8" }).trim();
 }
 
-describe("build identity", () => {
-  it("is absent rather than invented when there is no git", () => {
-    // A packed npm install has no .git, and the artifact is a single bundled
-    // file. It must report the version and stop, rather than a build id that
-    // was made up.
-    const dir = mkdtempSync(join(tmpdir(), "mjolnir-nogit-"));
-    try {
-      expect(
-        execFileSync("git", ["rev-parse", "--short=12", "HEAD"], {
-          cwd: dir,
-          stdio: ["ignore", "pipe", "ignore"],
-          encoding: "utf8",
-        }),
-      ).toBeDefined();
-    } catch {
-      // Expected in a directory that is not a checkout: this is the condition
-      // the `undefined` branch exists for.
-      expect(BUILD_ID === undefined || sha12.test(BUILD_ID)).toBe(true);
-    } finally {
-      rmSync(dir, { recursive: true, force: true });
-    }
+describe("build identity, given a git that answers", () => {
+  it("is the short commit hash when the tree is clean", () => {
+    const runner: GitQuery = (args) =>
+      args[0] === "rev-parse" ? "abc123abc123" : "";
+    expect(buildIdFrom(runner)).toBe("abc123abc123");
   });
 
+  it("is suffixed when the tree is not clean", () => {
+    const runner: GitQuery = (args) =>
+      args[0] === "rev-parse" ? "abc123abc123" : " M src/a.ts";
+    expect(buildIdFrom(runner)).toBe("abc123abc123-dirty");
+  });
+
+  it("is undefined when the commit cannot be read", () => {
+    // An npm install has no .git, and `rev-parse` outside a checkout exits
+    // non-zero. Absence is the answer; a guess is not.
+    expect(buildIdFrom(() => "")).toBeUndefined();
+    expect(buildIdFrom(() => undefined)).toBeUndefined();
+  });
+
+  it("claims dirty rather than clean when the status query fails", () => {
+    // The asymmetry is the point. If `status` cannot be read we do NOT treat
+    // the tree as clean: a clean-looking hash off a failed query is a hash
+    // that will not reproduce.
+    const runner: GitQuery = (args) =>
+      args[0] === "rev-parse" ? "abc123abc123" : undefined;
+    expect(buildIdFrom(runner)).toBe("abc123abc123-dirty");
+  });
+});
+
+describe("build identity, in this checkout", () => {
   it("is a short commit hash, suffixed when the tree is not clean", () => {
     if (BUILD_ID === undefined) return; // non-git environment
     expect(BUILD_ID).toMatch(sha12);
