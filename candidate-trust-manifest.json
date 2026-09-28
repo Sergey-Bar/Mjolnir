@@ -28,19 +28,25 @@
   "generatedAt": "2026-09-28",
   "identity": {
     "state": "WORKING_CANDIDATE",
-    "baseSha": "96fe3d59b1c085566dfc98ab02312f910c3f61c7",
+    "baseSha": "793ec538de4d4f2ce78cf5a6e04161e086ab3082",
     "candidateSha": null,
     "version": "5.0.0",
     "packageSha256": "7fbbf9b2fcc27b1d63eec28e8f3aba89f89a1b88a65f361278800c036286a50d",
     "lockfileSha256": "7449664fe21f4ac61258c4732e83329b7afb89ee6f18d315b29aff6c34269ce8",
-    "workingTreeSha256": "14b7a6b739ffafb2c8231e08ccfe9d83f8cd9ef2a5978cd660c7635665f0197e",
-    "changedPathCount": 0,
+    "workingTreeSha256": "b2774fe885ed0ecee27ea3f282c46535f990ed3da10113989e8911ef9239cff2",
+    "changedPathCount": 2,
     "supportEnvelope": "self-hosted; hosted services require explicit consent and separate proof",
     "worktreeInventory": {
-      "changedPaths": [],
+      "changedPaths": [
+        "tests/claims/claim-registry.spec.ts",
+        "tests/contract/capability-matrix-recall.spec.ts"
+      ],
       "untrackedPaths": []
     },
-    "dirtyFiles": []
+    "dirtyFiles": [
+      "tests/claims/claim-registry.spec.ts",
+      "tests/contract/capability-matrix-recall.spec.ts"
+    ]
   },
   "claimRegistry": {
     "path": "docs/claim-registry.json",

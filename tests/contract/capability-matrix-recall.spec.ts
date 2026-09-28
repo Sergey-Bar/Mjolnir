@@ -18,12 +18,17 @@
  * rule.
  */
 
-import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
 import { RETIRED_RULE_IDS } from "../../src/rules/index.js";
+import {
+  buildMatrixJson,
+  buildRows,
+  crossCheckDeclaredVsMeasured,
+} from "../../scripts/generate-capability-matrix.js";
 
 const ROOT = join(import.meta.dirname, "..", "..");
 const POSITIVE = join(ROOT, "tests", "corpus", "positive-fixtures");
@@ -156,25 +161,34 @@ describe("the fixture corpus and the matrix describe the same rules", () => {
     }
   });
 
-  it("the matrix is newer than the fixture corpus it describes", () => {
-    // A cheap staleness check for the same class of defect the census-drift
-    // spec guards elsewhere: a fixture added without re-running the generator
-    // leaves `recallFixtures` stale, and nothing else would notice.
-    const matrixTime = statSync(
+  it("the committed matrix is what the generator produces right now", () => {
+    // The first version of this was a STALENESS check by mtime: "the matrix
+    // file must be newer than the newest fixture". It passed locally and
+    // failed on a fresh CI checkout, because git does not preserve mtimes —
+    // every file lands with the checkout timestamp, so two files can compare
+    // either way depending on checkout order. mtime is not a property of the
+    // repository; it is a property of somebody's filesystem.
+    //
+    // The check that IS a property of the repository: regenerate in-process
+    // and compare the bytes. If the generator would produce something
+    // different from what is committed, the committed matrix is stale —
+    // on any machine, in any order, with no filesystem assumptions.
+    const committed = readFileSync(
       join(ROOT, "docs", "RULE-CAPABILITY-MATRIX.json"),
-    ).mtimeMs;
-    let newestFixture = 0;
-    const walk = (dir: string) => {
-      for (const entry of readdirSync(dir, { withFileTypes: true })) {
-        const path = join(dir, entry.name);
-        if (entry.isDirectory()) walk(path);
-        else newestFixture = Math.max(newestFixture, statSync(path).mtimeMs);
-      }
-    };
-    walk(POSITIVE);
+      "utf8",
+    );
+    const regenerated = buildMatrixJson({
+      rows: buildRows(),
+      ...crossCheckDeclaredVsMeasured(),
+    });
     expect(
-      matrixTime,
-      "a fixture changed after the matrix was generated — run `npm run docs:capability`",
-    ).toBeGreaterThanOrEqual(newestFixture);
+      // Compared as parsed values, not as text: the generator returns an
+      // object and the writer serialises it, so a key-order or trailing-
+      // newline difference would be a formatting question, not a staleness
+      // one. `toEqual` on parsed JSON is the claim that matters — the
+      // committed file says what a fresh generation says it says.
+      JSON.parse(committed),
+      "the committed matrix differs from a fresh generation — run `npm run docs:capability`",
+    ).toEqual(regenerated);
   });
 });

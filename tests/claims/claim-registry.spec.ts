@@ -80,14 +80,19 @@ describe("claim registry", () => {
       );
       // The checker imports `typescript`, and Node resolves from the
       // importing file's own ancestry — which in a temp directory is
-      // nothing. A junction gives the copy the module without copying it, and
+      // nothing. A symlink gives the copy the module without copying it, and
       // without putting the fixture inside the repository, where it would
       // make the tree dirty for the candidate-manifest gate running in
       // parallel in another worker.
+      //
+      // `junction` is Windows-only in Node: on a POSIX runner it is not a
+      // supported type and the call throws, so the type is chosen per
+      // platform. "dir" is a plain symlink to a directory, which is what a
+      // junction is on Windows anyway.
       symlinkSync(
         join(root, "node_modules"),
         join(dir, "node_modules"),
-        "junction",
+        process.platform === "win32" ? "junction" : "dir",
       );
 
       // Every path the claims themselves cite, copied in. Listing them by
