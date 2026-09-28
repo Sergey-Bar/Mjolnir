@@ -27,7 +27,7 @@ This passes for any truthy value — a wrong object, wrong count, or partially-b
 Bare truthiness assert: `assert order`.
 ```
 
-Example from this rule's own must-fire fixture: `tests/fixtures/QA-PY-004/must-fire/bare-assert.py`
+Example from this rule's own must-fire fixture: `tests/fixtures/QA-PY-004/must-fire/attribute-chains.py`
 
 ## The fix
 
@@ -35,7 +35,7 @@ Assert the specific expected value or property: `assert result.id == expected`, 
 
 ## Confirmed NOT to fire on the corresponding clean pattern
 
-Verified against `tests/fixtures/QA-PY-004/must-not-fire/excinfo-predicates.py` — a legitimate, similar-looking pattern this rule correctly leaves alone.
+Verified against `tests/fixtures/QA-PY-004/must-not-fire/constant-asserts.py` — a legitimate, similar-looking pattern this rule correctly leaves alone.
 
 ## Corpus-measured false-positive risk
 
