@@ -70,7 +70,11 @@ function rawUrl(url, ref, path) {
 
 async function fetchAt(url) {
   try {
-    const res = await fetch(url, { redirect: "follow" });
+    // `globalThis.fetch` rather than a bare `fetch`: the global exists on
+    // Node 18+, but this repo's eslint config does not declare it for
+    // `.mjs`, and a bare `fetch` is a `no-undef` error. Spelling it out is
+    // also honest about what this depends on.
+    const res = await globalThis.fetch(url, { redirect: "follow" });
     return res.ok ? await res.text() : null;
   } catch {
     return null;
