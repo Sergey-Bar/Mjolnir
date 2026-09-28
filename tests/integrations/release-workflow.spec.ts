@@ -290,15 +290,40 @@ describe("release candidate workflow", () => {
     expect(actionTags).toContain("!contains(github.ref_name, '-rc.')");
     expect(actionTags).toContain('MAJOR="${VERSION%%.*}"');
     expect(actionTags).toContain('MAJOR_TAG="v$MAJOR"');
-    expect(actionTags).toContain(
-      'git push origin "refs/tags/$MAJOR_TAG" --force',
-    );
-    expect(actionTags).not.toContain("for major in v1 v2 v3");
+    // The tag must be created locally before a ref can be pushed, and the push
+    // must carry a credential.
+    expect(actionTags).toContain('git tag -f "$MAJOR_TAG" "$TARGET"');
+    expect(actionTags).toContain('"refs/tags/$MAJOR_TAG" --force');
+    expect(actionTags).toContain("TAG_TOKEN: ${{ secrets.GITHUB_TOKEN }}");
     // The regression. The major was hardcoded to 3, so no v4 or v5 tag could
     // ever be published and every `uses: Sergey-Bar/Mjolnir@vN` in the docs
     // after v2 pointed at a ref that did not exist. Deriving the major from
     // the tag being pushed is the only rule that survives the next major.
     expect(actionTags).not.toContain('"$MAJOR" != "3"');
+  });
+
+  it("pushes the major tag with a credential it actually has", () => {
+    // The third regression, and the one that stopped `@v5` from existing even
+    // after the major was derived correctly. `actions/checkout` ran with
+    // `persist-credentials: false`, which is right for a job that only reads
+    // and wrong for the single step that pushes. The result was
+    //
+    //   fatal: could not read Username for 'https://github.com'
+    //
+    // and because the hardcoded-to-3 version exited before reaching the push,
+    // every earlier run had "succeeded" without ever moving a tag. A job that
+    // cannot push must not be able to report that it did.
+    const actionTags = readFileSync(
+      join(root, ".github", "workflows", "action-tags.yml"),
+      "utf8",
+    );
+    expect(actionTags).toContain("x-access-token:${TAG_TOKEN}");
+    expect(actionTags).toContain("--force");
+    // The token is scoped to one command rather than left in .git/config for a
+    // later step to find. The pattern is deliberately free of nested
+    // quantifiers: `url\s*=\s*.*x-access-token` is a super-linear backtracking
+    // hazard, which `regexp/no-super-linear-backtracking` correctly rejects.
+    expect(actionTags).not.toMatch(/remote set-url[^"]*x-access-token/);
   });
 
   it("can move the major tag for a tag that was already pushed", () => {
