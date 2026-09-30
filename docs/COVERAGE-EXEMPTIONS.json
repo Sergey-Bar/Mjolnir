@@ -11,10 +11,11 @@
     },
     "reviewBySemantics": "A passed reviewBy fails the gate. The date is a deadline to either cover the file or delete it — never a silent renewal.",
     "defectSignatureSemantics": "A SHIPPED_SURFACE entry carries EITHER `defectSignatures` (regexes that MUST still match the named source file) OR a `closureState` (the asserted defect is closed and no surface of it remains) — never neither, never both. A signature is a DRIFT ALARM, not an ADMISSION and not a defect prover, and the distinction is the one this ledger exists to keep. ADMISSION would mean the signature GRANTS coverage: that matching a regex means the file is covered. It does not — the file is not executed and no test asserts anything about it. A signature's only job is to FIRE when something about the thing the entry is about changes, so a fix forces a ledger update in the same commit. A signature that stops matching fails the gate with 'defect closed or drifted — remove or reclassify', and a signature that keeps matching proves only that nobody has touched the file. Read a pin as 'this is watched', never as 'this is licensed'. This is deliberately the same mechanism as tests/corpus/detector-hashes.json: a recorded fingerprint of source that CI diffs. PERMANENT_STRUCTURAL entries are exempt — they are evidenced by a structural reason, not by a defect.",
-    "contractOnlyCeiling": 12,
-    "contractOnlyCeilingMeaning": "Ratchet over files imported by their own contract test only. Same shape as shippedSurfaceCeiling and the same rule: the count may fall and may never rise. 6.1: these are the contracts nothing in src/ imports, so this number IS the wiring backlog, stated as a CI value rather than as a sentence. Deleting a duplicate is as valid as wiring a unique one — m40 was removed in 6.4 because `auditLanguageManifest` already answers the question it answered, a second time and worse.",
+    "contractOnlyCeiling": 0,
     "shippedSurfaceCeiling": 10,
-    "shippedSurfaceCeilingMeaning": "Ratchet over shipped surfaces that are not PERMANENT_STRUCTURAL, not a target. The count may fall (removal, merge, real tests) and may never rise. Structural entries are excluded from the count because they are evidenced by a structural reason rather than a removable gap."
+    "shippedSurfaceCeilingMeaning": "Ratchet over shipped surfaces that are not PERMANENT_STRUCTURAL, not a target. The count may fall (removal, merge, real tests) and may never rise. Structural entries are excluded from the count because they are evidenced by a structural reason rather than a removable gap.",
+    "unimplementedSpecs": 12,
+    "unimplementedSpecsMeaning": "Files under src/ that no production path imports and whose subsystem is not implemented. NOT a wiring backlog: m40 was deleted rather than wired because language-manifest already answered the question it was specifying, and the other eleven describe V6 waves with nothing behind them. Counted so the number is visible, not so it can be ratcheted to zero by deleting specifications."
   },
   "entries": [
     {
@@ -122,61 +123,61 @@
     },
     {
       "path": "src/bench/m48-scale-operating-model.ts",
-      "classification": "CONTRACT_ONLY",
+      "classification": "UNIMPLEMENTED_SPEC",
       "shippedSurface": false,
       "owner": "maintainers",
       "reviewBy": "2026-12-31",
-      "removalPlan": "V5-100/V5-102 — make the budgets real against the FileExecutor pool, or state canBlock:false honestly.",
+      "removalPlan": "SPECIFICATION, NOT BACKLOG. Nothing in src/ imports this and nothing implements the subsystem it describes. Keep it as the design of record until the subsystem is built, then wire it and reclassify as SHIPPED_SURFACE — or delete it, which is recoverable and is the cheaper answer if the wave it belongs to is not going to happen.",
       "justification": "Scale budgets with no executor behind them; contract test only.",
       "defectSignatures": ["export function canTransitionM48State\\b"]
     },
     {
       "path": "src/change-intelligence.ts",
-      "classification": "CONTRACT_ONLY",
+      "classification": "UNIMPLEMENTED_SPEC",
       "shippedSurface": false,
       "owner": "maintainers",
       "reviewBy": "2026-12-31",
-      "removalPlan": "V5-052/V5-053 — wire the change-impact graph into change-driven selection.",
+      "removalPlan": "SPECIFICATION, NOT BACKLOG. Nothing in src/ imports this and nothing implements the subsystem it describes. Keep it as the design of record until the subsystem is built, then wire it and reclassify as SHIPPED_SURFACE — or delete it, which is recoverable and is the cheaper answer if the wave it belongs to is not going to happen.",
       "justification": "Affected-path and selected-vs-full contracts exist with no production caller.",
       "defectSignatures": ["export function calculateAffectedPaths\\b"]
     },
     {
       "path": "src/engine/m38-challenge-contract.ts",
-      "classification": "CONTRACT_ONLY",
+      "classification": "UNIMPLEMENTED_SPEC",
       "shippedSurface": false,
       "owner": "maintainers",
       "reviewBy": "2026-12-31",
-      "removalPlan": "V5-063 — add the production challenge executor that persists results.",
+      "removalPlan": "SPECIFICATION, NOT BACKLOG. Nothing in src/ imports this and nothing implements the subsystem it describes. Keep it as the design of record until the subsystem is built, then wire it and reclassify as SHIPPED_SURFACE — or delete it, which is recoverable and is the cheaper answer if the wave it belongs to is not going to happen.",
       "justification": "Caller-driven challenge contract; contract test only.",
       "defectSignatures": ["export function evaluateM38Challenges\\b"]
     },
     {
       "path": "src/engine/m43-system-of-systems.ts",
-      "classification": "CONTRACT_ONLY",
+      "classification": "UNIMPLEMENTED_SPEC",
       "shippedSurface": false,
       "owner": "maintainers",
       "reviewBy": "2026-12-31",
-      "removalPlan": "Deferred past 5.0 — stays a catalogued, gated row, never a claim.",
+      "removalPlan": "SPECIFICATION, NOT BACKLOG. Nothing in src/ imports this and nothing implements the subsystem it describes. Keep it as the design of record until the subsystem is built, then wire it and reclassify as SHIPPED_SURFACE — or delete it, which is recoverable and is the cheaper answer if the wave it belongs to is not going to happen.",
       "justification": "Cross-repository contract beyond the 5.0 product center.",
       "defectSignatures": ["export function serializeM43Graph\\b"]
     },
     {
       "path": "src/engine/m44-historical-intelligence.ts",
-      "classification": "CONTRACT_ONLY",
+      "classification": "UNIMPLEMENTED_SPEC",
       "shippedSurface": false,
       "owner": "maintainers",
       "reviewBy": "2026-12-31",
-      "removalPlan": "V5-072 — become the durable event/hash chain behind the single evidence store.",
+      "removalPlan": "SPECIFICATION, NOT BACKLOG. Nothing in src/ imports this and nothing implements the subsystem it describes. Keep it as the design of record until the subsystem is built, then wire it and reclassify as SHIPPED_SURFACE — or delete it, which is recoverable and is the cheaper answer if the wave it belongs to is not going to happen.",
       "justification": "History model with no persistence; three competing stores exist instead.",
       "defectSignatures": ["export function validateM44History\\b"]
     },
     {
       "path": "src/engine/m49-experience-parity-contract.ts",
-      "classification": "CONTRACT_ONLY",
+      "classification": "UNIMPLEMENTED_SPEC",
       "shippedSurface": false,
       "owner": "maintainers",
       "reviewBy": "2026-12-31",
-      "removalPlan": "W8 — becomes cross-surface projection parity for the canonical proof.",
+      "removalPlan": "SPECIFICATION, NOT BACKLOG. Nothing in src/ imports this and nothing implements the subsystem it describes. Keep it as the design of record until the subsystem is built, then wire it and reclassify as SHIPPED_SURFACE — or delete it, which is recoverable and is the cheaper answer if the wave it belongs to is not going to happen.",
       "justification": "Parity contract with no production consumer.",
       "defectSignatures": [
         "export function createM49CanonicalResultViewModel\\b"
@@ -184,21 +185,21 @@
     },
     {
       "path": "src/engine/runtime-evidence-graph.ts",
-      "classification": "CONTRACT_ONLY",
+      "classification": "UNIMPLEMENTED_SPEC",
       "shippedSurface": false,
       "owner": "maintainers",
       "reviewBy": "2026-12-31",
-      "removalPlan": "V5-044 — become the single evidence graph, replacing the empty M13/run-identity skeleton.",
+      "removalPlan": "SPECIFICATION, NOT BACKLOG. Nothing in src/ imports this and nothing implements the subsystem it describes. Keep it as the design of record until the subsystem is built, then wire it and reclassify as SHIPPED_SURFACE — or delete it, which is recoverable and is the cheaper answer if the wave it belongs to is not going to happen.",
       "justification": "Richest freshness/contradiction model in the repo, with no importer.",
       "defectSignatures": ["export function buildRuntimeEvidenceGraph\\b"]
     },
     {
       "path": "src/frameworks/universal-pack-contract.ts",
-      "classification": "CONTRACT_ONLY",
+      "classification": "UNIMPLEMENTED_SPEC",
       "shippedSurface": false,
       "owner": "maintainers",
       "reviewBy": "2026-12-31",
-      "removalPlan": "V5-092 — ship a pack loader so a pack can extend the capability matrix without an engine edit.",
+      "removalPlan": "SPECIFICATION, NOT BACKLOG. Nothing in src/ imports this and nothing implements the subsystem it describes. Keep it as the design of record until the subsystem is built, then wire it and reclassify as SHIPPED_SURFACE — or delete it, which is recoverable and is the cheaper answer if the wave it belongs to is not going to happen.",
       "justification": "Pack format only: no pack loader and no pack registry exist.",
       "defectSignatures": [
         "export function createUniversalFrameworkPackFactoryRecord\\b"
@@ -206,41 +207,41 @@
     },
     {
       "path": "src/governance/m33-m34-contract.ts",
-      "classification": "CONTRACT_ONLY",
+      "classification": "UNIMPLEMENTED_SPEC",
       "shippedSurface": false,
       "owner": "maintainers",
       "reviewBy": "2026-12-31",
-      "removalPlan": "Deferred past 5.0 — hosted governance is explicitly out of the 5.0 scope.",
+      "removalPlan": "SPECIFICATION, NOT BACKLOG. Nothing in src/ imports this and nothing implements the subsystem it describes. Keep it as the design of record until the subsystem is built, then wire it and reclassify as SHIPPED_SURFACE — or delete it, which is recoverable and is the cheaper answer if the wave it belongs to is not going to happen.",
       "justification": "Governance contract with no executor; contract test only.",
       "defectSignatures": ["export function createM33ControlPlaneRecord\\b"]
     },
     {
       "path": "src/mutation/failure-sensitivity.ts",
-      "classification": "CONTRACT_ONLY",
+      "classification": "UNIMPLEMENTED_SPEC",
       "shippedSurface": false,
       "owner": "maintainers",
       "reviewBy": "2026-12-31",
-      "removalPlan": "V5-062 — integrate so surviving mutants and errored mutants lower trust in the proof.",
+      "removalPlan": "SPECIFICATION, NOT BACKLOG. Nothing in src/ imports this and nothing implements the subsystem it describes. Keep it as the design of record until the subsystem is built, then wire it and reclassify as SHIPPED_SURFACE — or delete it, which is recoverable and is the cheaper answer if the wave it belongs to is not going to happen.",
       "justification": "Sensitivity model with no production caller.",
       "defectSignatures": ["export function assessFailureSensitivity\\b"]
     },
     {
       "path": "src/plugins/sdk-contract.ts",
-      "classification": "CONTRACT_ONLY",
+      "classification": "UNIMPLEMENTED_SPEC",
       "shippedSurface": false,
       "owner": "maintainers",
       "reviewBy": "2026-12-31",
-      "removalPlan": "V5-091 — enforce inside src/plugins/load.ts so the SDK becomes the real security boundary.",
+      "removalPlan": "SPECIFICATION, NOT BACKLOG. Nothing in src/ imports this and nothing implements the subsystem it describes. Keep it as the design of record until the subsystem is built, then wire it and reclassify as SHIPPED_SURFACE — or delete it, which is recoverable and is the cheaper answer if the wave it belongs to is not going to happen.",
       "justification": "The SDK schema is not enforced by the loader that actually requires plugins.",
       "defectSignatures": ["export function pluginManifestSigningPayload\\b"]
     },
     {
       "path": "src/qa/domain-model.ts",
-      "classification": "CONTRACT_ONLY",
+      "classification": "UNIMPLEMENTED_SPEC",
       "shippedSurface": false,
       "owner": "maintainers",
       "reviewBy": "2026-12-31",
-      "removalPlan": "V5-022 — promote src/engine/qa-model.ts to the IR seam; retire the duplicate domain model.",
+      "removalPlan": "SPECIFICATION, NOT BACKLOG. Nothing in src/ imports this and nothing implements the subsystem it describes. Keep it as the design of record until the subsystem is built, then wire it and reclassify as SHIPPED_SURFACE — or delete it, which is recoverable and is the cheaper answer if the wave it belongs to is not going to happen.",
       "justification": "Ships honest UNSUPPORTED/NONE states, but no production importer.",
       "defectSignatures": ["export function validateQaDomainModel\\b"]
     },

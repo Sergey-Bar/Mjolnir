@@ -117,9 +117,16 @@ function main() {
           ceiling: ledger.policy.shippedSurfaceCeiling,
         },
         contractOnly: {
-          now: contractOnly.length,
-          ceiling,
-          remaining: contractOnly.map((e) => e.path),
+          now: ledger.entries.filter(
+            (e) => e.classification === "CONTRACT_ONLY",
+          ).length,
+          ceiling: ledger.policy.contractOnlyCeiling,
+        },
+        unimplementedSpecs: {
+          now: ledger.entries.filter(
+            (e) => e.classification === "UNIMPLEMENTED_SPEC",
+          ).length,
+          declared: ledger.policy.unimplementedSpecs,
         },
       },
       null,
