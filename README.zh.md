@@ -28,9 +28,9 @@ npx mjolnir-qa@3.0.0
 
 [English](README.md) | 简体中文 | [繁體中文](README.zht.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | [日本語](README.ja.md) | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | [Türkçe](README.tr.md) | [Українська](README.uk.md) | [বাংলা](README.bn.md) | [Ελληνικά](README.gr.md) | [Tiếng Việt](README.vi.md) | [עברית](README.he.md) | [العربية](README.ar.md) | [Bosanski](README.bs.md)
 
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-26.
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-30.
 
-<!-- Source hash: `de04dfb1677b` -->
+<!-- Source hash: `731ad1e38237` -->
 
 </details>
 
@@ -189,28 +189,30 @@ npx mjolnir-qa@3.0.0 --scope changed
 
 `mjolnir ci install` 会把它写成一个 GitHub Actions workflow，使用固定在 `v3` 主版本标签上的 [action](https://github.com/Sergey-Bar/Mjolnir#readme)（或使用 `--no-action` 改用普通 `npx`）。在你决定让它拦截之前，它始终只是建议性的。
 
-| 命令                                          | 作用                                           |
-| --------------------------------------------- | ---------------------------------------------- |
-| `mjolnir`                                     | Trust Report：结论、置信度、下一步行动         |
-| `mjolnir --scope changed`                     | 只检查你的分支引入的内容（CI 用法）            |
-| `mjolnir ci install`                          | 生成建议性的 PR workflow（基于 action）        |
-| `mjolnir release-trust`                       | 12-dimension release assurance verdict         |
-| `mjolnir trend`                               | Record, show, or diff local quality snapshots  |
-| `mjolnir policy`                              | Initialize, validate, or check policy gates    |
-| `mjolnir analyze --cross-file`                | Bounded cross-file analysis                    |
-| `mjolnir ci-adapter github .`                 | Generate CI templates for supported providers  |
-| `mjolnir dashboard`                           | Generate a self-contained quality dashboard    |
-| `mjolnir exec-report`                         | Executive KPIs and recommendations (advisory)  |
-| `mjolnir mutation tests/mutation-report.json` | Analyze mutation reports; never promotes trust |
-| `mjolnir mcp`                                 | Read-only MCP tools over stdio                 |
-| `mjolnir explain QA-CI-001`                   | 是什么、为什么、怎么修，外加实测 FP 率         |
-| `mjolnir why src/a.spec.ts:42`                | 解释这一行为什么被标记。从不拦截。             |
-| `mjolnir forensics ./test-results/`           | 来自真实运行的运行时证据                       |
-| `mjolnir trust-report`                        | 自包含的 Trust Artifact（md + json）           |
-| `mjolnir handoff`                             | 给编码智能体的修复计划                         |
-| `mjolnir --json` / `--format sarif`           | 机器可读输出，GitHub Code Scanning             |
-| `mjolnir --format codequality`                | GitLab Code Quality 报告（MR 组件所用的产物）  |
-| `mjolnir --strict`                            | 同时运行 quarantine 级别的规则（FP 风险更高）  |
+| 命令                                          | 作用                                                     |
+| --------------------------------------------- | -------------------------------------------------------- |
+| `mjolnir`                                     | Trust Report：结论、置信度、下一步行动                   |
+| `mjolnir --scope changed`                     | 只检查你的分支引入的内容（CI 用法）                      |
+| `mjolnir ci install`                          | 生成建议性的 PR workflow（基于 action）                  |
+| `mjolnir release-trust`                       | 12-dimension release assurance verdict                   |
+| `mjolnir diff`                                | What changed against the stored baseline, by fingerprint |
+| `mjolnir verify`                              | Digest of what a change resolved and what it introduced  |
+| `mjolnir trend`                               | Record, show, or diff local quality snapshots            |
+| `mjolnir policy`                              | Initialize, validate, or check policy gates              |
+| `mjolnir analyze --cross-file`                | Bounded cross-file analysis                              |
+| `mjolnir ci-adapter github .`                 | Generate CI templates for supported providers            |
+| `mjolnir dashboard`                           | Generate a self-contained quality dashboard              |
+| `mjolnir exec-report`                         | Executive KPIs and recommendations (advisory)            |
+| `mjolnir mutation tests/mutation-report.json` | Analyze mutation reports; never promotes trust           |
+| `mjolnir mcp`                                 | Read-only MCP tools over stdio                           |
+| `mjolnir explain QA-CI-001`                   | 是什么、为什么、怎么修，外加实测 FP 率                   |
+| `mjolnir why src/a.spec.ts:42`                | 解释这一行为什么被标记。从不拦截。                       |
+| `mjolnir forensics ./test-results/`           | 来自真实运行的运行时证据                                 |
+| `mjolnir trust-report`                        | 自包含的 Trust Artifact（md + json）                     |
+| `mjolnir handoff`                             | 给编码智能体的修复计划                                   |
+| `mjolnir --json` / `--format sarif`           | 机器可读输出，GitHub Code Scanning                       |
+| `mjolnir --format codequality`                | GitLab Code Quality 报告（MR 组件所用的产物）            |
+| `mjolnir --strict`                            | 同时运行 quarantine 级别的规则（FP 风险更高）            |
 
 <details>
 <summary><strong>其他所有命令</strong> — 不稳定测试分诊、报告、治理</summary>

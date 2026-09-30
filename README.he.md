@@ -28,9 +28,9 @@ npx mjolnir-qa@3.0.0
 
 [English](README.md) | [简体中文](README.zh.md) | [繁體中文](README.zht.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | [日本語](README.ja.md) | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | [Türkçe](README.tr.md) | [Українська](README.uk.md) | [বাংলা](README.bn.md) | [Ελληνικά](README.gr.md) | [Tiếng Việt](README.vi.md) | עברית | [العربية](README.ar.md) | [Bosanski](README.bs.md)
 
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-26.
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-30.
 
-<!-- Source hash: `de04dfb1677b` -->
+<!-- Source hash: `731ad1e38237` -->
 
 </details>
 
@@ -189,28 +189,30 @@ npx mjolnir-qa@3.0.0 --scope changed
 
 ‏`mjolnir ci install` כותב את זה כ-workflow של GitHub Actions, עם ה-[action](https://github.com/Sergey-Bar/Mjolnir#readme) מקובע לתגית הראשית `v3` (או `npx` רגיל עם `--no-action`). הוא נשאר מייעץ עד שתחליטו שהוא צריך לחסום.
 
-| פקודה                                         | מה היא עושה                                        |
-| --------------------------------------------- | -------------------------------------------------- |
-| `mjolnir`                                     | ‏Trust Report: פסק דין, רמת ביטחון, הצעד הבא       |
-| `mjolnir --scope changed`                     | רק מה שהענף שלכם הכניס (הצורה ל-CI)                |
-| `mjolnir ci install`                          | יוצר את ה-workflow המייעץ ל-PR (מבוסס action)      |
-| `mjolnir release-trust`                       | 12-dimension release assurance verdict             |
-| `mjolnir trend`                               | Record, show, or diff local quality snapshots      |
-| `mjolnir policy`                              | Initialize, validate, or check policy gates        |
-| `mjolnir analyze --cross-file`                | Bounded cross-file analysis                        |
-| `mjolnir ci-adapter github .`                 | Generate CI templates for supported providers      |
-| `mjolnir dashboard`                           | Generate a self-contained quality dashboard        |
-| `mjolnir exec-report`                         | Executive KPIs and recommendations (advisory)      |
-| `mjolnir mutation tests/mutation-report.json` | Analyze mutation reports; never promotes trust     |
-| `mjolnir mcp`                                 | Read-only MCP tools over stdio                     |
-| `mjolnir explain QA-CI-001`                   | מה, למה ואיך מתקנים, וגם שיעור ה-FP הנמדד          |
-| `mjolnir why src/a.spec.ts:42`                | למה סומנה בדיוק השורה הזו. אף פעם לא חוסם.         |
-| `mjolnir forensics ./test-results/`           | ראיות זמן ריצה מריצה אמיתית                        |
-| `mjolnir trust-report`                        | ‏Trust Artifact עצמאי (md + json)                  |
-| `mjolnir handoff`                             | תוכנית תיקון לסוכן קוד                             |
-| `mjolnir --json` / `--format sarif`           | פלט קריא למכונה, GitHub Code Scanning              |
-| `mjolnir --format codequality`                | דוח GitLab Code Quality (ארטיפקט לווידג'ט של ה-MR) |
-| `mjolnir --strict`                            | מריץ גם כללים ברמת quarantine (סיכון FP גבוה יותר) |
+| פקודה                                         | מה היא עושה                                              |
+| --------------------------------------------- | -------------------------------------------------------- |
+| `mjolnir`                                     | ‏Trust Report: פסק דין, רמת ביטחון, הצעד הבא             |
+| `mjolnir --scope changed`                     | רק מה שהענף שלכם הכניס (הצורה ל-CI)                      |
+| `mjolnir ci install`                          | יוצר את ה-workflow המייעץ ל-PR (מבוסס action)            |
+| `mjolnir release-trust`                       | 12-dimension release assurance verdict                   |
+| `mjolnir diff`                                | What changed against the stored baseline, by fingerprint |
+| `mjolnir verify`                              | Digest of what a change resolved and what it introduced  |
+| `mjolnir trend`                               | Record, show, or diff local quality snapshots            |
+| `mjolnir policy`                              | Initialize, validate, or check policy gates              |
+| `mjolnir analyze --cross-file`                | Bounded cross-file analysis                              |
+| `mjolnir ci-adapter github .`                 | Generate CI templates for supported providers            |
+| `mjolnir dashboard`                           | Generate a self-contained quality dashboard              |
+| `mjolnir exec-report`                         | Executive KPIs and recommendations (advisory)            |
+| `mjolnir mutation tests/mutation-report.json` | Analyze mutation reports; never promotes trust           |
+| `mjolnir mcp`                                 | Read-only MCP tools over stdio                           |
+| `mjolnir explain QA-CI-001`                   | מה, למה ואיך מתקנים, וגם שיעור ה-FP הנמדד                |
+| `mjolnir why src/a.spec.ts:42`                | למה סומנה בדיוק השורה הזו. אף פעם לא חוסם.               |
+| `mjolnir forensics ./test-results/`           | ראיות זמן ריצה מריצה אמיתית                              |
+| `mjolnir trust-report`                        | ‏Trust Artifact עצמאי (md + json)                        |
+| `mjolnir handoff`                             | תוכנית תיקון לסוכן קוד                                   |
+| `mjolnir --json` / `--format sarif`           | פלט קריא למכונה, GitHub Code Scanning                    |
+| `mjolnir --format codequality`                | דוח GitLab Code Quality (ארטיפקט לווידג'ט של ה-MR)       |
+| `mjolnir --strict`                            | מריץ גם כללים ברמת quarantine (סיכון FP גבוה יותר)       |
 
 <details>
 <summary><strong>כל שאר הפקודות</strong> — מיון בדיקות לא יציבות, דיווח, ממשל</summary>

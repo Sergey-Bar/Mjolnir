@@ -28,9 +28,9 @@ npx mjolnir-qa@3.0.0
 
 [English](README.md) | [简体中文](README.zh.md) | [繁體中文](README.zht.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | [日本語](README.ja.md) | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | [Türkçe](README.tr.md) | [Українська](README.uk.md) | [বাংলা](README.bn.md) | [Ελληνικά](README.gr.md) | Tiếng Việt | [עברית](README.he.md) | [العربية](README.ar.md) | [Bosanski](README.bs.md)
 
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-26.
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-30.
 
-<!-- Source hash: `de04dfb1677b` -->
+<!-- Source hash: `731ad1e38237` -->
 
 </details>
 
@@ -189,28 +189,30 @@ npx mjolnir-qa@3.0.0 --scope changed
 
 `mjolnir ci install` ghi điều đó thành một workflow GitHub Actions, dùng [action](https://github.com/Sergey-Bar/Mjolnir#readme) được ghim vào tag chính `v3` (hoặc `npx` thuần với `--no-action`). Nó chỉ mang tính tư vấn cho đến khi bạn quyết định nó nên chặn.
 
-| Lệnh                                          | Chức năng                                              |
-| --------------------------------------------- | ------------------------------------------------------ |
-| `mjolnir`                                     | Trust Report: kết luận, độ tin, hành động tiếp theo    |
-| `mjolnir --scope changed`                     | Chỉ những gì nhánh của bạn đưa vào (dạng dùng cho CI)  |
-| `mjolnir ci install`                          | Tạo workflow PR mang tính tư vấn (dựa trên action)     |
-| `mjolnir release-trust`                       | 12-dimension release assurance verdict                 |
-| `mjolnir trend`                               | Record, show, or diff local quality snapshots          |
-| `mjolnir policy`                              | Initialize, validate, or check policy gates            |
-| `mjolnir analyze --cross-file`                | Bounded cross-file analysis                            |
-| `mjolnir ci-adapter github .`                 | Generate CI templates for supported providers          |
-| `mjolnir dashboard`                           | Generate a self-contained quality dashboard            |
-| `mjolnir exec-report`                         | Executive KPIs and recommendations (advisory)          |
-| `mjolnir mutation tests/mutation-report.json` | Analyze mutation reports; never promotes trust         |
-| `mjolnir mcp`                                 | Read-only MCP tools over stdio                         |
-| `mjolnir explain QA-CI-001`                   | Cái gì, vì sao và cách sửa, kèm tỷ lệ FP đã đo         |
-| `mjolnir why src/a.spec.ts:42`                | Vì sao chính dòng này bị đánh dấu. Không bao giờ chặn. |
-| `mjolnir forensics ./test-results/`           | Bằng chứng runtime từ một lần chạy thật                |
-| `mjolnir trust-report`                        | Trust Artifact độc lập (md + json)                     |
-| `mjolnir handoff`                             | Kế hoạch khắc phục cho tác tử lập trình                |
-| `mjolnir --json` / `--format sarif`           | Đầu ra máy đọc được, GitHub Code Scanning              |
-| `mjolnir --format codequality`                | Báo cáo GitLab Code Quality (artifact cho widget MR)   |
-| `mjolnir --strict`                            | Chạy cả các quy tắc cấp quarantine (rủi ro FP cao hơn) |
+| Lệnh                                          | Chức năng                                                |
+| --------------------------------------------- | -------------------------------------------------------- |
+| `mjolnir`                                     | Trust Report: kết luận, độ tin, hành động tiếp theo      |
+| `mjolnir --scope changed`                     | Chỉ những gì nhánh của bạn đưa vào (dạng dùng cho CI)    |
+| `mjolnir ci install`                          | Tạo workflow PR mang tính tư vấn (dựa trên action)       |
+| `mjolnir release-trust`                       | 12-dimension release assurance verdict                   |
+| `mjolnir diff`                                | What changed against the stored baseline, by fingerprint |
+| `mjolnir verify`                              | Digest of what a change resolved and what it introduced  |
+| `mjolnir trend`                               | Record, show, or diff local quality snapshots            |
+| `mjolnir policy`                              | Initialize, validate, or check policy gates              |
+| `mjolnir analyze --cross-file`                | Bounded cross-file analysis                              |
+| `mjolnir ci-adapter github .`                 | Generate CI templates for supported providers            |
+| `mjolnir dashboard`                           | Generate a self-contained quality dashboard              |
+| `mjolnir exec-report`                         | Executive KPIs and recommendations (advisory)            |
+| `mjolnir mutation tests/mutation-report.json` | Analyze mutation reports; never promotes trust           |
+| `mjolnir mcp`                                 | Read-only MCP tools over stdio                           |
+| `mjolnir explain QA-CI-001`                   | Cái gì, vì sao và cách sửa, kèm tỷ lệ FP đã đo           |
+| `mjolnir why src/a.spec.ts:42`                | Vì sao chính dòng này bị đánh dấu. Không bao giờ chặn.   |
+| `mjolnir forensics ./test-results/`           | Bằng chứng runtime từ một lần chạy thật                  |
+| `mjolnir trust-report`                        | Trust Artifact độc lập (md + json)                       |
+| `mjolnir handoff`                             | Kế hoạch khắc phục cho tác tử lập trình                  |
+| `mjolnir --json` / `--format sarif`           | Đầu ra máy đọc được, GitHub Code Scanning                |
+| `mjolnir --format codequality`                | Báo cáo GitLab Code Quality (artifact cho widget MR)     |
+| `mjolnir --strict`                            | Chạy cả các quy tắc cấp quarantine (rủi ro FP cao hơn)   |
 
 <details>
 <summary><strong>Mọi lệnh khác</strong> — phân loại test chập chờn, báo cáo, quản trị</summary>

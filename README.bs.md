@@ -28,9 +28,9 @@ npx mjolnir-qa@3.0.0
 
 [English](README.md) | [简体中文](README.zh.md) | [繁體中文](README.zht.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | [日本語](README.ja.md) | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | [Türkçe](README.tr.md) | [Українська](README.uk.md) | [বাংলা](README.bn.md) | [Ελληνικά](README.gr.md) | [Tiếng Việt](README.vi.md) | [עברית](README.he.md) | [العربية](README.ar.md) | Bosanski
 
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-26.
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-30.
 
-<!-- Source hash: `de04dfb1677b` -->
+<!-- Source hash: `731ad1e38237` -->
 
 </details>
 
@@ -189,28 +189,30 @@ npx mjolnir-qa@3.0.0 --scope changed
 
 `mjolnir ci install` to zapisuje kao GitHub Actions workflow, koristeći [action](https://github.com/Sergey-Bar/Mjolnir#readme) prikovan za glavni tag `v3` (ili obični `npx` s `--no-action`). Ostaje savjetodavan dok ne odlučite da treba blokirati.
 
-| Naredba                                       | Šta radi                                                |
-| --------------------------------------------- | ------------------------------------------------------- |
-| `mjolnir`                                     | Trust Report: presuda, pouzdanost, sljedeći korak       |
-| `mjolnir --scope changed`                     | Samo ono što je vaša grana uvela (CI oblik)             |
-| `mjolnir ci install`                          | Generiše savjetodavni PR workflow (zasnovan na actionu) |
-| `mjolnir release-trust`                       | 12-dimension release assurance verdict                  |
-| `mjolnir trend`                               | Record, show, or diff local quality snapshots           |
-| `mjolnir policy`                              | Initialize, validate, or check policy gates             |
-| `mjolnir analyze --cross-file`                | Bounded cross-file analysis                             |
-| `mjolnir ci-adapter github .`                 | Generate CI templates for supported providers           |
-| `mjolnir dashboard`                           | Generate a self-contained quality dashboard             |
-| `mjolnir exec-report`                         | Executive KPIs and recommendations (advisory)           |
-| `mjolnir mutation tests/mutation-report.json` | Analyze mutation reports; never promotes trust          |
-| `mjolnir mcp`                                 | Read-only MCP tools over stdio                          |
-| `mjolnir explain QA-CI-001`                   | Šta, zašto i ispravka, plus izmjerena FP stopa          |
-| `mjolnir why src/a.spec.ts:42`                | Zašto je baš ovaj red označen. Nikad ne blokira.        |
-| `mjolnir forensics ./test-results/`           | Dokazi iz stvarnog pokretanja                           |
-| `mjolnir trust-report`                        | Samostalni Trust Artifact (md + json)                   |
-| `mjolnir handoff`                             | Plan sanacije za agenta za kodiranje                    |
-| `mjolnir --json` / `--format sarif`           | Mašinski čitljiv izlaz, GitHub Code Scanning            |
-| `mjolnir --format codequality`                | GitLab Code Quality izvještaj (artefakt MR widgeta)     |
-| `mjolnir --strict`                            | Pokreće i pravila nivoa quarantine (veći FP rizik)      |
+| Naredba                                       | Šta radi                                                 |
+| --------------------------------------------- | -------------------------------------------------------- |
+| `mjolnir`                                     | Trust Report: presuda, pouzdanost, sljedeći korak        |
+| `mjolnir --scope changed`                     | Samo ono što je vaša grana uvela (CI oblik)              |
+| `mjolnir ci install`                          | Generiše savjetodavni PR workflow (zasnovan na actionu)  |
+| `mjolnir release-trust`                       | 12-dimension release assurance verdict                   |
+| `mjolnir diff`                                | What changed against the stored baseline, by fingerprint |
+| `mjolnir verify`                              | Digest of what a change resolved and what it introduced  |
+| `mjolnir trend`                               | Record, show, or diff local quality snapshots            |
+| `mjolnir policy`                              | Initialize, validate, or check policy gates              |
+| `mjolnir analyze --cross-file`                | Bounded cross-file analysis                              |
+| `mjolnir ci-adapter github .`                 | Generate CI templates for supported providers            |
+| `mjolnir dashboard`                           | Generate a self-contained quality dashboard              |
+| `mjolnir exec-report`                         | Executive KPIs and recommendations (advisory)            |
+| `mjolnir mutation tests/mutation-report.json` | Analyze mutation reports; never promotes trust           |
+| `mjolnir mcp`                                 | Read-only MCP tools over stdio                           |
+| `mjolnir explain QA-CI-001`                   | Šta, zašto i ispravka, plus izmjerena FP stopa           |
+| `mjolnir why src/a.spec.ts:42`                | Zašto je baš ovaj red označen. Nikad ne blokira.         |
+| `mjolnir forensics ./test-results/`           | Dokazi iz stvarnog pokretanja                            |
+| `mjolnir trust-report`                        | Samostalni Trust Artifact (md + json)                    |
+| `mjolnir handoff`                             | Plan sanacije za agenta za kodiranje                     |
+| `mjolnir --json` / `--format sarif`           | Mašinski čitljiv izlaz, GitHub Code Scanning             |
+| `mjolnir --format codequality`                | GitLab Code Quality izvještaj (artefakt MR widgeta)      |
+| `mjolnir --strict`                            | Pokreće i pravila nivoa quarantine (veći FP rizik)       |
 
 <details>
 <summary><strong>Sve ostale naredbe</strong> — trijaža nestabilnih testova, izvještavanje, upravljanje</summary>

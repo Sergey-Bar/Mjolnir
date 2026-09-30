@@ -28,9 +28,9 @@ npx mjolnir-qa@3.0.0
 
 [English](README.md) | [简体中文](README.zh.md) | [繁體中文](README.zht.md) | 한국어 | [Deutsch](README.de.md) | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | [日本語](README.ja.md) | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | [Türkçe](README.tr.md) | [Українська](README.uk.md) | [বাংলা](README.bn.md) | [Ελληνικά](README.gr.md) | [Tiếng Việt](README.vi.md) | [עברית](README.he.md) | [العربية](README.ar.md) | [Bosanski](README.bs.md)
 
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-26.
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-30.
 
-<!-- Source hash: `de04dfb1677b` -->
+<!-- Source hash: `731ad1e38237` -->
 
 </details>
 
@@ -189,28 +189,30 @@ npx mjolnir-qa@3.0.0 --scope changed
 
 `mjolnir ci install`은 이를 GitHub Actions workflow로 작성하며, 메이저 태그 `v3`에 고정된 [action](https://github.com/Sergey-Bar/Mjolnir#readme)을 사용합니다 (`--no-action`을 쓰면 일반 `npx`). 차단해야 한다고 결정하기 전까지는 권고 모드로 유지됩니다.
 
-| 명령                                          | 하는 일                                         |
-| --------------------------------------------- | ----------------------------------------------- |
-| `mjolnir`                                     | Trust Report: 판정, 확신도, 다음 조치           |
-| `mjolnir --scope changed`                     | 브랜치가 도입한 부분만 (CI용 형태)              |
-| `mjolnir ci install`                          | 권고용 PR workflow 생성 (action 기반)           |
-| `mjolnir release-trust`                       | 12-dimension release assurance verdict          |
-| `mjolnir trend`                               | Record, show, or diff local quality snapshots   |
-| `mjolnir policy`                              | Initialize, validate, or check policy gates     |
-| `mjolnir analyze --cross-file`                | Bounded cross-file analysis                     |
-| `mjolnir ci-adapter github .`                 | Generate CI templates for supported providers   |
-| `mjolnir dashboard`                           | Generate a self-contained quality dashboard     |
-| `mjolnir exec-report`                         | Executive KPIs and recommendations (advisory)   |
-| `mjolnir mutation tests/mutation-report.json` | Analyze mutation reports; never promotes trust  |
-| `mjolnir mcp`                                 | Read-only MCP tools over stdio                  |
-| `mjolnir explain QA-CI-001`                   | 무엇이, 왜, 어떻게 고치는지와 측정된 FP 비율    |
-| `mjolnir why src/a.spec.ts:42`                | 바로 이 줄이 표시된 이유. 차단하지 않습니다.    |
-| `mjolnir forensics ./test-results/`           | 실제 실행에서 얻은 런타임 증거                  |
-| `mjolnir trust-report`                        | 독립형 Trust Artifact (md + json)               |
-| `mjolnir handoff`                             | 코딩 에이전트를 위한 수정 계획                  |
-| `mjolnir --json` / `--format sarif`           | 기계가 읽을 수 있는 출력, GitHub Code Scanning  |
-| `mjolnir --format codequality`                | GitLab Code Quality 리포트 (MR 위젯 아티팩트)   |
-| `mjolnir --strict`                            | quarantine 등급 규칙도 실행 (FP 위험이 더 높음) |
+| 명령                                          | 하는 일                                                  |
+| --------------------------------------------- | -------------------------------------------------------- |
+| `mjolnir`                                     | Trust Report: 판정, 확신도, 다음 조치                    |
+| `mjolnir --scope changed`                     | 브랜치가 도입한 부분만 (CI용 형태)                       |
+| `mjolnir ci install`                          | 권고용 PR workflow 생성 (action 기반)                    |
+| `mjolnir release-trust`                       | 12-dimension release assurance verdict                   |
+| `mjolnir diff`                                | What changed against the stored baseline, by fingerprint |
+| `mjolnir verify`                              | Digest of what a change resolved and what it introduced  |
+| `mjolnir trend`                               | Record, show, or diff local quality snapshots            |
+| `mjolnir policy`                              | Initialize, validate, or check policy gates              |
+| `mjolnir analyze --cross-file`                | Bounded cross-file analysis                              |
+| `mjolnir ci-adapter github .`                 | Generate CI templates for supported providers            |
+| `mjolnir dashboard`                           | Generate a self-contained quality dashboard              |
+| `mjolnir exec-report`                         | Executive KPIs and recommendations (advisory)            |
+| `mjolnir mutation tests/mutation-report.json` | Analyze mutation reports; never promotes trust           |
+| `mjolnir mcp`                                 | Read-only MCP tools over stdio                           |
+| `mjolnir explain QA-CI-001`                   | 무엇이, 왜, 어떻게 고치는지와 측정된 FP 비율             |
+| `mjolnir why src/a.spec.ts:42`                | 바로 이 줄이 표시된 이유. 차단하지 않습니다.             |
+| `mjolnir forensics ./test-results/`           | 실제 실행에서 얻은 런타임 증거                           |
+| `mjolnir trust-report`                        | 독립형 Trust Artifact (md + json)                        |
+| `mjolnir handoff`                             | 코딩 에이전트를 위한 수정 계획                           |
+| `mjolnir --json` / `--format sarif`           | 기계가 읽을 수 있는 출력, GitHub Code Scanning           |
+| `mjolnir --format codequality`                | GitLab Code Quality 리포트 (MR 위젯 아티팩트)            |
+| `mjolnir --strict`                            | quarantine 등급 규칙도 실행 (FP 위험이 더 높음)          |
 
 <details>
 <summary><strong>그 밖의 모든 명령</strong> — 불안정한 테스트 분류, 리포트, 거버넌스</summary>

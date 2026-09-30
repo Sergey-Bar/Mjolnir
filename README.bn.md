@@ -28,9 +28,9 @@ npx mjolnir-qa@3.0.0
 
 [English](README.md) | [简体中文](README.zh.md) | [繁體中文](README.zht.md) | [한국어](README.ko.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [Dansk](README.da.md) | [日本語](README.ja.md) | [Polski](README.pl.md) | [Русский](README.ru.md) | [Norsk](README.no.md) | [Português (Brasil)](README.br.md) | [ไทย](README.th.md) | [Türkçe](README.tr.md) | [Українська](README.uk.md) | বাংলা | [Ελληνικά](README.gr.md) | [Tiếng Việt](README.vi.md) | [עברית](README.he.md) | [العربية](README.ar.md) | [Bosanski](README.bs.md)
 
-> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-26.
+> 🤖 Machine-assisted translation. The [English README](README.md) is canonical. Last synced: 2026-09-30.
 
-<!-- Source hash: `de04dfb1677b` -->
+<!-- Source hash: `731ad1e38237` -->
 
 </details>
 
@@ -189,28 +189,30 @@ npx mjolnir-qa@3.0.0 --scope changed
 
 `mjolnir ci install` এটিকে একটি GitHub Actions workflow হিসেবে লেখে, `v3` মেজর ট্যাগে পিন করা [action](https://github.com/Sergey-Bar/Mjolnir#readme) ব্যবহার করে (অথবা `--no-action` সহ সাধারণ `npx`)। এটি ততক্ষণ পরামর্শমূলক থাকে যতক্ষণ না আপনি সিদ্ধান্ত নেন এটি ব্লক করা উচিত।
 
-| কমান্ড                                        | এটি কী করে                                             |
-| --------------------------------------------- | ------------------------------------------------------ |
-| `mjolnir`                                     | Trust Report: রায়, আস্থা, পরবর্তী পদক্ষেপ             |
-| `mjolnir --scope changed`                     | শুধু আপনার ব্রাঞ্চ যা এনেছে (CI ফর্ম)                  |
-| `mjolnir ci install`                          | পরামর্শমূলক PR workflow তৈরি করে (action-ভিত্তিক)      |
-| `mjolnir release-trust`                       | 12-dimension release assurance verdict                 |
-| `mjolnir trend`                               | Record, show, or diff local quality snapshots          |
-| `mjolnir policy`                              | Initialize, validate, or check policy gates            |
-| `mjolnir analyze --cross-file`                | Bounded cross-file analysis                            |
-| `mjolnir ci-adapter github .`                 | Generate CI templates for supported providers          |
-| `mjolnir dashboard`                           | Generate a self-contained quality dashboard            |
-| `mjolnir exec-report`                         | Executive KPIs and recommendations (advisory)          |
-| `mjolnir mutation tests/mutation-report.json` | Analyze mutation reports; never promotes trust         |
-| `mjolnir mcp`                                 | Read-only MCP tools over stdio                         |
-| `mjolnir explain QA-CI-001`                   | কী, কেন, এবং ফিক্স, প্লাস পরিমাপ করা FP হার            |
-| `mjolnir why src/a.spec.ts:42`                | ঠিক এই লাইনটি কেন ফ্ল্যাগ করা হয়েছে। কখনো গেট করে না। |
-| `mjolnir forensics ./test-results/`           | একটি প্রকৃত রান থেকে রানটাইম প্রমাণ                    |
-| `mjolnir trust-report`                        | স্বয়ংসম্পূর্ণ Trust Artifact (md + json)              |
-| `mjolnir handoff`                             | একটি কোডিং এজেন্টের জন্য প্রতিকার পরিকল্পনা            |
-| `mjolnir --json` / `--format sarif`           | মেশিন-পাঠযোগ্য আউটপুট, GitHub Code Scanning            |
-| `mjolnir --format codequality`                | GitLab Code Quality রিপোর্ট (MR widget artifact)       |
-| `mjolnir --strict`                            | quarantine-tier নিয়মও চালায় (উচ্চতর FP ঝুঁকি)        |
+| কমান্ড                                        | এটি কী করে                                               |
+| --------------------------------------------- | -------------------------------------------------------- |
+| `mjolnir`                                     | Trust Report: রায়, আস্থা, পরবর্তী পদক্ষেপ               |
+| `mjolnir --scope changed`                     | শুধু আপনার ব্রাঞ্চ যা এনেছে (CI ফর্ম)                    |
+| `mjolnir ci install`                          | পরামর্শমূলক PR workflow তৈরি করে (action-ভিত্তিক)        |
+| `mjolnir release-trust`                       | 12-dimension release assurance verdict                   |
+| `mjolnir diff`                                | What changed against the stored baseline, by fingerprint |
+| `mjolnir verify`                              | Digest of what a change resolved and what it introduced  |
+| `mjolnir trend`                               | Record, show, or diff local quality snapshots            |
+| `mjolnir policy`                              | Initialize, validate, or check policy gates              |
+| `mjolnir analyze --cross-file`                | Bounded cross-file analysis                              |
+| `mjolnir ci-adapter github .`                 | Generate CI templates for supported providers            |
+| `mjolnir dashboard`                           | Generate a self-contained quality dashboard              |
+| `mjolnir exec-report`                         | Executive KPIs and recommendations (advisory)            |
+| `mjolnir mutation tests/mutation-report.json` | Analyze mutation reports; never promotes trust           |
+| `mjolnir mcp`                                 | Read-only MCP tools over stdio                           |
+| `mjolnir explain QA-CI-001`                   | কী, কেন, এবং ফিক্স, প্লাস পরিমাপ করা FP হার              |
+| `mjolnir why src/a.spec.ts:42`                | ঠিক এই লাইনটি কেন ফ্ল্যাগ করা হয়েছে। কখনো গেট করে না।   |
+| `mjolnir forensics ./test-results/`           | একটি প্রকৃত রান থেকে রানটাইম প্রমাণ                      |
+| `mjolnir trust-report`                        | স্বয়ংসম্পূর্ণ Trust Artifact (md + json)                |
+| `mjolnir handoff`                             | একটি কোডিং এজেন্টের জন্য প্রতিকার পরিকল্পনা              |
+| `mjolnir --json` / `--format sarif`           | মেশিন-পাঠযোগ্য আউটপুট, GitHub Code Scanning              |
+| `mjolnir --format codequality`                | GitLab Code Quality রিপোর্ট (MR widget artifact)         |
+| `mjolnir --strict`                            | quarantine-tier নিয়মও চালায় (উচ্চতর FP ঝুঁকি)          |
 
 <details>
 <summary><strong>অন্য সব কমান্ড</strong> — flake triage, রিপোর্টিং, গভর্নেন্স</summary>
