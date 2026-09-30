@@ -2,7 +2,7 @@
 
 **Generated — do not edit by hand.** Regenerate: `npm run docs:v6-inventory`.
 
-Baseline commit `d17027be65cab65c2026faca8b42ba84cf1bdc98` · package version `5.0.0` · published stable `5.0.0`.
+Baseline commit `a806496160aeefe64c1795823f90b64cce582835` · package version `5.0.0` · published stable `5.0.0`.
 
 This is the truth baseline v6 is built on. It is deliberately blunt: the
 interesting part of a current-state inventory is what the product _cannot_
@@ -14,7 +14,7 @@ demonstrate, not what it contains.
 
 - The ecosystem census derives maturity from observed evidence only, and
   three of its criteria have no gate today, so **every** ecosystem entry is
-  capped at **M2**. Distribution: **M1** 24 · **M2** 9.
+  capped at **M2**. Distribution: **M1** 24 · **M2** 5 · **M3** 4.
 - `M3 FIXTURE_VERIFIED` is unreachable for frameworks and adapters: there is
   no machine gate that verifies a positive/negative/boundary/adversarial
   fixture quad per capability (`GAP-V6-004`).
@@ -30,12 +30,12 @@ demonstrate, not what it contains.
 | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
 | Package version                 | `5.0.0`                                                                                                                                 | `package.json`                      |
 | Published stable                | `5.0.0`                                                                                                                                 | `package.json`                      |
-| Source files (`src/**.ts`)      | 324                                                                                                                                     | derived                             |
-| Test specs (`tests/**.spec.ts`) | 677                                                                                                                                     | derived                             |
+| Source files (`src/**.ts`)      | 325                                                                                                                                     | derived                             |
+| Test specs (`tests/**.spec.ts`) | 837                                                                                                                                     | derived                             |
 | Live rules                      | 79                                                                                                                                      | `src/rules/index.ts`                |
 | Retired rule ids (preserved)    | 22                                                                                                                                      | `RETIRED_RULE_IDS`                  |
-| Rules with a valid measurement  | 74                                                                                                                                      | `MEASURED_FP` + `detectorRev`       |
-| Rule tiers                      | **core** 19 · **extended** 26 · **quarantine** 34                                                                                       | `effectiveTier`                     |
+| Rules with a valid measurement  | 73                                                                                                                                      | `MEASURED_FP` + `detectorRev`       |
+| Rule tiers                      | **extended** 45 · **quarantine** 34                                                                                                     | `effectiveTier`                     |
 | Adapters                        | 11 (azure-pipelines, csharp, exit-code-integrity, github-actions, gitlab-ci, index, java, jenkins, python, typescript, workflow-bypass) | `src/adapters`                      |
 | Commands                        | 38                                                                                                                                      | `src/commands`                      |
 | Frameworks in the inventory     | 14                                                                                                                                      | `FRAMEWORK_INVENTORY`               |
@@ -50,13 +50,13 @@ demonstrate, not what it contains.
 ### Largest source areas
 
 - `src/rules/` — 89
-- `src/engine/` — 57
+- `src/engine/` — 56
 - `src/commands/` — 38
 - `src/forensics/` — 17
 - `src/reporter/` — 14
 - `src/adapters/` — 11
+- `src/v6/` — 11
 - `src/discovery/` — 10
-- `src/v6/` — 10
 - `src/integrations/` — 9
 - `src/lib/` — 7
 - `src/release/` — 7
@@ -64,7 +64,7 @@ demonstrate, not what it contains.
 
 ### Ledgers
 
-- Gap ledger: **ALREADY_FIXED** 1 · **CONFIRMED_STILL_OPEN** 14 · **STALE_UNVERIFIABLE** 2 · severities **high** 6 · **release-blocker** 11
+- Gap ledger: **ALREADY_FIXED** 1 · **CLOSED_DECISION_RECORDED** 1 · **CONFIRMED_STILL_OPEN** 7 · **EXTERNAL_PENDING** 7 · **STALE_UNVERIFIABLE** 1 · severities **high** 6 · **release-blocker** 11
 - Open release-blocking gaps: **11** (GAP-M26-002, GAP-M26-003, GAP-M26-004, GAP-M26-005, GAP-M26-008, GAP-M26-009, GAP-M26-010, GAP-M26-012, GAP-M26-013, GAP-M26-015, GAP-M26-016)
 - Support matrix: **BLOCKED** 69 · **NOT_APPLICABLE** 2 · **TESTED** 65 — **69 cells are explicitly BLOCKED**
 - Issue dispositions: **CARRY_FORWARD** 417 · **CLOSED_SHIPPED** 3 · **CLOSED_WONT_FIX** 8 · **FIX_IN_BITTERSWEET** 1

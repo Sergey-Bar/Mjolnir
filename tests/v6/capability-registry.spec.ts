@@ -1,3 +1,7 @@
+import { capabilityQuadComplete } from "../../src/v6/fixture-quad-probe.js";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+
 import { describe, expect, it } from "vitest";
 
 import {
@@ -15,9 +19,32 @@ import {
   validateRegistry,
   type RegistryEvidence,
 } from "../../src/v6/capability-registry.js";
+
+/**
+ * The committed census — the ledger of record, READ rather than rebuilt.
+ *
+ * Reading the artifact is deliberate. The test below is about what the census
+ * SAYS about a capability, and rebuilding it from the same functions the
+ * registry uses would make the two agree by construction — which is the shape
+ * a cross-check must not have.
+ */
+function censusEntries(): Array<{
+  id: string;
+  state: string;
+  nextLevelGap?: { target: string; missing: string[] } | null;
+}> {
+  const parsed = JSON.parse(
+    readFileSync(
+      join(import.meta.dirname, "..", "..", "docs", "ECOSYSTEM-CENSUS.json"),
+      "utf8",
+    ),
+  ) as { entries: Array<{ id: string; state: string }> };
+  return parsed.entries;
+}
 import {
   deriveMaturityFromEvidence,
   maturityRank,
+  type Maturity,
 } from "../../src/v6/maturity.js";
 import {
   SURFACES,
@@ -223,7 +250,14 @@ describe("Wave 1 DoD — no capability above its proven level", () => {
 });
 
 describe("proof — only a measured rule carries LOCAL_PROVEN", () => {
-  it("is BLOCKED when nothing is measured, which is the honest state", () => {
+  it("is BLOCKED for every entry with no measured rule of its own", () => {
+    // The behaviour that matters, and it is narrower than it was. The
+    // previous version of this test injected `hasMeasurement: false` and
+    // asserted BLOCKED on all 27 entries — which only held because the flag
+    // was global. A caller asserting "nothing is measured" is now asserting a
+    // fact about the whole registry, which is precisely the fact that was
+    // wrong: a Playwright rule IS measured, and `test.framework.playwright` is
+    // entitled to say so. What the flag may no longer do is suppress.
     const registry = buildCapabilityRegistry({
       evidence: {
         registry: {
@@ -237,9 +271,16 @@ describe("proof — only a measured rule carries LOCAL_PROVEN", () => {
         files: BLIND_REGISTRY_EVIDENCE.files,
       },
     });
-    // An adapter on disk proves the capability is IMPLEMENTED (M2). It is
-    // not an observation: nobody recorded when, against which revision.
+    const facts = collectRuleFacts();
     for (const entry of registry.entries) {
+      const own = entry.rules.filter((id) => !facts.retired.has(id));
+      const measured = own.some((id) => facts.measured.has(id));
+      if (measured) {
+        expect(entry.proof.status, entry.id).toBe("LOCAL_PROVEN");
+        continue;
+      }
+      // An adapter on disk proves the capability is IMPLEMENTED (M2). It is
+      // not an observation: nobody recorded when, against which revision.
       expect(entry.proof.status, entry.id).toBe("BLOCKED");
       expect(entry.proof.authority, entry.id).toBe("NONE");
     }
@@ -261,20 +302,54 @@ describe("proof — only a measured rule carries LOCAL_PROVEN", () => {
   });
 });
 
-describe("maturity stays capped while its gates are missing", () => {
-  it("never reaches M3 while the fixture-quad and detectorRev arms are false", () => {
-    // The two arms that would unlock M3 and M4 are hard false in the real
-    // resolver, and that is the whole point: the ladder has a real
-    // ceiling today, and it is M2.
+describe("maturity is bounded by the arms that are actually true", () => {
+  it("the fixture-quad arm is TRUE now, and every M3 rests on it", () => {
+    // Changed by 6.1, and this is the assertion that had to change with it.
+    //
+    // The arm used to be hard `false` in the real resolver, which is why
+    // nothing could reach M3 and the quad could be shipped as a contract. The
+    // first version of this test asserted the ceiling was M2 and passed — and
+    // would have kept passing forever if the arm had been wired to `true`
+    // without anyone updating it, which is what a test pinned to a world-state
+    // rather than to a property looks like.
+    //
+    // The global `hasFixtureQuad` flag is a CALLER CLAIM, not a summary of the
+    // derivation, and the real resolver makes none — it claims nothing the
+    // tree does not already show. Making it "measured" was tried and it
+    // reintroduced the laundering `evidenceForEntry` exists to prevent: every
+    // entry OR-s the flag in, so `ci.provider.azure-pipelines` reached M3 on a
+    // QA-PW rule's quad while its published `rules` list did not contain the
+    // rule that earned it. That the flag is `false` is the property that keeps
+    // the per-entry derivation the only path to M3, so it is asserted.
     const evidence: RegistryEvidence = realCapabilityEvidence();
-    expect(evidence.registry.hasFixtureQuad).toBe(false);
-    expect(evidence.registry.hasCorpusMeasurement).toBe(false);
+    expect(
+      evidence.registry.hasFixtureQuad,
+      "the real resolver claims a global fixture quad. The flag is OR-ed into " +
+        "every entry, so a non-false value credits each capability with a quad " +
+        "belonging to some other rule's family",
+    ).toBe(false);
+
     const registry = buildCapabilityRegistry({ evidence });
+    const atM3 = registry.entries.filter(
+      (entry) =>
+        maturityRank(entry.proven) >= maturityRank("M3_FIXTURE_VERIFIED"),
+    );
+    for (const entry of atM3) {
+      expect(
+        entry.rules.some((id) => capabilityQuadComplete([id])),
+        `${entry.id} is M3 and none of the rules it publishes has a complete ` +
+          "quad — the advertisement and the evidence are different rule sets",
+      ).toBe(true);
+    }
+
+    // The corpus arm is still false — the quad is a WIRING proof, not an
+    // accuracy one — so M4 must stay unreachable whatever the quad does.
+    expect(evidence.registry.hasCorpusMeasurement).toBe(false);
     for (const entry of registry.entries) {
       expect(
-        ["M0_UNKNOWN", "M1_DECLARED", "M2_IMPLEMENTED"],
-        `${entry.id} is ${entry.maturity}`,
-      ).toContain(entry.maturity);
+        entry.maturity,
+        `${entry.id} is ${entry.maturity} with no corpus measurement`,
+      ).not.toBe("M4_CORPUS_VERIFIED");
     }
   });
 
@@ -290,6 +365,309 @@ describe("maturity stays capped while its gates are missing", () => {
         toMaturityEvidence(BLIND_REGISTRY_EVIDENCE.registry),
       ),
     ).toBe("M1_DECLARED");
+  });
+});
+
+describe("evidence is resolved per entry, not once for the registry", () => {
+  // The registry-global `hasMeasurement` flag was OR-ed into every entry, so
+  // one measured rule anywhere made every capability look measured. That is
+  // the wave-1 "no capability advertised above its proven level" failure
+  // arriving through the evidence layer rather than the maturity layer: an
+  // entry with no supporting rule of its own inherited a measurement from an
+  // unrelated one and could be advertised at a level its own evidence does
+  // not support.
+  const facts = collectRuleFacts();
+  const registry = buildCapabilityRegistry({
+    evidence: realCapabilityEvidence(),
+    observedAt: "2026-01-01",
+  });
+
+  it("an entry with no supporting rule is never LOCAL_PROVEN, and never above M1", () => {
+    // The control that proves the resolution is per entry. If the global
+    // flags still leaked, `test.framework.selenium` — no rules, no adapter
+    // file — would come back M2 with a proof, which is exactly what it did.
+    const sel = registry.entries.find(
+      (entry) => entry.id === "test.framework.selenium",
+    );
+    expect(sel, "selenium is in the inventory").toBeDefined();
+    if (sel === undefined) return;
+    expect(sel.rules).toEqual([]);
+    expect(sel.adapter).toBeNull();
+    expect(sel.maturity).toBe("M1_DECLARED");
+    expect(sel.proof.status).toBe("BLOCKED");
+    expect(sel.proof.authority).toBe("NONE");
+  });
+
+  it("the executor-adapter list never stands in for an adapter of its own", () => {
+    // Selenium names three language adapters used to RUN its tests. The entry
+    // records them, and they are not the same claim as an adapter that
+    // implements Selenium support — which is how the first version read
+    // `executorAdapterIds[0]` and reached M2 on `src/adapters/typescript.ts`.
+    const sel = registry.entries.find(
+      (entry) => entry.id === "test.framework.selenium",
+    );
+    expect(sel?.executorAdapters).toEqual([
+      "src/adapters/typescript.ts",
+      "src/adapters/python.ts",
+      "src/adapters/java.ts",
+    ]);
+    for (const path of sel?.executorAdapters ?? []) {
+      expect(path).not.toBe(sel?.adapter);
+    }
+  });
+
+  it("every LOCAL_PROVEN entry has a measured rule of its OWN", () => {
+    for (const entry of registry.entries) {
+      if (entry.proof.status !== "LOCAL_PROVEN") continue;
+      const own = entry.rules.filter((id) => !facts.retired.has(id));
+      const measuredRule = own.find((id) => facts.measured.has(id));
+      expect(
+        measuredRule,
+        `${entry.id} is LOCAL_PROVEN with no measured rule`,
+      ).toBeDefined();
+      expect(entry.proof.artifact, entry.id).toBe(
+        `docs/FP-AUDIT.md#${measuredRule}`,
+      );
+    }
+  });
+
+  it("a named adapter path is probed, not trusted", () => {
+    // `adapterExists` takes a PATH, so the honest answer is whether the path
+    // resolves. It used to be delegated to the census resolver, which answers
+    // a different question — "can we analyse this ecosystem at all", satisfied
+    // by a live rule family OR an adapter file — and that fallback is what
+    // reported `src/adapters/cypress.ts` as present when the file does not
+    // exist. Asserted on real absences: the directory holds ten adapters and
+    // none of them is per-framework.
+    for (const entry of registry.entries) {
+      if (entry.kind !== "test-framework" && entry.kind !== "test-runner") {
+        continue;
+      }
+      expect(entry.adapter, entry.id).toBeNull();
+    }
+  });
+
+  it("a real adapter file no longer buys M2 on its own", () => {
+    // The control for the previous test, so that assertion cannot be
+    // satisfied by breaking the probe outright. All four CI provider adapters
+    // exist under `src/adapters/` — and none of the four ecosystems has a
+    // complete fixture quad, so none is EVIDENCE-supported at M2 by a quad.
+    //
+    // The advertised level differs per provider, and that is the point: the
+    // three with a census row advertise the ledger's M1, while `gitlab-ci` has
+    // no census row at all and so advertises what this registry proved. A
+    // uniform assertion here would have hidden the distinction the
+    // `maturity` / `proven` split exists to make.
+    for (const id of [
+      "ci.provider.github-actions",
+      "ci.provider.azure-pipelines",
+      "ci.provider.gitlab-ci",
+      "ci.provider.jenkins",
+    ]) {
+      const entry = registry.entries.find((e) => e.id === id);
+      expect(entry, id).toBeDefined();
+      // The probe still answers: these are real adapter FILES.
+      expect(entry?.adapter, id).toBeTypeOf("string");
+      // Whatever is advertised is never above what the evidence proves.
+      expect(maturityRank(entry?.maturity), id).toBeLessThanOrEqual(
+        maturityRank(entry?.proven),
+      );
+    }
+  });
+
+  it("a provider with a quad-less gap still advertises what its evidence supports", () => {
+    // 3.3 demoted the CENSUS — `state: TARGET`, with `nextLevelGap` naming
+    // M3 as the level whose criterion is missing. It did NOT lower the census
+    // entry's `maturity`, and the first version of this test asserted the
+    // opposite ("advertises M1 while proving M2").
+    //
+    // That shape is wrong twice over. `src/v6/maturity.ts` states that
+    // `deriveMaturityFromEvidence` is "the only way a capability gets a
+    // level", so a hand-set `M1_DECLARED` contradicts the ladder; and the gap
+    // it was attached to named the FIXTURE QUAD — which is M3's criterion —
+    // while claiming M2 as the target, so it told a maintainer a month's work
+    // would earn a level it does not.
+    //
+    // What is true now: evidence supports M2, both numbers say M2, the ledger
+    // refuses to CALL it supported, and the gap names the real next level.
+    const entry = registry.entries.find(
+      (e) => e.id === "ci.provider.github-actions",
+    );
+    expect(entry?.proven).toBe("M2_IMPLEMENTED");
+    expect(entry?.maturity).toBe("M2_IMPLEMENTED");
+    expect(entry?.proof.status).toBe("LOCAL_PROVEN");
+
+    const censusEntry = censusEntries().find(
+      (c) => c.id === "ec.ci-cd-provider.github-actions",
+    );
+    expect(
+      censusEntry?.state,
+      "the census still refuses to call it SUPPORTED",
+    ).toBe("TARGET");
+    expect(censusEntry?.nextLevelGap?.target).toBe("M3_FIXTURE_VERIFIED");
+    expect(censusEntry?.nextLevelGap?.missing.join(" ")).toMatch(/quad/i);
+  });
+
+  it("a provider with no census row advertises what it proved", () => {
+    // The other branch, and the one that must not be mistaken for the
+    // demotion: an ABSENT ledger row is not a demotion. `gitlab-ci` has a real
+    // adapter and measured rules, so it advertises M2 — the census has nothing
+    // to say, and an unread ledger is not a lower claim.
+    const entry = registry.entries.find(
+      (e) => e.id === "ci.provider.gitlab-ci",
+    );
+    expect(entry?.censusId).toBe("ec.ci-cd-provider.gitlab-ci");
+    expect(entry?.maturity).toBe(entry?.proven);
+  });
+
+  it("a caller that KNOWS more can still say so", () => {
+    // The OR is the caller's claim, not a global truth. A test injecting an
+    // adapter, or a build with evidence from elsewhere, must be able to raise
+    // what the tree alone cannot show.
+    const withClaim = buildCapabilityRegistry({
+      evidence: {
+        registry: {
+          ...BLIND_REGISTRY_EVIDENCE.registry,
+          hasLiveRule: true,
+          hasMeasurement: true,
+        },
+        files: BLIND_REGISTRY_EVIDENCE.files,
+      },
+      observedAt: OBSERVED_AT,
+    });
+    const frameworks = withClaim.entries.filter(
+      (entry) => entry.kind === "test-framework",
+    );
+    expect(frameworks.length).toBeGreaterThan(0);
+    for (const entry of frameworks) {
+      // `hasLiveRule`/`hasMeasurement` raise what the entry PROVES. What it
+      // ADVERTISES is the census's level, and four of the frameworks are
+      // declared M1 there — so the assertion is on `proven`, which is the arm
+      // the caller's claim actually reaches.
+      expect(entry.proven, entry.id).toBe("M2_IMPLEMENTED");
+    }
+    // A domain has no rules at all, so even a caller's global claim leaves it
+    // without a rule to cite — and the proof follows the rules, not the flag.
+    const domain = withClaim.entries.find((e) => e.kind === "domain");
+    expect(domain?.proof.status, domain?.id).toBe("BLOCKED");
+  });
+});
+
+describe("maturity is what an entry DECLARES; proven is what it can SHOW", () => {
+  // Before the split, `finalize` assigned `proven: maturity` from one call, so
+  // `OVER_CLAIMED_MATURITY` compared a value with itself and could not fire.
+  // The two now come from two resolvers — the census's
+  // `ecosystem-probe.ts` and this registry's own per-entry evidence — and the
+  // gate is what holds them to agreeing.
+  it("an entry advertises the census's level, not the one it can prove", () => {
+    // Four real cases: junit, nunit, testng and xunit. The registry can prove
+    // M2 for each (live rules, unit-tested), and the census declares M1. The
+    // conservative reading wins, because a capability may not be advertised
+    // above the ledger of record even when the evidence is stronger — the
+    // alternative is two artifacts disagreeing with the advertisement above
+    // both.
+    const registry = buildCapabilityRegistry({
+      evidence: realCapabilityEvidence(),
+      observedAt: OBSERVED_AT,
+    });
+    const underClaimed = registry.entries.filter(
+      (entry) => maturityRank(entry.proven) > maturityRank(entry.maturity),
+    );
+    expect(underClaimed.length).toBeGreaterThan(0);
+    for (const entry of underClaimed) {
+      expect(entry.censusId, entry.id).not.toBeNull();
+      // The gap is the level the evidence does NOT reach — which is whatever
+      // sits above the advertised one. Pinned to M2 by the first version,
+      // which was a fact about the world on the day: once a capability earned
+      // a quad and the census caught up, the gap became M4 and the assertion
+      // failed for a reason that had nothing to do with the property under
+      // test.
+      expect(
+        maturityRank(entry.proven),
+        `${entry.id} is advertised BELOW what it proves — the conservative ` +
+          "reading is the wrong direction round",
+      ).toBeGreaterThan(maturityRank(entry.maturity));
+    }
+  });
+
+  it("a census claim ABOVE what the entry can prove is an over-claim, and the gate fires", () => {
+    // The acceptance case, and the one that could not have existed before the
+    // split: the over-claim is produced by the BUILDER from two honest
+    // inputs, not by tampering with a finished registry. Before, no input
+    // could make `maturity` exceed `proven` because both were one value.
+    const registry = buildCapabilityRegistry({
+      evidence: realCapabilityEvidence(),
+      observedAt: OBSERVED_AT,
+      census: new Map([
+        [
+          "ec.test-framework.selenium",
+          {
+            id: "ec.test-framework.selenium",
+            state: "SUPPORTED",
+            maturity: "M5_FIELD_PROVEN",
+          },
+        ],
+        [
+          "ec.ci-cd-provider.jenkins",
+          {
+            id: "ec.ci-cd-provider.jenkins",
+            state: "SUPPORTED",
+            maturity: "M4_CORPUS_VERIFIED",
+          },
+        ],
+      ]),
+    });
+    const codes = validateRegistry(registry);
+    const over = codes.filter((d) => d.code === "OVER_CLAIMED_MATURITY");
+    expect(over.map((d) => d.entryId).sort()).toEqual([
+      "ci.provider.jenkins",
+      "test.framework.selenium",
+    ]);
+    // The message names BOTH numbers, so a reader can see which resolver is
+    // the odd one out without re-running anything.
+    expect(over[0]?.message).toContain("but its own evidence proves only");
+    expect(over[0]?.message).toMatch(/advertises M\d/);
+  });
+
+  it("with no census, an entry advertises what it proved", () => {
+    // The other direction, so the split cannot be read as "always lower".
+    const registry = buildCapabilityRegistry({
+      evidence: realCapabilityEvidence(),
+      observedAt: OBSERVED_AT,
+      census: new Map(),
+    });
+    for (const entry of registry.entries) {
+      expect(entry.maturity, entry.id).toBe(entry.proven);
+    }
+  });
+
+  it("a malformed census row is ignored, not trusted", () => {
+    // An entry whose census `maturity` is not in the closed M vocabulary is
+    // not a claim; taking it would import a second level vocabulary through
+    // the back door, which is what ADR 0011 forbids.
+    const registry = buildCapabilityRegistry({
+      evidence: realCapabilityEvidence(),
+      observedAt: OBSERVED_AT,
+      census: new Map([
+        [
+          "ec.test-framework.selenium",
+          // Cast because the point of the test is an out-of-vocabulary value
+          // arriving from a file this module does not control.
+          {
+            id: "ec.test-framework.selenium",
+            state: "SUPPORTED",
+            maturity: "F4" as Maturity,
+          },
+        ],
+      ]),
+    });
+    const sel = registry.entries.find(
+      (entry) => entry.id === "test.framework.selenium",
+    );
+    expect(sel?.maturity).toBe(sel?.proven);
+    expect(validateRegistry(registry).map((d) => d.code)).not.toContain(
+      "OVER_CLAIMED_MATURITY",
+    );
   });
 });
 

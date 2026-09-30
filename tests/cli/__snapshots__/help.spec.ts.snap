@@ -28,7 +28,8 @@ Options:
   --max-duration <sec>    analysis time budget
   --width <cols>          override terminal width
   --ascii / --no-ascii    force glyph mode
-  --strict                include quarantine-tier rules
+  --strict                include quarantine-tier rules (advisory only — a quarantined
+                          detector never gates; see docs/PRODUCT-DECISIONS.md D-2)
   --debug                 print swallowed rule crashes
   --cache                 reuse local per-file verdicts
   --no-progress           no live scan-progress line on stderr
@@ -192,6 +193,9 @@ Options:
   --width <cols>          override terminal width
   --ascii / --no-ascii    force glyph mode
   --strict                include quarantine-tier rules
+                          (advisory only — a quarantined
+                          detector never gates; see
+                          docs/PRODUCT-DECISIONS.md D-2)
   --debug                 print swallowed rule crashes
   --cache                 reuse local per-file verdicts
   --no-progress           no live scan-progress line on

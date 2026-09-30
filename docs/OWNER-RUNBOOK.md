@@ -49,6 +49,53 @@ hide it.
 | Suppression overrides (owner tiers) | identity-bound | explicit ISO `expires` dates are the bounded-expiry guardrail; owner override is a deliberate act |
 | Signing keys / provenance           | identity-bound | npm OIDC + GitHub release signing bind to the owner account                                       |
 
+## Gates a second maintainer runs identically
+
+`npm run certify` is the whole chain; `npm run certify:ci` is the CI form and
+differs only in the coverage invocation. Both exit non-zero on any failure.
+
+**The claim-integrity group** (`npm run gates:claim-integrity`) is the one to
+run first when a gate disagrees with the tree — each of its nine steps names
+its own gate in the failure, so you never have to bisect a 24-step chain.
+`npm run script:paths` runs immediately before it and is listed here because
+it is the gate that most often explains the next failure:
+
+| Command                         | What it refuses                                                                                   |
+| ------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `npm run script:paths`          | A doc or comment pointing at a script file that does not exist, or one nothing has committed      |
+| `npm run workflow:scripts`      | A workflow step running an `npm run <script>` the manifest at that step's cwd does not define     |
+| `npm run config:consumers`      | Root-level configuration no command and no declared external consumer reads                       |
+| `npm run scripts:reachable`     | An npm script no workflow reaches and `docs/MANUAL-SCRIPTS.md` does not declare manual            |
+| `npm run unimported:check`      | A module in `src/` that nothing imports and is not on the disclosed orphan list                   |
+| `npm run qa-ir:parity`          | Two adapters normalising the same test to different IR terms                                      |
+| `npm run rules:quad:check`      | A capability advertising `M3_FIXTURE_VERIFIED` with no complete fixture quad behind it            |
+| `npm run rules:promotion:check` | The launch set growing, or the unmeasured backlog growing, past `docs/RULE-PROMOTION-LEDGER.json` |
+| `npm run docs:provenance-drift` | A provenance-stamped artifact whose CONTENT no longer matches its generator                       |
+| `npm run translations:ratchet`  | The README-translation gap widening past `docs/TRANSLATION-RATCHET.json`                          |
+
+**The ratchets that must be lowered by hand**, and what a failure means:
+
+| Ratchet                           | How to move it                                                                                                                                 |
+| --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `docs/ANTI-CREEP-BASELINE.json`   | Down on a demotion. Up needs an `ANTI-CREEP-EXCEPTION` line in the UNRELEASED `CHANGELOG.md` entry **and** the lower value in the same commit. |
+| `docs/RULE-PROMOTION-LEDGER.json` | Down on progress. The baseline also holds `unmeasuredIds`, so a regression names the rules that joined the backlog rather than the whole list. |
+| `docs/TRANSLATION-RATCHET.json`   | Down as translations are synced. Never up.                                                                                                     |
+
+**Two release gates that are NOT in that chain**, because they answer a
+different question — and one of them predates all of it. Do not confuse
+`changelog:check` with `changelog:unreleased`: they share a file prefix and
+nothing else.
+
+| Command                        | What it refuses                                                                                                                                                                                                         |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run changelog:check`      | The released version's heading, descending semver order, dates, and empty sections. Runs before publish and before GitHub Release creation — never a post-release audit. Takes `--expect-version` and `--rules-touched` |
+| `npm run changelog:unreleased` | A user-visible change with no `## [Unreleased]` entry. In CI it runs with `--base=origin/<base>`, because its default reads `git status` and a CI checkout is CLEAN — without the base it would pass on every run       |
+
+**When a gate is right and the tree is wrong**, fix the tree. When a gate is
+wrong, fix the gate AND the sentence that described it — the three defects this
+repository found most often were all a comment asserting something the adjacent
+code did not do.
+
 ## Handover section (for the eventual co-maintainer)
 
 1. GitHub: add collaborator with **maintain** permission; CODEOWNERS

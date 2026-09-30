@@ -392,17 +392,41 @@ describe("the generated Wave 0 artifacts exist and are readable", () => {
 });
 
 describe("Wave 0 — the deferred and superseded markers landed", () => {
-  it("marks PRODUCT-ENHANCEMENT-ANALYSIS.md as not a source of truth", () => {
+  it("points PRODUCT-ENHANCEMENT-ANALYSIS.md at its archive and disclaims itself", () => {
+    // 6.4 MOVED the file rather than editing a marker into it. The
+    // original test asserted the old shape — a `DEFERRED` banner in the first
+    // 800 characters — which was a marker inside a document at a path a reader
+    // finds first. A pointer is the stronger form: the document is no longer
+    // there to be mistaken for, and the old path says so in one line.
+    //
+    // The intent is unchanged and is now asserted directly.
     const text = readFileSync(
       join(ROOT, "PRODUCT-ENHANCEMENT-ANALYSIS.md"),
       "utf8",
     );
-    expect(text.slice(0, 800)).toContain("DEFERRED");
-    expect(text).toContain("docs/ECOSYSTEM-CENSUS.json");
+    expect(text.slice(0, 600)).toMatch(/not a current claim/i);
+    expect(text).toContain("docs/archive/PRODUCT-ENHANCEMENT-ANALYSIS.md");
+    // And the record itself is still intact, which is the reason for moving it
+    // rather than deleting it.
+    expect(
+      readFileSync(
+        join(ROOT, "docs", "archive", "PRODUCT-ENHANCEMENT-ANALYSIS.md"),
+        "utf8",
+      ).length,
+    ).toBeGreaterThan(10_000);
   });
 
   it("marks the Cycle-0 audit as superseded by name and version", () => {
-    const marker = join(ROOT, "QA", "FINAL-RELEASE", "README-SUPERSEDED.md");
+    // Moved to `docs/archive/QA-FINAL-RELEASE/` in 6.4, with the superseded
+    // marker travelling with it — a marker left behind in an empty directory
+    // would be a note about nothing.
+    const marker = join(
+      ROOT,
+      "docs",
+      "archive",
+      "QA-FINAL-RELEASE",
+      "README-SUPERSEDED.md",
+    );
     expect(existsSync(marker)).toBe(true);
     const text = readFileSync(marker, "utf8");
     expect(text).toContain("SUPERSEDED");

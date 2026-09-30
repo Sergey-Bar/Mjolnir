@@ -268,6 +268,24 @@ const dispositionRows = issues.map((row) => {
     state: row.state,
     state_reason: row.state_reason ?? null,
     canonical_disposition: disposition,
+    /**
+     * WHERE the disposition came from, as a field rather than as a convention.
+     *
+     * `GAP-M26-002`: dispositions were once a pure function of the GitHub
+     * `state` field, which contains no engineering judgement, and the fix was
+     * certified against the artifacts the script produced. The judgement file
+     * fixed the substance; this field makes the PROVENANCE legible, so a
+     * consumer can tell a decision from a fallback without parsing prose for
+     * the word "untriaged".
+     *
+     *   `human`   — a person recorded a disposition, a reason and a
+     *               verification in `docs/issue-dispositions.json`.
+     *   `default` — nobody did, so the row is CARRY_FORWARD and stays open.
+     *               A `default` row may not claim a gating disposition; that
+     *               is the whole point, and `check-disposition-provenance`
+     *               enforces it.
+     */
+    disposition_source: entry?.disposition ? "human" : "default",
     // Why this class, in the words of whoever decided it. Empty only when
     // the issue is untriaged, and then the row says so.
     reason:

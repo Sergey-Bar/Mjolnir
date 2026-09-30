@@ -237,6 +237,24 @@ jobs:
       - name: CI standard (PR scan gate layers + least-privilege invariants)
         run: npm run ci:standard
 
+      # The claim-integrity gates, as ONE step.
+      #
+      # Each of these is a separate npm script so a failure names the gate
+      # rather than "certify:ci step 14 of 24", and they are chained behind
+      # one entry point so the workflow does not grow a step per gate. The
+      # 6.0 lesson is the reason this is here at all: nine of them ran only
+      # in `certify`/`ci-local`, so a PR that broke IR parity or left a script
+      # wired to nothing passed CI and failed on the maintainer's machine.
+      # `--base` is REQUIRED here, not a convenience. The gate's default reads
+      # `git status`, which is EMPTY on a CI checkout — so without it this
+      # step reports PASS on every run and the one thing it exists to catch
+      # (a change shipped with no release note) is not caught in CI at all.
+      - name: Claim-integrity gates
+        run: npm run gates:claim-integrity
+
+      - name: Unreleased changelog entry
+        run: npm run changelog:unreleased -- --base=origin/${{ github.base_ref || 'main' }}
+
   # Self-scan gate (§30.2 #7) — activates once rules exist.
   self-scan:
     needs: build-test

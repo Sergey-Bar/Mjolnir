@@ -11,6 +11,91 @@ once shipped, so this file is the record of what changed between versions.
 
 ## [Unreleased]
 
+### Claim integrity — the gates that could not fail
+
+Every item here is a check that was running, reporting, and could not have
+failed. The pattern is one defect wearing a dozen hats: a value that looked
+load-bearing and held nothing.
+
+- **`coverage:ratchet` measured a truncated run.** It read
+  `summary.total` and never counted files, so a two-file run of a 292-file
+  tree passed at 97.92% — and a partial run reports _higher_ percentages than
+  a complete one, because the files that survive are the easy ones. It now
+  asserts a file-count ratio and a non-trivial denominator, both fail-closed.
+- **`nForZeroFp` said 1.** The expression `z²·p / (p·(1−p)) − z²` simplifies to
+  `z²·p/(1−p)` ≈ 0.427, and `Math.ceil` turned that into 1 — so every
+  straddling rule read "About 1 clean sample would settle it". The correct
+  value at the 10% ceiling is **35**.
+- **`docs/rules/` and the registry both claimed the core tier, differently.**
+  `effectiveTier` now resolves it everywhere, including dedup survivor
+  resolution, where an undeclared rule defaulted to `core` and outranked every
+  rule that had declared `extended`.
+- **The capability registry resolved evidence once for the whole registry.**
+  One measured rule anywhere made `hasMeasurement` true for every capability,
+  and `ci.provider.azure-pipelines` was advertised on an unrelated Java rule's
+  measurement. Evidence is resolved per entry now.
+- **`OVER_CLAIMED_MATURITY` compared a value with itself.** `proven` and
+  `maturity` were assigned from one call, so the gate could not fire. They now
+  come from two resolvers — the census declares, the registry proves — and a
+  provider whose evidence beats the ledger is visible as such.
+- **`STALE` was unreachable.** The FP-audit generator filtered stale
+  measurements out of `MEASURED_FP`, so `hasStaleMeasurement` was
+  structurally always `false` and `QA-PY-004` (42 hand-classified verdicts,
+  one detector revision behind) reported as never sampled. `MEASURED_FP_RAW`
+  keeps them and both consumers read it.
+- **The claim registry had no recency budget.** `observedAt: null` satisfied
+  its presence check, so a 2026-06 observation read like yesterday's.
+  Per-type budgets now apply, the digest check runs against a real status
+  instead of a value absent from the enum, and every `BLOCKED` claim carries a
+  `blockedReason` and a review date.
+- **The tier ratchet was vacuous on an empty tier.** `MAX_UNMEASURED_CORE = 0`
+  was satisfied by a set with no members, so the first core promotion would
+  have arrived with the check already green. A rule is now accounted for by ≥10
+  classified verdicts **or** by an unexpired `corePromotion` naming an owner.
+- **The anti-creep law had two escapes.** The exception marker was searched
+  for across the whole append-only changelog, so one marker in any past
+  release disabled the ratchet for good — and with an empty tier and a zero
+  baseline, the first promotion would have switched the law off permanently.
+  The comparison is also now against `previousBaselineCore`, so lowering the
+  baseline to match a grown tier no longer hides the growth.
+- **The census could call an ecosystem `SUPPORTED` with a fixture
+  directory as its only evidence.** `SUPPORTED` now requires an adapter **and**
+  a verified four-leg quad, which demoted 33 entries — the honest result, and
+  the reason 19 rules were demoted in 6.0 for the same reason.
+- **Two hardcoded-`false` quad resolvers, in two files.** They could not fail
+  and the census's directory-size proxy answered a different question from the
+  registry's `false`. Both now read one filesystem probe.
+- **Seven gates ran only locally.** `qa-ir:parity` and `unimported:check` were
+  on a nightly cron, so a PR that broke either passed CI and failed on the
+  maintainer's machine. The other seven are new here. All nine are in
+  `gates:claim-integrity`, which `ci.yml` runs as one step — named per gate
+  inside the chain so a failure identifies itself — and declared in all three
+  `gates/*.json` tiers.
+
+### New gates
+
+`npm run gates:claim-integrity` chains the nine claim-integrity checks so a
+failure names its gate instead of a step number. Also new: `workflow:scripts`,
+`config:consumers`, `scripts:reachable`, `translations:ratchet`,
+`docs:provenance-drift`, `rules:quad:check`, `rules:promotion:check`,
+`check-changelog`.
+
+### Deliberate omissions
+
+- **The 4-leg fixture backfill (148 legs) is not in this change.** The plan
+  requires the quad to be _executed_, not merely present; writing 148 legs
+  no detector had run against would have made `rules:quad:check` green by
+  construction. `npm run rules:quad:check` prints the work list — 53 rules
+  have `MUST-FIRE`, 40 `MUST-NOT-FIRE`, 75 `RECALL`, **0 `PRECISION`**, and 0
+  of 79 have all four — so the backfill is driven by data rather than memory.
+  `PRECISION` is zero because it demands a classified `TN` on a negative
+  fixture, and no fixture has been classified as silent.
+- **`gitlab-ci` is written but not registered.** The adapter exists and three
+  detection classes are already enumerated in `src/adapters/gitlab-ci.ts`, but
+  it has no rules, so registering it would trade one false claim for another.
+  Admitting it means writing the three rules with fixtures, and it is gated by
+  the same quad as everything else.
+
 ## [5.0.0] — 2026-09-27
 
 ### Breaking changes

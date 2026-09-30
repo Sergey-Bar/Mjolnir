@@ -29,16 +29,39 @@
  * `gates/pr.json` without adding the CI step fails, and removing the step
  * fails.
  *
+ * `workflows` is the AUTHORITATIVE list: a declared gate must have an active
+ * step in one of those files. `alsoRunsIn` names further workflows that belong
+ * to the tier but must not satisfy its gates — `pages.yml` builds the site, but
+ * it triggers only on `site/**` pushes, so treating it as authoritative would
+ * let a step removed from `ci.yml` keep passing on the strength of a workflow
+ * that runs one day in twenty. Coverage over `workflows ∪ alsoRunsIn` is
+ * exhaustive; gate-presence is not, and the split is the point.
+ *
+ * That coverage is the check that did not exist. Eight workflows ran gates
+ * while being named by no tier at all, so the tier files claimed to be the
+ * complete picture of what gates this repository and were wrong. A tier that
+ * lists every gate and omits every workflow still reads as complete. Now a
+ * workflow file must be claimed by some tier or exempted with a stated reason.
+ *
+ * The exemptions live in `scripts/lib/workflow-exemptions.mjs`, ONCE, together
+ * with the workflows that run someone else's npm scripts. Those were two lists
+ * of the same kind of fact with two workflows appearing in both under
+ * different reasons, and no cross-check to say which was current — the response
+ * to a duplication is not a second copy of it.
+ *
  * What this deliberately does NOT do: it does not decide which gates ought
- * to exist. It proves the three declared sets are nested and that the
- * declarations match the workflows. Choosing the contents is a reviewer's
- * job, recorded in the tier file's own `description`.
+ * to exist. It proves the three declared sets are nested, that the
+ * declarations match the workflows, and that no workflow is unaccounted for.
+ * Choosing the contents is a reviewer's job, recorded in the tier file's own
+ * `description`.
  */
 
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { fileURLToPath, URL } from "node:url";
 import { parse } from "yaml";
+
+import { EXEMPT_FROM_TIERS } from "./lib/workflow-exemptions.mjs";
 
 /**
  * The tree to check.
@@ -128,6 +151,30 @@ function readTier(tier) {
     fail(`gates/${tier}.json: workflows must be a non-empty array`);
     return null;
   }
+  // `alsoRunsIn` is optional; it participates in workflow COVERAGE but never in
+  // gate-presence. An id in it is existence- and parse-checked like any other
+  // declaration, so a typo is a failure rather than a workflow that silently
+  // stops being counted — and a path in both lists is a failure, because the
+  // two mean opposite things.
+  if (parsed.alsoRunsIn !== undefined) {
+    if (!Array.isArray(parsed.alsoRunsIn)) {
+      fail(`gates/${tier}.json: alsoRunsIn must be an array when present`);
+      return null;
+    }
+    for (const path of parsed.alsoRunsIn) {
+      if (typeof path !== "string") {
+        fail(`gates/${tier}.json: every alsoRunsIn entry must be a string`);
+        return null;
+      }
+      if (parsed.workflows.includes(path)) {
+        fail(
+          `gates/${tier}.json: "${path}" is in both workflows and alsoRunsIn — ` +
+            "workflows is authoritative for gate-presence, so listing it twice makes the " +
+            "distinction between them unreadable",
+        );
+      }
+    }
+  }
   return parsed;
 }
 
@@ -188,10 +235,16 @@ for (const [tier, parsed] of tiers) {
   }
 }
 
-/** Read the union of workflows any tier names, parsed once each. */
+/** Read the union of workflows any tier names, parsed once each.
+ *
+ * `alsoRunsIn` is included so an entry there is existence- and parse-checked
+ * like any other declaration. Its commands are deliberately NOT consulted for
+ * gate-presence below.
+ */
 const workflowPaths = new Set();
 for (const parsed of tiers.values()) {
   for (const path of parsed.workflows ?? []) workflowPaths.add(path);
+  for (const path of parsed.alsoRunsIn ?? []) workflowPaths.add(path);
 }
 const workflows = new Map();
 for (const path of workflowPaths) {
@@ -304,9 +357,10 @@ for (const [path, workflow] of workflows) {
 }
 
 for (const [tier, parsed] of tiers) {
-  // What the tier's own workflows run, in total, across every workflow the
-  // tier names — the chain means one workflow is enough to satisfy a gate,
-  // and a tier that names two workflows is a tier whose gates are split.
+  // What the tier's own AUTHORITATIVE workflows run, in total — the chain
+  // means one workflow is enough to satisfy a gate, and a tier that names two
+  // workflows is a tier whose gates are split. `alsoRunsIn` is excluded here
+  // on purpose: it is coverage, not authority.
   const available = new Set();
   for (const path of parsed.workflows ?? []) {
     for (const command of workflowCommands.get(path) ?? [])
@@ -327,6 +381,65 @@ for (const [tier, parsed] of tiers) {
   }
 }
 
+/**
+ * WORKFLOW COVERAGE — every workflow file is accounted for.
+ *
+ * The tier files were, until this check, a complete-looking inventory of what
+ * gates this repository — while naming eight of twenty-one workflows. A tier
+ * that lists every gate and omits every workflow still reads as complete, and
+ * a reviewer auditing `gates/` had no way to know which files they were not
+ * being shown.
+ *
+ * One-directional in the useful direction: a workflow must be named by some
+ * tier (as `workflows` or `alsoRunsIn`) or carry a stated exemption. The
+ * reverse is not enforced and cannot be — a workflow can be deleted, and a
+ * deletion is not a defect. Exemptions come from
+ * `scripts/lib/workflow-exemptions.mjs`, shared with the workflow-script check
+ * so there is one list rather than two that can disagree.
+ */
+const WORKFLOW_DIR = join(ROOT, ".github", "workflows");
+if (existsSync(WORKFLOW_DIR)) {
+  const committed = new Set();
+  for (const name of readdirSync(WORKFLOW_DIR)) {
+    if (name.endsWith(".yml") || name.endsWith(".yaml")) {
+      committed.add(`.github/workflows/${name}`);
+    }
+  }
+  const claimed = new Set();
+  for (const parsed of tiers.values()) {
+    for (const path of parsed.workflows ?? []) claimed.add(path);
+    for (const path of parsed.alsoRunsIn ?? []) claimed.add(path);
+  }
+  for (const path of committed) {
+    if (claimed.has(path) && EXEMPT_FROM_TIERS.has(path)) {
+      fail(
+        `${path} is named by a gate tier AND exempted with a reason. The two ` +
+          "mean opposite things — one says the workflow belongs to a tier, the " +
+          "other says it does not — and `!claimed && !exempt` treats both as " +
+          "accounted for, so the contradiction is invisible. Pick one: if it " +
+          "belongs to a tier, drop the exemption; if it does not, drop the tier.",
+      );
+      continue;
+    }
+    if (claimed.has(path) || EXEMPT_FROM_TIERS.has(path)) continue;
+    fail(
+      `${path} runs in this repository but is named by no gate tier and carries no exemption. ` +
+        "A workflow outside every tier is a workflow whose gates nobody reviews: it can be " +
+        "deleted, or start running something new, without the tier files changing. Add it to " +
+        "a tier's `workflows` (if its steps may satisfy that tier's gates) or `alsoRunsIn` " +
+        "(if they must not), or record why it belongs to none in " +
+        "scripts/lib/workflow-exemptions.mjs",
+    );
+  }
+  for (const path of EXEMPT_FROM_TIERS.keys()) {
+    if (committed.has(path)) continue;
+    fail(
+      `${path} is exempted but no longer exists. An exemption for a deleted file is a ` +
+        "hole with a comment on it",
+    );
+  }
+}
+
 if (failures.length > 0) {
   console.error("Gate tier check failed:");
   for (const failure of failures) console.error(`  - ${failure}`);
@@ -337,6 +450,7 @@ const summary = TIERS.map((tier) => ({
   tier,
   gates: tiers.get(tier).gates.length,
   workflows: tiers.get(tier).workflows.length,
+  alsoRunsIn: (tiers.get(tier).alsoRunsIn ?? []).length,
 }));
 console.log(
   JSON.stringify(

@@ -5,7 +5,10 @@ import {
   getProvisionalRules,
   getQuarantinedRules,
 } from "../../src/rules/measurement-status.js";
-import { MEASURED_FP } from "../../src/rules/measured-fp.generated.js";
+import {
+  MEASURED_FP,
+  MEASURED_FP_RAW,
+} from "../../src/rules/measured-fp.generated.js";
 
 describe("measurement status (RULE-MEASURE-001)", () => {
   describe("getMeasurementStatus", () => {
@@ -28,10 +31,62 @@ describe("measurement status (RULE-MEASURE-001)", () => {
       }
     });
 
-    it("marks rules without MEASURED_FP as UNMEASURED", () => {
+    it("marks rules without any measurement as UNMEASURED", () => {
       const statuses = getMeasurementStatus();
-      const unmeasured = statuses.filter((s) => s.status === "UNMEASURED");
-      expect(unmeasured.length).toBeGreaterThanOrEqual(0);
+      // Asserted on the IDENTITY, not on a count. The first version was
+      // `expect(unmeasured.length).toBeGreaterThanOrEqual(0)`, which is
+      // vacuously true for every number ever produced.
+      for (const entry of statuses) {
+        if (entry.status !== "UNMEASURED") continue;
+        expect(
+          MEASURED_FP[entry.ruleId],
+          `${entry.ruleId} is UNMEASURED but MEASURED_FP has a row for it`,
+        ).toBeUndefined();
+        expect(
+          MEASURED_FP_RAW[entry.ruleId],
+          `${entry.ruleId} is UNMEASURED but MEASURED_FP_RAW has a row for it`,
+        ).toBeUndefined();
+      }
+    });
+
+    it("STALE is reachable: a measurement one revision behind is STALE, not UNMEASURED", () => {
+      // `STALE` was a member of the union with no input that could produce it —
+      // the generator filtered stale rows out of `MEASURED_FP`, so the rule read
+      // `UNMEASURED` and the difference between "nobody sampled this" and
+      // "42 verdicts, one revision behind" was destroyed. `MEASURED_FP_RAW`
+      // keeps it, and these two rules are the ones it is keeping.
+      const statuses = getMeasurementStatus();
+      const stale = statuses.filter((s) => s.status === "STALE");
+      expect(stale.map((s) => s.ruleId).sort()).toEqual([
+        "QA-PY-004",
+        "QA-PY-007",
+      ]);
+      for (const entry of stale) {
+        // The measurement EXISTS, and it describes a detector that no longer
+        // does. Asserting both halves is what makes this a status rather than
+        // a synonym for UNMEASURED.
+        expect(MEASURED_FP[entry.ruleId], entry.ruleId).toBeUndefined();
+        const raw = MEASURED_FP_RAW[entry.ruleId];
+        expect(raw, entry.ruleId).toBeDefined();
+        expect(raw?.n, entry.ruleId).toBeGreaterThan(0);
+        expect(raw?.detectorRevision, entry.ruleId).toBeLessThan(
+          entry.detectorRevision,
+        );
+      }
+    });
+
+    it("every STALE rule is a rule with real corpus work behind it", () => {
+      // The failure direction that matters: STALE must never be a way to keep
+      // reporting a number for a detector that changed.
+      const statuses = getMeasurementStatus();
+      for (const entry of statuses) {
+        if (entry.status !== "STALE") continue;
+        expect(
+          MEASURED_FP[entry.ruleId],
+          `${entry.ruleId} is STALE but is still shipped in MEASURED_FP — a stale ` +
+            "measurement must never be a current one",
+        ).toBeUndefined();
+      }
     });
 
     it("includes tier for each entry", () => {

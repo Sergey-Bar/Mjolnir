@@ -10,7 +10,9 @@
       "SHIPPED_SURFACE": "Reachable from a shipped CLI verb, release gate, or MCP tool. The v5 GA hard gate removes every entry in this class."
     },
     "reviewBySemantics": "A passed reviewBy fails the gate. The date is a deadline to either cover the file or delete it — never a silent renewal.",
-    "defectSignatureSemantics": "A SHIPPED_SURFACE entry carries EITHER `defectSignatures` (regexes that MUST still match the named source file) OR a `closureState` (the asserted defect is closed and no surface of it remains) — never neither, never both. A signature is a DRIFT ALARM, not a defect prover: its job is to fire when anything about the thing the entry is about changes, so fixing code forces a ledger update in the same commit. A signature that stops matching fails the gate with 'defect closed or drifted — remove or reclassify'. This is deliberately the same mechanism as tests/corpus/detector-hashes.json: a recorded fingerprint of source that CI diffs. PERMANENT_STRUCTURAL entries are exempt — they are evidenced by a structural reason, not by a defect.",
+    "defectSignatureSemantics": "A SHIPPED_SURFACE entry carries EITHER `defectSignatures` (regexes that MUST still match the named source file) OR a `closureState` (the asserted defect is closed and no surface of it remains) — never neither, never both. A signature is a DRIFT ALARM, not an ADMISSION and not a defect prover, and the distinction is the one this ledger exists to keep. ADMISSION would mean the signature GRANTS coverage: that matching a regex means the file is covered. It does not — the file is not executed and no test asserts anything about it. A signature's only job is to FIRE when something about the thing the entry is about changes, so a fix forces a ledger update in the same commit. A signature that stops matching fails the gate with 'defect closed or drifted — remove or reclassify', and a signature that keeps matching proves only that nobody has touched the file. Read a pin as 'this is watched', never as 'this is licensed'. This is deliberately the same mechanism as tests/corpus/detector-hashes.json: a recorded fingerprint of source that CI diffs. PERMANENT_STRUCTURAL entries are exempt — they are evidenced by a structural reason, not by a defect.",
+    "contractOnlyCeiling": 12,
+    "contractOnlyCeilingMeaning": "Ratchet over files imported by their own contract test only. Same shape as shippedSurfaceCeiling and the same rule: the count may fall and may never rise. 6.1: these are the contracts nothing in src/ imports, so this number IS the wiring backlog, stated as a CI value rather than as a sentence. Deleting a duplicate is as valid as wiring a unique one — m40 was removed in 6.4 because `auditLanguageManifest` already answers the question it answered, a second time and worse.",
     "shippedSurfaceCeiling": 10,
     "shippedSurfaceCeilingMeaning": "Ratchet over shipped surfaces that are not PERMANENT_STRUCTURAL, not a target. The count may fall (removal, merge, real tests) and may never rise. Structural entries are excluded from the count because they are evidenced by a structural reason rather than a removable gap."
   },
@@ -147,16 +149,6 @@
       "removalPlan": "V5-063 — add the production challenge executor that persists results.",
       "justification": "Caller-driven challenge contract; contract test only.",
       "defectSignatures": ["export function evaluateM38Challenges\\b"]
-    },
-    {
-      "path": "src/engine/m40-language-expansion-contract.ts",
-      "classification": "CONTRACT_ONLY",
-      "shippedSurface": false,
-      "owner": "maintainers",
-      "reviewBy": "2026-12-31",
-      "removalPlan": "V5-023 — adopt as the single language admission ledger rather than a parallel state machine.",
-      "justification": "Intake/saturation gates are the right model but run no admission today.",
-      "defectSignatures": ["export function evaluateM40LanguageExpansion\\b"]
     },
     {
       "path": "src/engine/m43-system-of-systems.ts",

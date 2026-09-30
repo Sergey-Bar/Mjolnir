@@ -73,10 +73,19 @@ describe("claim registry", () => {
         join(root, "candidate-trust-manifest.json"),
         join(dir, "candidate-trust-manifest.json"),
       );
-      mkdirSync(join(dir, "scripts"), { recursive: true });
+      mkdirSync(join(dir, "scripts", "lib"), { recursive: true });
       cpSync(
         join(root, "scripts", "check-claim-registry.mjs"),
         join(dir, "scripts", "check-claim-registry.mjs"),
+      );
+      // The checker also imports the shared proof-status list, which is the
+      // point of having it: one list, two consumers. Copied alongside the
+      // checker so a fixture that cannot resolve an import fails HERE with a
+      // legible `ERR_MODULE_NOT_FOUND` rather than reporting it as the
+      // assertion under test failing.
+      cpSync(
+        join(root, "scripts", "lib", "proof-statuses.mjs"),
+        join(dir, "scripts", "lib", "proof-statuses.mjs"),
       );
       // The checker imports `typescript`, and Node resolves from the
       // importing file's own ancestry — which in a temp directory is

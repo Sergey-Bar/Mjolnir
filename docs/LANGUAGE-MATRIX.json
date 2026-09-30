@@ -5,7 +5,7 @@
   "projectionOf": "mjolnir-capability-registry",
   "axis": "language",
   "observedAt": "2026-09-28",
-  "baseSha": "a73248145130df8be7d57235066fec9fe1839509",
+  "baseSha": "a806496160aeefe64c1795823f90b64cce582835",
   "rowCount": 1,
   "rows": [
     {
@@ -18,7 +18,7 @@
           "owner": "framework-inventory",
           "maturity": "M2",
           "rules": ["QA-CYP-001", "QA-CYP-002", "QA-CYP-003"],
-          "adapter": "src/adapters/typescript.ts",
+          "adapter": null,
           "proof": {
             "status": "LOCAL_PROVEN",
             "artifact": "docs/FP-AUDIT.md#QA-CYP-001",
@@ -52,7 +52,7 @@
             "QA-JV-106",
             "QA-JV-109"
           ],
-          "adapter": "src/adapters/typescript.ts",
+          "adapter": null,
           "proof": {
             "status": "LOCAL_PROVEN",
             "artifact": "docs/FP-AUDIT.md#QA-JV-104",
@@ -61,9 +61,9 @@
             "authority": "framework-inventory"
           },
           "nextLevelGap": {
-            "target": "M3_FIXTURE_VERIFIED",
+            "target": "M4_CORPUS_VERIFIED",
             "missing": [
-              "positive + negative + boundary + adversarial fixtures pass deterministically in CI"
+              "real-repository corpus run, n >= 10 classified verdicts, Wilson CI recorded, precision AND recall measured, detectorRev locked"
             ],
             "owner": "framework-inventory",
             "revisitTrigger": "capability test.framework.jest gains evidence for its next level"
@@ -75,7 +75,7 @@
           "name": "junit",
           "kind": "test-framework",
           "owner": "framework-inventory",
-          "maturity": "M2",
+          "maturity": "M1",
           "rules": [
             "QA-TEST-001",
             "QA-TEST-002",
@@ -84,7 +84,7 @@
             "QA-TEST-006",
             "QA-TEST-010"
           ],
-          "adapter": "src/adapters/java.ts",
+          "adapter": null,
           "proof": {
             "status": "LOCAL_PROVEN",
             "artifact": "docs/FP-AUDIT.md#QA-TEST-001",
@@ -107,7 +107,7 @@
           "name": "nunit",
           "kind": "test-framework",
           "owner": "framework-inventory",
-          "maturity": "M2",
+          "maturity": "M1",
           "rules": [
             "QA-TEST-001",
             "QA-TEST-002",
@@ -116,7 +116,7 @@
             "QA-TEST-006",
             "QA-TEST-010"
           ],
-          "adapter": "src/adapters/csharp.ts",
+          "adapter": null,
           "proof": {
             "status": "LOCAL_PROVEN",
             "artifact": "docs/FP-AUDIT.md#QA-TEST-001",
@@ -139,7 +139,7 @@
           "name": "playwright",
           "kind": "test-framework",
           "owner": "framework-inventory",
-          "maturity": "M2",
+          "maturity": "M3",
           "rules": [
             "QA-PW-002",
             "QA-PW-003",
@@ -164,7 +164,7 @@
             "QA-PW-146",
             "QA-PW-147"
           ],
-          "adapter": "src/adapters/typescript.ts",
+          "adapter": null,
           "proof": {
             "status": "LOCAL_PROVEN",
             "artifact": "docs/FP-AUDIT.md#QA-PW-002",
@@ -173,9 +173,9 @@
             "authority": "framework-inventory"
           },
           "nextLevelGap": {
-            "target": "M3_FIXTURE_VERIFIED",
+            "target": "M4_CORPUS_VERIFIED",
             "missing": [
-              "positive + negative + boundary + adversarial fixtures pass deterministically in CI"
+              "real-repository corpus run, n >= 10 classified verdicts, Wilson CI recorded, precision AND recall measured, detectorRev locked"
             ],
             "owner": "framework-inventory",
             "revisitTrigger": "capability test.framework.playwright gains evidence for its next level"
@@ -206,7 +206,7 @@
             "QA-PY-108",
             "QA-PY-104"
           ],
-          "adapter": "src/adapters/python.ts",
+          "adapter": null,
           "proof": {
             "status": "LOCAL_PROVEN",
             "artifact": "docs/FP-AUDIT.md#QA-PY-003",
@@ -215,9 +215,9 @@
             "authority": "framework-inventory"
           },
           "nextLevelGap": {
-            "target": "M3_FIXTURE_VERIFIED",
+            "target": "M4_CORPUS_VERIFIED",
             "missing": [
-              "positive + negative + boundary + adversarial fixtures pass deterministically in CI"
+              "real-repository corpus run, n >= 10 classified verdicts, Wilson CI recorded, precision AND recall measured, detectorRev locked"
             ],
             "owner": "framework-inventory",
             "revisitTrigger": "capability test.framework.pytest gains evidence for its next level"
@@ -229,9 +229,9 @@
           "name": "selenium",
           "kind": "test-runner",
           "owner": "framework-inventory",
-          "maturity": "M2",
+          "maturity": "M1",
           "rules": [],
-          "adapter": "src/adapters/typescript.ts",
+          "adapter": null,
           "proof": {
             "status": "BLOCKED",
             "artifact": null,
@@ -240,9 +240,10 @@
             "authority": "NONE"
           },
           "nextLevelGap": {
-            "target": "M3_FIXTURE_VERIFIED",
+            "target": "M2_IMPLEMENTED",
             "missing": [
-              "positive + negative + boundary + adversarial fixtures pass deterministically in CI"
+              "implementation exists",
+              "unit tests for the implementation"
             ],
             "owner": "framework-inventory",
             "revisitTrigger": "capability test.framework.selenium gains evidence for its next level"
@@ -254,7 +255,7 @@
           "name": "testng",
           "kind": "test-framework",
           "owner": "framework-inventory",
-          "maturity": "M2",
+          "maturity": "M1",
           "rules": [
             "QA-TEST-001",
             "QA-TEST-002",
@@ -263,7 +264,7 @@
             "QA-TEST-006",
             "QA-TEST-010"
           ],
-          "adapter": "src/adapters/java.ts",
+          "adapter": null,
           "proof": {
             "status": "LOCAL_PROVEN",
             "artifact": "docs/FP-AUDIT.md#QA-TEST-001",
@@ -297,7 +298,7 @@
             "QA-JV-106",
             "QA-JV-109"
           ],
-          "adapter": "src/adapters/typescript.ts",
+          "adapter": null,
           "proof": {
             "status": "LOCAL_PROVEN",
             "artifact": "docs/FP-AUDIT.md#QA-JV-104",
@@ -306,9 +307,9 @@
             "authority": "framework-inventory"
           },
           "nextLevelGap": {
-            "target": "M3_FIXTURE_VERIFIED",
+            "target": "M4_CORPUS_VERIFIED",
             "missing": [
-              "positive + negative + boundary + adversarial fixtures pass deterministically in CI"
+              "real-repository corpus run, n >= 10 classified verdicts, Wilson CI recorded, precision AND recall measured, detectorRev locked"
             ],
             "owner": "framework-inventory",
             "revisitTrigger": "capability test.framework.vitest gains evidence for its next level"
@@ -320,7 +321,7 @@
           "name": "xunit",
           "kind": "test-framework",
           "owner": "framework-inventory",
-          "maturity": "M2",
+          "maturity": "M1",
           "rules": [
             "QA-TEST-001",
             "QA-TEST-002",
@@ -329,7 +330,7 @@
             "QA-TEST-006",
             "QA-TEST-010"
           ],
-          "adapter": "src/adapters/csharp.ts",
+          "adapter": null,
           "proof": {
             "status": "LOCAL_PROVEN",
             "artifact": "docs/FP-AUDIT.md#QA-TEST-001",

@@ -5,6 +5,7 @@ import {
   validateRuleMetadata,
   validateAllRulesMetadata,
 } from "../../src/rules/rule-metadata-schema.js";
+import type { QADoctorRule } from "../../src/rules/rule.js";
 import { RULE_CATEGORIES } from "../../src/types.js";
 
 describe("rule metadata contract (ENGINE-008)", () => {
@@ -83,15 +84,55 @@ describe("rule metadata contract (ENGINE-008)", () => {
 
   describe("validateRuleMetadata", () => {
     it("returns zero violations for every registered rule", () => {
+      // UNFILTERED, and asserted on the whole set.
+      //
+      // The first version filtered out `falsePositiveRisk` and
+      // `strategyJustification` — the two fields most likely to be wrong —
+      // and then asserted `expect(v.message).toBe("")` on what survived, so
+      // every violation it reported came with a message and the assertion
+      // could never fail. A guard that excludes the cases it was worried about
+      // and then checks that the rest are silent is a guard that is always
+      // silent.
+      //
+      // The unfiltered assertion is the real one: the registry either has no
+      // metadata violations or this fails, and if a future rule introduces
+      // one, the failure names the rule and the field.
       const violations = validateAllRulesMetadata(RULES);
-      const failing = violations.filter(
-        (v) =>
-          v.field !== "falsePositiveRisk" &&
-          v.field !== "strategyJustification",
-      );
-      for (const v of failing) {
-        expect(v.message, `${v.ruleId}.${v.field}`).toBe("");
-      }
+      expect(
+        violations.map((v) => `${v.ruleId}.${v.field}`),
+        "every rule's metadata must validate, with no field excluded",
+      ).toEqual([]);
+    });
+
+    it("the unfiltered assertion is not vacuous — a real violation is reported with a message", () => {
+      // The negative control for the test above. If `validateRuleMetadata`
+      // ever stopped reporting, or started reporting with an empty message,
+      // the zero-violation assertion would still pass on an empty array — so
+      // this asserts that a KNOWN-bad rule produces the entry and that the
+      // entry carries text, which is what the old assertion assumed.
+      const first = RULES[0];
+      expect(first).toBeDefined();
+      if (first === undefined) return;
+      // The mutation is a cast rather than a valid value:
+      // `falsePositiveRisk` is a closed union, and the point is to hand the
+      // validator something it must reject. `as unknown as` is the honest form
+      // — `as QADoctorRule` would leave `exactOptionalPropertyTypes`
+      // complaining that the literal could carry `undefined` where the type
+      // forbids it, which is a different (and uninteresting) complaint.
+      const broken = {
+        ...first,
+        falsePositiveRisk: "",
+      } as unknown as QADoctorRule;
+      const violations = validateRuleMetadata(broken);
+      const hit = violations.find((v) => v.field === "falsePositiveRisk");
+      expect(hit, "a mutated field must produce a violation").toBeDefined();
+      // A non-empty message: the old test asserted `toBe("")` on a filtered
+      // set, which could only ever pass because every real violation carries
+      // text and was therefore excluded.
+      expect(
+        (hit?.message ?? "").length,
+        "a violation must explain itself",
+      ).toBeGreaterThan(0);
     });
 
     it("rejects a rule with empty ID", () => {

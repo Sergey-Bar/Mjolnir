@@ -78,6 +78,59 @@ export interface StrategyJustification {
   detail: string;
 }
 
+/**
+ * A declared, owned, expiring grant of core status.
+ *
+ * The 6.0 demotion emptied the core tier: no rule's 95% Wilson interval
+ * clears the 10% ceiling, the smallest observed `ciHigh` across 73 measured
+ * rules being 0.138. That is the corpus being too small, not the ceiling being
+ * wrong — moving 0.1 to 0.15 would admit a rule on 24 samples, which is tuning
+ * a threshold to fit data.
+ *
+ * So core is, for now, reachable only by a maintainer saying so in the open.
+ * This is that record. It is deliberately not a boolean: `corePromotion: true`
+ * would be indistinguishable from the silent override it replaces, and would
+ * carry no date on which the claim lapses.
+ */
+export interface CorePromotion {
+  /**
+   * Why this rule is trusted before the corpus can support it. A structural
+   * argument ("a shared mutable across tests is a defect regardless of
+   * frequency") is legitimate; "seemed fine" is not, and the registry
+   * check rejects a rationale shorter than a sentence.
+   */
+  rationale: string;
+  /**
+   * A named human who owns this claim. Per P9: an unowned claim is not a
+   * claim, it is a default nobody chose.
+   */
+  owner: string;
+  /** ISO-8601 date the grant was made. */
+  grantedAt: string;
+  /**
+   * ISO-8601 date the grant lapses. On this date the rule resolves to
+   * `extended` unless the grant is re-justified — the record has to be
+   * renewed by a person, not held in place by not being looked at.
+   */
+  expiresOn: string;
+  /**
+   * What backs the rationale, beyond the rationale: corpus verdict ids, a
+   * contract path, an ADR.
+   *
+   * An empty list is ALLOWED, and the registry check does not demand one —
+   * because a genuine structural premise ("a mutable shared across tests is a
+   * defect regardless of frequency") has no corpus verdict behind it, and
+   * inventing a citation for one would make the field decorative.
+   *
+   * What an empty list is NOT is invisible: `docs/CORE-READINESS.md` reports a
+   * promotion with no evidence reference as `NEEDS-SAMPLES` in its note, so a
+   * human sees an uncited grant next to a rule that still owes the corpus
+   * samples. That is the honest handling — a judgement the tree cannot verify
+   * is labelled as one — rather than a field the check pretends to verify.
+   */
+  evidenceRefs: string[];
+}
+
 export interface RuleMeta {
   /** Frozen public API — never reused (§18.4). */
   id: string;
@@ -140,6 +193,48 @@ export interface RuleMeta {
    * otherwise — an unmeasured rule can never default into core.
    */
   tier?: "core" | "extended" | "quarantine";
+  /**
+   * A declared, OWNED, EXPIRING grant of core status for a rule the corpus
+   * cannot yet support.
+   *
+   * Required by `checkRegistry` for any rule declaring `tier: "core"` without
+   * a valid measurement — the anti-creep law's counterpart to the measurement
+   * criterion. Without it, a core claim is a human assertion rendered with a
+   * measurement's appearance, which is precisely the defect the 6.0 demotion
+   * removed: nineteen rules showed `tier: "core"`, `measured: true`,
+   * `fpRate: 0` while their 95% Wilson upper bounds ran 13.8%–40.4%.
+   *
+   * The fields are load-bearing:
+   *
+   *   - `owner` — a named human. Per P9 an unowned claim is not a claim.
+   *   - `expiresOn` — the claim decays to `extended` when it lapses. An
+   *     assertion that never expires is a tier, which is what this exists to
+   *     avoid.
+   *   - `evidenceRefs` — corpus IDs, contract paths, or an ADR. A rationale
+   *     with nothing behind it is a preference.
+   *
+   * A rule that HAS earned core by measurement does not need one: the
+   * measurement is the record, and a hand-written rationale beside it is a
+   * second source of truth for the same fact.
+   */
+  corePromotion?: CorePromotion;
+  /**
+   * A declared, OWNED, EXPIRING commitment about a QUARANTINED rule.
+   *
+   * Same shape as `corePromotion`, and for the same reason: 34 quarantined
+   * rules carry no owner, no review date and no exit condition, so nothing in
+   * the tree says who will re-measure them or when the quarantine lapses.
+   * `src/rules/tier-evidence.ts` is the worked example of the pattern for the
+   * nineteen rules demoted in 6.0, and `docs/QUARANTINE-REMEDIATION.md` is the
+   * ledger for the rest — but a ledger nobody must update is a report.
+   *
+   * The difference from `corePromotion` is the direction. `corePromotion` says
+   * "this rule is trusted before the corpus can show it"; this says "this rule
+   * is NOT trusted yet, here is when that is re-decided". A rule in quarantine
+   * WITHOUT one is a rule whose quarantine is permanent by default, which is
+   * the outcome the tier exists to avoid.
+   */
+  quarantinePromotion?: CorePromotion;
   /**
    * Detector implementation revision (Verification Trust Evolution Plan
    * §07). Increment on ANY detection-logic change — pattern, scoping,

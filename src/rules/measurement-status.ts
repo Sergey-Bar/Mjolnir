@@ -8,7 +8,7 @@
 
 import type { QADoctorRule } from "./rule.js";
 import { RULES } from "./index.js";
-import { MEASURED_FP } from "./measured-fp.generated.js";
+import { MEASURED_FP, MEASURED_FP_RAW } from "./measured-fp.generated.js";
 import {
   declaredDetectorRevision,
   effectiveTier,
@@ -30,13 +30,31 @@ export interface RuleMeasurementEntry {
 
 /**
  * Derive the measurement status for a single rule.
+ *
+ * `STALE` is derived from `MEASURED_FP_RAW`, not from `MEASURED_FP`.
+ *
+ * `MEASURED_FP` only carries measurements whose recorded revision still
+ * matches the rule's, so a stale row is absent from it and the rule reads
+ * `UNMEASURED` — the same verdict as a rule nobody has ever sampled. That is
+ * the distinction the generator's revision filter destroys: `QA-PY-004` has 42
+ * hand-classified verdicts and a sidecar one revision behind its rule, and
+ * reporting it as "no measurement" sends a maintainer to do work that is
+ * already done while hiding the fact that the work needs REDOING.
+ *
+ * The RAW map is that information kept, and it makes `STALE` — a member of the
+ * union since before this — reachable for the first time. A status nothing
+ * can produce is a comment; `tests/rules/measurement-status.spec.ts` asserts
+ * the two rules above are reported `STALE`, so a future generator that drops
+ * the raw map fails rather than quietly reverting to `UNMEASURED`.
  */
 function getMeasurementStatusForRule(rule: QADoctorRule): MeasurementStatus {
-  const m = MEASURED_FP[rule.id];
-  if (m === undefined) return "UNMEASURED";
-  const declared = declaredDetectorRevision(rule);
-  if (m.detectorRevision !== declared) return "STALE";
-  return "MEASURED";
+  const current = MEASURED_FP[rule.id];
+  if (current !== undefined) return "MEASURED";
+  const raw = MEASURED_FP_RAW[rule.id];
+  if (raw === undefined) return "UNMEASURED";
+  return raw.detectorRevision === declaredDetectorRevision(rule)
+    ? "MEASURED"
+    : "STALE";
 }
 
 /**

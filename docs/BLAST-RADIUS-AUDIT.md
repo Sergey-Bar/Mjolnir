@@ -7,27 +7,27 @@ contract enforces: **every external import in src/ must belong to the
 allowlist**, and the shipped surface (adapters, rules, flags, formats, exit
 codes) must match this document exactly.
 
-## Inventory: 332 files, 90022 LOC
+## Inventory: 333 files, 90594 LOC
 
 | Area              | Files | LOC   |
 | ----------------- | ----- | ----- |
-| src/engine        | 57    | 21615 |
-| src/commands      | 38    | 12610 |
-| src/rules         | 89    | 12290 |
-| src/v6            | 10    | 5769  |
-| src/(root)        | 8     | 3890  |
+| src/engine        | 56    | 19928 |
+| src/commands      | 38    | 13134 |
+| src/rules         | 89    | 12997 |
+| src/v6            | 11    | 6435  |
+| src/(root)        | 8     | 3891  |
 | src/reporter      | 14    | 3838  |
 | src/forensics     | 17    | 3065  |
-| src/ledger        | 1     | 2780  |
-| src/governance    | 1     | 2744  |
-| src/frameworks    | 6     | 2656  |
+| src/ledger        | 1     | 2855  |
+| src/governance    | 2     | 2834  |
+| src/frameworks    | 6     | 2718  |
 | src/plugins       | 5     | 1946  |
-| src/discovery     | 10    | 1794  |
-| src/adapters      | 11    | 1770  |
+| src/discovery     | 10    | 1817  |
+| src/adapters      | 11    | 1778  |
 | src/gaps          | 2     | 1390  |
 | src/integrations  | 9     | 1355  |
 | src/qa            | 1     | 1282  |
-| src/release       | 7     | 1071  |
+| src/release       | 7     | 1090  |
 | src/bench         | 5     | 1063  |
 | src/mutation      | 6     | 831   |
 | src/mcp           | 3     | 825   |
@@ -39,8 +39,8 @@ codes) must match this document exactly.
 | src/lib           | 7     | 468   |
 | src/traceability  | 2     | 441   |
 | src/scope         | 2     | 427   |
+| src/trust         | 2     | 362   |
 | src/playwright    | 2     | 332   |
-| src/trust         | 2     | 278   |
 | src/benchmark     | 2     | 174   |
 | src/anti-gaming   | 2     | 169   |
 
@@ -57,10 +57,10 @@ codes) must match this document exactly.
 | src/cli-io                      | 20        |
 | src/forensics/types             | 20        |
 | src/lib/fs-atomic               | 18        |
-| src/rules/index                 | 15        |
+| src/rules/index                 | 16        |
 | src/engine/adapter              | 14        |
-| src/rules/measured-fp.generated | 14        |
 | src/engine/degradation-ledger   | 13        |
+| src/rules/measured-fp.generated | 13        |
 | src/reporter/presentation       | 12        |
 | src/discovery/ignores           | 11        |
 
@@ -68,8 +68,8 @@ codes) must match this document exactly.
 
 | Dependency         | Files importing it |
 | ------------------ | ------------------ |
-| node:fs            | 68                 |
-| node:path          | 65                 |
+| node:fs            | 69                 |
+| node:path          | 66                 |
 | node:crypto        | 21                 |
 | ts-morph           | 7                  |
 | node:child_process | 5                  |

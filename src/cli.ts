@@ -64,7 +64,8 @@ import { runStdioTransport } from "./mcp/transport.js";
  * bundled `dist/cli.mjs`, so resolving package.json at runtime depends on
  * where the file happens to sit after install. This follows the same
  * discipline as SARIF's `driver.version` — kept in sync by
- * `scripts/sync-sarif-version.cjs` on release and guarded by
+ * `scripts/archive/sync-sarif-version.cjs` (archived; superseded by the release
+ * workflow's own version stamping) on release and guarded by
  * `tests/contract/version-consistency.spec.ts` locally. R4c moved the literal to
  * src/engine/version.ts (a leaf module) so the scan pipeline's run
  * identity can carry it without a cli.ts import cycle; this re-export

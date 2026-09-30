@@ -325,7 +325,19 @@ describe("mjolnir doctor — anti-creep and tier-enforcement checks", () => {
       // (plan §11.2 Step 2) and these synthetic rules carry no measurement.
       fakeRule(`QA-TEST-${100 + i}`, "core"),
     );
-    const check = checkAntiCreep(rules);
+    // The baseline is passed explicitly, and set to this fixture's own size.
+    // The committed baseline is ZERO (the 6.0 demotion emptied the tier), and
+    // it was read from disk by the first version of this test — so a
+    // CORE_CAP-sized fixture compared against it as net growth of 65 and
+    // failed, which made a test about the ABSOLUTE cap fail for a reason that
+    // had nothing to do with it. The two caps are independent and are now
+    // exercised independently; see `tests/rules/anti-creep.spec.ts` for the
+    // net-growth ratchet.
+    const check = checkAntiCreep(rules, {
+      baselineCore: CORE_CAP,
+      recordedAt: "2026-09-28",
+      recordedAtSha: "0".repeat(40),
+    });
     expect(check.ok).toBe(true);
     expect(check.details.join(" ")).toContain(`${CORE_CAP}/${CORE_CAP}`);
   });
@@ -334,7 +346,13 @@ describe("mjolnir doctor — anti-creep and tier-enforcement checks", () => {
     const rules = Array.from({ length: CORE_CAP + 8 }, (_, i) =>
       fakeRule(`QA-TEST-${100 + i}`, "core"),
     );
-    const check = checkAntiCreep(rules);
+    const check = checkAntiCreep(rules, {
+      // The baseline is above the fixture, so net growth is negative and the
+      // failure is unambiguously the absolute cap's.
+      baselineCore: CORE_CAP + 100,
+      recordedAt: "2026-09-28",
+      recordedAtSha: "0".repeat(40),
+    });
     expect(check.ok).toBe(false);
     expect(check.details.join(" ")).toContain("exceeds cap");
     expect(check.details.some((d) => d.includes("overflow:"))).toBe(true);

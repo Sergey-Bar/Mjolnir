@@ -8,9 +8,13 @@ ignore.
 ## The laws
 
 1. **Anti-creep law.** Every addition to the launch set requires an
-   equal-size removal. Executable as the core-tier cap: `CORE_CAP = 65`
-   in `src/commands/doctor.ts` — promoting a rule to core requires
-   demoting another.
+   equal-size removal. The launch set is the core tier — the rules that
+   ship in the default report. Executed as two independent caps in
+   `src/commands/doctor.ts`: the absolute `CORE_CAP` and the net-growth
+   ratchet in `docs/ANTI-CREEP-BASELINE.json`. A promotion to core must be
+   matched by a demotion out of it, or recorded as an
+   `ANTI-CREEP-EXCEPTION` in `CHANGELOG.md` with the reason.
+   See `docs/ANTI-CREEP.md`.
 2. **Fixture firewall.** Every rule MUST have fixtures that must-fire
    AND must-not-fire (`tests/fixtures/<RULE-ID>/`). A rule without both
    fixture classes is not done. Never weaken a must-not-fire fixture to

@@ -63,6 +63,9 @@ function cleanSurfaces(): Surfaces {
     } else if (path === "src/reporter/sarif.ts") {
       surfaces[path] =
         'import { ENGINE_VERSION } from "../engine/version.js"\nexport const version = ENGINE_VERSION;\n';
+    } else if (path === "capability-manifest.json") {
+      surfaces[path] =
+        `{\n  "product": "mjolnir-qa",\n  "version": "${VERSION}"\n}\n`;
     } else if (path === "smithery.yaml") {
       surfaces[path] =
         `"version": "${STABLE}"\ncommand: npx\nargs: ["-y", "mjolnir-qa@${STABLE}"]\n`;

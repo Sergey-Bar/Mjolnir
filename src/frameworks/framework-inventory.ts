@@ -8,7 +8,29 @@
 export type EntityType =
   "TEST_FRAMEWORK" | "E2E_FRAMEWORK" | "AUTOMATION_LIBRARY" | "CI_PROVIDER";
 
-export type MaturityLevel = "F0" | "F1" | "F2" | "F3" | "F4" | "F5";
+/**
+ * The FRAMEWORK support ladder, `F0`–`F5`.
+ *
+ * NOT the capability maturity ladder. `docs/adr/0001` fixed CAPABILITY
+ * maturity to `M0`–`M5`, and that ladder is DERIVED: `src/v6/maturity.ts` is the
+ * only way a capability gets a level, and it derives it from evidence. This
+ * one is DECLARED — a hand-maintained target in this inventory, scored by
+ * `src/engine/framework-maturity.ts` from a scorecard and a support status.
+ *
+ * The two were both called "maturity" with a type named `MaturityLevel` on
+ * both, which is the collision `docs/adr/0001` was supposed to close and
+ * `docs/adr/0007` was supposed to enforce. Two vocabularies for one word is
+ * how a hand-declared F-level ends up quoted beside a derived M-level as
+ * though they were the same measurement — and only one of them is.
+ *
+ * So the type is named for what it is, and
+ * `tests/v6/maturity-vocabulary.spec.ts` asserts the two ladders never share
+ * a name and never appear in the other's positions.
+ */
+export type FrameworkSupportLevel = "F0" | "F1" | "F2" | "F3" | "F4" | "F5";
+
+/** Kept as a deprecated alias so a rename is not a breaking change mid-plan. */
+export type MaturityLevel = FrameworkSupportLevel;
 
 export type SupportStatus =
   | "OFFICIAL_FULL"

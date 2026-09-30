@@ -17,7 +17,7 @@ import { readFileSync, writeFileSync, readdirSync, statSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { isMainModule } from "./lib/is-main-module.js";
+import { isMainModule } from "../lib/is-main-module.js";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, "..");

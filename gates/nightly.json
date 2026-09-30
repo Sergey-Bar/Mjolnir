@@ -1,66 +1,141 @@
 {
   "schemaVersion": 1,
+
   "tier": "nightly",
+
   "description": "Every gate that runs on a schedule, and the outermost tier. A superset of release by construction. This is where the twelve `scripts/v6` gates live: they are real gates with real exit codes that no workflow ran, and they cannot live anywhere else. Corpus regression is network-bound and is not part of `npm test`; `ecosystem:gaps` exits 3 on BLOCKED (absent corpus cache) and only reaches PASS once the cache exists, which is why the corpus job and the gate jobs share this file. The stress harness lives in stress.yml and is listed here so the tier is one reviewable set rather than a set plus an exception.",
+
   "runsOn": ["schedule", "workflow_dispatch"],
+
   "workflows": [
     ".github/workflows/corpus-audit.yml",
+
     ".github/workflows/stress.yml",
+
     ".github/workflows/fuzz.yml"
   ],
+
+  "alsoRunsIn": [
+    ".github/workflows/release-smoke.yml",
+
+    ".github/workflows/sarif-code-scanning.yml"
+  ],
+
   "gates": [
     { "id": "build", "command": "npm run build" },
+
     { "id": "typecheck", "command": "npm run typecheck" },
+
     { "id": "lint", "command": "npm run lint" },
+
     { "id": "version-check", "command": "npm run version:check" },
+
     { "id": "brand-doctor", "command": "npm run brand:doctor" },
+
     {
       "id": "brand-doctor-selftest",
+
       "command": "npm run brand:doctor:selftest"
     },
+
     { "id": "brand-fonts", "command": "npm run brand:fonts:check" },
+
     { "id": "coverage", "command": "npm run test:coverage:ci" },
+
     { "id": "coverage-ratchet", "command": "npm run coverage:ratchet" },
+
     { "id": "property", "command": "npm run test:property" },
+
     { "id": "audit", "command": "npm run audit:ci" },
+
     { "id": "site-doctor", "command": "npm run site:doctor" },
+
     { "id": "ci-standard", "command": "npm run ci:standard" },
+
     { "id": "self-scan", "command": "node dist/cli.mjs src --json" },
+
     { "id": "docs-regen", "command": "npm run docs:regen" },
+
     { "id": "fuzz", "command": "npm run test:fuzz" },
+
     { "id": "certify", "command": "npm run ci-local" },
+
     { "id": "m26-audit", "command": "npm run m26:audit" },
+
     { "id": "candidate-readiness", "command": "npm run candidate:readiness" },
+
     { "id": "changelog", "command": "npm run changelog:check" },
 
     { "id": "corpus-regression", "command": "npm run corpus:regression" },
+
     {
       "id": "build-determinism",
+
       "command": "npm run build:determinism"
     },
 
+    { "id": "corpus-resample", "command": "npm run corpus:resample" },
+
     { "id": "gate:registry", "command": "npm run registry:check" },
+
     { "id": "gate:qa-ir-parity", "command": "npm run qa-ir:parity" },
+
     { "id": "gate:rule-quality", "command": "npm run rules:quality:check" },
+
     {
       "id": "gate:issue-disposition",
+
       "command": "npm run issue-disposition:check"
     },
+
     { "id": "gate:claims-prose", "command": "npm run claims:prose:strict" },
+
     { "id": "gate:claim-budget", "command": "npm run claim:budget" },
+
     { "id": "gate:ecosystem-census", "command": "npm run ecosystem:census" },
+
     { "id": "gate:ecosystem-gaps", "command": "npm run ecosystem:gaps" },
+
     { "id": "gate:v6-archive", "command": "npm run v6:archive:check" },
+
     { "id": "gate:thresholds-parity", "command": "npm run thresholds:parity" },
+
     {
       "id": "gate:coverage-exemptions",
+
       "command": "npm run coverage:exemptions"
     },
+
     { "id": "gate:verbs-budget", "command": "npm run verbs:budget" },
+
     { "id": "gate:unimported-modules", "command": "npm run unimported:check" },
+
     { "id": "gate:tiers", "command": "node scripts/check-gate-tiers.mjs" },
 
     { "id": "stress-soak", "command": "node tests/stress/soak.mjs" },
-    { "id": "stress-concurrent", "command": "node tests/stress/concurrent.mjs" }
+
+    {
+      "id": "stress-concurrent",
+      "command": "node tests/stress/concurrent.mjs"
+    },
+
+    { "id": "scripts-unimported", "command": "npm run unimported:check" },
+
+    { "id": "qa-ir-parity", "command": "npm run qa-ir:parity" },
+
+    { "id": "workflow-scripts", "command": "npm run workflow:scripts" },
+
+    { "id": "config-consumers", "command": "npm run config:consumers" },
+
+    { "id": "script-reachability", "command": "npm run scripts:reachable" },
+
+    { "id": "quad-verified", "command": "npm run rules:quad:check" },
+
+    { "id": "promotion-ratchet", "command": "npm run rules:promotion:check" },
+
+    { "id": "provenance-drift", "command": "npm run docs:provenance-drift" },
+
+    { "id": "translation-ratchet", "command": "npm run translations:ratchet" },
+    { "id": "claim-integrity", "command": "npm run gates:claim-integrity" }
   ]
 }

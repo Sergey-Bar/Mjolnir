@@ -34,11 +34,8 @@
 
 import { compareCodePoints } from "../lib/compare.js";
 import { RULES, RETIRED_RULE_IDS } from "../rules/index.js";
-import { MEASURED_FP } from "../rules/measured-fp.generated.js";
-import {
-  declaredDetectorRevision,
-  effectiveTier,
-} from "../rules/measurement.js";
+import { hasValidMeasurement } from "../rules/measurement.js";
+import { ruleHasCompleteQuad } from "./fixture-quad-probe.js";
 import { FRAMEWORK_INVENTORY } from "../frameworks/framework-inventory.js";
 import { CI_PROVIDER_IDS } from "../frameworks/provider-capability-contract.js";
 import { existsSync, readFileSync } from "node:fs";
@@ -48,12 +45,14 @@ import {
   createEvidenceResolver,
 } from "./ecosystem-probe.js";
 import {
+  isMaturity,
   maturityRank,
   nextLevelGapFromEvidence,
   type Maturity,
   type MaturityEvidence,
 } from "./maturity.js";
 import type { NextLevelGap, Owner, ProofRef } from "./capability-types.js";
+import { isRecord } from "../lib/safe-json.js";
 
 // ─── Identity ────────────────────────────────────────────────────────
 
@@ -138,8 +137,19 @@ export interface CapabilityEntry {
    * staleness verdict at all.
    */
   observedUpstreamMajor: string | null;
-  /** The adapter that implements it, when one exists. */
+  /** The adapter that IMPLEMENTS this capability, when one exists. */
   adapter: string | null;
+  /**
+   * Language adapters used to EXECUTE this framework's tests, from the
+   * inventory.
+   *
+   * Recorded separately from `adapter` and on purpose: an entry that carried
+   * only the executor list read as though the framework were supported by
+   * them, which is how `test.framework.selenium` reached M2 on a TypeScript
+   * adapter. Having its own field is what lets the distinction be stated
+   * rather than assumed.
+   */
+  executorAdapters?: readonly string[];
   /**
    * The support matrix's own disposition, for entries sourced from it.
    * `null` for capabilities the matrix does not describe. A `BLOCKED`
@@ -239,8 +249,9 @@ export function ruleFamily(ruleId: string): string {
 
 export interface RuleFacts {
   liveByFamily: ReadonlyMap<string, readonly string[]>;
-  measuredByFamily: ReadonlyMap<string, readonly string[]>;
-  tierByFamily: ReadonlyMap<string, readonly string[]>;
+  /** Measured rule ids — what a single entry resolves against. */
+  measured: ReadonlySet<string>;
+  /** Ids that no longer exist, so an entry naming one is not credited. */
   retired: ReadonlySet<string>;
 }
 
@@ -256,27 +267,14 @@ export function collectRuleFacts(): RuleFacts {
     return map;
   };
   const live = RULES.map((rule) => rule.id);
-  const measured = RULES.filter((rule) => {
-    const measurement = MEASURED_FP[rule.id];
-    return (
-      measurement !== undefined &&
-      measurement.detectorRevision === declaredDetectorRevision(rule)
-    );
-  }).map((rule) => rule.id);
+  const measured = RULES.filter((rule) => hasValidMeasurement(rule)).map(
+    (rule) => rule.id,
+  );
   return {
     liveByFamily: group(live),
-    measuredByFamily: group(measured),
-    tierByFamily: group(live.map((id) => effectiveTier(getRuleById(id)))),
+    measured: new Set(measured),
     retired: new Set(RETIRED_RULE_IDS),
   };
-}
-
-function getRuleById(id: string) {
-  const rule = RULES.find((candidate) => candidate.id === id);
-  if (rule === undefined) {
-    throw new Error(`rule ${id} is in the registry index but not in RULES`);
-  }
-  return rule;
 }
 
 // ─── Framework → capability-id mapping ───────────────────────────────
@@ -311,23 +309,86 @@ export function domainCapabilityId(domainId: string): string {
 
 // ─── Assembly ────────────────────────────────────────────────────────
 
+/**
+ * The evidence for ONE entry, not the registry's.
+ *
+ * `RegistryEvidence.registry` carries `hasLiveRule` and `hasMeasurement` as
+ * single booleans, and every entry was OR-ed against them — so one measured
+ * rule anywhere in the registry made `hasMeasurement` true for every
+ * capability in it. `ci.provider.azure-pipelines` sat at M2 with
+ * `hasAdapter` from its own file and `hasMeasurement` from an unrelated
+ * Java rule, which is the wave-1 "no capability advertised above proven level"
+ * failure arriving through the evidence layer instead of the maturity layer.
+ *
+ * Resolved per entry, against that entry's OWN rules:
+ *
+ *   - `hasLiveRule` — `base.rules` names at least one live id.
+ *   - `hasMeasurement` — at least one id in `base.rules` has a valid
+ *     measurement, using the same `hasValidMeasurement` predicate the doctor's
+ *     census and the tier ratchets use, so "measured" means one thing.
+ *
+ * The caller-supplied flags are still honoured, because a caller that KNOWS
+ * something the tree does not (a test injecting an adapter, a build with
+ * evidence from elsewhere) must be able to say so. The OR is the caller's
+ * claim, not a global truth leaking into an entry it does not describe.
+ */
+function evidenceForEntry(
+  base: { rules: readonly string[] },
+  evidence: RegistryEvidence,
+  facts: RuleFacts,
+): RegistryEvidence {
+  const own = base.rules.filter((id) => !facts.retired.has(id));
+  return {
+    registry: {
+      ...evidence.registry,
+      hasLiveRule: evidence.registry.hasLiveRule || own.length > 0,
+      hasMeasurement:
+        evidence.registry.hasMeasurement ||
+        own.some((id) => facts.measured.has(id)),
+    },
+    files: evidence.files,
+  };
+}
+
 function finalize(
   base: Omit<CapabilityEntry, "maturity" | "proven" | "nextLevelGap" | "proof">,
   evidence: RegistryEvidence,
   observedAt: string,
+  facts: RuleFacts = collectRuleFacts(),
+  census: ReadonlyMap<string, DeclaredCensusClaim> = new Map(),
 ): CapabilityEntry {
-  const maturityEvidence = toMaturityEvidence(evidence.registry);
-  const { maturity, nextLevelGap } = nextLevelGapFromEvidence(
+  const perEntry = evidenceForEntry(base, evidence, facts);
+  const maturityEvidence = toMaturityEvidence(perEntry.registry);
+  const { maturity: proven, nextLevelGap } = nextLevelGapFromEvidence(
     maturityEvidence,
     base.owner,
     `capability ${base.id} gains evidence for its next level`,
   );
+  // `maturity` is the level a consumer would ADVERTISE; `proven` is the level
+  // this registry's own evidence supports. They come from two different
+  // resolvers on purpose — see `readCensusClaims` — and the gap between them
+  // is what `OVER_CLAIMED_MATURITY` exists to see.
+  //
+  // With no census row there is nothing separate to advertise, so the entry
+  // advertises what it proved. Defaulting the other way — to M1 — would
+  // under-claim every entry whose census has not been generated, which is a
+  // false negative in the other direction.
+  // Validated where the value is USED, not only where it is read.
+  // `readCensusClaims` already filters, but the census map is also a
+  // parameter: a caller can inject a claim carrying a level from another
+  // vocabulary — `F4` is the framework support ladder, and ADR 0011 declares
+  // the two orthogonal. Importing one through the other is the axis violation
+  // `findAxisViolations` exists to catch, so it is refused at the boundary
+  // rather than trusted because the TypeScript type says it should be fine.
+  const claim = census.get(censusIdFor(base.id));
+  const maturity =
+    claim !== undefined && isMaturity(claim.maturity) ? claim.maturity : proven;
   return {
     ...base,
-    proven: maturity,
+    proven,
     maturity,
     nextLevelGap,
-    proof: proofFor(base, maturity, evidence, observedAt, collectRuleFacts()),
+    proof: proofFor(base, proven, perEntry, observedAt, facts),
   };
 }
 
@@ -377,11 +438,95 @@ function proofFor(
   };
 }
 
+/**
+ * The census's per-ecosystem claim, keyed by census id.
+ *
+ * This is the DECLARED half of `maturity`. The census derives it through its
+ * own evidence resolver (`src/v6/ecosystem-probe.ts`); the registry derives
+ * `proven` through its own (`CapabilityFileProbe` plus the per-entry rule
+ * facts). Two resolvers, two answers — and the gate between them is
+ * `OVER_CLAIMED_MATURITY`, which is what holds the two to agreeing.
+ *
+ * Before the split, `finalize` assigned `proven: maturity` from one call, so
+ * the gate compared a value with itself and could not fire. That is the
+ * defect: a check that has never fired is a comment.
+ *
+ * A malformed or absent census yields an empty map, not a throw, for the
+ * reason every other artifact reader in this file gives one: the caller
+ * renders INCONCLUSIVE, and a gate that crashes tells a reader less than one
+ * that names the file.
+ */
+function readCensusClaims(
+  root: string,
+): ReadonlyMap<string, DeclaredCensusClaim> {
+  const out = new Map<string, DeclaredCensusClaim>();
+  let entries: unknown;
+  try {
+    const parsed = JSON.parse(
+      readFileSync(join(root, "docs", "ECOSYSTEM-CENSUS.json"), "utf8"),
+    ) as { entries?: unknown };
+    entries = parsed.entries;
+  } catch {
+    return out;
+  }
+  if (!Array.isArray(entries)) return out;
+  for (const raw of entries) {
+    if (!isRecord(raw)) continue;
+    const { id, state, maturity } = raw;
+    if (typeof id !== "string") continue;
+    if (typeof state !== "string") continue;
+    if (!isMaturity(maturity)) continue;
+    out.set(id, { id, state, maturity });
+  }
+  return out;
+}
+
+/**
+ * `test.framework.playwright` → `ec.test-framework.playwright`, and
+ * `ci.provider.github-actions` → `ec.ci-cd-provider.github-actions`.
+ *
+ * A pure function of the id, so the join between the two registries cannot rot
+ * into a second hand-maintained mapping. Every registry id is
+ * `<namespace>.<facet>.<slug>`, and the census names the same ecosystems as
+ * `ec.<category>.<slug>` — so the FACET is dropped and the category comes from
+ * a closed table keyed by namespace. A head outside the table yields the id
+ * unprefixed, which matches no census row and therefore leaves the entry
+ * advertising what it proved rather than guessing a category.
+ */
+const CENSUS_CATEGORY_BY_NAMESPACE: Readonly<Record<string, string>> = {
+  test: "test-framework",
+  ci: "ci-cd-provider",
+};
+
+function censusIdFor(capabilityId: string): string {
+  const parts = capabilityId.split(".");
+  const category =
+    parts[0] === undefined ? undefined : CENSUS_CATEGORY_BY_NAMESPACE[parts[0]];
+  if (category === undefined) return capabilityId;
+  return `ec.${category}.${parts.slice(2).join(".")}`;
+}
+
 export interface BuildRegistryOptions {
   evidence?: RegistryEvidence;
   observedAt?: string;
   /** The checkout the domain cells are read from. */
   root?: string;
+  /**
+   * The ecosystem census, for the DECLARED half of each entry's level.
+   *
+   * Read from `docs/ECOSYSTEM-CENSUS.json` by default. A caller with no
+   * census — a test, or a build before the census has run — gets an empty map,
+   * which leaves every entry's declared level equal to its proven level rather
+   * than defaulting either way.
+   */
+  census?: ReadonlyMap<string, DeclaredCensusClaim>;
+}
+
+/** What the census CLAIMS about one ecosystem, in the M vocabulary. */
+export interface DeclaredCensusClaim {
+  id: string;
+  state: string;
+  maturity: Maturity;
 }
 
 /**
@@ -396,6 +541,7 @@ export function buildCapabilityRegistry(
   const evidence = options.evidence ?? BLIND_REGISTRY_EVIDENCE;
   const observedAt = options.observedAt ?? "1970-01-01";
   const facts = collectRuleFacts();
+  const census = options.census ?? readCensusClaims(root);
   const byId = new Map<string, CapabilityEntry>();
 
   // 1. Frameworks. The single largest source, and the one that used to be
@@ -405,10 +551,27 @@ export function buildCapabilityRegistry(
     const id = frameworkCapabilityId(framework.frameworkId);
     const family = familyForFramework(framework.frameworkId);
     const live = facts.liveByFamily.get(family) ?? [];
-    const adapter =
-      framework.executorAdapterIds.length > 0
-        ? `src/adapters/${framework.executorAdapterIds[0]}.ts`
-        : null;
+    // The adapter that IMPLEMENTS this capability, which is a different
+    // question from the one the inventory answers.
+    //
+    // `executorAdapterIds` is the list of LANGUAGE adapters used to run this
+    // framework's tests — Selenium names `["typescript", "python", "java"]`.
+    // The first version read `executorAdapterIds[0]` as the framework's own
+    // adapter, so `test.framework.selenium` claimed `src/adapters/typescript.ts`
+    // and reached M2 on a TypeScript adapter. An adapter for one ecosystem is
+    // not evidence of support for another; that is the same laundering the
+    // registry-global evidence flags were, one indirection further out.
+    //
+    // So `adapter` now means "an adapter whose implementation target IS this
+    // framework", probed by name. Today no framework has one — the adapters
+    // in `src/adapters/` are language adapters — and every framework
+    // capability rests on its own rules instead, which is the honest state.
+    // `executorAdapters` keeps the inventory's answer as a fact about the
+    // framework, without letting it stand in for support.
+    const ownAdapter = `src/adapters/${framework.frameworkId.toLowerCase()}.ts`;
+    const adapter = evidence.files.adapterExists(ownAdapter)
+      ? ownAdapter
+      : null;
     byId.set(
       id,
       finalize(
@@ -418,7 +581,7 @@ export function buildCapabilityRegistry(
           kind: kindForFramework(framework.entityType),
           owner: "framework-inventory",
           rules: live,
-          censusId: null,
+          censusId: censusIdFor(id),
           frameworkId: framework.frameworkId,
           domains: [],
           blocksAxes: ["Discovery"],
@@ -426,13 +589,24 @@ export function buildCapabilityRegistry(
             framework.frameworkId,
           ),
           adapter,
+          executorAdapters: framework.executorAdapterIds.map(
+            (slug) => `src/adapters/${slug}.ts`,
+          ),
         },
         {
           registry: {
             ...evidence.registry,
-            // The adapter path is an observation this builder makes about
-            // the entry it is building, not a global fact, so it is OR-ed
-            // rather than taken from the evidence object.
+            // Both arms are per-entry observations this builder makes about
+            // the entry it is building, not global facts.
+            //
+            // `hasAdapter` asks the file probe whether the path RESOLVES, and
+            // `adapter` above is that probe's answer — so the two cannot
+            // disagree, which is the point of asking once. The CI-provider
+            // branch below does the same thing with the same probe; before this
+            // the framework branch used `adapter !== null` against an adapter
+            // path derived from `executorAdapterIds[0]`, which is a LANGUAGE
+            // adapter, and that is how `test.framework.selenium` reached M2 on
+            // `src/adapters/typescript.ts`.
             hasAdapter: evidence.registry.hasAdapter || adapter !== null,
             hasFixtureQuad:
               evidence.registry.hasFixtureQuad ||
@@ -441,6 +615,8 @@ export function buildCapabilityRegistry(
           files: evidence.files,
         },
         observedAt,
+        facts,
+        census,
       ),
     );
   }
@@ -464,7 +640,7 @@ export function buildCapabilityRegistry(
           kind: "ci-cd-provider",
           owner: "provider-capability-contract",
           rules: live,
-          censusId: null,
+          censusId: censusIdFor(id),
           frameworkId: null,
           domains: ["ci-integrity"],
           blocksAxes: ["CI Integrity", "False-Green Detection"],
@@ -484,6 +660,8 @@ export function buildCapabilityRegistry(
           files: evidence.files,
         },
         observedAt,
+        facts,
+        census,
       ),
     );
   }
@@ -513,7 +691,7 @@ export function buildCapabilityRegistry(
           kind: "domain",
           owner: domain.owner,
           rules: [],
-          censusId: null,
+          censusId: censusIdFor(id),
           frameworkId: null,
           domains: [domain.id],
           blocksAxes: ["Domain Coverage"],
@@ -528,6 +706,8 @@ export function buildCapabilityRegistry(
         },
         { registry: BLIND_EVIDENCE, files: evidence.files },
         observedAt,
+        facts,
+        census,
       ),
     );
   }
@@ -649,26 +829,61 @@ export function realCapabilityEvidence(): RegistryEvidence {
     buildRepoEvidenceIndex(process.cwd()),
     process.cwd(),
   );
-  const facts = collectRuleFacts();
-  const measured = new Set([...facts.measuredByFamily.values()].flat());
-  const live = new Set([...facts.liveByFamily.values()].flat());
   return {
     registry: {
-      hasLiveRule: live.size > 0,
-      hasMeasurement: measured.size > 0,
+      // `hasLiveRule` and `hasMeasurement` are FALSE here, and that is the
+      // point rather than an oversight.
+      //
+      // There is no registry-wide fact of either kind. "A live rule supports
+      // this capability" is only meaningful per entry — the question is
+      // whether a live rule supports THIS capability, and the answer differs
+      // per row. The real resolver used to answer it once for the whole
+      // registry (`live.size > 0`, `measured.size > 0`), which meant every
+      // entry inherited the answer: `test.framework.selenium`, with no
+      // supporting rule and no adapter file, was M2 because 79 other rules
+      // existed. `evidenceForEntry` now derives both per entry; the flags
+      // remain in the interface because a caller that KNOWS something the
+      // tree cannot show must still be able to say so, and they are OR-ed
+      // rather than read.
+      hasLiveRule: false,
+      hasMeasurement: false,
       hasAdapter: false,
+      // FALSE, and it stays false.
+      //
+      // The global flags are a CALLER CLAIM, OR-ed on top of the per-entry
+      // derivation — not a summary of it. Making this one "measured" was
+      // tried and it reintroduces exactly the laundering `evidenceForEntry`
+      // was written to remove: every entry OR-s it in, so
+      // `ci.provider.azure-pipelines` reached M3 on a quad belonging to a
+      // QA-PW rule, and the published `rules` list did not contain the rule
+      // that earned it.
+      //
+      // A caller that KNOWS something the tree cannot show must be able to say
+      // so. The real resolver knows nothing the tree does not, so it claims
+      // nothing and lets `live.some(quad)` answer per entry.
       hasFixtureQuad: false,
       hasCorpusMeasurement: false,
       hasFieldEvidence: false,
     },
     files: {
-      adapterExists: (relPath) => {
-        const slug = relPath
-          .replace(/^src\/adapters\//, "")
-          .replace(/\.ts$/, "");
-        return probe.adapterExists(adapterProbeEntry(slug));
-      },
-      fixtureQuadExists: () => fixtureQuadExists(),
+      // A PATH is handed in, so the honest answer is whether the path
+      // resolves. It used to be delegated to the census resolver, which
+      // answers a different question — "can we analyse this ecosystem at
+      // all", satisfied by a live rule family OR an adapter file — and that
+      // fallback is why `test.framework.selenium` reported
+      // `src/adapters/selenium.ts` as present: `SLUG_TO_FAMILY.selenium` is
+      // `QA-SEL`, that family has rules, and the file was never consulted.
+      // The census resolver keeps its own (correct) meaning for the census;
+      // a path-shaped question gets a path-shaped answer.
+      adapterExists: (relPath) => existsSync(join(process.cwd(), relPath)),
+      // The ONE quad answer, shared with the census. It used to be
+      // `fixtureQuadExists()` — a function whose body was `return false`, with
+      // a comment saying a real gate ships in Wave 4. A hardcoded `false` is
+      // indistinguishable from a measured one at the call site, and the census
+      // had its own separate answer, so the two were free to disagree about
+      // the same capability. Both now read the filesystem; see
+      // `src/v6/fixture-quad-probe.ts`.
+      fixtureQuadExists: (ruleId) => ruleHasCompleteQuad(ruleId),
       observedUpstreamMajor: (frameworkId) =>
         probe.observedUpstreamMajor(adapterProbeEntry(frameworkId)),
     },
@@ -697,16 +912,6 @@ function adapterProbeEntry(
     maturity: "M1_DECLARED",
     nextLevelGap: null,
   };
-}
-
-/**
- * A per-rule fixture quad is a real filesystem question, and the answer
- * here is deliberately **no**: the repository's fixture directories are a
- * proxy, and a proxy must not buy an M3 claim (Law 1). Wave 4 ships the
- * real gate.
- */
-function fixtureQuadExists(): boolean {
-  return false;
 }
 
 // ─── The gate: no entry may exceed its proven level ──────────────────

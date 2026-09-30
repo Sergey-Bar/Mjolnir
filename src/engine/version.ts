@@ -3,7 +3,8 @@
  * version inside scan-pipeline WITHOUT importing cli.ts (a cycle — cli
  * imports the pipeline). The literal follows the same discipline as
  * CLI_VERSION and SARIF's driver.version: kept in sync on release by
- * scripts/sync-sarif-version.cjs and guarded by the version-consistency
+ * scripts/archive/sync-sarif-version.cjs (archived; superseded by the release
+ * workflow's own version stamping) and guarded by the version-consistency
  * spec. cli.ts re-exports this as CLI_VERSION.
  */
 import { execFileSync } from "node:child_process";

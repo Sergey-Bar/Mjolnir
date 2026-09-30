@@ -47,8 +47,11 @@
  */
 
 import { execFileSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+
+import { EVIDENCE_BEARING_STATUSES } from "./lib/proof-statuses.mjs";
 
 const root = process.argv[2] ?? process.cwd();
 const readJson = (rel) => JSON.parse(readFileSync(join(root, rel), "utf8"));
@@ -204,25 +207,100 @@ for (const cell of matrixCells) {
 /* ── 3. the public claim registry ───────────────────────────── */
 
 const registry = readJson("docs/claim-registry.json");
+
+/**
+ * A claim the registry says is PROVEN must be re-checked, digest included.
+ *
+ * The predicate used to be `claim.proof?.status !== "PROVEN"`, and `"PROVEN"`
+ * is not a member of the registry's enum (`BLOCKED` / `LOCAL_PROVEN` /
+ * `REMOTE_PROVEN`) — so the branch below never ran on any claim in
+ * `docs/claim-registry.json`, and the digest verification in
+ * `scripts/check-claim-registry.mjs` had no revalidation behind it at all. A
+ * dead digest check is worse than none: it appears in review as a control.
+ *
+ * Both arms are now reachable in practice. `REMOTE_PROVEN` is a claim about a
+ * published artifact and is re-checked against the artifact's bytes; a digest
+ * that does not match the file it names is a claim that has drifted from its
+ * evidence, whatever its status.
+ */
 for (const claim of registry.claims ?? []) {
-  if (claim.proof?.status !== "PROVEN") continue;
+  const status = claim.proof?.status;
+  if (status === "BLOCKED") continue;
+  if (!EVIDENCE_BEARING_STATUSES.includes(status)) {
+    diagnostics.push({
+      claim: claim.id,
+      source: "docs/claim-registry.json",
+      code: "UNKNOWN_PROOF_STATUS",
+      message: `proof.status "${status}" is not a registry status; a claim in an unknown state cannot be revalidated, and defaulting to BLOCKED silently would hide the schema drift`,
+    });
+    continue;
+  }
   checkClaim({
     id: claim.id,
     source: "docs/claim-registry.json",
     status: "fixed",
     verification: claim.proof.verification ?? claim.candidateProof ?? null,
-    baseSha: claim.proof.base_sha ?? null,
+    baseSha: claim.proof.base_sha ?? claim.proof.observedAt ?? null,
     artifacts: claim.proof.artifact ? [claim.proof.artifact] : [],
     owner: claim.authority,
   });
+  checkDigest(claim);
+}
+
+/**
+ * Does the claim's digest still match the artifact it names?
+ *
+ * A digest is the one piece of evidence that can be checked WITHOUT running
+ * the claim's own verification, which makes it the one piece of evidence
+ * worth checking mechanically. `sha256:<hex>` and `sha512:<hex>` are
+ * supported; anything else is reported rather than skipped, because a digest
+ * in an unknown form is a digest nobody is checking.
+ */
+function checkDigest(claim) {
+  const digest = claim.proof?.digest;
+  const artifact = claim.proof?.artifact;
+  if (typeof digest !== "string" || digest === "") return;
+  if (typeof artifact !== "string" || !existsSync(join(root, artifact))) return;
+  const match = /^(sha256|sha512):([0-9a-f]+)$/.exec(digest);
+  if (match === null) {
+    diagnostics.push({
+      claim: claim.id,
+      source: "docs/claim-registry.json",
+      code: "MALFORMED_DIGEST",
+      message: `proof.digest "${digest}" is not sha256:<hex> or sha512:<hex>; a digest in an unknown form is a digest nobody is checking`,
+    });
+    return;
+  }
+  const [, algorithm, expected] = match;
+  const actual = createHash(algorithm)
+    .update(readFileSync(join(root, artifact)))
+    .digest("hex");
+  if (actual !== expected) {
+    diagnostics.push({
+      claim: claim.id,
+      source: "docs/claim-registry.json",
+      code: "DIGEST_MISMATCH",
+      message: `proof.digest does not match ${artifact}: recorded ${algorithm}:${expected.slice(0, 16)}…, computed ${algorithm}:${actual.slice(0, 16)}…`,
+    });
+  }
 }
 
 const report = {
-  status: downgraded.length === 0 ? "PASS" : "DOWNGRADED",
+  status:
+    downgraded.length === 0 && diagnostics.length === 0 ? "PASS" : "DOWNGRADED",
   head: head.slice(0, 12),
   checked: gaps.length + matrixCells.length + (registry.claims ?? []).length,
   verified: verified.length,
   downgraded: downgraded.length,
+  /**
+   * Every problem found, printed.
+   *
+   * `diagnostics` was collected and never serialised, so a digest mismatch or
+   * an unknown proof status was recorded in a variable that died with the
+   * process. A check that finds something and does not say so is a check whose
+   * finding is indistinguishable from a check that found nothing.
+   */
+  diagnostics,
   // The full downgrade list is printed so a human can promote a claim
   // deliberately. Nothing is deleted; a claim that lost its evidence is
   // still a claim somebody made.
@@ -246,5 +324,30 @@ if (downgraded.length > 0) {
       "Re-run its stated verification on this tree, or fix the evidence, " +
       "or accept the claim as open work.",
   );
+  process.exit(1);
+}
+
+/**
+ * Diagnostics that did not come from a downgrade are still failures.
+ *
+ * A digest mismatch does not downgrade a claim — the claim stays at whatever
+ * status it declared, because the maintainer decides what to do about it — but
+ * it is a claim resting on evidence that no longer holds, which is exactly
+ * what this script exists to surface. Exiting 0 for it would mean a corrupted
+ * artifact is reported in a field of a JSON report that nobody reads, which is
+ * the class of pass this repository keeps finding.
+ *
+ * No filter is applied to `diagnostics` here. The first version excluded
+ * anything a downgrade had already reported, which could never exclude
+ * anything: the downgrade branch exits 1 above, so by this line `downgraded` is
+ * always `[]` and the filter was a no-op with a comment implying otherwise.
+ */
+if (diagnostics.length > 0) {
+  console.error(
+    `\nclaims:revalidate: ${diagnostics.length} evidence problem(s) outside the downgrade path.`,
+  );
+  for (const d of diagnostics) {
+    console.error(`  ${d.claim} [${d.code}] ${d.message}`);
+  }
   process.exit(1);
 }

@@ -34,19 +34,34 @@
  * `docs:translations` prints the table on every certify run, so the drift is
  * visible in the log to anyone reading one.
  */
-import { execFileSync } from "node:child_process";
-import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import {
+  computeSourceHash,
   extractSections,
+  readmeLastChangeDate,
+  SOURCE_HASH_MARKER,
+  SYNCED_MARKER,
+  TRANSLATED_LANGS,
   translationStatus,
 } from "./lib/readme-translation-status.mjs";
 
 const ROOT = join(import.meta.dirname, "..");
 
-/** The 22 translations + their switcher labels (English excluded). */
-const LANGS = [
+/**
+ * The translations + their switcher labels, derived from the shared list.
+ *
+ * The LABELS are this report's business — only the rendered table shows them.
+ * The SET of languages is not: it is a fact about the repository, it lives in
+ * `scripts/lib/readme-translation-status.mjs`, and both this report and the
+ * translation ratchet read it from there. Two hand-maintained copies of
+ * "which languages exist", kept in step by a test that regex-parsed this
+ * file's source text, is the arrangement the ratchet was written to end.
+ *
+ * A label that is missing renders as the code itself, so an unlabelled
+ * language degrades visibly rather than silently disappearing from the table.
+ */
+const LANG_LABELS = new Map([
   ["zh", "简体中文"],
   ["zht", "繁體中文"],
   ["ko", "한국어"],
@@ -69,45 +84,11 @@ const LANGS = [
   ["he", "עברית"],
   ["ar", "العربية"],
   ["bs", "Bosanski"],
-];
-
-const SYNCED_RE = /Last synced:\s*(\d{4})-(\d{2})-(\d{2})/;
-const SOURCE_HASH_RE = /<!--\s*Source hash:\s*([a-f0-9]+)\s*-->/;
-
-/** Last calendar date (YYYY-MM-DD) a commit touched README.md, or null. */
-function readmeLastChangeDate() {
-  try {
-    const out = execFileSync(
-      "git",
-      ["log", "-1", "--format=%cs", "--", "README.md"],
-      { cwd: ROOT, encoding: "utf8" },
-    ).trim();
-    return /^\d{4}-\d{2}-\d{2}$/.test(out) ? out : null;
-  } catch {
-    return null; // not a git checkout (e.g. npm-packed tarball) — advisory only
-  }
-}
-
-/**
- * Content hash of the English README's translatable sections.
- * Strips badges, shields, and HTML blocks so that CI-specific
- * changes (badge URLs, version bumps) don't flag translations
- * as stale when the actual prose is unchanged.
- */
-function computeSourceHash() {
-  try {
-    const text = readFileSync(join(ROOT, "README.md"), "utf8");
-    const translatable = text
-      .split("\n")
-      .filter(
-        (line) => !/^(!\[|<!--|<div|<img|\[!\[|<a href)/.test(line.trim()),
-      )
-      .join("\n");
-    return createHash("sha256").update(translatable).digest("hex").slice(0, 12);
-  } catch {
-    return null;
-  }
-}
+]);
+const LANGS = TRANSLATED_LANGS.map((code) => [
+  code,
+  LANG_LABELS.get(code) ?? code,
+]);
 
 const readmeDate = readmeLastChangeDate();
 const currentSourceHash = computeSourceHash();
@@ -128,8 +109,8 @@ for (const [code, label] of LANGS) {
   let synced = "—";
   try {
     const text = readFileSync(join(ROOT, file), "utf8");
-    const m = SYNCED_RE.exec(text);
-    const hm = SOURCE_HASH_RE.exec(text);
+    const m = SYNCED_MARKER.exec(text);
+    const hm = SOURCE_HASH_MARKER.exec(text);
     if (!m) {
       status = "MISSING MARKER";
     } else {

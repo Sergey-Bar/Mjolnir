@@ -39,15 +39,21 @@
  * blocks the path Regex → AST → "old measurement says Core" → Core.
  *
  * Consumers: `mjolnir explain`, the rules catalog, the generated rule
- * docs, `mjolnir doctor`'s tier ratchets, and the capability matrix.
- * NOT a consumer: scan behavior — quarantine is the only tier the
- * pipeline enforces (severity/info + E0 caps, `--strict` filter), and
- * every quarantine rule declares its tier explicitly, so this module
- * cannot change findings (BEHAVIOR-NEUTRAL for scan output by design).
+ * docs, `mjolnir doctor`'s tier ratchets, the capability matrix, and
+ * `src/engine/scan-pipeline.ts`.
+ *
+ * The pipeline use is the one that matters for findings: it resolves the tier
+ * through `effectiveTier` for the quarantine filter and for the `tier` field
+ * on every emitted finding. The "every quarantine rule declares its tier
+ * explicitly, so this cannot change findings" claim was TRUE when written and
+ * is true only because a TEST says so —
+ * `tests/rules/registry-ratchet.spec.ts` asserts that every quarantined rule
+ * declares the tier. That is a narrower guarantee than "by design", and the
+ * distinction is the difference between an invariant and a coincidence.
  */
 
 import type { QADoctorRule } from "./rule.js";
-import { MEASURED_FP } from "./measured-fp.generated.js";
+import { MEASURED_FP, MEASURED_FP_RAW } from "./measured-fp.generated.js";
 import { RETIRED_RULE_IDS } from "./index.js";
 import { wilsonInterval, type WilsonInterval } from "../lib/wilson.js";
 
@@ -99,11 +105,28 @@ export function hasValidMeasurement(rule: QADoctorRule): boolean {
   );
 }
 
-/** A measurement exists but was taken against an older detector. */
+/**
+ * A measurement exists but was taken against an older detector.
+ *
+ * Read from `MEASURED_FP_RAW`, not from `MEASURED_FP`.
+ *
+ * The generator filters `MEASURED_FP` to measurements whose revision still
+ * matches the rule's, so a stale row is not IN it — and reading `MEASURED_FP`
+ * made this function structurally always `false` for every real rule. It was
+ * the one predicate in this file that could not return `true`, and its one
+ * live consumer (`scripts/core-readiness.ts`) emitted a dead branch that
+ * rendered as "no measurement at the current detector revision" for a rule
+ * with 42 hand-classified verdicts behind it. That sentence is the defect, not
+ * the report.
+ *
+ * The RAW map holds the same rows unfiltered, so this is now a question with
+ * an answer, and the answer is the one a maintainer needs: there IS a
+ * measurement, and it has to be redone.
+ */
 export function hasStaleMeasurement(rule: QADoctorRule): boolean {
-  const m = MEASURED_FP[rule.id];
+  const raw = MEASURED_FP_RAW[rule.id];
   return (
-    m !== undefined && m.detectorRevision !== declaredDetectorRevision(rule)
+    raw !== undefined && raw.detectorRevision !== declaredDetectorRevision(rule)
   );
 }
 
@@ -140,10 +163,7 @@ export function straddleDetail(rule: QADoctorRule): string | undefined {
   // The n that would settle it, for a rule currently observing zero false
   // positives. Derived rather than quoted so the number stays correct if the
   // ceiling moves: wilson(0, n).ciHigh <= CEILING.
-  const nForZeroFp = Math.ceil(
-    (Z_SQUARED * CORE_FP_CEILING) / (CORE_FP_CEILING * (1 - CORE_FP_CEILING)) -
-      Z_SQUARED,
-  );
+  const nForZeroFp = samplesForZeroFp(CORE_FP_CEILING);
   return (
     `measured FP ${(interval.ciLow * 100).toFixed(1)}–${(interval.ciHigh * 100).toFixed(1)}% ` +
     `(95% Wilson, n=${n}); the interval crosses the ${(CORE_FP_CEILING * 100).toFixed(0)}% core ceiling. ` +
@@ -154,6 +174,32 @@ export function straddleDetail(rule: QADoctorRule): string | undefined {
 }
 
 const Z_SQUARED = 1.959963984540054 ** 2;
+
+/**
+ * The sample count a rule observing ZERO false positives needs before its
+ * Wilson upper bound falls to `ceiling`.
+ *
+ * This is the number a maintainer reads to decide what to do about a
+ * straddling rule, so it has to be right. It was wrong by a transposition:
+ * `z²·p / (p·(1−p)) − z²` simplifies to `z²·p/(1−p)` ≈ 0.43 at the 10%
+ * ceiling, and `Math.ceil` turned that into **"about 1 clean sample would
+ * settle it"** for every straddling rule.
+ *
+ * For zero successes the Wilson upper bound collapses to
+ * `ciHigh(0, n) = z² / (n + z²)` — the `p̂ = 0` term vanishes from `center`
+ * and from the radicand, leaving the two halves of `center ± half` equal.
+ * Solving `z²/(n + z²) ≤ c` for `n` gives `n ≥ z²(1 − c) / c`:
+ *
+ *     c = 0.1 → n ≥ 34.57 → 35
+ *
+ * Cross-checked against the interval function itself: `wilsonInterval(0, 34)`
+ * gives ciHigh 0.1012 — above the ceiling — and `wilsonInterval(0, 35)` gives
+ * 0.0989, which clears it. This function returns 35.
+ */
+export function samplesForZeroFp(ceiling: number): number {
+  if (!(ceiling > 0) || ceiling >= 1) return 1;
+  return Math.ceil((Z_SQUARED * (1 - ceiling)) / ceiling);
+}
 
 /**
  * A rule whose measurement exists, is current, and does not confidently

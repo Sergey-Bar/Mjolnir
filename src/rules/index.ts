@@ -192,7 +192,7 @@ export function getRule(id: string): QADoctorRule | undefined {
  * by the lifecycle policy must be reconciled into this list and
  * unregistered. Retired rules are NOT part of the active census,
  * do NOT count toward the measurement KPI, and quarantine does NOT
- * equal retirement. All 21 entries below are the Phase 2
+ * equal retirement. Every entry below is a Phase 2
  * quarantine-cluster triage RETIRE decisions (100% measured FP, zero
  * TPs, n ≥ 10 each — docs/RULE-LIFECYCLE.md + docs/FP-AUDIT.md).
  */

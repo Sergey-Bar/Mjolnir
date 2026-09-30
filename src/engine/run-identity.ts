@@ -28,6 +28,19 @@ export interface RunIdentityInput {
   config: unknown;
   /** The engine version (src/engine/version.ts). */
   engineVersion: string;
+  /**
+   * Which mode produced this run: `local-only` or `hosted`.
+   *
+   * Present because ADR 0012 says a hosted artefact and a local-only artefact
+   * are not comparable, and a run identity that cannot tell them apart is how
+   * that becomes false in practice — the two land in the same directory, get
+   * diffed against each other, and the difference is attributed to the code.
+   *
+   * Hosted mode is not implemented. This field is `local-only` for every run
+   * today, and it is here so the field is populated by the pipeline rather than
+   * added later beside a comment saying it should have been.
+   */
+  runMode?: string;
   /** The git commit the analysed tree was at, when the run is repo-bound. */
   commit?: string | undefined;
   /** The git tree hash of the analysed worktree, when known. */
@@ -68,6 +81,12 @@ export interface RunIdentity {
   /** sha256 of the canonical config JSON (absent → omitted upstream). */
   configFingerprint: string;
   engineVersion: string;
+  /**
+   * The run mode this artefact was produced in.
+   *
+   * See `runMode` on `RunIdentityInput` for why it is verdict-affecting.
+   */
+  runMode?: string;
   trustModelVersion?: string;
   scoringModelVersion?: string;
   frameworkSupportMatrixVersion?: string;
@@ -155,6 +174,11 @@ export function buildRunIdentity(input: RunIdentityInput): RunIdentity {
   if (input.commit !== undefined) verdictInputs.commit = input.commit;
   if (input.tree !== undefined) verdictInputs.tree = input.tree;
   if (input.lockfile !== undefined) verdictInputs.lockfile = input.lockfile;
+  // The run MODE is verdict-affecting for the same reason the commit is: two
+  // runs in different modes are not the same run, and an identity that cannot
+  // tell them apart would let a hosted artefact be compared with a local-only
+  // one and have the difference attributed to the code. ADR 0012.
+  if (input.runMode !== undefined) verdictInputs.runMode = input.runMode;
   if (input.candidate !== undefined) {
     verdictInputs.candidate = {
       manifestId: input.candidate.manifestId,
@@ -203,6 +227,7 @@ export function buildRunIdentity(input: RunIdentityInput): RunIdentity {
     rulesDigest,
     configFingerprint,
     engineVersion: input.engineVersion,
+    ...(input.runMode !== undefined ? { runMode: input.runMode } : {}),
     boundLinks,
     ...(input.trustModelVersion !== undefined
       ? { trustModelVersion: input.trustModelVersion }

@@ -98,7 +98,6 @@ provisionalArtifacts:
   M39:
     - "src/engine/m39-simulation-contract.ts"
   M40:
-    - "src/engine/m40-language-expansion-contract.ts"
   M41:
     - "src/frameworks/universal-pack-contract.ts"
   M43:

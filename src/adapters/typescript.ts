@@ -55,10 +55,18 @@ import {
  * four lines below: PW_CONFIG_RE already accepted `cts`. The config regex knew
  * about the Node-native extensions; the test-file regex did not.
  *
- * `discovery/scan-adapters.ts:isUnrecognizedSourceCandidate` already counted
- * these paths as uncovered surface, so the scope accounting had been reporting
- * the hole the whole time — it was being read as a known limitation rather than
- * as a defect.
+ * `discovery/scan-adapters.ts:isUnrecognizedSourceCandidate` counts these
+ * paths as uncovered surface, so the scope accounting reports a hole if one
+ * exists.
+ *
+ * CORRECTION: the comment this replaced said the scope accounting "had been
+ * reporting the hole the whole time". It had not — that checker's regex
+ * already matched `mts`/`cts`, and only `extensions` was unread. What WAS
+ * true, and is what this entry now fixes, is that a field every adapter
+ * declares and no code consulted is a claim the interface makes to anyone who
+ * reads it. `isUnrecognizedSourceCandidate` now builds its extension set from
+ * this list rather than from a second hard-coded one, which is what makes the
+ * two halves of the same fact stop being able to drift.
  */
 const TEST_FILE_RE =
   /\.(?:test|spec)\.(?:js|jsx|ts|tsx|mjs|cjs|mts|cts)$|\.cy\.(?:js|jsx|ts|tsx)$/;
@@ -117,7 +125,7 @@ export function frameworkTagsFromImports(text: string): string[] {
 
 export const typescriptAdapter: LanguageAdapter = {
   id: "typescript",
-  extensions: [".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs"],
+  extensions: [".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".mts", ".cts"],
   testFileGlobs: [
     "*.test.{js,jsx,ts,tsx,mjs,cjs}",
     "*.spec.{js,jsx,ts,tsx,mjs,cjs}",

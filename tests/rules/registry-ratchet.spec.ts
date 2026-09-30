@@ -41,8 +41,10 @@ import {
   measurementFor,
   measurementInterval,
   ruleStatus,
+  samplesForZeroFp,
   straddleDetail,
 } from "../../src/rules/measurement.js";
+import { wilsonInterval } from "../../src/lib/wilson.js";
 import {
   DEMOTED_FOR_UNSUBSTANTIATED_CORE,
   declaredCoreWithoutEvidence,
@@ -136,6 +138,46 @@ describe("registry ratchet: no unmeasured rule in effective core (§20.3, plan �
         /samples would settle it|detector change/,
       );
       expect(ruleStatus(rule), rule.id).toBe("TIER-STRADDLE");
+    }
+  });
+
+  it("the sample count a straddling rule is quoted is the arithmetic answer", () => {
+    // The printed sentence is the actionable half of TIER-STRADDLE: "about N
+    // clean samples would settle it" is what a maintainer acts on. It was
+    // derived from a transposed expression — `z²·p / (p·(1−p)) − z²`
+    // simplifies to `z²·p/(1−p)` ≈ 0.427 at the 10% ceiling, and `Math.ceil`
+    // turned that into 1. So every straddling rule read "About 1 clean sample
+    // would settle it", which is not actionable and is worse than silence:
+    // it invites a maintainer to believe one more sample settles the matter.
+    //
+    // Asserted against `wilsonInterval` itself rather than a quoted 35, so
+    // the test states the property — "n-1 does not clear the ceiling, n does"
+    // — and cannot drift if the ceiling moves.
+    const nForZeroFp = samplesForZeroFp(CORE_FP_CEILING);
+    expect(wilsonInterval(0, nForZeroFp).ciHigh).toBeLessThanOrEqual(
+      CORE_FP_CEILING,
+    );
+    expect(wilsonInterval(0, nForZeroFp - 1).ciHigh).toBeGreaterThan(
+      CORE_FP_CEILING,
+    );
+    // At the shipped 10% ceiling that is 35. Quoted so a regression to the
+    // old expression fails loudly rather than by a coincidence of geometry.
+    expect(nForZeroFp).toBe(35);
+  });
+
+  it("no straddling rule quotes a sample count below what its own interval requires", () => {
+    // The same number, checked where it is actually consumed: if a rule's
+    // measured n is already past the zero-FP threshold, the sentence must not
+    // tell the reader that more samples would settle it.
+    const threshold = samplesForZeroFp(CORE_FP_CEILING);
+    for (const rule of RULES.filter((r) => isTierStraddling(r))) {
+      const detail = straddleDetail(rule) ?? "";
+      const quoted = /About (\d+) clean samples/.exec(detail);
+      if (!quoted) continue;
+      expect(Number(quoted[1]), rule.id).toBe(threshold);
+      expect(Number(quoted[1]), rule.id).toBeGreaterThanOrEqual(
+        measurementFor(rule.id)?.n ?? 0,
+      );
     }
   });
 

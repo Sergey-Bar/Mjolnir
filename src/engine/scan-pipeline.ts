@@ -33,6 +33,7 @@ import {
   type DegradationCount,
 } from "./degradation-ledger.js";
 import { buildTrustSummary } from "./trust-summary.js";
+import { resolveRunMode } from "../governance/run-mode.js";
 import { buildEvidenceGraph, buildRunIdentity } from "./run-identity.js";
 import {
   createExecutor,
@@ -58,6 +59,7 @@ import {
 import { createIgnoreMatcher, LIMITS } from "../discovery/ignores.js";
 import { RULES } from "../rules/index.js";
 import { MEASURED_FP } from "../rules/measured-fp.generated.js";
+import { effectiveTier } from "../rules/measurement.js";
 import {
   computeDimensions,
   computeTotal,
@@ -136,7 +138,13 @@ export const OVERLAP_META_BY_RULE_ID: ReadonlyMap<string, OverlapMeta> =
     RULES.map((r, order) => {
       const meta: OverlapMeta = {
         ...(r.overlapWith ? { overlapWith: r.overlapWith } : {}),
-        ...(r.tier ? { tier: r.tier } : {}),
+        // `effectiveTier`, not `r.tier`. A rule that declares no tier is
+        // resolved from its measurement by the same function every other
+        // surface uses, and a derived `extended` must reach dedup as
+        // `extended` — otherwise the undeclared default in
+        // `ranksBefore` decides survivor quality on a question this repository
+        // already answers elsewhere.
+        tier: effectiveTier(r),
         order,
       };
       return [r.id, meta] as const;
@@ -193,9 +201,13 @@ export async function buildUniversalRules(
     ...plugins.map((p) => ({ name: p.name, rules: p.rules })),
     { name: LOCAL_RULES_DIR, rules: local.rules },
   ].flatMap((p) => p.rules.map(asUniversal));
+  // `effectiveTier` for registry rules, declared for the rest. A plugin's
+  // rule has no measurement, so `effectiveTier` would resolve it from nothing
+  // and throw the tier away; a registry rule that declares none is resolved
+  // from its measurement, which is the whole point of resolving it.
   const tierByRuleId = new Map<string, Tier>();
   for (const r of RULES) {
-    if (r.tier) tierByRuleId.set(r.id, r.tier);
+    tierByRuleId.set(r.id, effectiveTier(r));
   }
   for (const p of plugins) {
     for (const r of p.rules) {
@@ -1315,6 +1327,18 @@ export function assembleScanResult(o: AssembleScanResultInput): ScanResult {
     ),
     config: o.config ?? null,
     engineVersion: ENGINE_VERSION,
+    // ADR 0012: the run mode is part of the identity, so a hosted artefact
+    // and a local-only one can never be compared as though they were the same
+    // run.
+    //
+    // The empty flag bag is a CONSTANT, not an omission: hosted mode is not
+    // implemented, so there is nothing to read a declaration from and every run
+    // is `local-only` by construction. `resolveRunMode` takes its input as an
+    // argument precisely so that adding a real flag later is a one-line change
+    // here rather than the introduction of a runtime-reachable switch. What
+    // the field buys today is the guarantee that the two modes' artefacts
+    // cannot share an identity once the second mode exists.
+    runMode: resolveRunMode({ env: {}, flags: {} }),
     reportDigest,
     trustModelVersion: TRUST_MODEL_VERSION,
     scoringModelVersion: SCORING_MODEL_VERSION,

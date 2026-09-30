@@ -374,7 +374,22 @@ export const HELP_FLAGS: Array<{ flag: string; summary: string }> = [
   { flag: "--max-duration <sec>", summary: "analysis time budget" },
   { flag: "--width <cols>", summary: "override terminal width" },
   { flag: "--ascii / --no-ascii", summary: "force glyph mode" },
-  { flag: "--strict", summary: "include quarantine-tier rules" },
+  {
+    flag: "--strict",
+    // D-2: a trust tier is a CLAIM about this repository, not a
+    // configuration choice, so it does not gate — and saying only "include
+    // quarantine-tier rules" invites the opposite reading. A user who reaches
+    // for `--strict` expecting more enforcement should learn here that a
+    // quarantined detector is advisory BY DESIGN, and that the path to changing
+    // that is a `corePromotion` or a re-measure — both reviewable edits to this
+    // repository, not a flag.
+    //
+    // The market agrees: in ESLint, Ruff and golangci-lint what fails a build
+    // is the user's SEVERITY configuration. Severity is user-controlled and
+    // gates. Trust is tool-controlled and does not.
+    summary:
+      "include quarantine-tier rules (advisory only — a quarantined detector never gates; see docs/PRODUCT-DECISIONS.md D-2)",
+  },
   { flag: "--debug", summary: "print swallowed rule crashes" },
   { flag: "--cache", summary: "reuse local per-file verdicts" },
   { flag: "--no-progress", summary: "no live scan-progress line on stderr" },

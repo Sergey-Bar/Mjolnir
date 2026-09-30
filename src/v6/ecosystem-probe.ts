@@ -32,6 +32,7 @@ import { join } from "node:path";
 import { RULES } from "../rules/index.js";
 import { MEASURED_FP } from "../rules/measured-fp.generated.js";
 import { declaredDetectorRevision } from "../rules/measurement.js";
+import { capabilityQuadComplete } from "./fixture-quad-probe.js";
 import {
   normalizeMajors,
   versionMajor,
@@ -85,6 +86,34 @@ const SLUG_TO_FAMILY: Readonly<Record<string, string>> = {
 export function familyForEntry(entry: CensusEntry): string | null {
   const slug = entry.id.split(".").pop() ?? "";
   return SLUG_TO_FAMILY[slug] ?? null;
+}
+
+/**
+ * Does a census entry's ecosystem have a verified fixture quad?
+ *
+ * Exported so the census validator asks the SAME question the evidence
+ * resolver just answered. `SUPPORTED_WITHOUT_QUAD` exists to prove the two
+ * agree, and a validator that could only agree by re-deriving the family
+ * itself is one edit away from disagreeing silently — which is the class of
+ * defect this whole change is about.
+ *
+ * It builds its own index rather than taking one, so the validator can call it
+ * without having to thread a resolver through. That is a whole-tree scan per
+ * call, which is why it is a validator arm and not a hot path.
+ *
+ * An entry whose family cannot be resolved returns false: a capability whose
+ * evidence cannot be located is not one this gate vouches for.
+ */
+export function hasCompleteQuadFor(
+  entry: CensusEntry,
+  root: string = process.cwd(),
+): boolean {
+  const family = familyForEntry(entry);
+  if (family === null) return false;
+  return capabilityQuadComplete(
+    buildRepoEvidenceIndex(root).rulesByFamily.get(family) ?? [],
+    root,
+  );
 }
 
 export interface RepoEvidenceIndex {
@@ -266,6 +295,11 @@ export function createEvidenceResolver(
   root: string,
 ): CensusEvidenceResolver {
   return {
+    // The checkout this resolver observes, published so `validateCensus` can
+    // ask its `SUPPORTED_WITHOUT_QUAD` arm about the SAME tree rather than
+    // about `process.cwd()`. Without it the arm is a third opinion, and a
+    // resolver injected by a test disagrees with it about every entry.
+    root,
     adapterExists(entry) {
       // Either a real adapter module, or a live rule family — the
       // capability is "we can analyse this ecosystem", which a rule
@@ -284,13 +318,27 @@ export function createEvidenceResolver(
       const slug = entry.id.split(".").pop() ?? "";
       return index.adapterSpecNames.has(slug);
     },
-    // There is no machine gate that verifies a positive/negative/
-    // boundary/adversarial fixture quad *per adapter or per framework*.
-    // The fixture directories are a proxy, and a proxy must not buy an
-    // `M3` claim (Law 1). Wave 4 ships the real gate; until then every
-    // entry carries this exact gap.
-    fixtureQuadVerified() {
-      return false;
+    // The ONE quad answer, shared with the registry.
+    //
+    // It used to be a bare `return false` with a comment saying a real gate
+    // ships later — and the registry had its OWN `return false` next to a
+    // different comment. Two hardcoded answers to one question: at the call
+    // site a `false` is indistinguishable from a measured one, and two of them
+    // are free to disagree about the same capability, which is the exact class
+    // of defect this repository exists to catch.
+    //
+    // The filesystem proxy is still computed above (`fixtureQuadByFamily`,
+    // four-or-more files in a fixture directory) and is still reported
+    // separately, because it is a claim about a fixture's SIZE rather than
+    // about a rule's behaviour — but it is no longer the answer here.
+    fixtureQuadVerified(entry) {
+      const family = familyForEntry(entry);
+      // No family means no rule-scoped evidence to read, and an entry with no
+      // rules cannot have a complete quad. Returning `true` there would be the
+      // shape of defect this file is about: absence read as a pass.
+      if (family === null) return false;
+      const ruleIds = index.rulesByFamily.get(family) ?? [];
+      return capabilityQuadComplete(ruleIds, root);
     },
     // `M4` additionally requires a locked `detectorRev` per capability.
     // The measurement sidecar locks it per *rule*, and no framework-level

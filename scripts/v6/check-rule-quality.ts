@@ -35,6 +35,7 @@ import { MEASURED_FP } from "../../src/rules/measured-fp.generated.js";
 import {
   declaredDetectorRevision,
   effectiveTier,
+  hasValidMeasurement,
 } from "../../src/rules/measurement.js";
 import {
   buildCapabilityRegistry,
@@ -142,6 +143,15 @@ export function checkRuleQuality(): QualityCheck {
 
   // 3. No rule may sit above the ladder's ceiling, and no measured rule
   //    may carry a stale detectorRev silently.
+  //
+  //    `measured` used to be `MEASURED_FP[rule.id] !== undefined` — presence
+  //    alone, with NO revision check — while the line above it computed
+  //    `stale` with a revision check. So the two figures disagreed by
+  //    construction, and the skeleton reported 74 measured while the
+  //    authoritative count everywhere else in the repository was 73. One
+  //    number, one definition: `hasValidMeasurement` is what the doctor's
+  //    census, the tier ratchets and `docs/FP-AUDIT.md` all mean by
+  //    "measured", so this is what this reports.
   const stale = RULES.filter((rule) => {
     const measurement = MEASURED_FP[rule.id];
     return (
@@ -149,7 +159,7 @@ export function checkRuleQuality(): QualityCheck {
       measurement.detectorRevision !== declaredDetectorRevision(rule)
     );
   });
-  const measured = RULES.filter((rule) => MEASURED_FP[rule.id] !== undefined);
+  const measured = RULES.filter((rule) => hasValidMeasurement(rule));
 
   return {
     status: errors.length > 0 ? "FAIL" : "PASS",

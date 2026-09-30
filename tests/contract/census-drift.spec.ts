@@ -97,6 +97,20 @@ type Claim = { numbers: number[]; fields: Array<keyof typeof census> };
 const CLAIM_SHAPES: Array<{
   re: RegExp;
   read: (m: RegExpMatchArray) => Claim;
+  /**
+   * True when no live surface currently uses this phrasing.
+   *
+   * A dormant shape is KEPT, not deleted. The one it guards is a phrasing a
+   * surface used to use and may use again, and deleting the shape would
+   * remove the only thing that would catch a wrong number if it returned —
+   * which is precisely the failure this whole file exists to prevent (the V6
+   * table's stale `74` survived because its shape did not exist yet). So a
+   * dormant shape must declare itself, and the assertion below fails if a
+   * shape starts matching again without its flag being cleared: that is
+   * either good news (a surface came back) or a false positive (the regex is
+   * too loose), and in both cases a human needs to look.
+   */
+  dormant?: { why: string };
 }> = [
   {
     // "78 of 99 rules carry a false-positive rate measured against …"
@@ -126,6 +140,12 @@ const CLAIM_SHAPES: Array<{
       numbers: [Number(m[1]), Number(m[2])],
       fields: ["total", "measured"],
     }),
+    dormant: {
+      why:
+        "No live surface uses this phrasing. It was the README's inline " +
+        "summary, which the census sentinel replaced; kept so a surface that " +
+        "reverts to it is still checked.",
+    },
   },
   {
     // "(currently 78/21/99, 43 quarantine)"
@@ -134,6 +154,11 @@ const CLAIM_SHAPES: Array<{
       numbers: m.slice(1, 5).map(Number),
       fields: ["measured", "unmeasured", "total", "quarantine"],
     }),
+    dormant: {
+      why:
+        "No live surface uses this parenthetical. The same four numbers " +
+        "are stated as a table row now, and that row has its own shape below.",
+    },
   },
   {
     // "## Coverage: 78/99 rules measured (79%) at n ≥ 10"
@@ -147,6 +172,36 @@ const CLAIM_SHAPES: Array<{
     // "**99 rules** in four families — …"
     re: /(\d+) rules\**\s+in four families/g,
     read: (m) => ({ numbers: [Number(m[1])], fields: ["total"] }),
+  },
+  {
+    // "| Rules with a valid measurement | 74 |" — the V6 state table.
+    //
+    // This row carried a stale 74 for two releases and no shape matched it,
+    // which is how a "no stale numbers anywhere" spec missed a stale number
+    // sitting in a table. The table is Markdown, so the row is matched whole
+    // and the trailing `|` is required: without it, any prose line mentioning
+    // the phrase would be read as a claim.
+    //
+    // The word "valid" is load-bearing and matches the census definition
+    // (`hasValidMeasurement`, not "an entry exists in MEASURED_FP") — the
+    // same distinction that made `check-rule-quality.ts` report 74 while every
+    // other surface reported 73.
+    re: /\|\s*Rules with a valid measurement\s*\|\s*(\d+)\s*\|/g,
+    read: (m) => ({ numbers: [Number(m[1])], fields: ["measured"] }),
+  },
+  {
+    // "| Rules with a valid measurement: 73" — the V6 state table written as
+    // a label and a number rather than a Markdown row. Separate from the
+    // table-row shape above because the two match different text, and a
+    // single loose shape covering both would be one more thing to keep
+    // honest; this one is dormant until a surface uses that phrasing.
+    re: /Rules with a valid measurement[:\s*]{1,4}(\d+)/g,
+    read: (m) => ({ numbers: [Number(m[1])], fields: ["measured"] }),
+    dormant: {
+      why:
+        "The live V6 table states this as a Markdown row, which the " +
+        "previous shape matches. Kept for a prose phrasing of the same claim.",
+    },
   },
 ];
 
@@ -202,5 +257,43 @@ describe("measurement census is the single source for the measured count", () =>
       "no census-shaped claims found — the claim regexes have rotted " +
         "and the sweep is checking nothing",
     ).toBeGreaterThanOrEqual(5);
+
+    // And each shape must either be pulling its weight or say why it cannot.
+    // A shape that matches nothing and does not say so is a shape that has
+    // silently stopped checking — indistinguishable from a shape with nothing
+    // to check, and the reason a stale `74` survived in the V6 table for two
+    // releases: the sweep reported "all claims agree" while a live surface
+    // contradicted the census, because no shape covered that row.
+    const perShape = CLAIM_SHAPES.map((shape) => {
+      let hits = 0;
+      for (const { text } of surfaces) {
+        hits += [...text.matchAll(shape.re)].length;
+      }
+      return hits;
+    });
+    const undeclared = CLAIM_SHAPES.filter(
+      (shape, i) => perShape[i] === 0 && shape.dormant === undefined,
+    ).map((shape) => shape.re.source);
+    expect(
+      undeclared,
+      "these census claim shapes match nothing in any live surface and do " +
+        "not declare themselves dormant — a shape that matches nothing is a " +
+        "shape that stopped checking, and a shape that was silently deleted " +
+        "is the same failure. Either the surface it guards came back (clear " +
+        "the flag, or delete the shape if the phrasing is gone for good), or " +
+        "add a `dormant` note saying what it is waiting for",
+    ).toEqual([]);
+
+    // The other direction: a shape flagged dormant that now MATCHES is either
+    // good news or a false positive, and both need a human.
+    const resurrected = CLAIM_SHAPES.filter(
+      (shape, i) => (perShape[i] ?? 0) > 0 && shape.dormant !== undefined,
+    ).map((shape) => shape.re.source);
+    expect(
+      resurrected,
+      "these shapes are marked dormant but match a live surface again — " +
+        "either a surface came back to that phrasing, or the regex is loose " +
+        "enough to match something it should not. Clear the flag or tighten it",
+    ).toEqual([]);
   });
 });

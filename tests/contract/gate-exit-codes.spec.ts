@@ -75,15 +75,34 @@ describe("TI-021 — the ecosystem census gate exits non-zero when it did not ru
     expect(exitCodeForStatus("BLOCKED")).not.toBe(0);
   });
 
-  it("a real gate run exits with the code its reported status maps to", () => {
-    for (const [gate, run] of [
-      ["census", censusRun],
-      ["gaps", gapsRun],
-    ] as const) {
-      const status = statusOf(run);
-      expect(run.status, `${gate} → ${status}`).toBe(exitCodeForStatus(status));
-    }
-  });
+  it(
+    "a real gate run exits with the code its reported status maps to",
+    // Six minutes, explicitly.
+    //
+    // This suite spawns a real gate process per case, and the whole file took
+    // 357s under the certify run's parallelism against a 120s default. The
+    // result was two intermittent failures in `npm run certify` that had
+    // nothing to do with the tree — which is the worst kind of gate failure,
+    // because the response to a gate that is red for no reason is to switch it
+    // off.
+    //
+    // A timeout is not a budget: this asserts that a process exits with a
+    // specific code, and the process genuinely takes minutes because it
+    // compiles TypeScript. A shorter budget would report "no answer" as a
+    // failure, which is the same defect as a slow gate being read as a red one.
+    { timeout: 360_000 },
+    () => {
+      for (const [gate, run] of [
+        ["census", censusRun],
+        ["gaps", gapsRun],
+      ] as const) {
+        const status = statusOf(run);
+        expect(run.status, `${gate} → ${status}`).toBe(
+          exitCodeForStatus(status),
+        );
+      }
+    },
+  );
 
   it("a blocked gap run is not a success", () => {
     // The corpus cache is absent in a clean checkout, which is the BLOCKED

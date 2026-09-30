@@ -154,7 +154,28 @@ function isScopeRelevantIgnored(path: string): boolean {
   return isKnownTestFile(path);
 }
 
-function isUnrecognizedSourceCandidate(path: string): boolean {
+/**
+ * Every source extension any shipped adapter claims.
+ *
+ * This is where `LanguageAdapter.extensions` is READ. The field was declared by
+ * every adapter, listed a set of extensions, and consulted by nothing in
+ * `src/` — so a support claim that no code checked was still a claim the
+ * interface made to every reader.
+ *
+ * Derived rather than hand-listed so the two halves cannot drift. A test
+ * already compared the old hand-written regex against this set and found them
+ * equivalent, which is the honest result: the refactor removes a second
+ * source of truth rather than fixing a wrong answer. The `.mts`/`.cts` gap
+ * was real but lived in `extensions`, not here, and is now closed there.
+ */
+const ADAPTER_CLAIMED_EXTENSIONS: ReadonlySet<string> = new Set(
+  SCAN_ADAPTERS.flatMap((adapter) => adapter.extensions).map((ext) =>
+    ext.replace(/^\./, "").toLowerCase(),
+  ),
+);
+
+/** Whether ignoring this file would have removed it from the scanned surface. */
+export function isUnrecognizedSourceCandidate(path: string): boolean {
   const normalized = path.replaceAll("\\", "/");
   const name = normalized.split("/").pop() ?? normalized;
   if (
@@ -182,7 +203,9 @@ function isUnrecognizedSourceCandidate(path: string): boolean {
   const testLike =
     /(?:^|\/)__tests__\//i.test(normalized) ||
     /\.(?:spec|test)\.[cm]?[jt]sx?$/i.test(name);
-  return /\.(?:[cm]?[jt]sx?|py|java|cs|ya?ml)$/i.test(name) && testLike;
+  if (!testLike) return false;
+  const extension = name.slice(name.lastIndexOf(".") + 1).toLowerCase();
+  return ADAPTER_CLAIMED_EXTENSIONS.has(extension);
 }
 
 /** Whether ANY shipped adapter would discover this path as a test file. */

@@ -51,9 +51,16 @@ const ROOT = (() => {
 })();
 
 /**
- * Committed 2026-09-28. Read with `node scripts/list-unimported-modules.mjs`
+ * Committed 2026-09-29. Read with `node scripts/list-unimported-modules.mjs`
  * to regenerate the list; every addition needs a class and, for ORPHAN and
  * GAP, a reason.
+ *
+ * `src/rules/tier-evidence.ts` left this list when the promotion ratchet
+ * started reading it — the gate said so itself ("on the committed list but
+ * something now imports it"). The list is a disclosure, and a disclosure of
+ * something that is no longer unimported is a lie, so removing the entry is
+ * the only correct response. Its disclosure role did not go away with it: the
+ * ratchet now reports `demotedForUnsubstantiatedCore` on every run.
  */
 const COMMITTED = {
   // ── Barrels: re-export only, no behaviour of their own ──────────────────
@@ -81,8 +88,6 @@ const COMMITTED = {
     "GAP — the control-plane contract for the M33/M34 governance work. Unwired by design until that wave lands.",
   "src/engine/m38-challenge-contract.ts":
     "GAP — the challenge contract for milestone 38. Unwired; the record of the interface that work will implement.",
-  "src/engine/m40-language-expansion-contract.ts":
-    "GAP — the language-expansion contract for milestone 40. Unwired; the record of the interface that work will implement.",
   "src/engine/m49-experience-parity-contract.ts":
     "GAP — the experience-parity contract for milestone 49. Unwired; the record of the interface that work will implement.",
 
@@ -96,8 +101,6 @@ const COMMITTED = {
     "ORPHAN — imports a legacy evidence store. The store it imports is reachable only from here, so neither has a caller.",
   "src/scorer/scoring-validation.ts":
     "ORPHAN — scoring self-validation. Nothing runs it, so the scoring model has no runtime check.",
-  "src/rules/tier-evidence.ts":
-    "ORPHAN — added by 6.0 (B3) and read by a spec only. Promoted here deliberately rather than deleted: the list it commits is the disclosure that no rule is core on evidence, and it becomes wired when the capability matrix renders it.",
   "src/rules/families/flaky-patterns.ts":
     "ORPHAN — a rule family with no registrar. Its siblings (assertion-quality, test-independence) are reachable; this one is not.",
   "src/rules/families/marker-registry.ts":
@@ -201,6 +204,14 @@ const committed = new Set(Object.keys(COMMITTED));
  * gate's call: an `author-wave3.mts` is a record of how a wave's fixtures
  * were made, which is provenance a reviewer may want. So they are listed with
  * a reason, and a NEW unreferenced script fails.
+ *
+ * Those 24 `HISTORY` entries moved to `scripts/archive/` rather than staying
+ * beside the five `TOOL` ones. Both were listed, and the list was the only
+ * thing distinguishing them — so a reader of `scripts/` saw twenty-four
+ * one-shot fixture authors sitting next to five things a human runs, with
+ * nothing in the directory itself to say which was which. `HISTORY` is now a
+ * PATH: a reader of `scripts/` sees tools, and a reader of
+ * `scripts/archive/` sees the record of how they were made.
  */
 const ORPHAN_SCRIPTS = {
   "scripts/complete-lockfile.mjs":
@@ -213,43 +224,52 @@ const ORPHAN_SCRIPTS = {
     "TOOL — the regenerator for THIS file's script list, named in the guard's header. Run by a human when a script is added or removed; it prints only the diff a reviewer needs.",
   "scripts/release-changelog.mjs":
     "TOOL — a deterministic CHANGELOG transform for a reviewed release branch. The Release Candidate workflow VALIDATES the resulting version and changelog rather than invoking this helper, which is what the header says and what the workflow does. A human runs it on a release branch.",
-  "scripts/adjudicate-fixtures-0609.mts":
+  "scripts/archive/adjudicate-fixtures-0609.mts":
     "HISTORY — one-shot adjudicator from the 2026-06-09 fixture pass. Its verdicts are committed in tests/corpus/verdicts/; the tool that wrote them is the record of how.",
-  "scripts/adjudicate-harvest-0609.mts":
+  "scripts/archive/adjudicate-harvest-0609.mts":
     "HISTORY — the harvest half of the same 2026-06-09 pass.",
-  "scripts/apply-depth-adjudications.ts":
+  "scripts/archive/apply-depth-adjudications.ts":
     "HISTORY — the P8 depth-sweep applier. It patches `strategyJustification` into the rule sources from a hand-authored table; the patch is applied, the table is in the source, and re-running it is a no-op. Kept because the table is the adjudication record.",
-  "scripts/author-closure-final.mts":
+  "scripts/archive/author-closure-final.mts":
     "HISTORY — one-shot fixture author for the closure pass.",
-  "scripts/author-closure-fixtures.mts":
+  "scripts/archive/author-closure-fixtures.mts":
     "HISTORY — one-shot fixture author for the closure pass.",
-  "scripts/author-fixtures-0609.mts":
+  "scripts/archive/author-fixtures-0609.mts":
     "HISTORY — one-shot fixture author for the 2026-06-09 pass.",
-  "scripts/author-pw116.mts":
+  "scripts/archive/author-pw116.mts":
     "HISTORY — one-shot author for QA-PW-116's fixtures.",
-  "scripts/author-wave10.mts": "HISTORY — one-shot fixture author for wave 10.",
-  "scripts/author-wave2.mts": "HISTORY — one-shot fixture author for wave 2.",
-  "scripts/author-wave3.mts": "HISTORY — one-shot fixture author for wave 3.",
-  "scripts/author-wave4.mts": "HISTORY — one-shot fixture author for wave 4.",
-  "scripts/author-wave5.mts": "HISTORY — one-shot fixture author for wave 5.",
-  "scripts/author-wave6.mts": "HISTORY — one-shot fixture author for wave 6.",
-  "scripts/author-wave7.mts": "HISTORY — one-shot fixture author for wave 7.",
-  "scripts/author-wave8.mts": "HISTORY — one-shot fixture author for wave 8.",
-  "scripts/author-wave9.mts": "HISTORY — one-shot fixture author for wave 9.",
-  "scripts/omitted-tier.mts":
+  "scripts/archive/author-wave10.mts":
+    "HISTORY — one-shot fixture author for wave 10.",
+  "scripts/archive/author-wave2.mts":
+    "HISTORY — one-shot fixture author for wave 2.",
+  "scripts/archive/author-wave3.mts":
+    "HISTORY — one-shot fixture author for wave 3.",
+  "scripts/archive/author-wave4.mts":
+    "HISTORY — one-shot fixture author for wave 4.",
+  "scripts/archive/author-wave5.mts":
+    "HISTORY — one-shot fixture author for wave 5.",
+  "scripts/archive/author-wave6.mts":
+    "HISTORY — one-shot fixture author for wave 6.",
+  "scripts/archive/author-wave7.mts":
+    "HISTORY — one-shot fixture author for wave 7.",
+  "scripts/archive/author-wave8.mts":
+    "HISTORY — one-shot fixture author for wave 8.",
+  "scripts/archive/author-wave9.mts":
+    "HISTORY — one-shot fixture author for wave 9.",
+  "scripts/archive/omitted-tier.mts":
     "HISTORY — a five-line probe that printed the omitted-tier default, kept because its answer is quoted in src/rules/measurement.ts's header.",
-  "scripts/overlap-audit.mts":
+  "scripts/archive/overlap-audit.mts":
     "HISTORY — a one-off overlap audit whose findings are recorded in the gap matrix.",
-  "scripts/rev-dump.mts": "HISTORY — a review-dump helper.",
-  "scripts/sync-census-0609.mts":
+  "scripts/archive/rev-dump.mts": "HISTORY — a review-dump helper.",
+  "scripts/archive/sync-census-0609.mts":
     "HISTORY — one-shot census sync for the 2026-06-09 pass.",
-  "scripts/sync-sarif-version.cjs":
+  "scripts/archive/sync-sarif-version.cjs":
     "HISTORY — a manual SARIF version sync, superseded by the release workflow's own version stamping.",
-  "scripts/sync-smithery-version.cjs":
+  "scripts/archive/sync-smithery-version.cjs":
     "HISTORY — a manual smithery version sync, same.",
-  "scripts/unmeasured-map.mts":
+  "scripts/archive/unmeasured-map.mts":
     "HISTORY — a one-off map of unmeasured rules; the answer is now the `recallStatus` column in the capability matrix.",
-  "scripts/verdict-census.mts":
+  "scripts/archive/verdict-census.mts":
     "HISTORY — a one-off verdict census; superseded by docs/RULE-CAPABILITY-MATRIX.md.",
 };
 
@@ -398,18 +418,27 @@ if (problems.length > 0) {
   process.exit(1);
 }
 
+// The lists, not just the counts. The failure path names every offender, but
+// the PASS path printed four integers — and an integer is not an action. The
+// question a maintainer asks of a green run is "what is on the list?", and it
+// needed a failing run or a read of this file's source to answer.
+//
+// Names are also what makes the output diffable across releases: a count that
+// goes 41 → 42 says a module appeared, and the list says which.
 console.log(
   JSON.stringify(
     {
       status: "PASS",
       /** Modules under src/ that nothing in the repository imports. */
       unimported: actual.size,
+      unimportedModules: [...actual].sort(),
       /** Roots the walk treats as callers at all — a scripts/ importer is a live gate or generator. */
       callerRoots: CALLER_ROOTS,
       /** Entries on the committed list, each with a class and a reason. */
       committed: committed.size,
       /** Scripts no npm script, workflow or action invokes. */
       orphanScripts: actualScripts.size,
+      orphanScriptPaths: [...actualScripts].sort(),
       committedOrphanScripts: committedScripts.size,
     },
     null,

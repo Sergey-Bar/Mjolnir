@@ -3,15 +3,15 @@
   "artifact": "v6-inventory",
   "generatedBy": "npm run docs:v6-inventory",
   "wave": "0",
-  "baseSha": "d17027be65cab65c2026faca8b42ba84cf1bdc98",
+  "baseSha": "a806496160aeefe64c1795823f90b64cce582835",
   "version": "5.0.0",
   "publishedStable": "5.0.0",
   "counts": {
-    "srcFiles": 324,
-    "testSpecs": 677,
+    "srcFiles": 325,
+    "testSpecs": 837,
     "rulesLive": 79,
     "rulesRetired": 22,
-    "rulesMeasured": 74,
+    "rulesMeasured": 73,
     "adapters": 11,
     "commands": 38,
     "frameworks": 14,
@@ -34,7 +34,8 @@
     ],
     "census": {
       "M1": 24,
-      "M2": 9
+      "M2": 5,
+      "M3": 4
     },
     "frameworkInventoryLadder": {
       "F4": 1,
@@ -51,20 +52,21 @@
   "ruleRegistry": {
     "live": 79,
     "retired": 22,
-    "measured": 74,
+    "measured": 73,
     "byTier": {
       "quarantine": 34,
-      "extended": 26,
-      "core": 19
+      "extended": 45
     }
   },
   "ledgers": {
     "gapLedger": {
       "total": 17,
       "byStatus": {
-        "CONFIRMED_STILL_OPEN": 14,
-        "STALE_UNVERIFIABLE": 2,
-        "ALREADY_FIXED": 1
+        "CONFIRMED_STILL_OPEN": 7,
+        "STALE_UNVERIFIABLE": 1,
+        "EXTERNAL_PENDING": 7,
+        "ALREADY_FIXED": 1,
+        "CLOSED_DECISION_RECORDED": 1
       },
       "bySeverity": {
         "high": 6,

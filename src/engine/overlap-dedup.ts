@@ -55,7 +55,7 @@ import type { Tier } from "./tier-policy.js";
 export interface OverlapMeta {
   /** Rule IDs this rule can double-report on the same root cause. */
   overlapWith?: string[];
-  /** Tier rank for survivor resolution (missing = core). */
+  /** Tier rank for survivor resolution (missing = extended, see below). */
   tier?: Tier;
   /** RULES registry order for final tie-breaking. */
   order?: number;
@@ -160,8 +160,18 @@ function ranksBefore(
 ): boolean {
   const ma = metaByRuleId.get(a.ruleId);
   const mb = metaByRuleId.get(b.ruleId);
-  const tierA = TIER_RANK[ma?.tier ?? "core"];
-  const tierB = TIER_RANK[mb?.tier ?? "core"];
+  // A finding whose rule is absent from the map entirely — a third-party
+  // plugin or a workspace-local rule that never went through
+  // `OVERLAP_META_BY_RULE_ID` — is treated as `extended`, not `core`.
+  //
+  // The first version defaulted to `"core"`, so a rule nobody had declared a
+  // tier for outranked every rule that HAD declared `extended`, and survivor
+  // resolution quietly inverted. `scan-pipeline.ts` now sets `tier` on every
+  // registry entry unconditionally, so for those the fallback is genuinely
+  // unreachable; it exists for the paths that bypass the registry, and it is
+  // the middle of the ladder rather than the top.
+  const tierA = TIER_RANK[ma?.tier ?? "extended"];
+  const tierB = TIER_RANK[mb?.tier ?? "extended"];
   if (tierA !== tierB) return tierA < tierB;
   const sevA = SEVERITY_RANK[a.severity];
   const sevB = SEVERITY_RANK[b.severity];

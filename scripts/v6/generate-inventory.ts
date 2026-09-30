@@ -443,25 +443,57 @@ export function renderGapMatrixMd(
 
 // ─── Entrypoint ──────────────────────────────────────────────────────
 
-async function main(): Promise<void> {
-  const facts = collectRepoFacts(ROOT);
-  const requirements = verifyRequirements(ROOT);
-  const archive = reconcileArchive(ROOT);
-  const baseSha = gitSha(ROOT);
+/**
+ * Every artifact this generator produces, rendered but NOT written.
+ *
+ * Split out from `main` because `scripts/check-provenance-artifacts.ts`
+ * compares the committed `docs/v6-inventory.json` against a fresh render, and
+ * it must not write: the artifact's `baseSha` is the commit it was generated
+ * from, so regenerating in the checkout would rewrite the stamp and a diff
+ * afterwards would report the clock rather than the claim. Rendering in memory
+ * and normalising is what makes "did a CLAIM change" separable from "did a
+ * commit move".
+ */
+export interface RenderedArtifacts {
+  facts: RepoFacts;
+  requirements: readonly VerifiedRequirement[];
+  archive: ArchiveReconciliation;
+  inventory: string;
+  currentState: string;
+  gapMatrix: string;
+  archiveJson: string;
+}
 
-  writeFileSync(
-    INVENTORY_JSON,
-    renderInventoryJson(facts, requirements, archive, baseSha),
-  );
-  writeFileSync(
-    CURRENT_STATE_MD,
-    renderCurrentStateMd(facts, requirements, archive, baseSha),
-  );
-  writeFileSync(
-    GAP_MATRIX_MD,
-    renderGapMatrixMd(facts, requirements, archive, baseSha),
-  );
-  writeFileSync(ARCHIVE_JSON, JSON.stringify(archive, null, 2) + "\n");
+export function renderArtifacts(root: string = ROOT): RenderedArtifacts {
+  const facts = collectRepoFacts(root);
+  const requirements = verifyRequirements(root);
+  const archive = reconcileArchive(root);
+  const baseSha = gitSha(root);
+  return {
+    facts,
+    requirements,
+    archive,
+    inventory: renderInventoryJson(facts, requirements, archive, baseSha),
+    currentState: renderCurrentStateMd(facts, requirements, archive, baseSha),
+    gapMatrix: renderGapMatrixMd(facts, requirements, archive, baseSha),
+    archiveJson: JSON.stringify(archive, null, 2) + "\n",
+  };
+}
+
+async function main(): Promise<void> {
+  const {
+    facts,
+    requirements,
+    archive,
+    inventory,
+    currentState,
+    gapMatrix,
+    archiveJson,
+  } = renderArtifacts(ROOT);
+  writeFileSync(INVENTORY_JSON, inventory);
+  writeFileSync(CURRENT_STATE_MD, currentState);
+  writeFileSync(GAP_MATRIX_MD, gapMatrix);
+  writeFileSync(ARCHIVE_JSON, archiveJson);
 
   await prettify(INVENTORY_JSON);
   await prettify(CURRENT_STATE_MD);

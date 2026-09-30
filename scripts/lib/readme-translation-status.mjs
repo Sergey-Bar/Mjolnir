@@ -1,6 +1,12 @@
+import { execFileSync } from "node:child_process";
+import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+
 /**
  * The decision behind the advisory README-translation report
- * (scripts/check-readme-translations.mjs).
+ * (scripts/check-readme-translations.mjs) AND behind the translation ratchet
+ * (scripts/check-translation-ratchet.mjs).
  *
  * The rule lives here, pure and exported, so it can be unit-tested without a
  * git checkout, a clock, or a fixture tree. The wrapper stays a thin CLI.
@@ -19,7 +25,95 @@
  * precisely when a translation was most out of date.
  */
 
-const DAY_MS = 24 * 60 * 60 * 1000;
+/**
+ * The languages this repository translates, and the markers each file carries.
+ *
+ * Here rather than in either of the two consumers. `check-readme-translations.mjs`
+ * (the advisory report) and `check-translation-ratchet.mjs` (the gate) both
+ * needed this list, and both had their OWN copy — kept "in step" by hand, with
+ * a test that regex-parsed the report's source to catch drift. A test that
+ * reads a file's formatting is a test of the formatting; the list belongs in
+ * the module both sides already import, which is this one.
+ */
+export const TRANSLATED_LANGS = Object.freeze([
+  "zh",
+  "zht",
+  "ko",
+  "de",
+  "es",
+  "fr",
+  "it",
+  "da",
+  "ja",
+  "pl",
+  "ru",
+  "no",
+  "br",
+  "th",
+  "tr",
+  "uk",
+  "bn",
+  "gr",
+  "vi",
+  "he",
+  "ar",
+  "bs",
+]);
+
+/** `Last synced: YYYY-MM-DD` */
+export const SYNCED_MARKER = /Last synced:\s*(\d{4})-(\d{2})-(\d{2})/;
+
+/** `<!-- Source hash: abc123 -->` */
+export const SOURCE_HASH_MARKER = /<!--\s*Source hash:\s*([a-f0-9]+)\s*-->/;
+
+export const DAY_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * Last calendar date (YYYY-MM-DD) a commit touched README.md, or null.
+ *
+ * Takes the root rather than reading the process's cwd, so a caller
+ * inspecting a fixture compares the FIXTURE's history. Both consumers of this
+ * module read a real checkout today; the ratchet's fixture runs `git init` and
+ * one commit precisely so this has an input to read, and a hard-coded
+ * `process.cwd()` would have silently compared the wrong tree's history.
+ */
+export function readmeLastChangeDate(root) {
+  try {
+    const out = execFileSync(
+      "git",
+      ["log", "-1", "--format=%cs", "--", "README.md"],
+      {
+        cwd: root,
+        encoding: "utf8",
+      },
+    ).trim();
+    return /^\d{4}-\d{2}-\d{2}$/.test(out) ? out : null;
+  } catch {
+    return null; // not a git checkout (e.g. npm-packed tarball)
+  }
+}
+
+/**
+ * Content hash of the English README's translatable sections.
+ *
+ * Strips badges, shields and HTML blocks so CI-specific changes (badge URLs,
+ * version bumps) do not flag translations as stale when the prose is
+ * unchanged.
+ */
+export function computeSourceHash(root) {
+  try {
+    const text = readFileSync(join(root, "README.md"), "utf8");
+    const translatable = text
+      .split("\n")
+      .filter(
+        (line) => !/^(!\[|<!--|<div|<img|\[!\[|<a href)/.test(line.trim()),
+      )
+      .join("\n");
+    return createHash("sha256").update(translatable).digest("hex").slice(0, 12);
+  } catch {
+    return null;
+  }
+}
 
 /** Section headings (## level) from markdown text, prefix stripped. */
 export function extractSections(text) {

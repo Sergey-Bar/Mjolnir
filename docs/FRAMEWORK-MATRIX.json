@@ -5,7 +5,7 @@
   "projectionOf": "mjolnir-capability-registry",
   "axis": "framework",
   "observedAt": "2026-09-28",
-  "baseSha": "a73248145130df8be7d57235066fec9fe1839509",
+  "baseSha": "a806496160aeefe64c1795823f90b64cce582835",
   "rowCount": 10,
   "rows": [
     {
@@ -14,7 +14,7 @@
       "inventoryMaturity": "F4",
       "supportStatus": "OFFICIAL_PARTIAL",
       "capabilityId": "test.framework.playwright",
-      "maturity": "M2",
+      "maturity": "M3",
       "rules": [
         "QA-PW-002",
         "QA-PW-003",
@@ -112,7 +112,7 @@
       "inventoryMaturity": "F2",
       "supportStatus": "OFFICIAL_PARTIAL",
       "capabilityId": "test.framework.junit",
-      "maturity": "M2",
+      "maturity": "M1",
       "rules": [
         "QA-TEST-001",
         "QA-TEST-002",
@@ -129,7 +129,7 @@
       "inventoryMaturity": "F2",
       "supportStatus": "OFFICIAL_PARTIAL",
       "capabilityId": "test.framework.nunit",
-      "maturity": "M2",
+      "maturity": "M1",
       "rules": [
         "QA-TEST-001",
         "QA-TEST-002",
@@ -146,7 +146,7 @@
       "inventoryMaturity": "F2",
       "supportStatus": "OFFICIAL_PARTIAL",
       "capabilityId": "test.framework.xunit",
-      "maturity": "M2",
+      "maturity": "M1",
       "rules": [
         "QA-TEST-001",
         "QA-TEST-002",
@@ -173,7 +173,7 @@
       "inventoryMaturity": "F1",
       "supportStatus": "EXPERIMENTAL",
       "capabilityId": "test.framework.selenium",
-      "maturity": "M2",
+      "maturity": "M1",
       "rules": [],
       "validatedVersions": ["4.20", "4.21", "4.22", "4.23", "4.24", "4.25"]
     },
@@ -183,7 +183,7 @@
       "inventoryMaturity": "F1",
       "supportStatus": "EXPERIMENTAL",
       "capabilityId": "test.framework.testng",
-      "maturity": "M2",
+      "maturity": "M1",
       "rules": [
         "QA-TEST-001",
         "QA-TEST-002",
