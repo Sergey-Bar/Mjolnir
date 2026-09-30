@@ -1,0 +1,33 @@
+# Mjölnir
+
+> Mjölnir (npm: mjolnir-qa) analyzes test source, CI workflows and existing test-run reports for verification weaknesses. It provides source-located findings, evidence explanations, baseline comparison and read-only MCP tools. It does not execute tests or prove application correctness.
+
+Created by Sergey Bar. Node.js >=22.18. MIT licensed. CLI examples pin 5.0.0.
+
+## Start here
+
+- [Repository and README](https://github.com/Sergey-Bar/Mjolnir): overview, installation, examples and limitations.
+- [Getting started](https://sergey-bar.github.io/Mjolnir/guide/getting-started): run the first scan.
+- [Agent integration](https://sergey-bar.github.io/Mjolnir/guide/agents): MCP and agent workflows.
+- [What it checks](https://sergey-bar.github.io/Mjolnir/guide/what-it-checks): supported analysis.
+
+## Reference
+
+- [Example scan report](https://sergey-bar.github.io/Mjolnir/guide/example-report): saved terminal, JSON and SARIF output with a reading guide.
+
+- [CLI](https://sergey-bar.github.io/Mjolnir/reference/cli): commands and flags.
+- [Rule catalog](https://sergey-bar.github.io/Mjolnir/rules/): detections, evidence and examples.
+- [Evidence terminology](https://sergey-bar.github.io/Mjolnir/reference/terminology): E0–E2 and L0–L5.
+- [Exit codes](https://sergey-bar.github.io/Mjolnir/reference/exit-codes): interpret incomplete and failed analysis.
+- [False-positive audit](https://sergey-bar.github.io/Mjolnir/reference/fp-audit): measured rule quality.
+- [Machine contract](https://github.com/Sergey-Bar/Mjolnir/blob/main/docs/machine-contract.md): structured results.
+
+## Workflow guides
+
+- [CI integration](https://sergey-bar.github.io/Mjolnir/guide/ci)
+- [Runtime forensics](https://sergey-bar.github.io/Mjolnir/guide/forensics)
+- [Configuration](https://sergey-bar.github.io/Mjolnir/guide/configuration)
+
+## Interpretation
+
+Inspect scope and completeness. E1 heuristics require contextual review. Quarantine rules are strict-only and advisory. Baseline comparison needs a saved before-state. Run tests separately. An incomplete scan is inconclusive; a clean scan is not proof of business correctness.

@@ -21,7 +21,7 @@ when verification isn't earning its keep.
 npx mjolnir-qa@5.1.0
 ```
 
-[See it work](#see-it-work) · [Quickstart](#quickstart) · [What it finds](#what-mjölnir-finds) · [Score](#the-worthiness-score) · [Evidence](#the-evidence-model) · [Forensics](#runtime-forensics) · [CI](#ci-integrity) · [Agents](#ai-agents) · [Security](#trust-and-security) · [Limits](#what-mjölnir-cannot-tell-you) · [Docs](#documentation)
+[**Interactive walkthrough**](https://sergey-bar.github.io/Mjolnir/) · [See it work](#see-it-work) · [Quickstart](#quickstart) · [What it finds](#what-mjölnir-finds) · [Score](#the-worthiness-score) · [Evidence](#the-evidence-model) · [Forensics](#runtime-forensics) · [CI](#ci-integrity) · [Agents](#ai-agents) · [Security](#trust-and-security) · [Limits](#what-mjölnir-cannot-tell-you) · [Docs](#documentation)
 
 <div>
 
@@ -140,6 +140,10 @@ manually via `npm run docs:video:render` and nothing checks that the `.mp4` has
 been re-encoded. Re-run it to bring the asset forward.</sub>
 
 </details>
+
+<sub>Prefer to click through it? [Explore the animated walkthrough on the
+website](https://sergey-bar.github.io/Mjolnir/), or read
+[the guide](https://sergey-bar.github.io/Mjolnir/guide/getting-started).</sub>
 
 ### One finding, up close
 

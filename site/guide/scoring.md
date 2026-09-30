@@ -22,6 +22,17 @@ doesn't collapse to zero.
 
 <ScoreExplainer />
 
+## Worked example
+
+In the demo scan, **32 deduction points** across **7 test declarations** produce:
+
+```text
+rate  = 32 / (7 + 1) = 4
+score = 100 - min(100, 4 × 5) = 80 → WORTHY
+```
+
+The three ceilings below can further limit the result. Adding empty spec files does not raise the score because normalization uses test declarations.
+
 ## Per-finding deductions
 
 | Severity | Base points |
@@ -77,10 +88,10 @@ need the artifacts of a run that already finished.
 
 ## Verdict bands
 
-| Score   | Verdict          |
-| ------- | ---------------- |
-| 100     | ⚡ **FORGED**    |
-| ≥ 80    | ✓ **WORTHY**     |
+| Score   | Verdict           |
+| ------- | ----------------- |
+| 100     | ⚡ **FORGED**     |
+| 80 – 99 | ✓ **WORTHY**      |
 | 50 – 79 | ⚠ **NEEDS WORK** |
 | < 50    | ✖ **UNWORTHY**   |
 

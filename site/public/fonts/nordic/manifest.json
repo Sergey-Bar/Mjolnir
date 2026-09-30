@@ -1,0 +1,16 @@
+[
+  {
+    "bytes": 18940,
+    "family": "Space Grotesk",
+    "file": "space-grotesk-latin-ext.woff2",
+    "source": "https://fonts.gstatic.com/s/spacegrotesk/v22/V8mDoQDjQSkFtoMM3T6r8E7mPb94C-s0.woff2",
+    "sha256": "952DDDB45D2F96F71CBF3B7F510B24379AFC3C89EA02FCF89D377B45D62C0166"
+  },
+  {
+    "bytes": 22288,
+    "family": "Space Grotesk",
+    "file": "space-grotesk-latin.woff2",
+    "source": "https://fonts.gstatic.com/s/spacegrotesk/v22/V8mDoQDjQSkFtoMM3T6r8E7mPbF4Cw.woff2",
+    "sha256": "0640890476FC1198AB4DE571FB658DE443C4D85B66466EC09534A8737AB1CE9D"
+  }
+]

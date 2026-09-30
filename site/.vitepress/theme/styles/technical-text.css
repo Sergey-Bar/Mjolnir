@@ -1,0 +1,77 @@
+/* One technical type system for commands, evidence and documentation. */
+@font-face {
+  font-family: "Cascadia Mono";
+  font-style: normal;
+  font-weight: 200 700;
+  font-display: swap;
+  src: url(/Mjolnir/fonts/cascadia/cascadia-mono.woff2) format("woff2");
+}
+:root {
+  --mj-code-size: 14px;
+  --mj-code-leading: 1.65;
+  --mj-panel-inset: 20px;
+}
+/* Explicitly reset italic/bold browser defaults for nested code and evidence. */
+:is(pre, code, .st-body, .term-body, .anat-term, .ln, .tok, .stamp) {
+  font-synthesis: none;
+  font-variant-ligatures: none;
+  font-style: normal;
+  letter-spacing: 0;
+}
+.mj :is(.st-body, .term-body, .anat-term) {
+  padding: 20px var(--mj-panel-inset);
+  font-size: var(--mj-code-size);
+  line-height: var(--mj-code-leading);
+  background: rgba(8, 15, 23, 0.72);
+  color: var(--vp-c-text-2);
+  min-width: 0;
+  max-width: 100%;
+}
+.mj :is(.st-body, .term-body, .anat-term) .tl {
+  min-height: 1.65em;
+}
+.mj :is(.st-bar, .term-title, .file-head) {
+  padding-inline: var(--mj-panel-inset);
+}
+.mj :is(.file-head, .proof-heading) {
+  flex-wrap: wrap;
+}
+.mj .file-head > :first-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.mj .file-head > :last-child {
+  flex-shrink: 0;
+}
+.mj :is(.map-detail, .proof-stage) {
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+}
+.mj :is(.map-detail, .proof-stage) > * {
+  min-width: 0;
+}
+.mj :is(.map-node code, .detail-command code) {
+  max-width: 100%;
+  white-space: pre-wrap;
+}
+.mj :is(.chip-card, .stamp, .snippet, .tok) {
+  overflow-wrap: anywhere;
+}
+.mj .snippet {
+  white-space: pre-wrap;
+}
+.mj .proof-transport {
+  flex-shrink: 0;
+}
+@media (max-width: 760px) {
+  :root {
+    --mj-panel-inset: 16px;
+    --mj-code-size: 13px;
+  }
+  .mj :is(.map-detail, .proof-stage) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .mj .terminal-box-line {
+    font-size: clamp(9px, 2.65vw, 14px);
+    white-space: pre;
+  }
+}

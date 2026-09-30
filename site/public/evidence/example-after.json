@@ -1,0 +1,180 @@
+{
+  "schemaVersion": 1,
+  "partial": false,
+  "scopeIntegrity": {
+    "discovered": 1,
+    "analyzed": 1,
+    "ignored": 0,
+    "unrecognized": 0,
+    "parseFailed": 0,
+    "truncated": 0,
+    "scopeVerdict": "PROVEN"
+  },
+  "runIdentity": {
+    "scanId": "70b76f52d0d4fc9fff2aeab31ab7464723ac61b82335555c1e41f9084b2f7ef3",
+    "inputFingerprint": "4a4860a0ad026c88bc14de265887bd4438c40f3df5dc0b6d1636c8625c7d41ff",
+    "rulesDigest": "2844bd53111df68947d1141082845b9564d2a210108c677c5fdfd311bf586ddc",
+    "configFingerprint": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+    "engineVersion": "5.0.0",
+    "boundLinks": ["input", "rules", "config", "engine"],
+    "trustModelVersion": "1.0.0",
+    "scoringModelVersion": "1.0.0",
+    "frameworkSupportMatrixVersion": "1.0.0"
+  },
+  "evidenceGraph": {
+    "chain": [
+      {
+        "link": "verdict"
+      },
+      {
+        "link": "evidence"
+      },
+      {
+        "link": "execution",
+        "ref": "70b76f52d0d4fc9fff2aeab31ab7464723ac61b82335555c1e41f9084b2f7ef3"
+      },
+      {
+        "link": "scope",
+        "ref": "4a4860a0ad026c88bc14de265887bd4438c40f3df5dc0b6d1636c8625c7d41ff"
+      },
+      {
+        "link": "source"
+      },
+      {
+        "link": "rule",
+        "ref": "2844bd53111df68947d1141082845b9564d2a210108c677c5fdfd311bf586ddc"
+      },
+      {
+        "link": "fixture"
+      },
+      {
+        "link": "reproduction"
+      }
+    ],
+    "runId": {
+      "scanId": "70b76f52d0d4fc9fff2aeab31ab7464723ac61b82335555c1e41f9084b2f7ef3",
+      "inputFingerprint": "4a4860a0ad026c88bc14de265887bd4438c40f3df5dc0b6d1636c8625c7d41ff",
+      "rulesDigest": "2844bd53111df68947d1141082845b9564d2a210108c677c5fdfd311bf586ddc",
+      "configFingerprint": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "engineVersion": "5.0.0",
+      "boundLinks": ["input", "rules", "config", "engine"],
+      "trustModelVersion": "1.0.0",
+      "scoringModelVersion": "1.0.0",
+      "frameworkSupportMatrixVersion": "1.0.0"
+    }
+  },
+  "evidence": {
+    "records": [],
+    "counts": {
+      "total": 0,
+      "failed": 0,
+      "flaky": 0,
+      "skipped": 0,
+      "timedOut": 0
+    },
+    "artifact": null
+  },
+  "score": null,
+  "reason": "no-tests-found",
+  "frameworks": [],
+  "frameworkDetectionUnknown": true,
+  "dimensions": [],
+  "findings": [],
+  "testFileCount": 0,
+  "testDeclarationCount": 0,
+  "rawDeductions": 0,
+  "effectiveDeductions": 0,
+  "suppressionCount": 0,
+  "agenticProfile": {
+    "testFiles": 0,
+    "generatedMarkedFiles": 0,
+    "codegenLikeFiles": 0,
+    "shareMarkedGenerated": 0,
+    "findingsInGeneratedFiles": 0,
+    "findingsInUnmarkedFiles": 0,
+    "note": "Static provenance markers only (generated-file headers, Playwright codegen default titles). Absence of a marker does not prove human authorship; healed and MCP-edited files without markers are indistinguishable from hand-written ones. Provenance never changes scoring or evidence — authorship is metadata, not trust."
+  },
+  "analysisStatus": {
+    "discovery": "complete",
+    "rules": "complete",
+    "skippedFiles": 0,
+    "rulesCrashed": 0,
+    "parseFallbacks": 0,
+    "reasons": [],
+    "durationMs": 19
+  },
+  "scoringModelVersion": "1.0.0",
+  "trustSummary": {
+    "level": "L0",
+    "confidence": 0.9,
+    "evidenceCoverage": 0,
+    "inconclusiveRate": 1,
+    "provisionalRuleIds": [],
+    "confidenceCeiling": 0.9,
+    "ceilingReasons": ["framework-detection-unknown"]
+  },
+  "contract": {
+    "contractVersion": 1,
+    "summary": {
+      "digest": "sha256:03cb8066aea7108de93eeff00ddc698568b68e468a71572c50c179fcab061057",
+      "findings": 0,
+      "score": null,
+      "errors": 0,
+      "warnings": 0,
+      "infos": 0,
+      "advisory": 0
+    },
+    "annotations": [],
+    "annotationsTruncated": false,
+    "completeness": {
+      "partial": false,
+      "discovery": "complete",
+      "rules": "complete",
+      "skippedFiles": 0,
+      "rulesCrashed": 0,
+      "parseFallbacks": 0,
+      "truncationReasons": [],
+      "reasons": [],
+      "frameworkDetectionUnknown": true,
+      "durationMs": 19,
+      "scopeIntegrity": {
+        "discovered": 1,
+        "analyzed": 1,
+        "ignored": 0,
+        "unrecognized": 0,
+        "parseFailed": 0,
+        "truncated": 0,
+        "scopeVerdict": "PROVEN"
+      },
+      "runIdentity": {
+        "scanId": "70b76f52d0d4fc9fff2aeab31ab7464723ac61b82335555c1e41f9084b2f7ef3",
+        "inputFingerprint": "4a4860a0ad026c88bc14de265887bd4438c40f3df5dc0b6d1636c8625c7d41ff",
+        "rulesDigest": "2844bd53111df68947d1141082845b9564d2a210108c677c5fdfd311bf586ddc",
+        "configFingerprint": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+        "engineVersion": "5.0.0",
+        "boundLinks": ["input", "rules", "config", "engine"],
+        "trustModelVersion": "1.0.0",
+        "scoringModelVersion": "1.0.0",
+        "frameworkSupportMatrixVersion": "1.0.0"
+      }
+    },
+    "trustSummary": {
+      "level": "L0",
+      "confidence": 0.9,
+      "evidenceCoverage": 0,
+      "inconclusiveRate": 1,
+      "provisionalRuleIds": [],
+      "confidenceCeiling": 0.9,
+      "ceilingReasons": ["framework-detection-unknown"]
+    },
+    "provenance": {
+      "testFiles": 0,
+      "generatedMarkedFiles": 0,
+      "codegenLikeFiles": 0,
+      "shareMarkedGenerated": 0,
+      "findingsInGeneratedFiles": 0,
+      "findingsInUnmarkedFiles": 0,
+      "note": "Static provenance markers only (generated-file headers, Playwright codegen default titles). Absence of a marker does not prove human authorship; healed and MCP-edited files without markers are indistinguishable from hand-written ones. Provenance never changes scoring or evidence — authorship is metadata, not trust."
+    }
+  }
+}

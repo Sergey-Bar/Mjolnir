@@ -14,6 +14,7 @@ const SIDEBAR = [
     text: "Guide",
     items: [
       { text: "Getting started", link: "/guide/getting-started" },
+      { text: "Example report", link: "/guide/example-report" },
       { text: "What Mjölnir checks", link: "/guide/what-it-checks" },
       { text: "How the score works", link: "/guide/scoring" },
       { text: "Runtime forensics", link: "/guide/forensics" },
@@ -71,6 +72,9 @@ export default defineConfig({
   ignoreDeadLinks: true,
   markdown: {
     config(md) {
+      md.renderer.rules.table_open = () =>
+        '<div class="doc-table-scroll" role="region" aria-label="Scrollable data table" tabindex="0"><table>';
+      md.renderer.rules.table_close = () => "</table></div>";
       const orig = md.renderer.rules.link_open;
       md.renderer.rules.link_open = (tokens, idx, options, env, self) => {
         const tok = tokens[idx];
@@ -134,20 +138,10 @@ export default defineConfig({
       },
     ],
     ["link", { rel: "apple-touch-icon", href: BASE + "apple-touch-icon.png" }],
-    // Fonts are self-hosted from site/public/fonts (vendored by
-    // `npm run brand:fonts`, sha256-locked in fonts.lock.json). There is
-    // no preconnect and no third-party stylesheet: the page renders its
-    // own wordmark without asking anyone else, and the two cross-origin
-    // round-trips that used to sit on the critical path are gone.
-    //
-    // Preloading the latin faces first paint needs — body and code — is
-    // what makes `font-display: swap` safe here. Display is Geist too, so
-    // there is no third face to wait for. The measured lesson this
-    // replaces: JetBrains Mono swapping in at ~900ms re-flowed all 91
-    // rows of the rule catalog and was the whole of that page's CLS
-    // (0.088 against a 0.05 gate). A same-origin, preloaded, 23 KB face
-    // arrives before the paint that would have to shift.
-    ...["geist-400-latin", "geist-mono-400-latin"].map(
+    // Website typography POC: preload the self-hosted variable Latin
+    // faces used by the body, headings and code. Subsets load on demand.
+    // Sources, hashes and OFL licenses live in public/fonts/nordic.
+    ...["nordic/space-grotesk-latin", "cascadia/cascadia-mono"].map(
       (f) =>
         [
           "link",
