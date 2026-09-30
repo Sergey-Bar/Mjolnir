@@ -61,6 +61,29 @@ const ROOT = (() => {
  * something that is no longer unimported is a lie, so removing the entry is
  * the only correct response. Its disclosure role did not go away with it: the
  * ratchet now reports `demotedForUnsubstantiatedCore` on every run.
+ *
+ * TWELVE ENTRIES BELOW ALSO APPEAR IN `docs/COVERAGE-EXEMPTIONS.json`, under
+ * the `UNIMPLEMENTED_SPEC` classification:
+ *
+ *   bench/m48-scale-operating-model     engine/m38-challenge-contract
+ *   change-intelligence                 engine/m43-system-of-systems
+ *   engine/m44-historical-intelligence  engine/m49-experience-parity-contract
+ *   engine/runtime-evidence-graph       frameworks/universal-pack-contract
+ *   governance/m33-m34-contract         mutation/failure-sensitivity
+ *   plugins/sdk-contract                qa/domain-model
+ *
+ * The same twelve files, named by two ledgers. That duplication is deliberate
+ * and the two are NOT merged, because they answer different questions: this
+ * list is about IMPORT disclosure, that ledger is about COVERAGE exclusion,
+ * and a module can be on one without the other meaning anything. Coupling
+ * them would trade a stale-entry risk for a coupling cost, which is not a
+ * clear win for two static lists.
+ *
+ * What is owed is that a reader arriving at one finds the other, which is what
+ * the cross-reference on each side is for. The lists are reconciled by
+ * `scripts/clean-exemption-ledger`-style regeneration and by review, not by a
+ * gate: a gate that enforced the overlap would be a second source of truth
+ * telling the first what to say.
  */
 const COMMITTED = {
   // ── Barrels: re-export only, no behaviour of their own ──────────────────

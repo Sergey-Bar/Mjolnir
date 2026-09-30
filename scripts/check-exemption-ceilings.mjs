@@ -1,9 +1,9 @@
 /**
- * The exemption ledger's two ceilings, and why they are ceilings rather than
+ * The exemption ledger's ceilings, and why they are ceilings rather than
  * targets.
  *
- * `SHIPPED_SURFACE` and `CONTRACT_ONLY` are the two classes a wiring is
- * supposed to shrink. Both are ratchets: the count may FALL and may never
+ * `SHIPPED_SURFACE` and `UNIMPLEMENTED_SPEC` are the two classes this
+ * repository shrinks. Both are ratchets: the count may FALL and may never
  * RISE, and a rise is a failure that names the file which caused it.
  *
  * The direction is the whole mechanism. A count that a team tries to hit is a
@@ -13,14 +13,22 @@
  * a maintainer who legitimately needs one more entry has to write down why in
  * the same file, which is a diff a reviewer sees.
  *
- * `CONTRACT_ONLY` is new. Its 13 entries are, one for one, the contracts the
- * unwired-contract work targets — `m40-language-expansion-contract.ts`,
- * `universal-pack-contract.ts`, `provider-capability-contract.ts` and ten
- * others — so the number IS that backlog, and stating it as a CI value rather
- * than as a sentence is what makes it fall.
+ * `UNIMPLEMENTED_SPEC` is the class twelve specifications sit in: a typed
+ * schema for a subsystem that does not exist, imported by nothing. It was
+ * previously `CONTRACT_ONLY`, which read as "wired except for the test" — a
+ * claim none of the twelve was true of. `m40-language-expansion-contract.ts`
+ * was deleted rather than relabelled, because `language-manifest.ts` already
+ * answered the question it was specifying; `CONTRACT_ONLY` is now empty and
+ * kept in the vocabulary for a contract that is later wired and becomes
+ * SHIPPED_SURFACE.
+ *
+ * The twelve are the same files listed in
+ * `scripts/check-unimported-modules.mjs` as ORPHAN entries. The two lists are
+ * deliberately NOT merged — one is import disclosure, the other coverage
+ * exclusion — and are reconciled by review rather than by a gate.
  *
  * Usage: node scripts/check-exemption-ceilings.mjs
- * Exit codes: 0 = both ceilings hold, 1 = one was exceeded, 2 = setup error.
+ * Exit codes: 0 = every ceiling holds, 1 = one was exceeded, 2 = setup error.
  */
 
 import { readFileSync } from "node:fs";

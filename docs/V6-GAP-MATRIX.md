@@ -2,7 +2,7 @@
 
 **Generated — do not edit by hand.** Regenerate: `npm run docs:v6-inventory`.
 
-Baseline commit `2be357b431f98c0d29d1435befc1ba6701e3ef4c`.
+Baseline commit `6080ee12fe64ddef0f9edd0f42536e43e0c64668`.
 
 Two sources, one table. Rows marked **Wave 0** were found by this
 inventory and were carried by no ledger before; rows marked **M26
@@ -14,7 +14,7 @@ cannot be read as one number.
 - Wave 0 gaps found: **8**
 - Open M26 release-blockers carried forward: **11**
 - Support-matrix cells explicitly BLOCKED (not rows here, but the same class of truth): **69**
-- Archive issues blocking reconciliation: **18**
+- Archive issues blocking reconciliation: **108**
 
 ## Gaps by target wave
 

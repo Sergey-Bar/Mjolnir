@@ -15,7 +15,7 @@
     "shippedSurfaceCeiling": 10,
     "shippedSurfaceCeilingMeaning": "Ratchet over shipped surfaces that are not PERMANENT_STRUCTURAL, not a target. The count may fall (removal, merge, real tests) and may never rise. Structural entries are excluded from the count because they are evidenced by a structural reason rather than a removable gap.",
     "unimplementedSpecs": 12,
-    "unimplementedSpecsMeaning": "Files under src/ that no production path imports and whose subsystem is not implemented. NOT a wiring backlog: m40 was deleted rather than wired because language-manifest already answered the question it was specifying, and the other eleven describe V6 waves with nothing behind them. Counted so the number is visible, not so it can be ratcheted to zero by deleting specifications."
+    "unimplementedSpecsMeaning": "Files under src/ that no production path imports and whose subsystem is not implemented. NOT a wiring backlog: m40 was deleted rather than wired because language-manifest already answered the question it was specifying, and the other eleven describe V6 waves with nothing behind them. Counted so the number is visible, not so it can be ratcheted to zero by deleting specifications. The same twelve files are listed as ORPHAN entries in scripts/check-unimported-modules.mjs -- import disclosure there, coverage exclusion here. The two are deliberately not merged: a module can be on one without the other meaning anything, and coupling them would trade a stale-entry risk for a coupling cost."
   },
   "entries": [
     {

@@ -2,7 +2,7 @@
 
 **Generated — do not edit by hand.** Regenerate: `npm run docs:v6-inventory`.
 
-Baseline commit `2be357b431f98c0d29d1435befc1ba6701e3ef4c` · package version `5.0.0` · published stable `5.0.0`.
+Baseline commit `6080ee12fe64ddef0f9edd0f42536e43e0c64668` · package version `5.0.0` · published stable `5.0.0`.
 
 This is the truth baseline v6 is built on. It is deliberately blunt: the
 interesting part of a current-state inventory is what the product _cannot_
@@ -31,7 +31,7 @@ demonstrate, not what it contains.
 | Package version                 | `5.0.0`                                                                                                                                 | `package.json`                      |
 | Published stable                | `5.0.0`                                                                                                                                 | `package.json`                      |
 | Source files (`src/**.ts`)      | 325                                                                                                                                     | derived                             |
-| Test specs (`tests/**.spec.ts`) | 837                                                                                                                                     | derived                             |
+| Test specs (`tests/**.spec.ts`) | 1023                                                                                                                                    | derived                             |
 | Live rules                      | 79                                                                                                                                      | `src/rules/index.ts`                |
 | Retired rule ids (preserved)    | 22                                                                                                                                      | `RETIRED_RULE_IDS`                  |
 | Rules with a valid measurement  | 73                                                                                                                                      | `MEASURED_FP` + `detectorRev`       |
@@ -43,8 +43,8 @@ demonstrate, not what it contains.
 | QA domain records               | 13                                                                                                                                      | `QA_DOMAIN_RECORDS`                 |
 | Gap-ledger records              | 17                                                                                                                                      | `docs/M26-GAP-LEDGER.jsonl`         |
 | Support-matrix cells            | 136                                                                                                                                     | `docs/M26-SUPPORT-MATRIX.json`      |
-| Issue dispositions              | 429                                                                                                                                     | `docs/M26-ISSUE-DISPOSITIONS.jsonl` |
-| Open issues                     | 229                                                                                                                                     | same                                |
+| Issue dispositions              | 0                                                                                                                                       | `docs/M26-ISSUE-DISPOSITIONS.jsonl` |
+| Open issues                     | 0                                                                                                                                       | same                                |
 | External validation             | **BLOCKED**                                                                                                                             | `docs/M26-EXTERNAL-VALIDATION.json` |
 
 ### Largest source areas
@@ -67,7 +67,7 @@ demonstrate, not what it contains.
 - Gap ledger: **ALREADY_FIXED** 1 · **CLOSED_DECISION_RECORDED** 1 · **CONFIRMED_STILL_OPEN** 7 · **EXTERNAL_PENDING** 7 · **STALE_UNVERIFIABLE** 1 · severities **high** 6 · **release-blocker** 11
 - Open release-blocking gaps: **11** (GAP-M26-002, GAP-M26-003, GAP-M26-004, GAP-M26-005, GAP-M26-008, GAP-M26-009, GAP-M26-010, GAP-M26-012, GAP-M26-013, GAP-M26-015, GAP-M26-016)
 - Support matrix: **BLOCKED** 69 · **NOT_APPLICABLE** 2 · **TESTED** 65 — **69 cells are explicitly BLOCKED**
-- Issue dispositions: **CARRY_FORWARD** 417 · **CLOSED_SHIPPED** 3 · **CLOSED_WONT_FIX** 8 · **FIX_IN_BITTERSWEET** 1
+- Issue dispositions: none
 
 ## 3. Vocabulary collisions found by this wave
 
@@ -227,9 +227,9 @@ Every cited path in the classification resolves in this checkout.
 
 The `archive` block of `docs/ROADMAP.yaml` covers 108 historical design-record issues (M18–M25, GitHub #539–#646). Status: **UNRECONCILED**.
 
-- Records reconciled: 1 of 8
-- Records partially reconciled: 7
-- **Issues inside the historical ranges that are still open: 18** (539, 546, 547, 551, 553, 556, 561, 565, 575, 588, 589, 590, 593, 594, 595, 597, 602, 617)
+- Records reconciled: 0 of 8
+- Records partially reconciled: 0
+- **Issues inside the historical ranges that are still open: 108** (539, 540, 541, 542, 543, 544, 545, 546, 547, 548, 549, 550, 551, 552, 553, 554, 555, 556, 557, 558, 559, 560, 561, 562, 563, 564, 565, 566, 567, 568, 569, 570, 571, 572, 573, 574, 575, 576, 577, 578, 579, 580, 581, 582, 583, 584, 585, 586, 587, 588, 589, 590, 591, 592, 593, 594, 595, 596, 597, 598, 599, 600, 601, 602, 603, 604, 605, 606, 607, 608, 609, 610, 611, 612, 613, 614, 615, 616, 617, 618, 619, 620, 621, 622, 623, 624, 625, 626, 627, 628, 629, 630, 631, 632, 633, 634, 635, 636, 637, 638, 639, 640, 641, 642, 643, 644, 645, 646)
 - Closure command: `npm run m26:github:sync`
 
 The block **cannot** honestly be flipped to `RECONCILED` while those issues
