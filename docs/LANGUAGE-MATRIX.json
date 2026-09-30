@@ -4,8 +4,8 @@
   "generatedBy": "npm run docs:capability",
   "projectionOf": "mjolnir-capability-registry",
   "axis": "language",
-  "observedAt": "2026-09-28",
-  "baseSha": "a806496160aeefe64c1795823f90b64cce582835",
+  "observedAt": "2026-09-30",
+  "baseSha": "d3a026ad229788856d571d6e4d62f6c358f58da4",
   "rowCount": 1,
   "rows": [
     {
@@ -23,7 +23,7 @@
             "status": "LOCAL_PROVEN",
             "artifact": "docs/FP-AUDIT.md#QA-CYP-001",
             "digest": null,
-            "observedAt": "2026-09-28",
+            "observedAt": "2026-09-30",
             "authority": "framework-inventory"
           },
           "nextLevelGap": {
@@ -57,7 +57,7 @@
             "status": "LOCAL_PROVEN",
             "artifact": "docs/FP-AUDIT.md#QA-JV-104",
             "digest": null,
-            "observedAt": "2026-09-28",
+            "observedAt": "2026-09-30",
             "authority": "framework-inventory"
           },
           "nextLevelGap": {
@@ -89,7 +89,7 @@
             "status": "LOCAL_PROVEN",
             "artifact": "docs/FP-AUDIT.md#QA-TEST-001",
             "digest": null,
-            "observedAt": "2026-09-28",
+            "observedAt": "2026-09-30",
             "authority": "framework-inventory"
           },
           "nextLevelGap": {
@@ -121,7 +121,7 @@
             "status": "LOCAL_PROVEN",
             "artifact": "docs/FP-AUDIT.md#QA-TEST-001",
             "digest": null,
-            "observedAt": "2026-09-28",
+            "observedAt": "2026-09-30",
             "authority": "framework-inventory"
           },
           "nextLevelGap": {
@@ -169,7 +169,7 @@
             "status": "LOCAL_PROVEN",
             "artifact": "docs/FP-AUDIT.md#QA-PW-002",
             "digest": null,
-            "observedAt": "2026-09-28",
+            "observedAt": "2026-09-30",
             "authority": "framework-inventory"
           },
           "nextLevelGap": {
@@ -211,7 +211,7 @@
             "status": "LOCAL_PROVEN",
             "artifact": "docs/FP-AUDIT.md#QA-PY-003",
             "digest": null,
-            "observedAt": "2026-09-28",
+            "observedAt": "2026-09-30",
             "authority": "framework-inventory"
           },
           "nextLevelGap": {
@@ -269,7 +269,7 @@
             "status": "LOCAL_PROVEN",
             "artifact": "docs/FP-AUDIT.md#QA-TEST-001",
             "digest": null,
-            "observedAt": "2026-09-28",
+            "observedAt": "2026-09-30",
             "authority": "framework-inventory"
           },
           "nextLevelGap": {
@@ -303,7 +303,7 @@
             "status": "LOCAL_PROVEN",
             "artifact": "docs/FP-AUDIT.md#QA-JV-104",
             "digest": null,
-            "observedAt": "2026-09-28",
+            "observedAt": "2026-09-30",
             "authority": "framework-inventory"
           },
           "nextLevelGap": {
@@ -335,7 +335,7 @@
             "status": "LOCAL_PROVEN",
             "artifact": "docs/FP-AUDIT.md#QA-TEST-001",
             "digest": null,
-            "observedAt": "2026-09-28",
+            "observedAt": "2026-09-30",
             "authority": "framework-inventory"
           },
           "nextLevelGap": {

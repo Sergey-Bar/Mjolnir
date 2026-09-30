@@ -24,23 +24,36 @@ import { describe, expect, it } from "vitest";
 
 import { FRAMEWORK_INVENTORY } from "../../src/frameworks/framework-inventory.js";
 import { MATURITY_LEVELS } from "../../src/v6/maturity.js";
+import { TRUST_ORDER } from "../../src/types.js";
 
 const ROOT = join(import.meta.dirname, "..", "..");
 
 /** The declared `F` ladder, read from the inventory's own type. */
 const FRAMEWORK_LEVELS = ["F0", "F1", "F2", "F3", "F4", "F5"] as const;
 
-describe("the two maturity ladders are different vocabularies", () => {
-  it("the capability ladder is M0–M5 and the framework ladder is F0–F5", () => {
+describe("the three level ladders are different vocabularies", () => {
+  it("capability maturity is M, framework support is F, runtime trust is L", () => {
     expect(MATURITY_LEVELS.every((l) => l.startsWith("M"))).toBe(true);
     expect(FRAMEWORK_LEVELS.every((l) => l.startsWith("F"))).toBe(true);
-    // A shared member would make `M3` mean two things depending on which file
-    // a reader opened.
-    expect(
-      MATURITY_LEVELS.filter((l) =>
-        (FRAMEWORK_LEVELS as readonly string[]).includes(l),
-      ),
-    ).toEqual([]);
+    expect(TRUST_ORDER.every((l) => l.startsWith("L"))).toBe(true);
+    // A shared member would make one letter mean two things depending on which
+    // file a reader opened. `M` is the only DERIVED of the three — a function
+    // of what this repository can demonstrate — and `F` and `L` are
+    // declarations. That distinction is the reason the letters matter.
+    const ladders: Array<[string, readonly string[]]> = [
+      ["M", MATURITY_LEVELS],
+      ["F", FRAMEWORK_LEVELS],
+      ["L", TRUST_ORDER],
+    ];
+    for (const [a, setA] of ladders) {
+      for (const [b, setB] of ladders) {
+        if (a === b) continue;
+        expect(
+          setA.filter((member) => setB.includes(member)),
+          `${a} and ${b} share a level`,
+        ).toEqual([]);
+      }
+    }
   });
 
   it("the framework inventory's declared levels are F-levels, never M-levels", () => {

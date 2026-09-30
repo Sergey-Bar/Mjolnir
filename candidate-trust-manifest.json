@@ -28,19 +28,49 @@
   "generatedAt": "2026-09-30",
   "identity": {
     "state": "WORKING_CANDIDATE",
-    "baseSha": "045af5cc58984f02a5810183fe9fb02b16e79a50",
+    "baseSha": "d3a026ad229788856d571d6e4d62f6c358f58da4",
     "candidateSha": null,
     "version": "5.0.0",
-    "packageSha256": "7350b9e3785b6bf9bb14a5b3f3d686d2160c48e0c2cb318d5a02fb0a7c67fa12",
+    "packageSha256": "310c434853a68d7337e1e0ed8239235d22757950fd32dc1633c8ace4bef93522",
     "lockfileSha256": "7449664fe21f4ac61258c4732e83329b7afb89ee6f18d315b29aff6c34269ce8",
-    "workingTreeSha256": "ec235ac44788f126b90c09895f72e99419354d2706f45394ac747f644f91d5e5",
-    "changedPathCount": 0,
+    "workingTreeSha256": "7fb6aae89fe75c991aa899cc9c243d8b91b90001d199ebf2ce91d495ec75ad23",
+    "changedPathCount": 14,
     "supportEnvelope": "self-hosted; hosted services require explicit consent and separate proof",
     "worktreeInventory": {
-      "changedPaths": [],
+      "changedPaths": [
+        "docs/BLAST-RADIUS-AUDIT.md",
+        "docs/CI-MATRIX.json",
+        "docs/DOMAIN-COVERAGE.json",
+        "docs/FRAMEWORK-MATRIX.json",
+        "docs/LANGUAGE-MATRIX.json",
+        "docs/MANUAL-SCRIPTS.md",
+        "docs/SURFACE-MATURITY.json",
+        "docs/V6-CURRENT-STATE.md",
+        "docs/V6-GAP-MATRIX.md",
+        "docs/capability-registry.json",
+        "docs/v6-inventory.json",
+        "package.json",
+        "src/types.ts",
+        "tests/v6/maturity-vocabulary.spec.ts"
+      ],
       "untrackedPaths": []
     },
-    "dirtyFiles": []
+    "dirtyFiles": [
+      "docs/BLAST-RADIUS-AUDIT.md",
+      "docs/CI-MATRIX.json",
+      "docs/DOMAIN-COVERAGE.json",
+      "docs/FRAMEWORK-MATRIX.json",
+      "docs/LANGUAGE-MATRIX.json",
+      "docs/MANUAL-SCRIPTS.md",
+      "docs/SURFACE-MATURITY.json",
+      "docs/V6-CURRENT-STATE.md",
+      "docs/V6-GAP-MATRIX.md",
+      "docs/capability-registry.json",
+      "docs/v6-inventory.json",
+      "package.json",
+      "src/types.ts",
+      "tests/v6/maturity-vocabulary.spec.ts"
+    ]
   },
   "claimRegistry": {
     "path": "docs/claim-registry.json",

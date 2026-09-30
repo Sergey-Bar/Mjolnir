@@ -115,6 +115,23 @@ export function isValidCategory(
  *        retried, or timed out in the report).
  * INVARIANT (structurally enforced): L3–L5 require runtime
  * corroboration — a static-only finding can never claim L4/L5.
+ *
+ * THREE LADDER VOCABULARIES now share this shape, and the letters are the
+ * only thing distinguishing them:
+ *
+ *   `L0`–`L5`  RUNTIME TRUST — how much a consumer can believe one finding.
+ *              Here.
+ *   `F0`–`F5`  FRAMEWORK SUPPORT — a hand-declared target per framework.
+ *              `FrameworkSupportLevel`, src/frameworks/framework-inventory.ts
+ *   `M0`–`M5`  CAPABILITY MATURITY — DERIVED from evidence, and the only
+ *              one of the three that is a measurement.
+ *              `Maturity`, src/v6/maturity.ts
+ *
+ * `tests/v6/maturity-vocabulary.spec.ts` holds the two vocabulary sets apart
+ * and fails if they ever share a member. `M` is the only DERIVED of the three,
+ * and that is the distinction worth remembering when reading a level out of a
+ * report: `F` and `L` are declarations about the world, `M` is a function of
+ * what this repository can demonstrate.
  */
 export const TRUST_ORDER = ["L0", "L1", "L2", "L3", "L4", "L5"] as const;
 export type TrustLevel = (typeof TRUST_ORDER)[number];
