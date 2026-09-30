@@ -28,29 +28,19 @@
   "generatedAt": "2026-09-30",
   "identity": {
     "state": "WORKING_CANDIDATE",
-    "baseSha": "9219018f44ce5e9dae2322236da610877316c368",
+    "baseSha": "045af5cc58984f02a5810183fe9fb02b16e79a50",
     "candidateSha": null,
     "version": "5.0.0",
     "packageSha256": "7350b9e3785b6bf9bb14a5b3f3d686d2160c48e0c2cb318d5a02fb0a7c67fa12",
     "lockfileSha256": "7449664fe21f4ac61258c4732e83329b7afb89ee6f18d315b29aff6c34269ce8",
     "workingTreeSha256": "ec235ac44788f126b90c09895f72e99419354d2706f45394ac747f644f91d5e5",
-    "changedPathCount": 4,
+    "changedPathCount": 0,
     "supportEnvelope": "self-hosted; hosted services require explicit consent and separate proof",
     "worktreeInventory": {
-      "changedPaths": [
-        "docs/COVERAGE-EXEMPTIONS.json",
-        "scripts/check-exemption-ceilings.mjs",
-        "scripts/lib/coverage-exemption-ledger.mjs",
-        "tests/config/coverage-exclusion-guard.spec.ts"
-      ],
+      "changedPaths": [],
       "untrackedPaths": []
     },
-    "dirtyFiles": [
-      "docs/COVERAGE-EXEMPTIONS.json",
-      "scripts/check-exemption-ceilings.mjs",
-      "scripts/lib/coverage-exemption-ledger.mjs",
-      "tests/config/coverage-exclusion-guard.spec.ts"
-    ]
+    "dirtyFiles": []
   },
   "claimRegistry": {
     "path": "docs/claim-registry.json",
