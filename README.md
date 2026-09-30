@@ -388,6 +388,7 @@ The full catalog is generated from the registry, never maintained by hand:
 | QA-CS-103    | C#         | Test method with no assertions                               | error    | extended   |
 | QA-CS-105    | C#         | `WaitForTimeoutAsync()` hard sleep                           | warning  | extended   |
 | QA-CS-106    | C#         | Brittle selector instead of role locator                     | warning  | quarantine |
+| QA-TEST-001  | Hygiene    | Focused test committed (`.only`, `fit`)                      | error    | quarantine |
 
 Python also ships QA-PY-001…012 (pytest hygiene) and QA-PY-101…108
 (Playwright for Python). Cypress and Selenium have starter sets of three
