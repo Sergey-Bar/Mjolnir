@@ -485,7 +485,7 @@
       }
     },
     "src/v6/test-doubles.ts": {
-      "lines": 207,
+      "lines": 221,
       "exports": 9,
       "importedBy": [
         "src/v6/tool-coverage.ts"

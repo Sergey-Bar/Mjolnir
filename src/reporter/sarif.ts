@@ -55,6 +55,13 @@ export function renderSarif(result: ScanResult, repoRootUri?: string): string {
   }
 
   const rulesCrashed = result.analysisStatus.rulesCrashed ?? 0;
+  // `executionSuccessful` must be honest about COVERAGE too, not only about
+  // mid-run loss. `partial` is orthogonal to `coverageState` by contract
+  // (types.ts), so a scan that read every file it was given and still ran
+  // 45 of 79 detectors reported `executionSuccessful: true` — GitHub read
+  // that as a complete analysis of the repository. It is not one.
+  const coveragePartial = result.analysisStatus.coverageState === "PARTIAL";
+  const coverageWithheld = result.analysisStatus.rulesWithheld ?? 0;
 
   const run = {
     tool: {
@@ -92,8 +99,9 @@ export function renderSarif(result: ScanResult, repoRootUri?: string): string {
     // crash is not a successful run.
     invocations: [
       {
-        executionSuccessful: !result.partial && rulesCrashed === 0,
-        ...(result.partial || rulesCrashed > 0
+        executionSuccessful:
+          !result.partial && !coveragePartial && rulesCrashed === 0,
+        ...(result.partial || coveragePartial || rulesCrashed > 0
           ? {
               toolExecutionNotifications: [
                 ...(result.partial
@@ -102,6 +110,16 @@ export function renderSarif(result: ScanResult, repoRootUri?: string): string {
                         level: "warning" as const,
                         message: {
                           text: "Analysis was PARTIAL: the budget expired or files were skipped. Results may be incomplete.",
+                        },
+                      },
+                    ]
+                  : []),
+                ...(coveragePartial
+                  ? [
+                      {
+                        level: "warning" as const,
+                        message: {
+                          text: `Coverage was PARTIAL: ${coverageWithheld} quarantined rule(s) were withheld. Re-run with --strict to analyse with the full rule registry.`,
                         },
                       },
                     ]

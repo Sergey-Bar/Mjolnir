@@ -157,6 +157,28 @@ describe("§25.2 resolution — table-driven cause fixtures (§15)", () => {
       rendering: "INCONCLUSIVE (partial)",
     },
     {
+      name: "rule withheld (quarantine, no --strict) → INCONCLUSIVE(rule-withheld)",
+      build: () =>
+        input(
+          e,
+          scan([], {
+            analysisStatus: {
+              discovery: "complete",
+              rules: "complete",
+              skippedFiles: 0,
+              durationMs: 10,
+              coverageState: "PARTIAL",
+              rulesApplied: 45,
+              rulesWithheld: 34,
+              withheldRuleIds: ["QA-PW-101"],
+            },
+          }),
+        ),
+      status: "INCONCLUSIVE",
+      cause: "rule-withheld",
+      rendering: "INCONCLUSIVE (rule-withheld)",
+    },
+    {
       name: "rule crashed → INCONCLUSIVE(crash)",
       build: () => input(e, gone, { crashedRuleIds: new Set(["QA-PW-101"]) }),
       status: "INCONCLUSIVE",
@@ -208,7 +230,7 @@ describe("§25.2 resolution — table-driven cause fixtures (§15)", () => {
       build: () => input(e, gone),
       status: "VERIFIED-RESOLVED",
       rendering:
-        "FIXED SINCE BASELINE (verified by a complete same-revision scan)",
+        "FIXED SINCE BASELINE (rule ran, file in scope, no longer reported)",
     },
     {
       name: "still present → STILL-PRESENT",

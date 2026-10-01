@@ -219,6 +219,25 @@ function validateAnalysisStatus(value: unknown): void {
       requireString(reason, `analysisStatus.reasons[${index}]`),
     );
   }
+  if (status.withheldRuleIds !== undefined) {
+    if (!Array.isArray(status.withheldRuleIds)) {
+      fail("analysisStatus.withheldRuleIds must be an array");
+    }
+    status.withheldRuleIds.forEach((id, index) =>
+      requireString(id, `analysisStatus.withheldRuleIds[${index}]`),
+    );
+    // The set and the count are two representations of one fact, so a report
+    // that disagrees with itself is a load failure — exactly the treatment
+    // `coverageState`/`rulesWithheld` already get below.
+    if (Number.isInteger(status.rulesWithheld)) {
+      const declared = Number(status.rulesWithheld);
+      if (declared !== status.withheldRuleIds.length) {
+        fail(
+          `analysisStatus.rulesWithheld is ${declared} but withheldRuleIds names ${status.withheldRuleIds.length}`,
+        );
+      }
+    }
+  }
 }
 
 function validateScopeIntegrity(value: unknown): void {
@@ -297,12 +316,23 @@ export function validateReportJson(text: string): ScanResult {
     validateScopeIntegrity(doc.scopeIntegrity);
   }
   const status = requireRecord(doc.analysisStatus, "analysisStatus");
+  // `coverage:*` reasons are EXCLUDED from the partial markers, by the same
+  // argument that excludes the coverage pair below: coverage is orthogonal to
+  // `partial` (types.ts). A non-strict scan is `partial: false` and carries
+  // `coverage:quarantine:<n>`; counting that reason as a partial marker made
+  // every ordinary saved report unloadable, which is a validator inventing a
+  // failure the engine explicitly does not produce.
+  const partialReasons = (
+    Array.isArray(status["reasons"]) ? (status["reasons"] as unknown[]) : []
+  ).filter(
+    (r): r is string => typeof r === "string" && !r.startsWith("coverage:"),
+  );
   const partialMarkers =
     status["discovery"] !== "complete" ||
     status["rules"] !== "complete" ||
     Number(status["skippedFiles"]) > 0 ||
     Number(status["rulesCrashed"] ?? 0) > 0 ||
-    (Array.isArray(status["reasons"]) && status["reasons"].length > 0);
+    partialReasons.length > 0;
   if (doc.partial === false && partialMarkers) {
     fail("partial=false conflicts with analysisStatus");
   }

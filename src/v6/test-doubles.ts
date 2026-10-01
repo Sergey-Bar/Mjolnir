@@ -26,6 +26,15 @@ import { canonicalize, type AssertionKind, type NeutralTest } from "./qa-ir.js";
 
 /** Assertion kinds that carry real evidence about the code under test. */
 const SUBSTANTIATING: ReadonlySet<AssertionKind> = new Set<AssertionKind>([
+  // `TRUTHY` was missing here while `defaultExpectation` (qa-ir.ts) returns
+  // "ANY" for it — an explicit, non-NONE expectation shape. The two modules
+  // disagreed about whether a truthiness assertion is evidence: the IR said
+  // it checks a value, the risk model counted it as nothing. A lone
+  // `expect(x).toBeTruthy()` therefore counted as neither substantiating nor
+  // a double, and landed in DOUBLE_ONLY with hollowRatio 0 — a false-proof
+  // verdict claiming "every assertion is about a test double" about a test
+  // with no double assertions at all.
+  "TRUTHY",
   "EQUALITY",
   "IDENTITY",
   "CONTAINS",
@@ -102,7 +111,12 @@ export function assessDoubleRisk(
       ? "NO_ASSERTION"
       : options.doubleIsSubject === true && doubles > 0
         ? "DOUBLE_SUBJECT"
-        : substantiating === 0
+        : // `doubles > 0` is load-bearing, not a redundant guard. Without
+          // it, DOUBLE_ONLY meant only "no substantiating assertion" — so a
+          // test with no double assertions AT ALL rendered "every assertion
+          // is about a test double", which is false, at a hollowRatio of 0.
+          // The statement is a claim about doubles; it requires doubles.
+          doubles > 0 && substantiating === 0
           ? "DOUBLE_ONLY"
           : "DOUBLE_MIXED";
 

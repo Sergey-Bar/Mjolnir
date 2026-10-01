@@ -32,6 +32,13 @@ export interface CompletionInput {
    */
   rulesWithheld?: number;
   /**
+   * WHICH rules were withheld. `rulesWithheld` is the disclosure; this is
+   * what a consumer needs to reason about one rule (a quarantined rule that
+   * never ran cannot have fixed anything). Absent when the producer did not
+   * report the set — which is not the same as "nothing was withheld".
+   */
+  withheldRuleIds?: readonly string[];
+  /**
    * Rules that actually ran. The denominator for `coverageState`: a scan
    * that ran 45 of 79 rules is a PARTIAL-coverage scan whether or not
    * anything went wrong inside those 45.
@@ -70,6 +77,7 @@ export interface CompletionState {
     parseFallbacks: number;
     rulesApplied: number;
     rulesWithheld: number;
+    withheldRuleIds?: string[];
     truncationReasons?: string[];
     degradations?: DegradationCount[];
     reasons: string[];
@@ -108,6 +116,14 @@ export function deriveCompletion(input: CompletionInput): CompletionState {
   if (input.runtimeIncomplete) reasons.add("runtime-incomplete");
   if (input.identityIncomplete) reasons.add("identity-incomplete");
   for (const reason of truncationReasons) reasons.add(`truncated:${reason}`);
+  // The coverage gap in the flat reason set. `coverageState` carries it
+  // structurally, and `rulesWithheld` carries the count — but a consumer
+  // reading only `reasons` (the field types.ts promises as the place the
+  // quarantine count appears) had nothing. Emitted here so the three
+  // representations of one fact cannot drift apart.
+  if ((input.rulesWithheld ?? 0) > 0) {
+    reasons.add(`coverage:quarantine:${input.rulesWithheld}`);
+  }
   // The flat `reasons` set is what a machine consumer reads, so the ledger
   // has to appear there too, not only in the structured field. One entry per
   // REASON with its count: a reader who never learns the schema still sees
@@ -156,6 +172,10 @@ export function deriveCompletion(input: CompletionInput): CompletionState {
       parseFallbacks: input.parseFallbacks ?? 0,
       rulesApplied: input.rulesApplied ?? 0,
       rulesWithheld,
+      ...(input.withheldRuleIds !== undefined &&
+      input.withheldRuleIds.length > 0
+        ? { withheldRuleIds: [...input.withheldRuleIds].sort() }
+        : {}),
       ...(truncationReasons.length > 0 ? { truncationReasons } : {}),
       ...(degradations.length > 0 ? { degradations } : {}),
       reasons: [...reasons].sort(),

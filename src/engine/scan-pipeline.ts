@@ -178,6 +178,8 @@ export async function buildUniversalRules(
   rulesApplied: number;
   /** Rules removed by the quarantine filter because `--strict` was absent. */
   rulesWithheld: number;
+  /** The same rules, named. The count is the disclosure; this is the evidence. */
+  withheldRuleIds: string[];
 }> {
   const gateOpen = pluginsGateOpen(opts.enablePlugins);
   const { plugins, errors, skipped } = loadPlugins(root, gateOpen);
@@ -228,13 +230,19 @@ export async function buildUniversalRules(
   // downstream surface — the machine contract, the report, the PR comment —
   // reported a scan that had covered the registry. `rulesWithheld` is what
   // `coverageState` is derived from, and it never feeds `partial`.
-  const withheldBeforeFilter = rules.filter(
-    (r) => tierByRuleId.get(r.id) === "quarantine",
-  );
+  //
+  // The ids travel alongside the count for the one consumer that cannot use
+  // a number: lifecycle resolution has to decide, per baseline finding,
+  // whether the rule that raised it could have run at all. A count cannot
+  // answer that; the set can.
+  const withheldRuleIds = rules
+    .filter((r) => tierByRuleId.get(r.id) === "quarantine")
+    .map((r) => r.id)
+    .sort();
   if (!strict) {
     rules = rules.filter((r) => tierByRuleId.get(r.id) !== "quarantine");
   }
-  const rulesWithheld = strict ? 0 : withheldBeforeFilter.length;
+  const rulesWithheld = strict ? 0 : withheldRuleIds.length;
   const rulesApplied = rules.length;
   const pluginMeta = [
     ...plugins.map((p) => ({
@@ -258,6 +266,7 @@ export async function buildUniversalRules(
     externalRules: local.rules,
     rulesApplied,
     rulesWithheld,
+    withheldRuleIds,
   };
 }
 
@@ -1131,6 +1140,8 @@ export interface AssembleScanResultInput {
    * the withheld set — into `coverageState`. Never an input to `partial`.
    */
   rulesWithheld?: number;
+  /** Rules withheld, named. See `buildUniversalRules`. */
+  withheldRuleIds?: string[];
   /** Rules that actually ran. The denominator `rulesWithheld` is measured against. */
   rulesApplied?: number;
   scanned: number;
@@ -1343,6 +1354,9 @@ export function assembleScanResult(o: AssembleScanResultInput): ScanResult {
     // claiming PARTIAL would be a fabricated new failure.
     ...(o.rulesWithheld !== undefined
       ? { rulesWithheld: o.rulesWithheld }
+      : {}),
+    ...(o.withheldRuleIds !== undefined
+      ? { withheldRuleIds: o.withheldRuleIds }
       : {}),
     ...(o.rulesApplied !== undefined ? { rulesApplied: o.rulesApplied } : {}),
     ...(o.scopeInfo.degraded !== undefined
@@ -1655,6 +1669,7 @@ export async function runScan(
     pluginMeta,
     rulesApplied,
     rulesWithheld,
+    withheldRuleIds,
   } = await buildUniversalRules(workspace.root, args.strict, {
     ...(args.enablePlugins !== undefined
       ? { enablePlugins: args.enablePlugins }
@@ -1817,6 +1832,7 @@ export async function runScan(
     degradations: summarizeDegradations(degradationsSince(degradationWindow)),
     rulesApplied,
     rulesWithheld,
+    ...(withheldRuleIds.length > 0 ? { withheldRuleIds } : {}),
     scanned,
     analyzed,
     testFiles,

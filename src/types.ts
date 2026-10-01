@@ -575,6 +575,21 @@ export interface ScanResult {
      */
     rulesApplied?: number;
     rulesWithheld?: number;
+    /**
+     * WHICH rules were withheld, when the count is non-zero.
+     *
+     * The count answers "how much of the registry did this scan not see";
+     * this answers "which". It exists because a consumer that has to
+     * classify one finding — lifecycle resolution must, because a
+     * quarantined rule that never ran cannot have fixed anything — cannot
+     * answer from a number. The count alone forced those consumers to
+     * claim what they could not know.
+     *
+     * Absent means the producer did not report the set. It does NOT mean
+     * nothing was withheld: `rulesWithheld` is the authority on that, and
+     * this field is only the disambiguator.
+     */
+    withheldRuleIds?: string[];
   };
   /**
    * Scoring model version stamped into the result (ENGINE-001). Allows

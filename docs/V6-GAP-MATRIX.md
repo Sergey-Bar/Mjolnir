@@ -2,7 +2,7 @@
 
 **Generated — do not edit by hand.** Regenerate: `npm run docs:v6-inventory`.
 
-Baseline commit `94a4c3299c6de382f9b93bc559c545fe4aa3001e`.
+Baseline commit `1db886ca88627ff0a4bf4232b80ec4763aa5e2b0`.
 
 Two sources, one table. Rows marked **Wave 0** were found by this
 inventory and were carried by no ledger before; rows marked **M26

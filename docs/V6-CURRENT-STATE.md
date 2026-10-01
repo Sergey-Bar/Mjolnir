@@ -2,7 +2,7 @@
 
 **Generated — do not edit by hand.** Regenerate: `npm run docs:v6-inventory`.
 
-Baseline commit `94a4c3299c6de382f9b93bc559c545fe4aa3001e` · package version `5.0.0` · published stable `5.0.0`.
+Baseline commit `1db886ca88627ff0a4bf4232b80ec4763aa5e2b0` · package version `5.0.0` · published stable `5.0.0`.
 
 This is the truth baseline v6 is built on. It is deliberately blunt: the
 interesting part of a current-state inventory is what the product _cannot_
@@ -31,7 +31,7 @@ demonstrate, not what it contains.
 | Package version                 | `5.0.0`                                                                                                                                 | `package.json`                      |
 | Published stable                | `5.0.0`                                                                                                                                 | `package.json`                      |
 | Source files (`src/**.ts`)      | 301                                                                                                                                     | derived                             |
-| Test specs (`tests/**.spec.ts`) | 669                                                                                                                                     | derived                             |
+| Test specs (`tests/**.spec.ts`) | 671                                                                                                                                     | derived                             |
 | Live rules                      | 79                                                                                                                                      | `src/rules/index.ts`                |
 | Retired rule ids (preserved)    | 22                                                                                                                                      | `RETIRED_RULE_IDS`                  |
 | Rules with a valid measurement  | 73                                                                                                                                      | `MEASURED_FP` + `detectorRev`       |

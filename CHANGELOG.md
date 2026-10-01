@@ -11,6 +11,61 @@ once shipped, so this file is the record of what changed between versions.
 
 ## [Unreleased]
 
+### False greens: three places a scan reported a stronger result than it had
+
+Every ordinary scan withheld 34 quarantined rules and reported nothing about
+it at three different surfaces. This release closes that gap. **These are
+user-visible status changes** — an `INCONCLUSIVE` finding is no longer
+`FIXED`, and SARIF `executionSuccessful` is now `false` on a scan that
+withheld rules. Existing baselines and saved reports will show the new,
+weaker claim; that is the point of the change.
+
+- **A quarantined rule could prove a finding "fixed" on a scan that never ran
+  it.** `analysisStatus` reported _how many_ rules were withheld but not
+  _which_, and lifecycle resolution — which decides one finding at a time —
+  had nothing to go on. A finding whose rule was filtered out disappeared
+  from the scan and rendered `FIXED SINCE BASELINE`. New optional field
+  `analysisStatus.withheldRuleIds` carries the set; `resolve()` returns
+  `INCONCLUSIVE` with a new `rule-withheld` cause when the finding's rule was
+  withheld. With `--strict` the rule runs and the fix resolves normally.
+  `schemaVersion: 1` is unchanged — both new fields are additive
+  (`docs/VERSIONING.md`).
+- **"FIXED SINCE BASELINE (verified by a complete same-revision scan)" was
+  false for every withheld scan.** The sentence claimed the whole scan was
+  complete; it now claims only what survived every guard — the rule ran, the
+  file was in scope, it no longer fires.
+- **SARIF called a `PARTIAL`-coverage scan fully successful.**
+  `executionSuccessful` was `!partial && rulesCrashed === 0`, and
+  `coverageState` is deliberately orthogonal to `partial`, so a scan that read
+  every file it was given and ran 45 of 79 detectors reported success to GitHub
+  code scanning. `executionSuccessful` now also requires
+  `coverageState !== "PARTIAL"`, with a `toolExecutionNotifications` entry
+  naming the withheld count and pointing at `--strict`.
+- **`analysisStatus.reasons` now carries `coverage:quarantine:<n>`,** which
+  `types.ts` already promised and nothing emitted. The flat reason set is what
+  a machine consumer reads, and it was empty for the one gap that affects
+  every non-`--strict` scan. `coverage:*` reasons are excluded from
+  report-io's `partial` markers, so disclosing coverage does not make a saved
+  report unloadable and does not turn ordinary scans into partial ones.
+- **A lone `expect(x).toBeTruthy()` was reported as a false proof.** The QA-IR
+  gives `TRUTHY` an `"ANY"` expectation — an explicit, evidence-bearing shape
+  — while the double-risk model did not list it as substantiating. The two
+  modules disagreed, so the assertion counted as neither substantiating nor a
+  double and fell into `DOUBLE_ONLY`: "every assertion is about a test double"
+  about a test with no double assertions, at a `hollowRatio` of 0. `TRUTHY` is
+  now substantiating, and `DOUBLE_ONLY` requires at least one double.
+- **The trust-trend report invented numbers.** `score` is `null` for a repo
+  with no tests, and `(last ?? 0) - (first ?? 0)` reported a fabricated
+  `+100` when a repo gained its first score. `scoreDelta` is now
+  `number | null` and the rendering says "not comparable". `overallDirection`
+  compared the _number_ of regression entries against improvements, so one
+  50-point drop lost to three 1-point gains and the trend read "improving" —
+  it now sums magnitude. `frameworkCount` was `1` whenever detection was known
+  (four detected frameworks and one rendered identically) and is now
+  `frameworks.length`. The `warnings > errors * 2` ratio degenerated to
+  `warnings > 0` at zero errors, reporting "weak assertions" for every repo
+  with warnings and none; it now requires a denominator.
+
 ### Names: one command, one name
 
 `package.json` carried eight families of stragglers — two names for the same

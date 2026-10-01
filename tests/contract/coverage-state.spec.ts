@@ -29,6 +29,7 @@ import {
   CONTRACT_VERSION,
 } from "../../src/engine/machine-contract.js";
 import { deriveCompletion } from "../../src/engine/completion.js";
+import { validateReportJson } from "../../src/commands/report-io.js";
 import { scanExitCode } from "../../src/claim-evidence.js";
 import { getQuarantinedRules } from "../../src/rules/measurement-status.js";
 import { RULES } from "../../src/rules/index.js";
@@ -112,18 +113,70 @@ describe("coverageState is orthogonal to partial", () => {
     expect(state.coverageState).toBe("COMPLETE");
   });
 
-  it("never puts a withheld-rule string into reasons", () => {
-    // `reasons` is folded into report loadability (report-io.partialMarkers)
-    // and is a closed-ish consumer surface. A withheld rule is not an
-    // in-flight degradation, so it must not appear there.
+  it("discloses the coverage gap in reasons WITHOUT making the scan partial", () => {
+    // `reasons` is the flat set a machine consumer reads, and types.ts
+    // promises `coverage:quarantine:<n>` appears there. It used not to: the
+    // count was on `rulesWithheld`, the verdict on `coverageState`, and the
+    // field the documentation pointed a reader at for the disclosure was
+    // empty. A consumer reading only `reasons` could not see the gap.
+    //
+    // It also used to be argued out on the grounds that `reasons` is folded
+    // into report-io's `partialMarkers`. That fold is now scoped to exclude
+    // `coverage:` — a withheld rule is not an in-flight degradation, and a
+    // non-strict scan is `partial: false` by design. Both facts are asserted
+    // here because the disclosure and the exclusion are what keep each other
+    // honest: emit the reason and loadability breaks, or keep loadability and
+    // the disclosure lies.
     const state = deriveCompletion({
       ...base,
       rulesWithheld: 34,
       rulesApplied: 45,
     });
-    expect(state.analysisStatus.reasons).toEqual([]);
+    expect(state.analysisStatus.reasons).toContain("coverage:quarantine:34");
+    // The load-bearing half: disclosing coverage must not manufacture a
+    // partial scan, or every non-strict scan exits 2 and nobody reads it.
+    expect(state.partial).toBe(false);
     expect(state.analysisStatus.rulesWithheld).toBe(34);
     expect(state.analysisStatus.rulesApplied).toBe(45);
+  });
+
+  it("a scan that withheld nothing carries no coverage reason", () => {
+    const state = deriveCompletion({
+      ...base,
+      rulesWithheld: 0,
+      rulesApplied: 79,
+    });
+    expect(
+      state.analysisStatus.reasons.filter((r) => r.startsWith("coverage:")),
+    ).toEqual([]);
+  });
+
+  it("a report with a coverage reason and partial:false still loads", () => {
+    // The other half of the contract, at the boundary where it actually
+    // matters. `coverage:*` is excluded from partialMarkers, so the
+    // disclosure above cannot make a saved report unloadable.
+    const state = deriveCompletion({
+      ...base,
+      rulesWithheld: 34,
+      rulesApplied: 45,
+    });
+    const doc = makeResult({
+      partial: state.partial,
+      analysisStatus: state.analysisStatus,
+    });
+    // The loadability check reads the document's REQUIRED fields before it
+    // ever reaches the partialMarkers fold this test exists to exercise, so
+    // the doc is completed here rather than bending the shared helper.
+    expect(() =>
+      validateReportJson(
+        JSON.stringify({
+          ...doc,
+          schemaVersion: 1,
+          frameworks: ["playwright"],
+          dimensions: [],
+        }),
+      ),
+    ).not.toThrow();
   });
 
   it("the repository really does withhold rules without --strict", () => {

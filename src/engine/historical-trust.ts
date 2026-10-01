@@ -34,7 +34,15 @@ export interface TrustSnapshot {
 export interface TrustTrend {
   snapshots: TrustSnapshot[];
   overallDirection: "improving" | "degrading" | "stable" | "insufficient-data";
-  scoreDelta: number;
+  /**
+   * `null` when either end had no score — which is the normal state for a
+   * repository with no tests, since the scorer returns null rather than
+   * inventing a number. A null→number transition is a named event (the repo
+   * gained tests), not "+100 points", and `?? 0` used to report it as
+   * exactly that: a fabricated 100-point improvement from a repo that had
+   * nothing to improve.
+   */
+  scoreDelta: number | null;
   findingDelta: number;
   confidenceDelta: number;
   regressions: TrustRegression[];
@@ -97,7 +105,14 @@ export function computeTrustSnapshot(
     evidenceCoverage: trustSummary.evidenceCoverage,
     inconclusiveRate: trustSummary.inconclusiveRate,
     partial: result.partial,
-    frameworkCount: result.frameworkDetectionUnknown ? 0 : 1,
+    // The COUNT of detected frameworks. This was 1 whenever detection was
+    // known and 0 whenever it was not — so a monorepo with four frameworks
+    // and a single-framework repo rendered identically, and "detection
+    // unknown" became indistinguishable from "no frameworks". `frameworks`
+    // is already the list; the ternary was throwing it away.
+    frameworkCount: result.frameworkDetectionUnknown
+      ? 0
+      : result.frameworks.length,
     ruleCount:
       result.findings.length > 0
         ? new Set(result.findings.map((f) => f.ruleId)).size
@@ -130,21 +145,31 @@ export function analyzeTrustTrends(
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const last = snapshots[snapshots.length - 1]!;
 
-  const scoreDelta = (last.score ?? 0) - (first.score ?? 0);
+  // `score` is null when the scorer had nothing to score (a repo with no
+  // tests). Subtracting `?? 0` turned that into a fabricated number in both
+  // directions: a null→100 move reported "+100 points" and 100→null reported
+  // "-100 points", neither of which the scorer ever said. A named event is
+  // what it is — the score came into being, or stopped existing — so the
+  // delta is null and no score regression/improvement is recorded.
+  const scoreDelta =
+    first.score === null || last.score === null
+      ? null
+      : last.score - first.score;
   const findingDelta = last.findings - first.findings;
   const confidenceDelta = last.confidence - first.confidence;
 
   const regressions: TrustRegression[] = [];
   const improvements: TrustImprovement[] = [];
 
-  if (scoreDelta < 0) {
+  // A null score delta is not "no change" and must not record a change.
+  if (scoreDelta !== null && scoreDelta < 0) {
     regressions.push({
       type: "score-drop",
       description: `Score dropped by ${Math.abs(scoreDelta)} points`,
       magnitude: Math.abs(scoreDelta),
       snapshot: last,
     });
-  } else if (scoreDelta > 0) {
+  } else if (scoreDelta !== null && scoreDelta > 0) {
     improvements.push({
       type: "score-increase",
       description: `Score increased by ${scoreDelta} points`,
@@ -194,10 +219,20 @@ export function analyzeTrustTrends(
     });
   }
 
+  // Summed MAGNITUDE, not a count of entries. Counting made the direction a
+  // measure of how many kinds of thing changed rather than how much: a
+  // 50-point score drop plus three 1-point improvements reported
+  // "improving", because three entries beat one. Each entry already carries
+  // the magnitude it claims, so the comparison is the obvious one.
+  const regressionWeight = regressions.reduce((sum, r) => sum + r.magnitude, 0);
+  const improvementWeight = improvements.reduce(
+    (sum, i) => sum + i.magnitude,
+    0,
+  );
   const overallDirection =
-    regressions.length > improvements.length
+    regressionWeight > improvementWeight
       ? "degrading"
-      : improvements.length > regressions.length
+      : improvementWeight > regressionWeight
         ? "improving"
         : "stable";
 
@@ -250,7 +285,12 @@ function categorizeTrustDebt(snapshots: readonly TrustSnapshot[]): TrustDebt[] {
       });
     }
 
-    if (latest.warnings > latest.errors * 2) {
+    // `errors >= 1` is required, not incidental. With zero errors the ratio
+    // `warnings > errors * 2` becomes `warnings > 0`, so EVERY warning in a
+    // repo with no errors was reported as "weak assertions" — a ratio
+    // against zero has no denominator, and the check silently degenerated
+    // into "any warnings exist".
+    if (latest.errors >= 1 && latest.warnings > latest.errors * 2) {
       debt.push({
         category: "weak-assertion",
         description: "Warning-to-error ratio suggests weak assertions",
@@ -266,14 +306,27 @@ function categorizeTrustDebt(snapshots: readonly TrustSnapshot[]): TrustDebt[] {
   });
 }
 
+/**
+ * Render the score delta, or say plainly that there is not one.
+ *
+ * A null delta means an end of the window had no score at all — usually a
+ * repository with no tests. Printing `0` there would claim the score held
+ * steady across a change that is not a change in the score; printing a
+ * fabricated `+100` is what `?? 0` used to do. Both make the same mistake in
+ * opposite directions, so the renderer names the condition instead.
+ */
+function scoreDeltaLine(delta: number | null): string {
+  if (delta === null)
+    return "Score Delta: not comparable (a scan had no score)";
+  return `Score Delta: ${delta > 0 ? "+" : ""}${delta}`;
+}
+
 export function renderTrustTrend(trend: TrustTrend): string {
   const lines: string[] = [];
   lines.push("Historical Trust Trend Analysis");
   lines.push(`Snapshots: ${trend.snapshots.length}`);
   lines.push(`Overall Direction: ${trend.overallDirection}`);
-  lines.push(
-    `Score Delta: ${trend.scoreDelta > 0 ? "+" : ""}${trend.scoreDelta}`,
-  );
+  lines.push(scoreDeltaLine(trend.scoreDelta));
   lines.push(
     `Finding Delta: ${trend.findingDelta > 0 ? "+" : ""}${trend.findingDelta}`,
   );
