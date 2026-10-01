@@ -213,6 +213,16 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          # REQUIRED by the last step in this job. `check-version --base=…`
+          # runs `git diff --name-only <base>..HEAD`, and the default
+          # `fetch-depth: 1` checkout has no `origin/<base>` ref at all:
+          #   fatal: ambiguous argument 'origin/main..HEAD': unknown revision
+          # On a push to main the base IS HEAD, so the diff is empty and the
+          # ref resolves — the step passes there. On a pull request the base
+          # is a different commit and the step dies, so every PR fails on a
+          # defect only main can hide. Lines 189 and 379 already fetch full
+          # history for the same reason; this job was missed.
+          fetch-depth: 0
       # ci:standard reads ci.yml and mjolnir.yml through the `yaml`
       # dependency, so this job needs the workspace installed. It was
       # unit-tested (tests/integrations/ci-standard.spec.ts) but wired to
