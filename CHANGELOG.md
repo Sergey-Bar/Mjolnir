@@ -11,6 +11,40 @@ once shipped, so this file is the record of what changed between versions.
 
 ## [Unreleased]
 
+### The readiness table told maintainers to do the wrong work
+
+`docs/CORE-READINESS.md` is the document a maintainer reads to decide what to
+do next, and two of its three actionable columns did not compute what they said.
+
+- **`FP headroom` could never contain a positive number.** It asked how many
+  _more_ false positives a rule could be **added** and still clear the ceiling —
+  and adding false positives only widens the interval, so every rule that had
+  already earned the tier read `0` and every other rule read `—`. The quantity
+  that actually decides work is the opposite one: how much of the current
+  evidence has to be **retracted**. Renamed `FPs to remove` and computed by
+  searching downward from the observed count. It is now `—` only where
+  retraction genuinely cannot reach the ceiling at that `n`, which is a fact
+  about the sample rather than a missing value.
+- **`NEEDS-FP-REDUCTION` condemned detectors on thin evidence.** It fired on a
+  point estimate above the ceiling, so a rule observed at 42.9% over `n=14` was
+  labelled "the rule is wrong, not the corpus" by an interval that comfortably
+  _included_ the ceiling. It now requires the Wilson interval to exclude the
+  ceiling from below, so a rule the data cannot yet distinguish from a
+  conforming one is told to gather more evidence first. **Nine rules moved from
+  `NEEDS-FP-REDUCTION` to `NEEDS-SAMPLES`**, and the document's own counts
+  change with them (28 → 19, 45 → 54).
+- **The same FP count was reconstructed two ways.** `measurementInterval` and
+  `compareFpMeasurements` handed `wilsonInterval` an unrounded `fpRate * n`
+  while this table rounded it — 10.5% of 19 is 1.995, and `wilsonInterval`
+  rounds internally, so the ratchet and the readiness table derived two
+  different `ciHigh` values for the same rule at the same n. Both round now. The
+  interval math was always correct; the defect was in what reached it.
+- **`samplesForZeroFp`'s cross-check was wrong.** Its docstring quotes two
+  `wilsonInterval(0, n)` values as the verification of the closed form. The
+  `n=34` figure was quoted as 0.1012; the function returns 0.1015. A
+  cross-check that fails when you run it reads as evidence and is not, so the
+  numbers are now asserted in a test rather than only in prose.
+
 ### Three places a claim was checked by something other than the thing it claimed
 
 - **CONVERGENT did not mean convergence.** `groupByRootCause` fell back to

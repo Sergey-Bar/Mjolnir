@@ -74,8 +74,18 @@ export function compareFpMeasurements(
       detail: `n below ${COMPARISON_MIN_N} on at least one side (old n=${oldM.n}, new n=${newM.n}) — informational only (§20.2)`,
     };
   }
-  const oldCi = wilsonInterval(oldM.fpRate * oldM.n, oldM.n);
-  const newCi = wilsonInterval(newM.fpRate * newM.n, newM.n);
+  // The FP count is ROUNDED here for the same reason `measurementInterval`
+  // rounds it: a `MeasurementSnapshot` carries a rate and an n, not an integer
+  // count, so `fpRate * n` is generally fractional. `wilsonInterval` rounds
+  // internally, so an unrounded product made THIS comparison and the readiness
+  // table disagree about the same measurement — and a regression is declared by
+  // comparing two intervals, so a rounding difference between the two sides
+  // could flip the verdict.
+  //
+  // The interval MATH is untouched by this. It was always correct; the defect
+  // was in what got handed to it.
+  const oldCi = wilsonInterval(Math.round(oldM.fpRate * oldM.n), oldM.n);
+  const newCi = wilsonInterval(Math.round(newM.fpRate * newM.n), newM.n);
   const disjointBad = newCi.ciLow > oldCi.ciHigh;
   const worsePoint = newM.fpRate > oldM.fpRate;
   if (disjointBad && worsePoint) {

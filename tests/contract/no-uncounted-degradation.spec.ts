@@ -403,7 +403,7 @@ const ALLOWED_VALUE_RETURNS: ReadonlyArray<{
   },
   {
     file: "engine/scan-pipeline.ts",
-    line: 891,
+    line: 867,
     direction: "fails-explicitly",
     reason:
       "Counts the failure three ways in the block itself " +
@@ -413,7 +413,7 @@ const ALLOWED_VALUE_RETURNS: ReadonlyArray<{
   },
   {
     file: "engine/scan-pipeline.ts",
-    line: 1294,
+    line: 1272,
     direction: "fails-explicitly",
     reason:
       "Sets identityIncomplete and returns hash: 'UNAVAILABLE'. The literal " +
@@ -484,7 +484,7 @@ const ALLOWED_VALUE_RETURNS: ReadonlyArray<{
   },
   {
     file: "discovery/ignores.ts",
-    line: 291,
+    line: 250,
     direction: "reducing",
     reason:
       "isLintFixtureDir returns false for a directory it cannot list, so the " +

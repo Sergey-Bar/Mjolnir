@@ -18,7 +18,9 @@
  *                        This is the only state that is not someone's problem.
  *   NEEDS-SAMPLES     — too few samples at the observed rate. The corpus is
  *                        the constraint; more data settles it as-is.
- *   NEEDS-FP-REDUCTION — enough samples, too many false positives. The rule
+ *   NEEDS-FP-REDUCTION — the observed rate is over the ceiling AND the Wilson
+ *                        interval excludes the ceiling from below, so no
+ *                        plausible resample of this data clears it. The rule
  *                        is wrong, not the corpus.
  *   NOT-MEASURED      — no measurement at all, or a stale one. Nothing can be
  *                        said about it.
@@ -29,6 +31,12 @@
  * NEEDS-SAMPLES and NEEDS-FP-REDUCTION are separated because they point at
  * opposite work. Conflating them sends a maintainer to add corpus
  * repositories for a rule that should have been narrowed.
+ *
+ * The split is on the INTERVAL, not the point estimate. A rule observed at 8%
+ * over n=500 has failed decisively; the same rate at n=20 has failed too early
+ * to tell, and the two want opposite work. Splitting on `observedFpRate >
+ * ceiling` put both in NEEDS-FP-REDUCTION, which condemned detectors the
+ * evidence did not yet condemn.
  */
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -74,8 +82,23 @@ interface ReadinessRow {
   ciHigh: number | null;
   /** Observed false-positive rate, or null. */
   observedFpRate: number | null;
-  /** How many additional false positives the rule may carry at this n. */
-  fpHeadroom: number | null;
+  /**
+   * How many false positives must be REMOVED from the current sample for the
+   * interval to clear the ceiling, or null when removing them cannot get there.
+   *
+   * This was `fpHeadroom` and it meant "how many MORE false positives could be
+   * ADDED and still clear the ceiling", which is a number that is 0 for every
+   * rule that has already earned the tier and null for every rule that has not —
+   * because adding false positives only ever raises the interval. So the column
+   * could never contain a positive number, and the number a maintainer
+   * actually acts on was missing: how much of the current evidence has to go.
+   *
+   * null is the honest answer when the sample is too thin, or already has zero
+   * observed false positives and still fails, which means the ceiling is
+   * unreachable at this n no matter what — that is a NEEDS-SAMPLES verdict, and
+   * the table says so in the verdict column rather than inventing a target.
+   */
+  fpReductionTarget: number | null;
   /** Why the verdict is what it is — rendered into the table. */
   note: string;
 }
@@ -89,7 +112,7 @@ function classifyReadiness(rule: QADoctorRule, today: string): ReadinessRow {
     nRequired,
     ciHigh: null,
     observedFpRate: null,
-    fpHeadroom: null,
+    fpReductionTarget: null,
   };
 
   const promotion = rule.corePromotion;
@@ -143,14 +166,24 @@ function classifyReadiness(rule: QADoctorRule, today: string): ReadinessRow {
   const ciHigh = measured ? wilsonInterval(falsePositives, n).ciHigh : null;
   const observedFpRate = measured?.fpRate ?? null;
 
-  // How many MORE false positives the current sample could absorb and still
-  // clear the ceiling. The answer is a function of n alone, and it is the
-  // number a maintainer actually acts on: at n=20 the rule can carry zero; at
-  // n=80 it can carry two.
-  const headroom = (() => {
-    for (let extra = 0; extra <= 50; extra += 1) {
-      if (wilsonInterval(falsePositives + extra, n).ciHigh <= CORE_FP_CEILING) {
-        return extra;
+  // How many of the OBSERVED false positives must be removed for the interval
+  // to clear the ceiling. The search runs DOWNWARD from the observed count,
+  // because the question is how much evidence to retract, not how much more to
+  // gather.
+  //
+  // The old loop searched upward from 0 ("how many more could be added"), and
+  // adding false positives only ever widens the interval upward — so for every
+  // rule that had not earned the tier no `extra` in range ever cleared the
+  // ceiling and the column was null across the board, while every rule that had
+  // earned it read 0. The search is bounded by the observed count: you cannot
+  // remove false positives that were not observed.
+  const reductionTarget = (() => {
+    if (ciHigh !== null && ciHigh <= CORE_FP_CEILING) return 0;
+    for (let removed = 1; removed <= falsePositives; removed += 1) {
+      if (
+        wilsonInterval(falsePositives - removed, n).ciHigh <= CORE_FP_CEILING
+      ) {
+        return removed;
       }
     }
     return null;
@@ -160,7 +193,7 @@ function classifyReadiness(rule: QADoctorRule, today: string): ReadinessRow {
     n,
     ciHigh,
     observedFpRate,
-    fpHeadroom: headroom,
+    fpReductionTarget: reductionTarget,
   };
 
   if (ciHigh !== null && ciHigh <= CORE_FP_CEILING) {
@@ -171,11 +204,28 @@ function classifyReadiness(rule: QADoctorRule, today: string): ReadinessRow {
     };
   }
 
-  if (observedFpRate !== null && observedFpRate > CORE_FP_CEILING) {
+  // NEEDS-FP-REDUCTION requires the interval to EXCLUDE the ceiling from below,
+  // not merely a point estimate above it.
+  //
+  // A rule observed at 8% with n=500 has failed decisively; a rule observed at
+  // 8% with n=20 has failed too early to tell. Both have an observed rate above
+  // the ceiling and both were labelled "the rule is wrong, not the corpus" —
+  // which sends a maintainer to rewrite a detector that the evidence does not
+  // yet condemn. When `ciLow` still reaches below the ceiling, the data cannot
+  // distinguish this rule from a conforming one, and the honest verdict is
+  // NEEDS-SAMPLES: gather first, condemn second.
+  if (
+    observedFpRate !== null &&
+    observedFpRate > CORE_FP_CEILING &&
+    wilsonInterval(falsePositives, n).ciLow > CORE_FP_CEILING
+  ) {
     return {
       ...row,
       verdict: "NEEDS-FP-REDUCTION",
-      note: `observed ${(observedFpRate * 100).toFixed(1)}% — the rule is wrong, not the corpus`,
+      note:
+        reductionTarget === null
+          ? `observed ${(observedFpRate * 100).toFixed(1)}% and the interval excludes ${(CORE_FP_CEILING * 100).toFixed(0)}% — the rule is wrong, not the corpus, and no amount of retraction at this n reaches the ceiling`
+          : `observed ${(observedFpRate * 100).toFixed(1)}% and the interval excludes ${(CORE_FP_CEILING * 100).toFixed(0)}% — the rule is wrong, not the corpus; removing ${reductionTarget} false positive${reductionTarget === 1 ? "" : "s"} reaches the ceiling`,
     };
   }
 
@@ -233,14 +283,20 @@ function render(rows: ReadinessRow[]): string {
     lines.push(
       `## ${verdict} (${bucket.length})`,
       "",
-      "| Rule | Tier | n | n required | ciHigh | Observed FP | FP headroom | Note |",
+      "| Rule | Tier | n | n required | ciHigh | Observed FP | FPs to remove | Note |",
       "| --- | --- | ---: | ---: | ---: | ---: | ---: | --- |",
     );
     for (const row of bucket) {
       lines.push(
         `| ${row.ruleId} | ${row.tier ?? "(undeclared)"} | ${row.n} | ${row.nRequired} | ` +
           `${pct(row.ciHigh)} | ${pct(row.observedFpRate)} | ` +
-          `${row.fpHeadroom === null ? "—" : `${row.fpHeadroom} more`} | ${row.note} |`,
+          `${
+            row.fpReductionTarget === null
+              ? "—"
+              : row.fpReductionTarget === 0
+                ? "none"
+                : `-${row.fpReductionTarget}`
+          } | ${row.note} |`,
       );
     }
     lines.push("");

@@ -135,6 +135,15 @@ export function hasStaleMeasurement(rule: QADoctorRule): boolean {
  * it has none. A stale measurement returns undefined rather than its stale
  * interval: a number derived from an older detector is not evidence about
  * this one, and returning it would let the straddle test pass on stale data.
+ *
+ * The FP count is ROUNDED, and it is not an optimization. The shipped
+ * measurement records a rate and a sample count, not an integer count of false
+ * positives, so `fpRate * n` is generally fractional — 10.5% of 19 is 1.995.
+ * `wilsonInterval` rounds internally, so passing the raw product gave this
+ * function and `scripts/core-readiness.ts` two different `ciHigh` values for
+ * the same rule at the same n: the ratchet decided one tier and the
+ * readiness table printed another, both derived, neither reconciled. Every
+ * caller now reconstructs the count the same way.
  */
 export function measurementInterval(
   rule: QADoctorRule,
@@ -142,7 +151,7 @@ export function measurementInterval(
   if (!hasValidMeasurement(rule)) return undefined;
   const m = MEASURED_FP[rule.id];
   if (m === undefined) return undefined;
-  return wilsonInterval(m.fpRate * m.n, m.n);
+  return wilsonInterval(Math.round(m.fpRate * m.n), m.n);
 }
 
 /**
@@ -193,8 +202,13 @@ const Z_SQUARED = 1.959963984540054 ** 2;
  *     c = 0.1 → n ≥ 34.57 → 35
  *
  * Cross-checked against the interval function itself: `wilsonInterval(0, 34)`
- * gives ciHigh 0.1012 — above the ceiling — and `wilsonInterval(0, 35)` gives
+ * gives ciHigh 0.1015 — above the ceiling — and `wilsonInterval(0, 35)` gives
  * 0.0989, which clears it. This function returns 35.
+ *
+ * The n=34 figure was quoted here as 0.1012, which is not what the function
+ * returns. A cross-check exists to be run; one carrying a number that fails
+ * when you run it is worse than no cross-check, because it reads as evidence
+ * and is not.
  */
 export function samplesForZeroFp(ceiling: number): number {
   if (!(ceiling > 0) || ceiling >= 1) return 1;

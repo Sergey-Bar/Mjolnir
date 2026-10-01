@@ -121,8 +121,11 @@ export function backtickedPaths(markdown: string): string[] {
     if (/[*?[\]{}]/.test(span)) continue;
     // Must be repo-relative. An absolute or protocol-ish span is prose.
     if (span.startsWith("/") || /^[a-z]+:\/\//i.test(span)) continue;
-    // `src/foo.ts` yes; `lib/helper` no. A path with a known code/doc
-    // extension, or a trailing-free directory-ish segment containing a dot.
+    // A path with a known code/doc extension is one; a bare `lib/helper` is
+    // not — there is no such file to check, so requiring an extension is what
+    // keeps this heuristic from flagging every prose fragment. (`script:paths`
+    // enforces the same shape on comments, so an example written here as a
+    // real path would fail that gate — which is exactly the point of it.)
     if (!/\.[a-z0-9]{1,6}$/i.test(span)) continue;
     if (seen.has(span)) continue;
     seen.add(span);
