@@ -72,7 +72,9 @@ describe("the false proof the product is named after", () => {
       ] as const) {
         const finding = assessDoubleRisk({
           dialect: "ts",
-          intent: "FUNCTIONAL",
+          intention: "FUNCTIONAL",
+          hasFixture: false,
+          hasLifecycle: false,
           assertions: [{ kind, expectation, negated: false }],
         });
         if (finding.risk === "DOUBLE_ONLY") {

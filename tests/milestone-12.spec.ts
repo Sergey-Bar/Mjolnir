@@ -83,13 +83,14 @@ describe("Milestone 12 — Historical Trust and Trend Analysis", () => {
     const result = {
       score: 85,
       partial: false,
+      frameworks: [],
+      frameworkDetectionUnknown: false,
       analysisStatus: {
         discovery: "complete" as const,
         rules: "complete" as const,
         skippedFiles: 0,
         rulesCrashed: 0,
         truncationReasons: [],
-        frameworkDetectionUnknown: false,
         durationMs: 1000,
       },
       findings: [
@@ -143,13 +144,14 @@ describe("Milestone 12 — Historical Trust and Trend Analysis", () => {
       ({
         score,
         partial: false,
+        frameworks: [],
+        frameworkDetectionUnknown: false,
         analysisStatus: {
           discovery: "complete" as const,
           rules: "complete" as const,
           skippedFiles: 0,
           rulesCrashed: 0,
           truncationReasons: [],
-          frameworkDetectionUnknown: false,
           durationMs: 1000,
         },
         findings: Array(findings).fill({
@@ -215,13 +217,14 @@ describe("Milestone 12 — Historical Trust and Trend Analysis", () => {
       ({
         score,
         partial: false,
+        frameworks: [],
+        frameworkDetectionUnknown: false,
         analysisStatus: {
           discovery: "complete" as const,
           rules: "complete" as const,
           skippedFiles: 0,
           rulesCrashed: 0,
           truncationReasons: [],
-          frameworkDetectionUnknown: false,
           durationMs: 1000,
         },
         findings: Array(findings).fill({
@@ -296,13 +299,14 @@ describe("Milestone 12 — Historical Trust and Trend Analysis", () => {
     const result = {
       score: null,
       partial: false,
+      frameworks: [],
+      frameworkDetectionUnknown: false,
       analysisStatus: {
         discovery: "complete" as const,
         rules: "complete" as const,
         skippedFiles: 0,
         rulesCrashed: 0,
         truncationReasons: [],
-        frameworkDetectionUnknown: false,
         durationMs: 0,
       },
       findings: [],
@@ -354,7 +358,11 @@ describe("Milestone 12 — Historical Trust and Trend Analysis", () => {
     ]);
 
     expect(stable.overallDirection).toBe("stable");
-    expect(stable.scoreDelta).toBe(0);
+    // Two null scores are not a 0-point change. `?? 0` made a null→100
+    // move report "+100" and a 100→null move report "-100"; neither was
+    // ever said by the scorer, so a null score yields a null delta and no
+    // score event is recorded.
+    expect(stable.scoreDelta).toBeNull();
     expect(
       regressed.regressions.map((regression) => regression.type),
     ).toContain("confidence-drop");

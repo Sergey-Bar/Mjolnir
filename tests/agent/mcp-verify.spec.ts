@@ -57,9 +57,13 @@ describe("MCP verify tool (P7)", () => {
       expect(res.result).toMatchObject({
         hasBaseline: false,
       });
+      // The note must name a command that exists. It said `mjolnir baseline`,
+      // a verb the v6 carve removed — the tool's own guidance sending an
+      // agent to `unknown subcommand`.
       expect((res.result as { note: string }).note).toContain(
-        "mjolnir baseline",
+        "--save-baseline",
       );
+      expect((res.result as { note: string }).note).toContain("ci verify");
     } finally {
       clean();
     }

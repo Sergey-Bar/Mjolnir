@@ -37,6 +37,7 @@ import type { ScanResult } from "../../src/types.js";
 
 function makeResult(
   overrides: Partial<ScanResult["analysisStatus"]> = {},
+  topLevel: Partial<ScanResult> = {},
 ): ScanResult {
   return {
     score: 90,
@@ -55,6 +56,7 @@ function makeResult(
       rulesWithheld: 0,
       ...overrides,
     },
+    ...topLevel,
   } as unknown as ScanResult;
 }
 
@@ -160,10 +162,21 @@ describe("coverageState is orthogonal to partial", () => {
       rulesWithheld: 34,
       rulesApplied: 45,
     });
-    const doc = makeResult({
-      partial: state.partial,
-      analysisStatus: state.analysisStatus,
-    });
+    // `coverageState` lives on `CompletionState`, not on `analysisStatus` —
+    // and the report carries it INSIDE `analysisStatus`. The old call passed
+    // `{ partial, analysisStatus: state.analysisStatus }` to a helper typed
+    // for `Partial<analysisStatus>`, so both keys were dropped and the
+    // helper's own consistent defaults were used: the document loaded for the
+    // wrong reason, and the "coverage reason does not make a report
+    // unloadable" claim was never actually tested.
+    const doc = makeResult(
+      { ...state.analysisStatus, coverageState: state.coverageState },
+      { partial: state.partial },
+    );
+    // Now the document really is a coverage-PARTIAL, partial:false report:
+    // the exact shape whose loadability this test is about.
+    expect(doc.analysisStatus.coverageState).toBe("PARTIAL");
+    expect(doc.partial).toBe(false);
     // The loadability check reads the document's REQUIRED fields before it
     // ever reaches the partialMarkers fold this test exists to exercise, so
     // the doc is completed here rather than bending the shared helper.

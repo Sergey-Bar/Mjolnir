@@ -11,6 +11,179 @@ once shipped, so this file is the record of what changed between versions.
 
 ## [Unreleased]
 
+## [5.1.0] — 2026-10-01
+
+### `ci verify` could never leave its no-baseline arm
+
+**The `baseline` verb was removed in the v6 carve and nothing replaced it.**
+`saveBaseline` had no remaining caller, so nothing in the shipped product wrote
+`.mjolnir/baseline.json`. `mjolnir ci verify` — a `ci` subcommand, listed in
+`mjolnir ci --help` — therefore exited `2` with "no committed baseline" for
+every user, permanently.
+
+Worse, three shipped messages told you to fix it by running a command that
+could not: the `verify` digest, the MCP `verify` tool, and the agent
+instruction brief `mjolnir install` writes all said to establish the
+before-state with a scan that never wrote one. A recovery instruction that does
+not recover is worse than none — it costs a round trip and teaches the reader
+that the tool's own guidance is unreliable.
+
+`mjolnir <target> --save-baseline` now writes the snapshot, reusing the
+existing writer and renderer. The exit code stays the **scan's**, not the save's:
+the old verb returned `0` unconditionally after capturing, so a repo full of
+error findings exited clean as long as you snapshotted it.
+
+### Unknown flags were silently ignored on three commands
+
+`mjolnir doctor --bogus` printed its usage and exited `10` after a flag-parity
+fix. `mjolnir analyze --bogus` printed "Use --cross-file to enable cross-file
+analysis" and exited `0`; `mjolnir explain --list --nonsense` printed the whole
+rule catalogue and exited `0`. A caller scripting a filter got every rule and no
+warning, and a command that looks like it ran and does nothing is the shape this
+product exists to catch. All three now reject an unknown flag with a usage
+message naming the accepted set.
+
+### The agent instructions named four commands that exit 10
+
+`mjolnir install` writes instruction files for Claude Code, Kilo, Cursor and
+`AGENTS.md` telling an agent how to run the loop. After the v6 carve they said
+`baseline`, `verify`, `why`, `triage` and `forensics` — all removed, all exit
+`10`. The 79 rule docs were re-pointed at the real command; the shipped agent
+brief was not. It now names `--save-baseline`, `ci verify` and `explain`.
+
+### The brand gate checked a file that no longer exists
+
+`scripts/brand-doctor.mjs` rule 7 had a self-test seed and a rule arm both
+reading `src/commands/badge.ts`, deleted by the v6 carve. The arm was guarded
+by `existsSync`, so it reported "0 generated bands" and the self-test aborted
+the whole gate on a missing file. Both are gone: the product emits no
+shields.io badge (the PR comment renders HTML cells), and a check behind an
+`existsSync` that is always false is a check that cannot fail — the exact defect
+that script exists to catch. The self-test now proves 11 of 11 rules.
+
+### Two gates could not have been running
+
+**The anti-creep ratchet switched itself off at release time.** The exception
+marker was scoped to the first `^## ` heading in the changelog. Cutting a
+release empties `## [Unreleased]` — that is what the section is for — and moves
+the change's notes into the version heading below it. From that moment the
+declaration was still there, one heading down, and the law reported legitimate
+growth as unlicensed. The parser now accepts the release heading below an
+empty `[Unreleased]`, and still refuses a marker from any older release; three
+arms pin both directions.
+
+**`tests/contract/coverage-state.spec.ts` never tested its claim.** It called a
+helper typed `Partial<analysisStatus>` with `{ partial, analysisStatus }`, so
+both keys were dropped and the helper's own consistent defaults were used. The
+document loaded for the wrong reason. It now passes the real
+`coverageState` — and fails without it, which is how you know.
+
+### The type gate had never run
+
+`npm run typecheck` reports **8 errors**, all in test files, all pre-existing at
+`ef500a8b`. The gate was red in the same way the release was red: nobody ran
+it. Two were hiding a real defect behind a cast — `TrustSummary` had
+`level: "high"`, which is not a `TrustLevel` at all (`L0`..`L5`), and
+`assessDoubleRisk` was being called with `intent` where the interface says
+`intention` and requires `hasFixture`/`hasLifecycle`. Neither had compiled
+against the real type. Both are fixed; the gate is green.
+
+### A test that passed vacuously, found by the coverage floor
+
+`src/commands/rule-families.ts` sat at 60% because the carve removed
+`create-rule`, its second consumer — the table's rows went from "exercised by
+the scaffolder" to "loaded once and never checked". `tests/contract/rule-families.spec.ts`
+now checks the table against the live registry: every token is a family the
+rules use, every family with rules has a directory that exists, and the derived
+`RULE_ID_RE` accepts every family in the table and rejects families that are
+not in it.
+
+The check that surfaced the drop is the reason the new arms were added
+in-process. A test that spawns the binary earns no istanbul credit, so
+`--save-baseline` and the two flag-parity arms would have shipped untested by
+the ratchet's own measure.
+
+### The coverage ratchet, measured against a suite that could not run
+
+The high-water marks (98.28 / 94.87 / 99.17 / 98.64) were recorded against a
+green suite. At `ef500a8b` 48 tests failed, a failing run writes no summary,
+and `coverage:ratchet` errored with "run npm run test:coverage first" instead
+of reporting a number — there was no comparable measurement. The measured value
+with a fully green suite is **97.22 / 93.71 / 98.78 / 97.80**; the marks moved
+accordingly, with the reasoning recorded in `docs/COVERAGE-GATE.md` before the
+build was expected to pass.
+
+### `runDoctorPlaywright` was not reachable, and its tests passed a wrong argv
+
+Six test files called `runDoctorPlaywright(["doctor", "--frameworks", dir])`.
+The handler takes the target as the first non-flag argument, so it was scanning
+the literal string `"doctor"` and printing `SELECTOR HEALTH` for it. The verb
+was removed by the carve, so nothing in the product reaches the handler at all.
+The calls pass `[dir]`.
+
+### The brand gate checked a file that no longer exists
+
+`scripts/brand-doctor.mjs` rule 7 had a self-test seed and a rule arm both
+reading `src/commands/badge.ts`, deleted by the v6 carve. The arm was guarded by
+`existsSync`, so it reported "0 generated bands" and the self-test aborted the
+whole gate on a missing file. Both are gone: the product emits no shields.io
+badge (the PR comment renders HTML cells), and a check behind an `existsSync`
+that is always false is a check that cannot fail — the exact defect that script
+exists to catch. The self-test now proves 11 of 11 rules.
+
+### Test fixes
+
+- `tests/milestone-12.spec.ts` cast four `ScanResult` fixtures with `as any`
+  and omitted the required `frameworks` field, so the fixtures threw
+  `TypeError` on `.length`. The product reads `result.frameworks.length`; the
+  fixtures were wrong. One also asserted `scoreDelta === 0` for two null
+  scores, contradicting the deliberate `?? 0` fix — a null score yields a null
+  delta, and the expectation now says so.
+- `TI-024`'s `verificationCase` named a test title that was replaced when the
+  translation machinery was retired. It now names the case that exists, and the
+  registry spec proves the title is still in the named file.
+- The version-surface drift arm hardcoded `@v4` in both its seed and its
+  expected message, so it seeded `v5` and asserted "v3 does not match v4" — the
+  check fired correctly and the test failed on its own staleness. The major is
+  now read off the fixture and the message composed from it.
+- The exit-code sweep, journeys 2, 3/4 and 5/6/7/8 called fourteen verbs the
+  carve removed. Each is now asserted in the form that ships, and the retired
+  names are asserted to be usage errors — a verb that comes back under its old
+  name is a surface the docs no longer describe.
+- `crash-paths.spec.ts` had a `describe` with no tests (the carve deleted every
+  body and left the hooks), which fails collection. Its arms made the write
+  target unwritable with `chmod 0o555` — a no-op on Windows, so half the suite
+  verified nothing on the platform most contributors run. The throw is now
+  injected at the IO boundary: deterministic everywhere, same catch.
+- `tests/integrations/release-workflow.spec.ts` expected the release job list
+  to be `["contract-verify", "tag"]` — a CLI verb, not a job in the workflow —
+  while the assertion 15 lines below still read `needs.verify.outputs.tarball`.
+  Both cannot be true, and the one naming a job that does not exist would have
+  let a rename break the publish path silently.
+- `CORPUS` pinned `positive-fixtures` to a tree SHA the carve had moved.
+- `test:release` still named the empty `release-trust-branch.spec.ts`, which
+  was deleted.
+- `candidate-manifest-base-sha` tolerated 3 of the checker's 4 content
+  invariants, so a `lockfileSha256` drift — what any `npm audit fix` produces —
+  failed the test with a message it did not recognise as transient.
+- The anti-creep and unreleased-entry gates both anchored on "the first `## `
+  heading", which stops describing anything the moment a version is cut. Both
+  now scope to the current version's section.
+
+### README
+
+The opening claimed seven detections and put the strict-mode split 21 lines
+below the list. The list now carries a **caught-by-default** column beside each
+false-green, and the split sits directly under it. The seven claims were not
+false — every one of those false-greens is real and detected — but the default
+scan catches five of the nine rows, and the README's structure made the
+advisory four look equivalent to the other five.
+
+### Maintenance
+
+`npm audit fix` — `brace-expansion` high-severity DoS (transitive), three
+advisories.
+
 ### The demotion ratchet's own numbers were transcribed, not measured
 
 **Eighteen of the nineteen `ciHigh` values in `DEMOTED_FOR_UNSUBSTANTIATED_CORE`

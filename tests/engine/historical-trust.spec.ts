@@ -139,12 +139,18 @@ describe("direction is decided by magnitude", () => {
 });
 
 describe("snapshot counts what it counted", () => {
+  // `level` is a TrustLevel (L0..L5), not a word. The old literal said
+  // `"high"` and the `as TrustSummary` cast is what let it through: the test
+  // was asserting against a value the product can never produce, and the
+  // cast hid both that and the two fields it had stopped providing.
   const trustSummary: TrustSummary = {
-    level: "high",
+    level: "L3",
     confidence: 0.8,
     evidenceCoverage: 0.9,
     inconclusiveRate: 0.1,
-  } as TrustSummary;
+    provisionalRuleIds: [],
+    ceilingReasons: [],
+  };
 
   function scanWith(frameworks: string[], unknown = false): ScanResult {
     return {

@@ -293,15 +293,30 @@ describe("a user-visible change needs a release note", () => {
     expect(run.output).toContain("src-moved.ts");
   });
 
-  it("the shipped changelog is not empty", () => {
-    // The premise of the gate. If the `[Unreleased]` section goes back to
-    // being empty while there are uncommitted changes, this fails with a
-    // message that says so rather than leaving the gate passing vacuously.
+  it("the shipped changelog carries a release note for the current version", () => {
+    // The premise of the gate: a user-visible change is recorded. This used
+    // to assert the `[Unreleased]` section specifically, which contradicts the
+    // checker's own law — `check-unreleased-entry.mjs` states that "a version
+    // bump IS the release record, and demanding a separate `[Unreleased]`
+    // block on the commit that sets the new version would make the two
+    // disagree on purpose." On a release commit the section is empty *by
+    // design* and the note lives under the version heading.
+    //
+    // So the invariant is the one the gate enforces: the changelog names the
+    // current version, and that section has a body. Asserting Unreleased
+    // specifically made this test fail on every legitimate release and
+    // train a reader to keep a stale Unreleased section open.
     const text = readFileSync(join(ROOT, "CHANGELOG.md"), "utf8");
-    const heading = /^## \[Unreleased\][^\n]*$/m.exec(text);
+    const pkg = JSON.parse(
+      readFileSync(join(ROOT, "package.json"), "utf8"),
+    ) as { version: string };
+    const heading = new RegExp(
+      `^## \\[${pkg.version.replace(/\./g, "\\.")}\\]`,
+      "m",
+    ).exec(text);
     expect(
       heading,
-      "the changelog has no `## [Unreleased]` section",
+      `the changelog has no section for the current version ${pkg.version}`,
     ).not.toBeNull();
     if (heading === null) return;
     const rest = text.slice(heading.index + heading[0].length);
@@ -318,7 +333,8 @@ describe("a user-visible change needs a release note", () => {
       );
     expect(
       body.length,
-      "the unreleased section is empty again",
+      `the ${pkg.version} section is empty: a release with no note is ` +
+        "indistinguishable from a release with nothing in it",
     ).toBeGreaterThan(0);
   });
 });

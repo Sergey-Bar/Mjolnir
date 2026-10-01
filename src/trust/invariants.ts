@@ -324,8 +324,18 @@ export const TRUST_INVARIANTS: readonly TrustInvariant[] = [
     scope: "Exit",
     status: "CURRENT",
     severity: "CRITICAL",
+    // The instance this invariant was raised against is gone: the
+    // translation staleness gate and the twenty-two READMEs it measured were
+    // removed by the v6 carve, and a gate whose only reachable outcome was a
+    // permanently-red report was the empty exclusion the carve exists to
+    // delete. What is verified now is the removal itself — a check that fails
+    // if the machinery drifts back under a name nobody greps for. The
+    // `verificationCase` is that case's exact title; the registry spec proves
+    // the title still exists in the named file, so a rename cannot silently
+    // orphan this entry.
     verificationTest: "tests/contract/gate-exit-codes.spec.ts",
-    verificationCase: "is advisory without the flag and enforcing with it",
+    verificationCase:
+      "the translation machinery is absent, not merely unreferenced",
   },
 ] as const;
 

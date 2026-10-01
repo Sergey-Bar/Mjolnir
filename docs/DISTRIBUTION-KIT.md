@@ -47,7 +47,7 @@ and do not pin a release candidate — it is not on the registry until it ships.
 npx mjolnir-qa@latest
 
 # What a gate should run. Exact, so the run is identical next month:
-npx mjolnir-qa@5.0.0
+npx mjolnir-qa@5.1.0
 ```
 
 The Action has no `latest` alias — GitHub resolves only refs — which is why its

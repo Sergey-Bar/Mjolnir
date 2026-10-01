@@ -2,23 +2,16 @@
  * CLI command handler crash paths + argv negative cases (Test Hardening
  * Plan — coverage-gap closure, negative tests).
  *
- * Every subcommand handler in src/cli.ts (badge, debt, fix, create-rule,
- * handover, init, pw-report, forensics, triage) follows the identical
- * `try { ... } catch (err) { io.err(...); return 20; }` shape — and none
- * of those catch blocks were ever exercised. This is the tool's entire
- * "never crash the user's terminal" safety net for those commands,
+ * Every subcommand handler in src/cli.ts follows the identical
+ * `try { ... } catch (err) { internalErrorMessage(...); return 20; }` shape —
+ * and none of those catch blocks were ever exercised. This is the tool's
+ * entire "never crash the user's terminal" safety net for those commands,
  * completely unverified. It also covers argv-parsing edge cases
  * (a flag as the very last token, with nothing after it) that the
  * existing flag-matrix test didn't reach.
  */
 
-import {
-  chmodSync,
-  mkdirSync,
-  mkdtempSync,
-  rmSync,
-  writeFileSync,
-} from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -26,7 +19,9 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   internalErrorMessage,
   parseArgs,
+  runFixCommand,
   runHandoverCommand,
+  runStatsCommand,
 } from "../../src/cli.js";
 describe("internalErrorMessage: the --debug stack arm", () => {
   const emit = (): { lines: string[]; out: (s: string) => void } => {
@@ -73,9 +68,17 @@ describe("parseArgs: a flag as the last token with nothing after it", () => {
   });
 });
 
-describe("command handlers report a crash (exit 20) instead of throwing, when their write target is unwritable", () => {
+describe("command handlers report a crash (exit 20) instead of throwing", () => {
+  // The property is the CONTAINMENT contract, not the specific way the write
+  // fails: every handler wraps its body in try/catch and maps a throw to
+  // exit 20, so a user never gets an unhandled rejection on their terminal.
+  //
+  // The original arms made the write target unwritable with `chmod 0o555`,
+  // which is a no-op on Windows — the fixture's own comment admitted the
+  // tests "no-op gracefully" there, so half the suite verified nothing on the
+  // platform most contributors run. The throw is injected at the IO boundary
+  // instead: deterministic everywhere, and it exercises the same catch.
   let dir: string;
-  let origCwd: string;
 
   beforeEach(() => {
     dir = mkdtempSync(join(tmpdir(), "mjolnir-crash-path-"));
@@ -84,27 +87,58 @@ describe("command handlers report a crash (exit 20) instead of throwing, when th
       join(dir, "e2e", "checkout.spec.ts"),
       "it.only('x', () => { expect(true).toBe(true); });\n",
     );
-    origCwd = process.cwd();
-    process.chdir(dir);
-    try {
-      chmodSync(dir, 0o555); // read+execute, no write
-    } catch {
-      /* platform doesn't support this — tests below no-op gracefully */
-    }
   });
 
   afterEach(() => {
-    process.chdir(origCwd);
-    try {
-      chmodSync(dir, 0o755);
-    } catch {
-      /* already writable or gone */
-    }
     rmSync(dir, { recursive: true, force: true });
+  });
+
+  it("handover maps a throwing out sink to 20, never a rejection", async () => {
+    await expect(
+      runHandoverCommand([dir], {
+        out: () => {
+          throw new Error("probe-out");
+        },
+        err: () => {},
+      }),
+    ).resolves.toBe(20);
+  });
+
+  it("stats maps a throwing out sink to 20, never a rejection", () => {
+    expect(
+      runStatsCommand([dir], {
+        out: () => {
+          throw new Error("probe-out");
+        },
+        err: () => {},
+      }),
+    ).toBe(20);
+  });
+
+  it("fix maps a throwing out sink to 20, never a rejection", async () => {
+    await expect(
+      runFixCommand([dir], {
+        out: () => {
+          throw new Error("probe-out");
+        },
+        err: () => {},
+      }),
+    ).resolves.toBe(20);
+  });
+
+  it("the crash path names the cause on the injected err sink", async () => {
+    const seen: string[] = [];
+    await runHandoverCommand([dir], {
+      out: () => {
+        throw new Error("probe-cause");
+      },
+      err: (...parts) => seen.push(parts.map(String).join(" ")),
+    });
+    expect(seen.join("\n")).toContain("probe-cause");
   });
 });
 
-describe("`debt` and `handover` still return a documented exit code against an empty repo", () => {
+describe("`handover` still returns a documented exit code against an empty repo", () => {
   let dir: string;
 
   beforeEach(() => {

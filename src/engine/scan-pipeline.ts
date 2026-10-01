@@ -326,6 +326,21 @@ export interface CliArgs {
   /** --record-milestones: let a scan write .mjolnir/stats.json (audit R-1). */
   recordMilestones?: boolean;
   /**
+   * --save-baseline: write this scan's findings to `.mjolnir/baseline.json`
+   * so a LATER scan can say RESOLVED rather than reporting the same debt
+   * forever.
+   *
+   * This flag exists because the `baseline` verb was removed in the v6 carve
+   * and nothing replaced it. That left `ci verify` unable to leave its
+   * no-baseline arm for any user, and left three shipped messages — the
+   * verify digest, the MCP `verify` tool, and the agent instruction brief —
+   * naming a command that could not perform the action they described. A
+   * recovery instruction that does not recover is worse than no instruction:
+   * it costs the reader a round trip and teaches them that the tool's own
+   * guidance is unreliable.
+   */
+  saveBaseline?: boolean;
+  /**
    * --cache: reuse per-file rule verdicts from the local content-addressed
    * cache (M5.2). Post-loop processing always re-runs; the cache only
    * short-circuits the read+parse+rule loop for byte-identical files

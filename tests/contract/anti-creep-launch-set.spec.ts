@@ -49,6 +49,18 @@ describe("the launch set is what ships, not the empty core tier", () => {
   const shipped = RULES.filter((r) => effectiveTier(r) !== "quarantine");
   const core = RULES.filter((r) => effectiveTier(r) === "core");
 
+  // A baseline with the counts pinned to the shipped set, so a test that
+  // asserts a promotion is visible growth is comparing against a number that
+  // was not simply copied in to make the assertion true. `recordedAt` and
+  // `recordedAtSha` are required by the type and are not read by the
+  // arithmetic, so they are pinned literally and named.
+  const BASELINE: AntiCreepBaseline = {
+    baselineCore: shipped.length,
+    previousBaselineCore: shipped.length,
+    recordedAt: "1970-01-01T00:00:00.000Z",
+    recordedAtSha: "0000000",
+  };
+
   it("the two sets genuinely differ in this repository", () => {
     // Without this the rest of the file passes vacuously. It is the fact that
     // made the old predicate wrong.
@@ -58,21 +70,14 @@ describe("the launch set is what ships, not the empty core tier", () => {
   });
 
   it("the ratchet counts the shipped set", () => {
-    const verdict = evaluateAntiCreep(
-      RULES,
-      {
-        baselineCore: 45,
-        previousBaselineCore: 45,
-      },
-      "",
-    );
+    const verdict = evaluateAntiCreep(RULES, BASELINE, "");
     expect(verdict.core).toBe(shipped.length);
   });
 
   it("the absolute cap's overflow is computed over the shipped set", () => {
     // Below the cap, so the overflow must be empty rather than undefined. What
     // matters is that the same predicate feeds both caps: a cap over one set
-    // and a ratchet over another is two laws wearing one name.
+    // and a ratchet over another are two laws wearing one name.
     expect(shipped.length).toBeLessThanOrEqual(CORE_CAP);
     expect(CORE_CAP - shipped.length).toBeLessThan(CORE_CAP);
   });
@@ -82,27 +87,15 @@ describe("the launch set is what ships, not the empty core tier", () => {
     // change that actually changes a user's report, and under the old
     // predicate it moved nothing the law counted.
     const extra = { ...RULES[0], id: "QA-TT-999", tier: "extended" } as never;
-    const before = evaluateAntiCreep(
-      RULES,
-      { baselineCore: 45, previousBaselineCore: 45 },
-      "",
-    );
-    const after = evaluateAntiCreep(
-      [...RULES, extra],
-      { baselineCore: 45, previousBaselineCore: 45 },
-      "",
-    );
+    const before = evaluateAntiCreep(RULES, BASELINE, "");
+    const after = evaluateAntiCreep([...RULES, extra], BASELINE, "");
     expect(after.core).toBe(before.core + 1);
     expect(after.ok).toBe(false);
     expect(after.summary).toContain("net growth of 1");
   });
 
   it("quarantining a rule shrinks the set the law guards", () => {
-    const before = evaluateAntiCreep(
-      RULES,
-      { baselineCore: 45, previousBaselineCore: 45 },
-      "",
-    );
+    const before = evaluateAntiCreep(RULES, BASELINE, "");
     expect(before.ok).toBe(true);
     // A rule leaving the shipped set is the demotion the law's own wording
     // calls for, and it must show up as a smaller count.
@@ -112,7 +105,7 @@ describe("the launch set is what ships, not the empty core tier", () => {
     const quarantined = { ...oneShipped, tier: "quarantine" } as never;
     const after = evaluateAntiCreep(
       RULES.map((r) => (r.id === oneShipped.id ? quarantined : r)),
-      { baselineCore: 45, previousBaselineCore: 45 },
+      BASELINE,
       "",
     );
     expect(after.core).toBe(before.core - 1);
@@ -149,15 +142,28 @@ describe("the recorded baseline matches the governed set", () => {
 });
 
 describe("the redefinition was declared, not slipped in", () => {
-  it("the unreleased changelog entry carries the exception with a reason", () => {
+  it("the current release entry carries the exception with a reason", () => {
     const changelog = readFileSync(join(ROOT, "CHANGELOG.md"), "utf8");
-    // The UNRELEASED entry, which is the first `## ` heading — not the file
-    // preamble above it. Scoped the same way `exceptionInUnreleasedChangelog`
-    // scopes it, because a marker in a past release is not a declaration for
-    // this one.
-    const first = changelog.search(/^## /m);
-    expect(first, "CHANGELOG.md has no release heading").toBeGreaterThan(-1);
-    const rest = changelog.slice(first);
+    // Scoped to the section for the CURRENT version, not to "the first `## `
+    // heading". The two are the same thing only while `[Unreleased]` is
+    // non-empty; the moment a release is cut, `[Unreleased]` is empty by
+    // design and the declaration moves down with the release it belongs to.
+    // Anchoring on position meant the assertion silently stopped describing
+    // anything the moment a version was cut — the exception was still
+    // declared, just one heading down.
+    const pkg = JSON.parse(
+      readFileSync(join(ROOT, "package.json"), "utf8"),
+    ) as { version: string };
+    const start = new RegExp(
+      `^## \\[${pkg.version.replace(/\./g, "\\.")}\\]`,
+      "m",
+    ).exec(changelog);
+    expect(
+      start,
+      `CHANGELOG.md has no section for the current version ${pkg.version}`,
+    ).not.toBeNull();
+    if (start === null) return;
+    const rest = changelog.slice(start.index);
     const next = rest.slice(3).search(/^## /m);
     const entry = next === -1 ? rest : rest.slice(0, next + 3);
     // Growth of 45 against a previous baseline of 0 is not creep — it is the

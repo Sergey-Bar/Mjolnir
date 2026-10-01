@@ -60,15 +60,19 @@ function nextActionLines(out: string): string[] {
 }
 
 describe("beginner-safe scan next actions", () => {
-  it("findings state points at explain, why, and baseline adoption", () => {
+  // `mjolnir baseline` and `mjolnir diff` were removed in the v6 carve. The
+  // replacement is `scan --scope changed` — the same promise ("review only
+  // what this branch touched") without a second command to learn, and it is
+  // the form the reporter emits. These expectations track the shipped
+  // output; a command that no longer exists cannot be pointed at.
+  it("findings state points at explain and the changed-scope debt path", () => {
     const out = renderTerminal(scan(), { isTTY: false, ascii: true });
     expect(nextActionLines(out)).toEqual([
       "= NEXT ACTIONS",
       "$ mjolnir explain QA-TEST-001",
       "$ mjolnir explain <file:line> tests/login.spec.ts:12",
       "Existing debt path: capture the current state once, then review only new or",
-      "$ mjolnir baseline",
-      "$ mjolnir diff",
+      "$ mjolnir scan --scope changed",
     ]);
   });
 
@@ -103,8 +107,7 @@ describe("beginner-safe scan next actions", () => {
       "$ mjolnir explain QA-TEST-001",
       "$ mjolnir explain <file:line> tests/login.spec.ts:12",
       "Existing debt path: capture the current state once, then review only new or",
-      "$ mjolnir baseline",
-      "$ mjolnir diff",
+      "$ mjolnir scan --scope changed",
     ]);
   });
 
@@ -149,14 +152,16 @@ describe("beginner-safe scan next actions", () => {
     const available = [
       /^mjolnir explain \S+$/,
       /^mjolnir explain <file:line> \S+:\d+$/,
-      /^mjolnir baseline$/,
-      /^mjolnir diff$/,
       /^mjolnir ci install$/,
       /^mjolnir --verbose$/,
       // --scope changed is the canonical "re-run on the changed scope"
-      // beginner command; the Fix-This-First section emits it and the
-      // NEXT ACTIONS block references it. It is not a placeholder.
+      // beginner command. Two spellings ship: bare as a flag
+      // (`mjolnir --scope changed`, the one the help text leads with) and
+      // with the explicit verb (`mjolnir scan --scope changed`, the one the
+      // NEXT ACTIONS block emits). Both are accepted by the CLI; both are
+      // listed so neither can be mistaken for a typo.
       /^mjolnir --scope changed$/,
+      /^mjolnir scan --scope changed$/,
       /^mjolnir <path-to-your-tests>$/,
     ];
     expect(commands.length).toBeGreaterThan(0);

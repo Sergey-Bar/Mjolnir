@@ -173,6 +173,8 @@ export function parseArgs(
       args.debug = true;
     } else if (a === "--record-milestones") {
       args.recordMilestones = true;
+    } else if (a === "--save-baseline") {
+      args.saveBaseline = true;
     } else if (a === "--cache") {
       args.cache = true;
     } else if (a === "--no-progress") {
@@ -234,6 +236,7 @@ const KNOWN_SCAN_FLAGS = [
   "--strict",
   "--debug",
   "--record-milestones",
+  "--save-baseline",
   "--cache",
   "--monorepo",
   "--help",
@@ -572,6 +575,11 @@ export {
   runWhyCommand,
   runHandoverCommand,
   runEvidenceArm,
+  // The arm table itself. `renderExplainArmsHelp` renders from it and the
+  // dispatcher reads from it, so a spec that wants to assert the help page
+  // says what the table says must be able to read the table — otherwise it
+  // transcribes a summary string and fails the day the summary changes.
+  EXPLAIN_ARMS,
 } from "./cli-handlers.js";
 
 export { runCrossFileCommand } from "./commands/milestone.js";

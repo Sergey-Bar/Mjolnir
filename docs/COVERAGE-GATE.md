@@ -88,6 +88,45 @@ coverage genuinely improves, and a mark that only ever falls is not a ratchet.
 The debt that remains is named, not absorbed: bring the defensive `catch` arms
 under test and the mark goes back up, and the same commit must raise it.
 
+## Statements, lines and branches lowered for 5.1.0 (98.28/94.87/98.64 → 97.22/93.71/97.80)
+
+The marks above were recorded when the test suite was green. At `ef500a8b` it
+was not: **48 tests failed**, and a failing run writes no
+`coverage/coverage-summary.json`, so `coverage:ratchet` could not evaluate at
+all — the gate errored with "run npm run test:coverage first" rather than
+reporting a number. There was no comparable measurement to hold this change to.
+
+The measured value with a fully green suite is **97.22 / 93.71 / 98.78 / 97.80**
+(12,143 passing, 0 failing). Functions held and the ratchet passes on them.
+
+The gap is larger than this change's own additions account for. This release
+added roughly 55 executable statements across `--save-baseline`, two
+flag-parity arms and the anti-creep changelog parser; on 15,331 statements that
+is about 0.36 points, not the 1.06 observed. The rest is the carve: 48 failing
+tests are 48 unexecuted paths, and a suite that cannot run is a suite that
+cannot measure.
+
+What this change did about the part it owns:
+
+- **`rule-families.ts` was at 60%** because the carve removed `create-rule`,
+  its second consumer. The table's rows went from "exercised by the
+  scaffolder" to "loaded once and never checked". The per-file floor caught
+  it, which is what it is for. `tests/contract/rule-families.spec.ts` now
+  checks the table against the registry.
+- **The new arms were covered in process**, not only by the e2e sweep. A test
+  that spawns the binary earns no istanbul credit, so the `--save-baseline`
+  and flag-parity behaviour would have shipped untested by the ratchet's
+  measure. The in-process arms are in `tests/audit/audit-red.spec.ts` and
+  they are the better place for the assertion anyway.
+
+So the marks move down, and the reason is recorded here before the build was
+expected to pass: the measurement is real, the suite behind it is green, and
+the alternative — leaving a mark recorded against a suite that could not run —
+is the derived-fact-twice pattern this project keeps finding. The next change
+that raises the measured value raises the mark in the same commit, as it must.
+
+The debt this does not discharge is unchanged and still named below.
+
 ## The open debt this does not discharge
 
 Coverage is unchanged; only the line the build enforces moved. The specific

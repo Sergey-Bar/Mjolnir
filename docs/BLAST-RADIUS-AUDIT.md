@@ -7,15 +7,15 @@ contract enforces: **every external import in src/ must belong to the
 allowlist**, and the shipped surface (adapters, rules, flags, formats, exit
 codes) must match this document exactly.
 
-## Inventory: 309 files, 75925 LOC
+## Inventory: 309 files, 76104 LOC
 
 | Area              | Files | LOC   |
 | ----------------- | ----- | ----- |
 | src/rules         | 89    | 13053 |
-| src/engine        | 44    | 12083 |
-| src/commands      | 33    | 11564 |
+| src/engine        | 44    | 12098 |
+| src/commands      | 33    | 11643 |
 | src/v6            | 10    | 6295  |
-| src/(root)        | 8     | 3812  |
+| src/(root)        | 8     | 3887  |
 | src/reporter      | 13    | 3641  |
 | src/forensics     | 17    | 3085  |
 | src/ledger        | 1     | 2922  |
@@ -36,7 +36,7 @@ codes) must match this document exactly.
 | src/scorer        | 3     | 505   |
 | src/traceability  | 2     | 441   |
 | src/scope         | 2     | 427   |
-| src/trust         | 2     | 362   |
+| src/trust         | 2     | 372   |
 | src/playwright    | 2     | 332   |
 | src/benchmark     | 2     | 174   |
 | src/anti-gaming   | 2     | 169   |
@@ -86,6 +86,6 @@ codes) must match this document exactly.
 
 - **Adapters** (7): typescript, python, java, csharp, github-actions, azure-pipelines, jenkins
 - **Rules registry**: 79 live, 22 retired, 73 measured
-- **CLI flags**: "--ascii" "--base" "--blocking" "--cache" "--category" "--classic" "--debug" "--enable-plugins" "--format" "--help" "--json" "--max-duration" "--monorepo" "--no-ascii" "--no-progress" "--policy" "--record-milestones" "--require-full-coverage" "--scope" "--score" "--staged" "--strict" "--suppression-gate" "--suppressions" "--tone" "--verbose" "--width" "-h"
+- **CLI flags**: "--ascii" "--base" "--blocking" "--cache" "--category" "--classic" "--debug" "--enable-plugins" "--format" "--help" "--json" "--max-duration" "--monorepo" "--no-ascii" "--no-progress" "--policy" "--record-milestones" "--require-full-coverage" "--save-baseline" "--scope" "--score" "--staged" "--strict" "--suppression-gate" "--suppressions" "--tone" "--verbose" "--width" "-h"
 - **Report formats**: codequality, json, mermaid, sarif, terminal
 - **Exit codes** (frozen): 0 clean · 1 findings at/above gate · 2 inconclusive (partial or unsupported analysis — a CI step should fail on it) · 10 usage error · 20 internal error (frozen, docs/VERSIONING.md)

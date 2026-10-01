@@ -24,7 +24,7 @@ can never 404 because a version was renamed or a release was withdrawn.
 
 It is also mutable. If you are copying this into a gate that has to behave the
 same next month, pin the version instead — that is the whole difference between
-`npx mjolnir-qa@5.0.0` and the lines above.
+`npx mjolnir-qa@5.1.0` and the lines above.
 
 Requires Node.js ≥ 22.18. Works on Windows, macOS, and Linux.
 

@@ -435,7 +435,7 @@ export async function handleToolCall(call: McpToolCall): Promise<McpResponse> {
           id: call.id,
           result: {
             hasBaseline: false,
-            note: "no committed baseline at .mjolnir/baseline.json — establish the before-state with `mjolnir scan --json` first",
+            note: "no committed baseline at .mjolnir/baseline.json — establish the before-state with `mjolnir <target> --save-baseline`, then re-run this tool (or `mjolnir ci verify`) after the fix",
           },
         };
       }

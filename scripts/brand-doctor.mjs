@@ -11,7 +11,7 @@
  *
  * "every README" was 23 files when this was written. The twenty-two
  * machine-assisted translations are gone (v6 carve 1.1), so Rule 7 now
- * covers one README and five generated bands. The rule did not weaken to
+ * covers the one README that remains. The rule did not weaken to
  * reach that number: the translations were never a distinct edge, they
  * were copies of the same badges, and the copy is what made the drift
  * expensive.
@@ -540,33 +540,20 @@ export function rule7() {
       }
     }
   }
-  // The badge the PRODUCT generates, not just the ones written by hand.
-  // src/commands/badge.ts used to emit shields.io named colours, and the
-  // rule above could not see it: `important` rendered the trusted band
-  // ORANGE and `success` rendered the 100 state GREEN for eight
-  // releases, behind a code comment asserting the opposite. Nobody had
-  // resolved a shields name to a value and looked.
-  const badgeSrc = join(ROOT, "src", "commands", "badge.ts");
-  let generated = 0;
-  if (existsSync(badgeSrc)) {
-    const src = readFileSync(badgeSrc, "utf8");
-    for (const h of hexLiterals(src))
-      if (!isComment(h.text))
-        failures.push(`${rel(badgeSrc)}:${h.line} — hex literal ${h.hex}`);
-    for (const m of src.matchAll(
-      /return\s+"(brightgreen|green|yellowgreen|yellow|orange|red|blue|lightgrey|success|important|critical|informational|inactive)"/g,
-    ))
-      failures.push(
-        `${rel(badgeSrc)} — returns the shields.io named colour "${m[1]}"; ` +
-          `names are not brand values and do not resolve to what they suggest`,
-      );
-    generated = Object.keys(T.badgeBand).length;
-  }
+  // The badge the PRODUCT generates used to be checked here too.
+  // `src/commands/badge.ts` emitted shields.io named colours and the arm
+  // existed because `important` rendered the trusted band ORANGE and
+  // `success` rendered the 100 state GREEN for eight releases, behind a
+  // code comment asserting the opposite. That file is gone (v6 carve), and
+  // the product emits no shields.io badge: the PR comment renders HTML
+  // cells, not image endpoints. The arm went with it — a check behind an
+  // `existsSync` that is always false is a check that cannot fail, which
+  // is the exact defect this script exists to catch.
 
   return {
     n: 7,
     name: "Badges use canonical colours",
-    detail: `${readmes.length} README files + ${generated} generated bands`,
+    detail: `${readmes.length} README files`,
     failures,
   };
 }

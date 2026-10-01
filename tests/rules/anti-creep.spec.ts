@@ -295,6 +295,60 @@ describe("net growth without a demotion is a failure", () => {
     ).toBe(true);
   });
 
+  it("a marker in the release BELOW an empty [Unreleased] still licenses it", () => {
+    // The release-cut case, and the reason the parser is not a "first `## `"
+    // lookup any more.
+    //
+    // Cutting a release empties `[Unreleased]` — that is what the section is
+    // for — and moves the change's notes into the version heading below it. A
+    // strict top-heading lookup then stopped finding a declaration that had not
+    // moved a single character, and the law reported legitimate growth as
+    // unlicensed. That is a check that switches itself off at release time,
+    // which is the worst moment for it to do anything.
+    const cut =
+      "## [Unreleased]\n\n" +
+      "## [5.1.0] — 2026-10-01\n\n" +
+      `${ANTI_CREEP_EXCEPTION_MARKER}: the launch set was redefined to the\n` +
+      `rules that already shipped.\n\n` +
+      "## [5.0.0] — 2026-09-27\n\nAn older release.\n";
+    expect(
+      exceptionInUnreleasedChangelog(cut, ANTI_CREEP_EXCEPTION_MARKER),
+    ).toBe(true);
+    const verdict = evaluateAntiCreep(
+      [coreRule("QA-PW-117")],
+      { ...BASELINE, baselineCore: 1, previousBaselineCore: 0 },
+      cut,
+    );
+    expect(verdict.ok).toBe(true);
+  });
+
+  it("an empty [Unreleased] does not open the WHOLE file to old markers", () => {
+    // The escape the release-cut handling must not reopen. A marker three
+    // releases down is history; qualifying it would make the exemption
+    // permanent again, which is the defect the scoping existed to fix.
+    const stale =
+      "## [Unreleased]\n\n" +
+      "## [5.1.0] — 2026-10-01\n\nA routine change.\n\n" +
+      "## [5.0.0] — 2026-09-27\n\n" +
+      `${ANTI_CREEP_EXCEPTION_MARKER}: a promotion from a PAST release.\n`;
+    expect(
+      exceptionInUnreleasedChangelog(stale, ANTI_CREEP_EXCEPTION_MARKER),
+    ).toBe(false);
+  });
+
+  it("a non-empty [Unreleased] shadows the release heading below it", () => {
+    // Unreleased work has not been cut yet, so the notes for THAT change
+    // belong in `[Unreleased]`. A marker in the release below it belongs to a
+    // different change and must not license this one.
+    const shadowed =
+      "## [Unreleased]\n\nAn unrelated unreleased change.\n\n" +
+      "## [5.1.0] — 2026-10-01\n\n" +
+      `${ANTI_CREEP_EXCEPTION_MARKER}: a cut release's marker.\n`;
+    expect(
+      exceptionInUnreleasedChangelog(shadowed, ANTI_CREEP_EXCEPTION_MARKER),
+    ).toBe(false);
+  });
+
   it("lowering the baseline to match a grown tier is refused", () => {
     // The silent escape, and the reason the baseline records its own previous
     // value. Promoting one rule and lowering `baselineCore` from 0 to 1 makes
