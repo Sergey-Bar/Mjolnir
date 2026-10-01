@@ -66,7 +66,15 @@ export function ruleFamily(ruleId: string): string {
 const SLUG_TO_FAMILY: Readonly<Record<string, string>> = {
   playwright: "QA-PW",
   cypress: "QA-CYP",
-  selenium: "QA-SEL",
+  // `QA-SE`, not `QA-SEL`. These keys are the id-prefix namespace that
+  // `ruleFamily()` above computes — `QA-SE-001` is `QA-SE` — so `QA-SEL` named
+  // a family no rule belongs to and the census reported Selenium as having no
+  // rule evidence at all, while its three rules went uncounted. The same wrong
+  // key appeared in `FRAMEWORK_FAMILY` in capability-registry.ts; both maps are
+  // the same join, and both are fixed together. A hand-maintained key that no
+  // rule id carries produces an empty result rather than an error, so nothing
+  // else reports it.
+  selenium: "QA-SE",
   jest: "QA-JV",
   vitest: "QA-JV",
   mocha: "QA-JV",

@@ -4,8 +4,8 @@
   "generatedBy": "npm run docs:capability",
   "projectionOf": "mjolnir-capability-registry",
   "axis": "framework",
-  "observedAt": "2026-09-30",
-  "baseSha": "94a4c3299c6de382f9b93bc559c545fe4aa3001e",
+  "observedAt": "2026-10-01",
+  "baseSha": "2c78accc2ab391bbb9ac9b1ff7ecb06ee0c6c36c",
   "rowCount": 10,
   "rows": [
     {
@@ -173,8 +173,8 @@
       "inventoryMaturity": "F1",
       "supportStatus": "EXPERIMENTAL",
       "capabilityId": "test.framework.selenium",
-      "maturity": "M1",
-      "rules": [],
+      "maturity": "M2",
+      "rules": ["QA-SE-001", "QA-SE-002", "QA-SE-003"],
       "validatedVersions": ["4.20", "4.21", "4.22", "4.23", "4.24", "4.25"]
     },
     {

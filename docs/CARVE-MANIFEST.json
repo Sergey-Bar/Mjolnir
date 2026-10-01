@@ -291,7 +291,7 @@
       }
     },
     "src/v6/capability-registry.ts": {
-      "lines": 1020,
+      "lines": 1055,
       "exports": 29,
       "importedBy": [
         "scripts/v6/check-capability-registry.ts",
@@ -304,7 +304,8 @@
       "shipped": true,
       "testedBy": [
         "tests/v6/capability-command.spec.ts",
-        "tests/v6/capability-registry.spec.ts"
+        "tests/v6/capability-registry.spec.ts",
+        "tests/v6/maturity-and-keys.spec.ts"
       ],
       "disposition": {
         "action": "KEEP",
@@ -332,7 +333,7 @@
       }
     },
     "src/v6/claim-lint.ts": {
-      "lines": 404,
+      "lines": 426,
       "exports": 16,
       "importedBy": [
         "scripts/v6/check-claims-prose.ts"
@@ -373,7 +374,7 @@
       }
     },
     "src/v6/ecosystem-probe.ts": {
-      "lines": 732,
+      "lines": 740,
       "exports": 18,
       "importedBy": [
         "scripts/v6/check-ecosystem.ts",
@@ -415,7 +416,7 @@
       }
     },
     "src/v6/maturity.ts": {
-      "lines": 506,
+      "lines": 529,
       "exports": 28,
       "importedBy": [
         "scripts/v6/check-claims-prose.ts",
@@ -439,6 +440,7 @@
         "tests/v6/ecosystem-census.spec.ts",
         "tests/v6/ecosystem-probe.spec.ts",
         "tests/v6/edge-cases.spec.ts",
+        "tests/v6/maturity-and-keys.spec.ts",
         "tests/v6/maturity-vocabulary.spec.ts",
         "tests/v6/maturity.spec.ts",
         "tests/v6/schemas.spec.ts"
@@ -465,7 +467,7 @@
       }
     },
     "src/v6/qa-ir.ts": {
-      "lines": 588,
+      "lines": 596,
       "exports": 19,
       "importedBy": [
         "scripts/v6/check-qa-ir-parity.ts",
@@ -475,6 +477,7 @@
       "imported": true,
       "shipped": false,
       "testedBy": [
+        "tests/v6/maturity-and-keys.spec.ts",
         "tests/v6/qa-ir.spec.ts",
         "tests/v6/test-doubles.spec.ts"
       ],

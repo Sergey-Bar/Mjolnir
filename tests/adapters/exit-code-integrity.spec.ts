@@ -39,7 +39,35 @@ describe("detectExitCodeViolations", () => {
       },
     };
     const violations = detectExitCodeViolations(config);
-    expect(violations.some((v) => v.type === "or-true")).toBe(true);
+    // Its own type, not `or-true`. These are two unrelated suppressions and the
+    // finding said so in its description while reporting the other one's name —
+    // so a consumer grouping by `type` conflated them, and a reader grepping the
+    // reported type would find nothing in the script.
+    expect(violations.some((v) => v.type === "exit-zero")).toBe(true);
+    const hit = violations.find((v) => v.type === "exit-zero");
+    expect(hit?.script).toContain("exit 0");
+    expect(hit?.description).toContain("forces exit code 0");
+    expect(hit?.description).not.toContain("|| true");
+  });
+
+  it("tells `|| true` and `|| :` apart", () => {
+    // One pattern covered both, and the description said `|| true`
+    // unconditionally — naming a construct the script does not contain, on
+    // precisely the finding a reader is about to go and look for.
+    const colon = detectExitCodeViolations({
+      jobs: { build: { steps: [{ run: "npm ci || :" }] } },
+    });
+    expect(colon.some((v) => v.type === "or-colon")).toBe(true);
+    expect(colon.some((v) => v.type === "or-true")).toBe(false);
+    const colonHit = colon.find((v) => v.type === "or-colon");
+    expect(colonHit?.description).toContain("|| :");
+    expect(colonHit?.description).not.toContain("|| true");
+
+    const truthy = detectExitCodeViolations({
+      jobs: { build: { steps: [{ run: "npm ci || true" }] } },
+    });
+    expect(truthy.some((v) => v.type === "or-true")).toBe(true);
+    expect(truthy.some((v) => v.type === "or-colon")).toBe(false);
   });
 
   it("detects job-level continue-on-error", () => {

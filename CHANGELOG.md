@@ -11,6 +11,55 @@ once shipped, so this file is the record of what changed between versions.
 
 ## [Unreleased]
 
+### Single-site corrections, and one key that matched nothing
+
+- **`FRAMEWORK_FAMILY.selenium` and `SLUG_TO_FAMILY.selenium` were `"QA-SEL"`.**
+  No rule id carries that prefix — the real one is `QA-SE` — so both maps
+  resolved to the empty list. The Selenium capability reported no evidence at
+  all while its three rules (`QA-SE-001`–`003`) were credited to nothing.
+  An unmatched key returns an empty result rather than an error, which is why
+  nothing reported it. `QA-SE` was the only family in the registry that no
+  capability could reach.
+- **`M5_FIELD_PROVEN` did not require `M4`.** `fieldProven` was the first test
+  in `deriveMaturityFromEvidence`, so a capability carrying only that flag
+  reached M5 — a level whose published meaning includes "declared" and
+  "implemented" — without either. The ladder's own stated invariant ("each level
+  requires every criterion below it") did not hold at the top, and the only route
+  to M5 was to satisfy none of M4's criteria.
+- **`LOCAL_PROVEN` could cite an unmeasured rule.** `proofFor` picked the first
+  non-_retired_ rule, so a capability whose first listed rule had no corpus
+  evidence could be marked proven with a pointer into `docs/FP-AUDIT.md` for a
+  rule the audit never measured. It now picks a rule from `facts.measured` —
+  the same predicate the status itself reports on.
+- **A parity violation could name a field that cannot differ.** `checkParity`
+  guarded on the fingerprints being different and then iterated
+  `["intention", "fingerprint"]`, so the `fingerprint` arm was unreachable. Its
+  sibling `extractBindings` already looped correctly over the same files for the
+  same kind of marker.
+- **The claim linter reported the first claim on a line and dropped the rest.**
+  `scanText` used a single `exec` per line, so a line making two claims of the
+  same kind reported one — and the half it dropped was the half a maintainer has
+  to go and fix. All matches are now reported, with a zero-length guard so a
+  future pattern that can match empty cannot hang the linter.
+- **The forensics `successRate` was not a rate.** It could only be 0 or 1, and
+  this object is only built when a test passed _on retry_ — so within
+  `maskedFailures` it was invariably 1. A reader seeing "success rate: 1" would
+  conclude the test passed on every attempt, which is the opposite of what the
+  entry means. Renamed `finalPassBinary`. Its `attempts === 0` guard was
+  unreachable: the enclosing filter requires `attempts > 1`.
+- **Two CI findings reported themselves under the wrong name.** An `exit 0` was
+  typed `or-true` while its own description said it forced an exit code of 0, and
+  the pattern `||\s*(?:true|:)` matched both `|| true` and `|| :` while the
+  description said `|| true` unconditionally — naming a construct the script does
+  not contain, on exactly the finding a reader is about to go looking for. They
+  are now `or-true`, `or-colon` and `exit-zero`.
+- **A rule that sampled nothing no longer overwrites its review sheet.**
+  `writeReviewSheets` wrote a sheet whose entire content was a heading, the
+  verdict legend, and "Total sampled: 0" — and replaced any sheet from an earlier
+  run that had samples, destroying pending classifications. A zero-sample rule now
+  removes its sheet. This is distinct from a rule this run did not _visit_, whose
+  sheet is owner work-in-progress and is still preserved.
+
 ### The readiness table told maintainers to do the wrong work
 
 `docs/CORE-READINESS.md` is the document a maintainer reads to decide what to

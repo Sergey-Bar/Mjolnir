@@ -560,15 +560,23 @@ export function checkParity(cases: readonly ParityCase[]): ParityViolation[] {
         const left = canonical.get(names[i] as string);
         const right = canonical.get(names[j] as string);
         if (left === undefined || right === undefined) continue;
-        if (left.fingerprint === right.fingerprint) continue;
-        for (const field of ["intention", "fingerprint"] as const) {
-          if (left[field] === right[field]) continue;
+        // The fingerprints differ, or this pair would not be a violation at
+        // all. So the divergence is already established here and does NOT need
+        // re-reporting below.
+        //
+        // This loop used to iterate `["intention", "fingerprint"]`. The
+        // `fingerprint` arm was unreachable: reaching it requires the
+        // fingerprints to differ, and then the arm's own guard
+        // (`left.fingerprint === right.fingerprint`) skipped it. A field on a
+        // violation report that can never appear teaches a reader to look for
+        // a divergence in a place the control flow has already excluded.
+        if (left.intention !== right.intention) {
           violations.push({
             case: testCase.meaning,
             dialects: [names[i] as string, names[j] as string],
-            field,
-            left: String(left[field]),
-            right: String(right[field]),
+            field: "intention",
+            left: String(left.intention),
+            right: String(right.intention),
           });
         }
         if (left.assertionShape.join("|") !== right.assertionShape.join("|")) {

@@ -4,8 +4,8 @@
   "generatedBy": "npm run docs:capability",
   "projectionOf": "mjolnir-capability-registry",
   "axis": "language",
-  "observedAt": "2026-09-30",
-  "baseSha": "94a4c3299c6de382f9b93bc559c545fe4aa3001e",
+  "observedAt": "2026-10-01",
+  "baseSha": "2c78accc2ab391bbb9ac9b1ff7ecb06ee0c6c36c",
   "rowCount": 1,
   "rows": [
     {
@@ -23,7 +23,7 @@
             "status": "LOCAL_PROVEN",
             "artifact": "docs/FP-AUDIT.md#QA-CYP-001",
             "digest": null,
-            "observedAt": "2026-09-30",
+            "observedAt": "2026-10-01",
             "authority": "framework-inventory"
           },
           "nextLevelGap": {
@@ -57,7 +57,7 @@
             "status": "LOCAL_PROVEN",
             "artifact": "docs/FP-AUDIT.md#QA-JV-104",
             "digest": null,
-            "observedAt": "2026-09-30",
+            "observedAt": "2026-10-01",
             "authority": "framework-inventory"
           },
           "nextLevelGap": {
@@ -89,7 +89,7 @@
             "status": "LOCAL_PROVEN",
             "artifact": "docs/FP-AUDIT.md#QA-TEST-001",
             "digest": null,
-            "observedAt": "2026-09-30",
+            "observedAt": "2026-10-01",
             "authority": "framework-inventory"
           },
           "nextLevelGap": {
@@ -121,7 +121,7 @@
             "status": "LOCAL_PROVEN",
             "artifact": "docs/FP-AUDIT.md#QA-TEST-001",
             "digest": null,
-            "observedAt": "2026-09-30",
+            "observedAt": "2026-10-01",
             "authority": "framework-inventory"
           },
           "nextLevelGap": {
@@ -169,7 +169,7 @@
             "status": "LOCAL_PROVEN",
             "artifact": "docs/FP-AUDIT.md#QA-PW-002",
             "digest": null,
-            "observedAt": "2026-09-30",
+            "observedAt": "2026-10-01",
             "authority": "framework-inventory"
           },
           "nextLevelGap": {
@@ -211,7 +211,7 @@
             "status": "LOCAL_PROVEN",
             "artifact": "docs/FP-AUDIT.md#QA-PY-003",
             "digest": null,
-            "observedAt": "2026-09-30",
+            "observedAt": "2026-10-01",
             "authority": "framework-inventory"
           },
           "nextLevelGap": {
@@ -229,21 +229,20 @@
           "name": "selenium",
           "kind": "test-runner",
           "owner": "framework-inventory",
-          "maturity": "M1",
-          "rules": [],
+          "maturity": "M2",
+          "rules": ["QA-SE-001", "QA-SE-002", "QA-SE-003"],
           "adapter": null,
           "proof": {
-            "status": "BLOCKED",
-            "artifact": null,
+            "status": "LOCAL_PROVEN",
+            "artifact": "docs/FP-AUDIT.md#QA-SE-001",
             "digest": null,
-            "observedAt": null,
-            "authority": "NONE"
+            "observedAt": "2026-10-01",
+            "authority": "framework-inventory"
           },
           "nextLevelGap": {
-            "target": "M2_IMPLEMENTED",
+            "target": "M3_FIXTURE_VERIFIED",
             "missing": [
-              "implementation exists",
-              "unit tests for the implementation"
+              "positive + negative + boundary + adversarial fixtures pass deterministically in CI"
             ],
             "owner": "framework-inventory",
             "revisitTrigger": "capability test.framework.selenium gains evidence for its next level"
@@ -269,7 +268,7 @@
             "status": "LOCAL_PROVEN",
             "artifact": "docs/FP-AUDIT.md#QA-TEST-001",
             "digest": null,
-            "observedAt": "2026-09-30",
+            "observedAt": "2026-10-01",
             "authority": "framework-inventory"
           },
           "nextLevelGap": {
@@ -303,7 +302,7 @@
             "status": "LOCAL_PROVEN",
             "artifact": "docs/FP-AUDIT.md#QA-JV-104",
             "digest": null,
-            "observedAt": "2026-09-30",
+            "observedAt": "2026-10-01",
             "authority": "framework-inventory"
           },
           "nextLevelGap": {
@@ -335,7 +334,7 @@
             "status": "LOCAL_PROVEN",
             "artifact": "docs/FP-AUDIT.md#QA-TEST-001",
             "digest": null,
-            "observedAt": "2026-09-30",
+            "observedAt": "2026-10-01",
             "authority": "framework-inventory"
           },
           "nextLevelGap": {
