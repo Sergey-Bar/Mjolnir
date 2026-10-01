@@ -547,7 +547,9 @@ describe("renderUnifiedReport", () => {
     // HTML cells, not markdown headings. The old assertions were
     // `toContain("### Trust Level")` — satisfied by the string that does not
     // render, which is how the broken table shipped.
-    expect(out).toContain('<td width="130">');
+    expect(out).not.toContain('width="130"');
+    expect(out.match(/<tr>/g)).toHaveLength(2);
+    expect(out.match(/<td>/g)).toHaveLength(4);
     expect(out).toContain("<small>Trust level</small>");
     expect(out).toContain("<b>L2</b>");
     expect(out).toContain("<small>Score</small>");
@@ -870,12 +872,13 @@ describe("renderUnifiedReport", () => {
     expect(out).toContain("---");
   });
 
-  it("renders error findings with 'must fix before merge'", () => {
+  it("prioritizes error findings without claiming to know CI gating policy", () => {
     const r = result({
       findings: [finding({ severity: "error" })],
     });
     const out = renderUnifiedReport(r);
-    expect(out).toContain("must fix before merge");
+    expect(out).toContain("review first; gating depends on your CI policy");
+    expect(out).not.toContain("must fix before merge");
   });
 
   it("handles score=null (unmeasured)", () => {
