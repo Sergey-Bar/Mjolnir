@@ -130,7 +130,14 @@ CI. The full `--verbose` report of the same scan is
 
 <sub>Rendered frame by frame from a real scan by `npm run docs:video`;
 never screen-recorded. Select the frame to open
-[`mjolnir-demo.mp4`](assets/video/mjolnir-demo.mp4).</sub>
+[`mjolnir-demo.mp4`](assets/video/mjolnir-demo.mp4).
+**The committed recording is older than the current CLI** — it was rendered
+before the 5.1.0 positioning carve, so some commands and messages it shows
+have since been removed. The captured script the renderer draws from _is_
+current and is gated (`tests/contract/video-script.spec.ts` re-runs the capture
+and fails on drift); the encode step needs Chromium and ffmpeg, so it runs
+manually via `npm run docs:video:render` and nothing checks that the `.mp4` has
+been re-encoded. Re-run it to bring the asset forward.</sub>
 
 </details>
 

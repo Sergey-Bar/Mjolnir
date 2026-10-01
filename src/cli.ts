@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
  * Mjölnir CLI entry point (W1-02).
- * Exit codes (§24.1, frozen): 0 clean Â· 1 findings â‰¥ gate Â· 2 partial Â·
- * 10 usage error Â· 20 internal error.
+ * Exit codes (§24.1, frozen): 0 clean · 1 findings ≥ gate · 2 partial ·
+ * 10 usage error · 20 internal error.
  */
 
 import { existsSync, realpathSync, statSync } from "node:fs";

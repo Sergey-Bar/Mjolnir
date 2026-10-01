@@ -13,43 +13,102 @@ once shipped, so this file is the record of what changed between versions.
 
 ### The declared tier is a third floor, and now it has teeth
 
-B0 (a dry run, 2026-10-01) measured all 79 live rules against the two existing
-tier derivations before anything was refactored. The result changed the shape
-of the work: the interval floor (`ciLow >= 50%` quarantines, `ciHigh <= 10%`
-promotes to core) quarantines **zero** rules and derives core for **none** of
-them, because neither threshold is reached at n = 10..80. **33 rules declare
-`quarantine` and would be promoted into the default scan if the declared `tier`
-field were deleted** — every one in the promoting direction, none the other
-way. Deleting the declared tiers was never a refactor; it ships 33 quarantined
-detectors, including the six CI rules the README's caught-by-default table
-marks advisory.
+B0 measured all 79 live rules against both existing derivations before anything
+was refactored. The result changed the shape of the work: the interval floor
+(`ciLow >= 50%` quarantines, `ciHigh <= 10%` promotes to core) quarantines
+**zero** rules and derives core for **none** of them, because neither threshold
+is reached at n = 10..80. **33 rules declare `quarantine` and would be promoted
+into the default scan if the declared `tier` field were deleted** — every one in
+the promoting direction, none the other way. Deleting the declared tiers is not
+a refactor; it ships 33 quarantined detectors, including the six CI rules the
+README's caught-by-default table marks advisory.
 
 So the declared tier stays, stated for what it is: a floor stricter than both
 derivations, and currently the only thing holding those 33 rules out of a
 default scan. That is documented at the field, with the numbers.
 
-A floor that can also _loosen_ is not a floor — it is a way to ship a rule the
+A floor that can also LOOSE is not a floor — it is a way to ship a rule the
 corpus says should not ship, and because every derived number in the tree reads
 the declared value through `effectiveTier`, nothing else would disagree.
-`defensibleTier` now states the floor a declared tier may never sit above, and
-a registry ratchet enforces it. Three ways to be indefensible, all checked:
+`defensibleTier` now states the floor a declared tier may never sit above, and a
+registry ratchet enforces it: no measurement at all, or observed FP above 30%,
+both mean quarantine.
 
-- no valid measurement at all → quarantine (6 rules);
-- observed FP above 30% → quarantine, the noise floor (12 rules);
-- otherwise the interval floor.
-
-The first version of this law was written against the interval floor alone and
-measured at **zero teeth**: it could only ever catch a rule declaring `core`,
+The first version of that law was written against the interval floor alone and
+measured at **zero teeth** — it could only ever catch a rule declaring `core`,
 which no rule declares, so it would have passed no matter what the registry
-said. Both failure directions are now probed as tests — a 60%-FP rule set to
-`extended`, and an unmeasured rule set to `extended` — and the tests assert
-that the interval floor would have missed them.
+said. Both failure directions are now probed as tests, and they assert that the
+interval floor would have missed them.
 
-`measurementTier` is now a named export (the interval floor `effectiveTier`
-falls back to), and `isTierStraddling`'s `rule.tier` short-circuit is
-documented as deliberate rather than incidental: a declared tier IS the
-placement, so enabling it would report all 33 as `TIER-STRADDLE`, which is true
-of their evidence and would misrepresent their decision.
+The anti-creep exception is discharged rather than copied forward: 5.1.0 shipped
+the declaration, so the baseline absorbs it at 45/45 and the marker no longer has
+to be re-declared on every commit. The demanding branch stays covered by a
+pre-discharge fixture, and one rule above the absorbed baseline is still refused
+without a declaration.
+
+### Three orphan `families/` taxonomies deleted, one of them after being measured
+
+`flaky-patterns.ts`, `marker-registry.ts` and `no-assertions.ts` shipped with
+no importer. The repo's rule for these is "if a rule's measured FP names the
+cause one of them describes, wire it; otherwise delete it" — and none of the
+three describes a cause anything is measured against.
+
+`no-assertions.ts` was the interesting one: 7 framework assertion
+vocabularies, written for `QA-TEST-003`'s named FP cause. Its cause is
+_hidden-assertion helpers and deliberate no-throw smoke tests_, which is not a
+framework-vocabulary gap. Diffed against the rule's own predicate over 15
+representative test bodies it changed 2, **in both directions**: it suppresses
+`expect.extend(…)` — which _defines_ a matcher rather than asserting — and
+reintroduces a false positive on `should(x).be.ok`. Wiring it would have been a
+behaviour change to a quarantined rule justified by a claim the evidence does
+not support, so it is gone and the gap is recorded in the ledger instead, where
+it will be re-measured rather than quietly closed.
+
+(The first measurement of that diff was wrong — a `g`-flagged `RegExp.test()`
+carries `lastIndex` between calls, so the two predicates were being fed a
+moving target. Two differences, not three.)
+
+`flaky-patterns.ts` carried its own `HARD_SLEEP` patterns while a wired
+`hard-sleep` family already exists: a second source for one fact, which is the
+pattern that manufactures drift. Orphan count 28 → 25.
+
+### Two plan items refuted before acting on them
+
+**"Delete `scripts/video/` — nothing consumes it."** It has three npm scripts,
+a workflow, and a README-linked asset. Its storyboard is gated by
+`tests/contract/video-script.spec.ts` (11 tests, re-running the capture and
+failing on drift); only the `.mp4` encode needs Chromium and ffmpeg, which is
+why that step is manual by design. Left alone.
+
+What _is_ true is narrower and worth saying: the committed `mjolnir-demo.mp4`
+was rendered before the v6 carve, so it demonstrates output the CLI no longer
+prints. The README now says so, and names the re-render command, rather than
+letting a stale artifact read as current.
+
+**"Delete the ~25 rule docs for retired rules; make `docs:regen` prune so it
+cannot recur."** The retired pages are kept **deliberately** — they are the
+record of what the tool used to claim — and
+`tests/contract/rule-docs-set.spec.ts` enforces exactly `live ∪ RETIRED_RULE_IDS`
+and nothing else. A prune was written, deleted all 22 on its first run, and was
+removed. That is the strongest available demonstration that "the generator
+cannot remove its own output" is a reason to add a `docs:regen` check, not a
+reason to add a delete. The existing spec already catches the real orphan: a
+page for an id in neither list.
+
+**"Delete `src/certification/` — it certifies 1 language."** It reports
+**0 of 100** detection cells across **5** ecosystems, and separately 1 language
+(`manifest-v5` language support) as CERTIFIED. Those are different ladders and
+the file says so. A module that honestly reports 0% with a per-ecosystem next
+gap is a live status document, not dead weight — the repo already applied this
+reasoning to `src/v6/test-doubles.ts` on the orphan list. Left alone, with the
+number corrected.
+
+### Two bytes of encoding damage
+
+`src/cli.ts` and `docs/DISTRIBUTION-KIT.md` each carried UTF-8 that had been
+decoded as Latin-1 and written back (`Â·`, `â‰¥`, `Ã—`). Invisible to a reader
+whose editor auto-detects encoding, and to any gate that does not look. Both
+fixed; a scan of all 10,133 text files in the tree finds no others.
 
 ### Test fixes
 

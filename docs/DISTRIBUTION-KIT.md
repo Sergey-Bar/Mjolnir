@@ -77,7 +77,7 @@ Listing content (paste verbatim into the marketplace draft):
   `assets/readme/score-gauge.svg`, `assets/readme/demo.svg` —
   Marketplace renders SVG via user-content; if the upload dialog rejects
   SVG, convert with `npm run docs:video`'s renderer stack (same fonts,
-  same palette) to PNG 1280Ã—640.
+  same palette) to PNG 1280x640.
 - **Link back:** README quickstart anchors the listing's "Usage"
   section; keep `action.yml`'s `description:` in sync with the listing
   (test: `tests/integrations/action-surface.spec.ts`).
