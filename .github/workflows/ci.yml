@@ -416,7 +416,20 @@ jobs:
           git show "${BASE}:tests/corpus/detector-hashes.json" > /tmp/detector-hashes-base.json \
             || echo "no base manifest (first landing)"
           if [ -s /tmp/detector-hashes-base.json ]; then
-            npx tsx scripts/diff-detector-hashes.ts /tmp/detector-hashes-base.json
+            # `scripts/check-detector-hashes.ts`, not `scripts/diff-detector-hashes.ts`.
+            #
+            # The step named a script that does not exist, so it died with
+            #   Error [ERR_MODULE_NOT_FOUND]: Cannot find module
+            #   '.../scripts/diff-detector-hashes.ts'
+            # The capability is not missing: this script's own header documents
+            # `--base <manifest>` as "REVIEW VISIBILITY, the CI base-diff", and
+            # the staleness arm in the same file is the gate that can block.
+            # One file, two modes — the shape the script says it exists to
+            # avoid duplicating.
+            #
+            # The step never ran before, because `needs: build-test` and
+            # build-test had been failing, so the job was always `skipped`.
+            npm run check-detector-hashes -- --base /tmp/detector-hashes-base.json
           else
             echo "INFO: no detector-hashes manifest on the base branch (first landing) — nothing to diff."
           fi
