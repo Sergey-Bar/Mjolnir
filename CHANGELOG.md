@@ -11,6 +11,58 @@ once shipped, so this file is the record of what changed between versions.
 
 ## [Unreleased]
 
+### The declared tier is a third floor, and now it has teeth
+
+B0 (a dry run, 2026-10-01) measured all 79 live rules against the two existing
+tier derivations before anything was refactored. The result changed the shape
+of the work: the interval floor (`ciLow >= 50%` quarantines, `ciHigh <= 10%`
+promotes to core) quarantines **zero** rules and derives core for **none** of
+them, because neither threshold is reached at n = 10..80. **33 rules declare
+`quarantine` and would be promoted into the default scan if the declared `tier`
+field were deleted** — every one in the promoting direction, none the other
+way. Deleting the declared tiers was never a refactor; it ships 33 quarantined
+detectors, including the six CI rules the README's caught-by-default table
+marks advisory.
+
+So the declared tier stays, stated for what it is: a floor stricter than both
+derivations, and currently the only thing holding those 33 rules out of a
+default scan. That is documented at the field, with the numbers.
+
+A floor that can also _loosen_ is not a floor — it is a way to ship a rule the
+corpus says should not ship, and because every derived number in the tree reads
+the declared value through `effectiveTier`, nothing else would disagree.
+`defensibleTier` now states the floor a declared tier may never sit above, and
+a registry ratchet enforces it. Three ways to be indefensible, all checked:
+
+- no valid measurement at all → quarantine (6 rules);
+- observed FP above 30% → quarantine, the noise floor (12 rules);
+- otherwise the interval floor.
+
+The first version of this law was written against the interval floor alone and
+measured at **zero teeth**: it could only ever catch a rule declaring `core`,
+which no rule declares, so it would have passed no matter what the registry
+said. Both failure directions are now probed as tests — a 60%-FP rule set to
+`extended`, and an unmeasured rule set to `extended` — and the tests assert
+that the interval floor would have missed them.
+
+`measurementTier` is now a named export (the interval floor `effectiveTier`
+falls back to), and `isTierStraddling`'s `rule.tier` short-circuit is
+documented as deliberate rather than incidental: a declared tier IS the
+placement, so enabling it would report all 33 as `TIER-STRADDLE`, which is true
+of their evidence and would misrepresent their decision.
+
+### Test fixes
+
+- `tests/contract/coverage-state.spec.ts` was passing its keys to a helper
+  typed for a different shape, so they were dropped and the test loaded a
+  consistent default document. It never tested what it claimed.
+- `src/commands/rule-families.ts` sat at 60% because the carve removed
+  `create-rule`, its second consumer. `tests/contract/rule-families.spec.ts`
+  checks the table against the live registry.
+- The anti-creep and unreleased-entry gates both anchored on "the first `## `
+  heading", which stops describing anything the moment a version is cut. Both
+  now scope to the current version's section.
+
 ## [5.1.0] — 2026-10-01
 
 ### `ci verify` could never leave its no-baseline arm

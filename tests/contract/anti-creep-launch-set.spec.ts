@@ -45,21 +45,25 @@ function readBaseline(): AntiCreepBaseline | null {
   }
 }
 
+const SHIPPED = RULES.filter((r) => effectiveTier(r) !== "quarantine");
+
+// A baseline with the counts pinned to the shipped set, so a test that
+// asserts a promotion is visible growth is comparing against a number that
+// was not simply copied in to make the assertion true. `recordedAt` and
+// `recordedAtSha` are required by the type and are not read by the
+// arithmetic, so they are pinned literally and named.
+const SHIPPED_BASELINE: AntiCreepBaseline = {
+  baselineCore: SHIPPED.length,
+  previousBaselineCore: SHIPPED.length,
+  recordedAt: "1970-01-01T00:00:00.000Z",
+  recordedAtSha: "0000000",
+};
+
 describe("the launch set is what ships, not the empty core tier", () => {
-  const shipped = RULES.filter((r) => effectiveTier(r) !== "quarantine");
+  const shipped = SHIPPED;
   const core = RULES.filter((r) => effectiveTier(r) === "core");
 
-  // A baseline with the counts pinned to the shipped set, so a test that
-  // asserts a promotion is visible growth is comparing against a number that
-  // was not simply copied in to make the assertion true. `recordedAt` and
-  // `recordedAtSha` are required by the type and are not read by the
-  // arithmetic, so they are pinned literally and named.
-  const BASELINE: AntiCreepBaseline = {
-    baselineCore: shipped.length,
-    previousBaselineCore: shipped.length,
-    recordedAt: "1970-01-01T00:00:00.000Z",
-    recordedAtSha: "0000000",
-  };
+  const BASELINE = SHIPPED_BASELINE;
 
   it("the two sets genuinely differ in this repository", () => {
     // Without this the rest of the file passes vacuously. It is the fact that
@@ -125,11 +129,22 @@ describe("the recorded baseline matches the governed set", () => {
     );
   });
 
-  it("leaves previousBaselineCore at 0 so the redefinition shows as growth", () => {
-    // The law compares against the PREVIOUS value. Setting it to 45 in the same
-    // edit would make a change to what the law governs read as a legal no-op —
-    // the exact escape that comparison exists to close.
-    expect(baseline?.previousBaselineCore).toBe(0);
+  it("has absorbed previousBaselineCore now the declared release has shipped", () => {
+    // This was `toBe(0)` while the exception was still outstanding, and the
+    // flip is the discharge. While `previousBaselineCore` was 0 the law read
+    // 45 − 0 = 45 of growth and demanded a marker on every commit — so the
+    // marker had to be copied forward forever, which is the transcription the
+    // scoping exists to prevent. 5.1.0 shipped the declaration; the baseline
+    // now records the value it declared.
+    //
+    // The escape this number guards is still closed, and by the same
+    // mechanism: lowering `baselineCore` to match a grown tier does nothing,
+    // because the law reads `previousBaselineCore`. Both are 45, so growth is
+    // genuinely zero rather than hidden — and the next promotion has to earn
+    // a fresh marker.
+    expect(baseline?.previousBaselineCore).toBe(
+      RULES.filter((r) => effectiveTier(r) !== "quarantine").length,
+    );
   });
 
   it("carries a reason, because a baseline is a record and not a number", () => {
@@ -142,26 +157,64 @@ describe("the recorded baseline matches the governed set", () => {
 });
 
 describe("the redefinition was declared, not slipped in", () => {
-  it("the current release entry carries the exception with a reason", () => {
+  const pkg = JSON.parse(readFileSync(join(ROOT, "package.json"), "utf8")) as {
+    version: string;
+  };
+  const baseline = JSON.parse(
+    readFileSync(join(ROOT, "docs", "ANTI-CREEP-BASELINE.json"), "utf8"),
+  ) as { baselineCore: number; previousBaselineCore: number; why?: string };
+
+  it("the growth has been ABSORBED into the baseline, not merely excused", () => {
+    // The declaration was a PROMISE, and this is the discharge.
+    //
+    // While `previousBaselineCore` was 0, the law read 45 − 0 = 45 of growth
+    // and demanded a marker in the current entry on every commit — so the
+    // marker would have to be copied forward forever, which is exactly the
+    // transcription the scoping exists to prevent. Now that 5.1.0 has SHIPPED
+    // the redefinition, the baseline records 45/45: growth is zero, the law
+    // needs nothing, and the next real promotion must earn a fresh marker.
+    //
+    // This is why the assertion is about the BASELINE and not about the
+    // changelog. Asserting the marker is present would have kept passing
+    // while the state it describes had ended.
+    expect(baseline.previousBaselineCore).toBe(SHIPPED.length);
+    expect(baseline.baselineCore).toBe(SHIPPED.length);
+    const verdict = evaluateAntiCreep(RULES, SHIPPED_BASELINE, "");
+    expect(verdict.ok, verdict.summary).toBe(true);
+    expect(verdict.summary).toContain("net growth 0");
+  });
+
+  it("the baseline still names what it superseded and why", () => {
+    // A baseline that records 45/45 without saying where 45 came from is a
+    // number with no review trail. The prose is what makes the next maintainer
+    // able to tell a legitimate 45 from an inflated one.
+    const why: string | undefined = baseline?.why;
+    expect(typeof why).toBe("string");
+    expect(why ?? "").toMatch(/ABSORBED/);
+    expect(why ?? "").toContain("45");
+  });
+
+  it("further growth would still need a fresh marker", () => {
+    // The discharge must not have disarmed the law. One synthetic extended
+    // rule above the absorbed baseline has to require the marker again.
+    const extra = { ...RULES[0], id: "QA-TT-999", tier: "extended" } as never;
+    const verdict = evaluateAntiCreep([...RULES, extra], SHIPPED_BASELINE, "");
+    expect(verdict.ok).toBe(false);
+    expect(verdict.summary).toContain("net growth of 1");
+  });
+
+  it("the 5.1.0 entry carries the original declaration with a reason", () => {
+    // The historical record stays. Scoped to the version that shipped it, not
+    // to "the first `## ` heading" — those are the same thing only while
+    // `[Unreleased]` is non-empty, and anchoring on position meant the
+    // assertion silently stopped describing anything the moment a release was
+    // cut.
     const changelog = readFileSync(join(ROOT, "CHANGELOG.md"), "utf8");
-    // Scoped to the section for the CURRENT version, not to "the first `## `
-    // heading". The two are the same thing only while `[Unreleased]` is
-    // non-empty; the moment a release is cut, `[Unreleased]` is empty by
-    // design and the declaration moves down with the release it belongs to.
-    // Anchoring on position meant the assertion silently stopped describing
-    // anything the moment a version was cut — the exception was still
-    // declared, just one heading down.
-    const pkg = JSON.parse(
-      readFileSync(join(ROOT, "package.json"), "utf8"),
-    ) as { version: string };
     const start = new RegExp(
-      `^## \\[${pkg.version.replace(/\./g, "\\.")}\\]`,
+      `^## \\[${"5.1.0".replace(/\./g, "\\.")}\\]`,
       "m",
     ).exec(changelog);
-    expect(
-      start,
-      `CHANGELOG.md has no section for the current version ${pkg.version}`,
-    ).not.toBeNull();
+    expect(start, "the 5.1.0 entry is missing").not.toBeNull();
     if (start === null) return;
     const rest = changelog.slice(start.index);
     const next = rest.slice(3).search(/^## /m);
@@ -172,6 +225,8 @@ describe("the redefinition was declared, not slipped in", () => {
     expect(entry).toContain(ANTI_CREEP_EXCEPTION_MARKER);
     expect(entry).toContain("45");
     expect(entry).toMatch(/already shipped|moved nothing|was not counting/);
+    // The version in the heading is the one the declaration belongs to.
+    expect(pkg.version).toBe("5.1.0");
   });
 });
 

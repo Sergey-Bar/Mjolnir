@@ -225,6 +225,16 @@ export function samplesForZeroFp(ceiling: number): number {
  * could not straddle, because `fpRate <= 0.1 && n >= 10` was a gate a rule
  * either passed or failed — so a rule at n=10 with 0% observed FP was
  * indistinguishable from one at n=400.
+ *
+ * The `rule.tier` short-circuit is now deliberate rather than incidental. A
+ * straddle says "the evidence cannot place this rule", which is a statement
+ * about a rule with NO declared tier: a declared tier IS the placement, and a
+ * rule the corpus cannot place can still be deliberately held in quarantine —
+ * that is what the 33 declared quarantines are. Removing the guard would make
+ * all 33 display `TIER-STRADDLE` in `ruleStatus`, which is true of their
+ * evidence and would misrepresent their DECISION. The maintainer-facing
+ * version of this question ("is this rule's evidence thin?") is
+ * `straddleDetail`, which has no such guard.
  */
 export function isTierStraddling(rule: QADoctorRule): boolean {
   if (rule.tier !== undefined) return false;
@@ -232,16 +242,86 @@ export function isTierStraddling(rule: QADoctorRule): boolean {
 }
 
 /**
- * The tier a rule effectively ships as: its declared tier, or — for the
- * omitted-tier case — what its measurement's interval supports (§11.2 Step 2).
+ * The tier the MEASUREMENT alone supports, ignoring any declared tier.
+ *
+ * This is the interval floor that `effectiveTier` falls back to, extracted so
+ * the tightening law can ask the question `effectiveTier` structurally cannot:
+ * a declared tier may only ever hold a rule DOWN, never release it.
+ *
+ * `effectiveTier` cannot answer that, because it short-circuits on
+ * `rule.tier` — asking it what a rule's tier "would" be returns the declared
+ * value, and a comparison built on it compares the declaration with itself.
+ * The first B0 dry-run made exactly that mistake and reported zero
+ * mismatches for a comparison that had never run.
+ *
+ * READ THIS BEFORE USING IT AS A FLOOR. Measured over all 79 live rules, this
+ * function returns `extended` for 78 of them and `quarantine` for none: on
+ * this corpus the interval rule is very nearly an empty rule, because
+ * `ciLow >= 50%` is not reached at n = 10..80. A "declared tier may only
+ * tighten" law written against THIS function is decorative — it can only ever
+ * catch a rule declaring `core`, which no rule declares. It was written that
+ * way first and measured at zero teeth.
+ *
+ * The floor with teeth is `defensibleTier`, below.
  */
-export function effectiveTier(rule: QADoctorRule): Tier {
-  if (rule.tier !== undefined) return rule.tier;
+export function measurementTier(rule: QADoctorRule): Tier {
   const interval = measurementInterval(rule);
   if (interval === undefined) return "extended";
   if (interval.ciHigh <= CORE_FP_CEILING) return "core";
   if (interval.ciLow >= QUARANTINE_FP_FLOOR) return "quarantine";
   return "extended";
+}
+
+/**
+ * The point-estimate quarantine floor: the NOISE floor.
+ *
+ * `> 30% observed false positives` means the detector is wrong more often
+ * than it is right about the thing it claims. That is a product decision
+ * independent of how confident the statistics are, which is why it is a
+ * separate constant from `QUARANTINE_FP_FLOOR` (the evidence floor) rather
+ * than another use of it: the two answer different questions, and B0 measured
+ * rules on which they disagree (12 of them).
+ */
+export const POINT_QUARANTINE_FLOOR = 0.3;
+
+/**
+ * The most defensible tier: the STRICTEST of every floor the evidence can
+ * support. A declared tier may never sit above this.
+ *
+ * Built from three inputs because a rule can be indefensible in more than one
+ * way, and a floor that only checks one of them is a floor with a hole:
+ *
+ *   - NO valid measurement at all -> quarantine. A rule nobody has measured
+ *     has no evidence for shipping by default, which is the whole reason the
+ *     quarantine tier exists. 6 rules are in this state today.
+ *   - observed FP above `POINT_QUARANTINE_FLOOR` -> quarantine. The noise
+ *     floor: 12 rules are above it today, including `QA-TEST-001` at 60% and
+ *     `QA-TEST-002` at 62%.
+ *   - otherwise the interval floor, which can still place a rule in core.
+ *
+ * `defensibleTier(measured well) <= measurementTier(...)` always holds; the
+ * point floor and the unmeasured rule are the two ways the interval floor can
+ * be too generous, and both are quieter than it is.
+ */
+export function defensibleTier(rule: QADoctorRule): Tier {
+  const m = measurementFor(rule.id);
+  if (!hasValidMeasurement(rule) || m === undefined) return "quarantine";
+  if (m.fpRate > POINT_QUARANTINE_FLOOR) return "quarantine";
+  return measurementTier(rule);
+}
+
+/**
+ * The tier a rule effectively ships as: its declared tier, or — for the
+ * omitted-tier case — what its measurement's interval supports (§11.2 Step 2).
+ *
+ * The declared tier is a floor that may only tighten, and the measurement is
+ * what it is measured against. See `rule.ts`'s `tier` doc for the B0
+ * measurement behind that, and `defensibleTier` for the floor it is measured
+ * against.
+ */
+export function effectiveTier(rule: QADoctorRule): Tier {
+  if (rule.tier !== undefined) return rule.tier;
+  return measurementTier(rule);
 }
 
 /**
