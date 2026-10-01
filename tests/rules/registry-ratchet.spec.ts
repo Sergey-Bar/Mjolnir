@@ -300,15 +300,59 @@ describe("the nineteen unsubstantiated core claims were demoted, not kept", () =
 
   it("every demotion records the interval that caused it", () => {
     for (const entry of DEMOTED_FOR_UNSUBSTANTIATED_CORE) {
+      // The interval must clear the ceiling — i.e. NOT be evidence for core.
       expect(
         entry.ciHigh,
-        `${entry.ruleId} has no recorded ciHigh`,
+        `${entry.ruleId} has no usable ciHigh. A row whose measurement has been ` +
+          `withdrawn is not evidence for a demotion; NaN > ${CORE_FP_CEILING} is ` +
+          `false, so this fails rather than passing vacuously`,
       ).toBeGreaterThan(CORE_FP_CEILING);
       expect(
         entry.justification.trim().length,
         `${entry.ruleId} has no justification — the reason a rule sits in extended rather than core is the only thing a reader of the matrix has to go on`,
       ).toBeGreaterThan(20);
     }
+  });
+
+  it("the recorded interval IS the live measurement, not a transcription", () => {
+    // The check this was missing. It asserted `ciHigh > CORE_FP_CEILING`, which
+    // every stale value also satisfied — so eighteen of nineteen wrong numbers
+    // sat here for a release, described by prose that had drifted with them
+    // (QA-PY-002 recorded 0.152 against a real 0.2996).
+    //
+    // Comparing to the live `measurementInterval` rather than to a
+    // re-derivation of the same expression catches the things a second copy of
+    // the formula would not: a stale `detectorRevision`, a withdrawn
+    // measurement, or the derivation drifting from `measurementInterval` itself.
+    const mismatches: string[] = [];
+    const unmeasurable: string[] = [];
+    for (const entry of DEMOTED_FOR_UNSUBSTANTIATED_CORE) {
+      const rule = RULES.find((candidate) => candidate.id === entry.ruleId);
+      if (rule === undefined) {
+        throw new Error(
+          `${entry.ruleId} is on the demotion list but not in the registry`,
+        );
+      }
+      const live = measurementInterval(rule);
+      if (live === undefined) {
+        unmeasurable.push(entry.ruleId);
+        continue;
+      }
+      if (Math.abs(live.ciHigh - entry.ciHigh) > 5e-5) {
+        mismatches.push(
+          `${entry.ruleId}: recorded ${entry.ciHigh}, live ${live.ciHigh}`,
+        );
+      }
+    }
+    expect(
+      unmeasurable,
+      "a demoted rule has no valid measurement, so the row citing it cannot be checked",
+    ).toEqual([]);
+    expect(
+      mismatches,
+      "a recorded ciHigh disagrees with the live measurement — the recorded " +
+        "value is what a reader of the matrix would believe",
+    ).toEqual([]);
   });
 
   it("the demotion list is the nineteen, no duplicates", () => {

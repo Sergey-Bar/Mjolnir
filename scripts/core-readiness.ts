@@ -37,6 +37,17 @@
  * to tell, and the two want opposite work. Splitting on `observedFpRate >
  * ceiling` put both in NEEDS-FP-REDUCTION, which condemned detectors the
  * evidence did not yet condemn.
+ *
+ * EARNED, DECLARED and EXPIRED are currently EMPTY, and that is a fact about
+ * the corpus rather than about this code — kept as states because all three are
+ * reachable and deleting a state because its count is zero deletes the branch
+ * that tells a reader the count would otherwise have gone unnoticed:
+ *
+ *   EARNED    — no rule's interval clears the ceiling; the minimum ciHigh
+ *               across the registry is far above 0.1.
+ *   DECLARED  — no rule carries a `corePromotion`, so nothing is in core on a
+ *               maintainer's judgement.
+ *   EXPIRED   — same reason; there is no promotion to lapse.
  */
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";

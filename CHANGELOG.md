@@ -11,6 +11,38 @@ once shipped, so this file is the record of what changed between versions.
 
 ## [Unreleased]
 
+### The demotion ratchet's own numbers were transcribed, not measured
+
+**Eighteen of the nineteen `ciHigh` values in `DEMOTED_FOR_UNSUBSTANTIATED_CORE`
+were wrong.** They were written once at the 6.0 demotion and never re-derived,
+so a re-sample moved the real interval and left the number beside it describing
+a measurement that no longer exists. `QA-PY-002` recorded `0.152` against a real
+`0.2996` — the row said "the largest sample on an observed-nonzero Python rule
+here, and still short of the ceiling" about a rule that was twice as far from the
+ceiling as recorded.
+
+The ratchet that should have caught this only asserted `ciHigh >
+CORE_FP_CEILING`, which every stale value also satisfied. A check on a
+hand-maintained number that tests only its sign cannot fail.
+
+So the number is no longer hand-written. Each row keeps `ruleId` and
+`justification` — the part that is judgement — and `ciHigh` is computed from
+`MEASURED_FP` on load using the same expression `measurementInterval` uses. A
+rule whose measurement has been withdrawn yields `NaN`, and `NaN > 0.1` is
+false, so it fails the check rather than passing it. A new ratchet assertion
+compares each recorded value against the **live** `measurementInterval`, so a
+stale `detectorRevision` or a withdrawn measurement is caught too, and the
+check now fires when a value drifts.
+
+All nineteen remain legitimately demoted — none clears the ceiling — so the
+ratchet stays armed and the tier is still empty.
+
+`docs/CORE-READINESS.md` now records, in the generator rather than only in
+prose, that `EARNED`, `DECLARED` and `EXPIRED` are empty because no rule's
+interval clears the ceiling and no rule carries a `corePromotion`. All three
+states are kept: they are reachable, and deleting a state because its count is
+zero deletes the branch that would have reported a non-zero count.
+
 ### The anti-creep law now governs the rules that actually ship
 
 `ANTI-CREEP-EXCEPTION` — the law's own mechanism for a growth that is not a
