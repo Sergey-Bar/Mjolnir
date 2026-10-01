@@ -93,6 +93,28 @@ function normalise(text: string): string {
 }
 
 /**
+ * The markdown counterpart of `normalise`: the same provenance exclusion, in
+ * the form the rendered prose carries it.
+ *
+ * The rendered `.md` stamps `Baseline commit \`<sha>\`` in its BODY, not in a
+ * JSON metadata key. Comparing that verbatim makes the artifact unmatchable
+ * against itself: committing the regenerated file changes HEAD, which changes
+ * the stamp, which is drift again — an endless regeneration loop that reads as
+ * a permanently failing gate and therefore gets ignored.
+ *
+ * So the stamp is excluded for exactly the reason the JSON one is, and the
+ * reason is the same sentence the report already prints: *a baseSha that does
+ * not match HEAD is an artifact's age, not a lie about its contents*. The
+ * substantive content — every count, every table, every citation — is still
+ * compared verbatim, which is the whole point of locking these files.
+ */
+function normaliseMarkdown(text: string): string {
+  return text
+    .replace(/Baseline commit `[0-9a-f]{7,40}`/g, "Baseline commit `<sha>`")
+    .replace(/\bobserved at\b[^\n]*/gi, "observed at <date>");
+}
+
+/**
  * Dotted paths whose content differs, for a message a maintainer can act on.
  *
  * The paths are LEAF paths, not the top-level container. The first version
@@ -186,13 +208,14 @@ for (const { file, fresh, kind } of ARTIFACTS) {
   const committed = readFileSync(path, "utf8");
   const same =
     kind === "md"
-      ? // Both sides formatted, in memory. The generators run `prettify`
-        // after rendering, so the committed bytes are the FORMATTED ones —
-        // comparing them against a raw render reports drift on every table
-        // forever, which is a gate red for the wrong reason and so ignored.
-        // Same formatter both sides, nothing written.
-        (await prettifyText(committed, path)) ===
-        (await prettifyText(fresh, path))
+      ? // Both sides formatted, in memory, then stripped of the provenance
+        // stamp the body carries — see `normaliseMarkdown`. The generators run
+        // `prettify` after rendering, so the committed bytes are the FORMATTED
+        // ones; comparing them against a raw render reports drift on every
+        // table forever, which is a gate red for the wrong reason and so
+        // ignored. Same formatter both sides, nothing written.
+        normaliseMarkdown(await prettifyText(committed, path)) ===
+        normaliseMarkdown(await prettifyText(fresh, path))
       : normalise(committed) === normalise(fresh);
   if (same) continue;
   const changed =
