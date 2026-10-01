@@ -26,6 +26,7 @@
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { findConfigPath } from "../config/config.js";
+import { anchoredGlobRegExp, anyDepthGlobRegExp } from "../lib/glob.js";
 
 export const DEFAULT_IGNORES: readonly string[] = [
   // Bare names (no `/`) — gitignore semantics: the matcher compiles them
@@ -217,54 +218,12 @@ function compilePattern(raw: string): CompiledPattern | null {
   const wildcards = (pattern.match(/[*?]/g) ?? []).length;
   if (wildcards > LIMITS.maxPatternWildcards) return null;
   const re = pattern.includes("/")
-    ? // eslint-disable-next-line security/detect-non-literal-regexp -- glob compiled from mjolnir.config.json exclude — operator-owned config (§21 trust boundary)
-      new RegExp(`^${globBody(pattern)}$`)
+    ? anchoredGlobRegExp(pattern)
     : // Bare name: gitignore semantics — matches a file or directory
       // with this name at ANY depth (a directory match ignores its
       // contents, since every file path inside contains the segment).
-      // eslint-disable-next-line security/detect-non-literal-regexp -- glob compiled from mjolnir.config.json exclude — operator-owned config (§21 trust boundary)
-      new RegExp(`(?:^|/)${globBody(pattern)}(?:/|$)`);
+      anyDepthGlobRegExp(pattern);
   return { negated, re };
-}
-
-/** The minimal glob dialect as a regex body without anchors. */
-function globBody(glob: string): string {
-  let re = "";
-  for (let i = 0; i < glob.length; i++) {
-    // i < glob.length guarantees the element exists.
-    const c: string = glob[i] as string;
-    if (c === "*") {
-      if (glob[i + 1] === "*") {
-        // Audit S2: `**/` compiles to the segment-aware form — one
-        // bounded unit per path segment, repeated. The old `.*` spanned
-        // slashes (nested-quantifier surface, and looser than gitignore:
-        // it matched `b` inside `a/b/**/c` even when `b` was not a real
-        // segment boundary). `(?:[^/]*/)*` matches zero-or-more WHOLE
-        // segments with no ambiguity between repeats — gitignore
-        // semantics, linear match cost.
-        if (glob[i + 2] === "/") {
-          re += "(?:[^/]*/)*";
-          i += 2;
-        } else {
-          re += ".*";
-          i += 1;
-        }
-      } else {
-        re += "[^/]*";
-      }
-    } else if (c === "?") {
-      re += "[^/]";
-    } else {
-      re += c.replace(/[.+^${}()|[\]\\]/g, "\\$&");
-    }
-  }
-  return re;
-}
-
-/** Anchored full-path glob — the primitive the matcher builds on. */
-export function globToRegExp(glob: string): RegExp {
-  // eslint-disable-next-line security/detect-non-literal-regexp -- glob compiled from mjolnir.config.json exclude — operator-owned config (§21 trust boundary)
-  return new RegExp(`^${globBody(glob)}$`);
 }
 
 /** Defaults-only matcher for callers that have no scan context. */

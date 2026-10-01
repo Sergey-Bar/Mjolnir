@@ -11,6 +11,39 @@ once shipped, so this file is the record of what changed between versions.
 
 ## [Unreleased]
 
+### Three places a claim was checked by something other than the thing it claimed
+
+- **CONVERGENT did not mean convergence.** `groupByRootCause` fell back to
+  `ruleId`, and nothing in the tree assigns `rootCauseId` — the machine
+  contract reports it `null` on every finding — so the key for every group was
+  the rule. N independent defects from one rule across N files rendered as
+  "CONVERGENT — N findings share root cause QA-PW-002", which is the inverse of
+  the claim: several findings being one thing versus several findings sharing a
+  rule id. The fallback is now the finding fingerprint, `rootCauseId` still
+  wins the moment anything populates it, and the listed identities are distinct
+  — the old fallback made a three-finding group list one id three times, so a
+  consumer could not tell the members apart, and the same-file AMPLIFIED
+  conclusion it suppressed was being lost as collateral.
+- **Two glob compilers disagreed, and a gate used the wrong one.** `ignores.ts`
+  and `scan-pipeline.ts` each compiled globs, and they differed on `?` (a
+  metacharacter in one, a literal in the other) and on both forms of `**`. The
+  mass-suppression integrity gate reached into `ignores.ts` for its compiler
+  while the scan applied suppressions through `scan-pipeline.ts` — so it
+  measured the suppressed set in a different dialect than the one that
+  suppressed it, counting findings the scan never suppressed. Both now compile
+  through `src/lib/glob.ts`, which is the only implementation of the dialect.
+  One behaviour narrows: config `exclude` no longer reads `?` as a wildcard. No
+  shipped default or repository config uses `?`, and `*`/`**` are unchanged.
+- **An unparseable expiry was perpetual.** `new Date("2026-13-45").getTime()`
+  is `NaN`, and every comparison against `NaN` is false — so a suppression with
+  a typo in its expiry date was never reported expired and suppressed findings
+  forever. A date nobody can read now counts as expired; a suppression that
+  genuinely never expires must say so by omitting `expires`, which is a
+  decision someone made on purpose.
+
+`detectMassSuppression`'s threshold boundary was already `>=`; what was missing
+is that the boundary was stated nowhere, so "50%" read as "above 50%".
+
 ### Deletions, and one that was hiding another
 
 - **`src/v6/tool-coverage.ts` deleted.** `ScanResult.toolCoverage` was declared

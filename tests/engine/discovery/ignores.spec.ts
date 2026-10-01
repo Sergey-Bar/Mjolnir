@@ -16,36 +16,48 @@ import { describe, expect, it } from "vitest";
 import {
   DEFAULT_IGNORES,
   createIgnoreMatcher,
-  globToRegExp,
   isDefaultIgnored,
   isLintFixtureDir,
 } from "../../../src/discovery/ignores.js";
+import { anchoredGlobRegExp } from "../../../src/lib/glob.js";
 
-describe("globToRegExp (anchored primitive)", () => {
+describe("anchoredGlobRegExp (the shared glob compiler)", () => {
   it("`**/` matches zero or more leading path segments", () => {
-    const re = globToRegExp("**/__fixtures__/**");
+    const re = anchoredGlobRegExp("**/__fixtures__/**");
     expect(re.test("__fixtures__/a.ts")).toBe(true);
     expect(re.test("pkg/sub/__fixtures__/a.ts")).toBe(true);
     expect(re.test("src/a.ts")).toBe(false);
   });
 
   it("trailing `**` matches anything including slashes", () => {
-    expect(globToRegExp("dist/**").test("dist/nested/deep/x.js")).toBe(true);
+    expect(anchoredGlobRegExp("dist/**").test("dist/nested/deep/x.js")).toBe(
+      true,
+    );
   });
 
   it("single `*` does not cross a path separator", () => {
-    const re = globToRegExp("*.min.js");
+    const re = anchoredGlobRegExp("*.min.js");
     expect(re.test("app.min.js")).toBe(true);
     expect(re.test("vendor/app.min.js")).toBe(false);
   });
 
-  it("`?` matches exactly one non-separator character", () => {
-    expect(globToRegExp("a?.ts").test("ab.ts")).toBe(true);
-    expect(globToRegExp("a?.ts").test("a/.ts")).toBe(false);
+  it("`?` is a literal, in every surface", () => {
+    // This test asserted the ignores dialect: `?` as "exactly one non-
+    // separator character". The scan's dialect treated `?` as a literal
+    // question mark, and the two disagreed — so a suppression the scan never
+    // honoured was counted as suppressed by the integrity gate.
+    //
+    // One dialect now, and it is the scan's, because the scan is what
+    // suppresses. This is a narrowing for config `exclude`: no shipped default
+    // uses `?` and this repository's own config does not either, so nothing
+    // in the wild relied on the wildcard reading. `*` and `**` are the
+    // metacharacters, and they are documented in src/lib/glob.ts.
+    expect(anchoredGlobRegExp("a?.ts").test("a?.ts")).toBe(true);
+    expect(anchoredGlobRegExp("a?.ts").test("ab.ts")).toBe(false);
   });
 
   it("escapes regex metacharacters in literal segments", () => {
-    const re = globToRegExp("package-lock.json");
+    const re = anchoredGlobRegExp("package-lock.json");
     expect(re.test("package-lock.json")).toBe(true);
     expect(re.test("packageXlockYjson")).toBe(false);
   });

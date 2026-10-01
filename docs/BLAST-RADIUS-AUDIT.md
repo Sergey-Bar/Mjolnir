@@ -7,12 +7,12 @@ contract enforces: **every external import in src/ must belong to the
 allowlist**, and the shipped surface (adapters, rules, flags, formats, exit
 codes) must match this document exactly.
 
-## Inventory: 308 files, 75553 LOC
+## Inventory: 309 files, 75663 LOC
 
 | Area              | Files | LOC   |
 | ----------------- | ----- | ----- |
 | src/rules         | 89    | 12997 |
-| src/engine        | 44    | 12061 |
+| src/engine        | 44    | 12090 |
 | src/commands      | 33    | 11510 |
 | src/v6            | 10    | 6199  |
 | src/(root)        | 8     | 3812  |
@@ -21,19 +21,19 @@ codes) must match this document exactly.
 | src/ledger        | 1     | 2922  |
 | src/certification | 6     | 2630  |
 | src/frameworks    | 5     | 2015  |
-| src/discovery     | 10    | 1817  |
 | src/adapters      | 11    | 1778  |
+| src/discovery     | 10    | 1777  |
 | src/gaps          | 2     | 1390  |
 | src/integrations  | 9     | 1356  |
 | src/release       | 7     | 1087  |
 | src/mcp           | 3     | 825   |
 | src/brand         | 3     | 817   |
+| src/lib           | 9     | 719   |
 | src/plugins       | 4     | 715   |
 | src/store         | 2     | 665   |
-| src/lib           | 8     | 600   |
 | src/bench         | 4     | 592   |
 | src/config        | 3     | 559   |
-| src/scorer        | 3     | 503   |
+| src/scorer        | 3     | 505   |
 | src/traceability  | 2     | 441   |
 | src/scope         | 2     | 427   |
 | src/trust         | 2     | 362   |
@@ -51,7 +51,7 @@ codes) must match this document exactly.
 | src/rules/shared/positions      | 62        |
 | src/cli-io                      | 20        |
 | src/lib/safe-json               | 19        |
-| src/lib/compare                 | 18        |
+| src/lib/compare                 | 19        |
 | src/forensics/types             | 18        |
 | src/rules/index                 | 16        |
 | src/reporter/ui                 | 15        |
@@ -59,8 +59,8 @@ codes) must match this document exactly.
 | src/lib/fs-atomic               | 13        |
 | src/rules/measured-fp.generated | 13        |
 | src/engine/degradation-ledger   | 12        |
-| src/discovery/ignores           | 11        |
 | src/rules/measurement           | 11        |
+| src/discovery/ignores           | 10        |
 
 ## External dependency allowlist (containment)
 

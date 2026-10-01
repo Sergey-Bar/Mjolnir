@@ -8,7 +8,7 @@
 
 import { createHash } from "node:crypto";
 
-import { globToRegExp } from "../discovery/ignores.js";
+import { anyDepthGlobRegExp, anchoredGlobRegExp } from "../lib/glob.js";
 import { compareCodePoints } from "../lib/compare.js";
 
 export interface SuppressionEntry {
@@ -78,8 +78,16 @@ export function detectMassSuppression(
 ): MassSuppressionResult {
   const matchers = suppressions.map((suppression) => ({
     ruleId: suppression.ruleId,
+    // One compiler, one dialect. This used to reach into
+    // `discovery/ignores.ts` for `globToRegExp` while the SCAN applied
+    // suppressions through `pathMatchesGlob` in `scan-pipeline.ts` — two
+    // compilers that disagreed on `?` and on `**`. So this gate measured a
+    // suppressed set using a different dialect than the one that suppressed
+    // them: a suppression the scan honoured but this file could not see
+    // counted as unsuppressed, and the ratio below under-reported. Both now
+    // come from `src/lib/glob.ts`.
     patterns: (suppression.files ?? []).map((glob) =>
-      globToRegExp(glob.replaceAll("\\", "/")),
+      glob.includes("/") ? anchoredGlobRegExp(glob) : anyDepthGlobRegExp(glob),
     ),
     ruleOnly: !suppression.files?.length,
   }));
@@ -94,6 +102,12 @@ export function detectMassSuppression(
   }).length;
   const totalFindings = findings.length;
   const ratio = totalFindings === 0 ? 0 : suppressedCount / totalFindings;
+  // `>= threshold`, documented. The code said the same thing, but the docstring
+  // said "unusually large fraction ... default threshold is 50%" and the field
+  // is named `threshold` — the one thing a reader cannot infer is where the
+  // boundary sits, so it is stated rather than implied. Exactly at the
+  // threshold is not "unusual", it is the limit; flagging it gives the gate a
+  // reason to exist at that number instead of above it.
   return {
     isMassSuppression: ratio >= threshold,
     suppressedCount,
@@ -121,6 +135,16 @@ export function detectUnknownRuleSuppressions(
 
 /**
  * Find suppressions whose expiration date has passed.
+ *
+ * An unparseable `expires` is EXPIRED, not perpetual.
+ *
+ * `new Date("whenever").getTime()` is `NaN`, and every comparison against
+ * `NaN` is false — so the filter below returned `false` for a suppression with
+ * a typo in its date, and a suppression meant to expire "2026-13-45" would
+ * have suppressed findings forever. NaN is what a malformed date *is*: the
+ * comparison has no opinion, so the gate does. A date nobody can read is not a
+ * date nobody has to honour, and "this suppression never expires" must be
+ * written as an absent `expires`, which is a decision someone made on purpose.
  */
 export function detectExpiredSuppressions(
   suppressions: SuppressionEntry[],
@@ -129,7 +153,9 @@ export function detectExpiredSuppressions(
   const nowMs = now.getTime();
   return suppressions.filter((s) => {
     if (s.expires === undefined) return false;
-    return new Date(s.expires).getTime() <= nowMs;
+    const expiry = new Date(s.expires).getTime();
+    if (Number.isNaN(expiry)) return true;
+    return expiry <= nowMs;
   });
 }
 
