@@ -2,7 +2,7 @@
 
 **Generated — do not edit by hand.** Regenerate: `npm run docs:v6-inventory`.
 
-Baseline commit `309d744d3be3d0515b0674a023c958ff15cf11cd` · package version `5.1.0` · published stable `5.1.0`.
+Baseline commit `619a8073b62fd44e125080a5f004b809e0ff745f` · package version `5.1.0` · published stable `5.1.0`.
 
 This is the truth baseline v6 is built on. It is deliberately blunt: the
 interesting part of a current-state inventory is what the product _cannot_

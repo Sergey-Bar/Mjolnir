@@ -28,19 +28,17 @@
   "generatedAt": "2026-10-01",
   "identity": {
     "state": "WORKING_CANDIDATE",
-    "baseSha": "309d744d3be3d0515b0674a023c958ff15cf11cd",
+    "baseSha": "619a8073b62fd44e125080a5f004b809e0ff745f",
     "candidateSha": null,
     "version": "5.1.0",
     "packageSha256": "e8bb7cdd2b08ce11936bc20574e6a89e4227b7e79e48b9676426a1015614adb5",
     "lockfileSha256": "62f301d32684da57d8bfa6c7eae0dd9860e7bbd1c595e8b251efbc468adf7cb6",
-    "workingTreeSha256": "8b1e007cbc6a9cc838c4fbda77dd74512e40ed838fcd0fb74d389a706464c0c3",
-    "changedPathCount": 24,
+    "workingTreeSha256": "e8f7a42331ef5c0217a00903b3b0d8b908a04e64535acd72cd4e7450e466cefb",
+    "changedPathCount": 10,
     "supportEnvelope": "self-hosted; hosted services require explicit consent and separate proof",
     "worktreeInventory": {
       "changedPaths": [
         "CHANGELOG.md",
-        "docs/BLAST-RADIUS-AUDIT.md",
-        "docs/CARVE-MANIFEST.json",
         "docs/CI-MATRIX.json",
         "docs/DOMAIN-COVERAGE.json",
         "docs/FRAMEWORK-MATRIX.json",
@@ -49,26 +47,12 @@
         "docs/V6-CURRENT-STATE.md",
         "docs/V6-GAP-MATRIX.md",
         "docs/capability-registry.json",
-        "docs/v6-inventory.json",
-        "scripts/check-unimported-modules.mjs",
-        "src/integrations/github/github-permissions.ts",
-        "src/integrations/github/stale-guard.ts",
-        "src/release/pack-audit.ts",
-        "src/release/sbom.ts",
-        "src/trust/invariants.ts",
-        "tests/config/coverage-exclusion-guard.spec.ts",
-        "tests/integrations/github/github-permissions.spec.ts",
-        "tests/integrations/github/stale-guard-ti020.spec.ts",
-        "tests/integrations/github/stale-guard.spec.ts",
-        "tests/release/pack-audit.spec.ts",
-        "tests/release/sbom.spec.ts"
+        "docs/v6-inventory.json"
       ],
       "untrackedPaths": []
     },
     "dirtyFiles": [
       "CHANGELOG.md",
-      "docs/BLAST-RADIUS-AUDIT.md",
-      "docs/CARVE-MANIFEST.json",
       "docs/CI-MATRIX.json",
       "docs/DOMAIN-COVERAGE.json",
       "docs/FRAMEWORK-MATRIX.json",
@@ -77,19 +61,7 @@
       "docs/V6-CURRENT-STATE.md",
       "docs/V6-GAP-MATRIX.md",
       "docs/capability-registry.json",
-      "docs/v6-inventory.json",
-      "scripts/check-unimported-modules.mjs",
-      "src/integrations/github/github-permissions.ts",
-      "src/integrations/github/stale-guard.ts",
-      "src/release/pack-audit.ts",
-      "src/release/sbom.ts",
-      "src/trust/invariants.ts",
-      "tests/config/coverage-exclusion-guard.spec.ts",
-      "tests/integrations/github/github-permissions.spec.ts",
-      "tests/integrations/github/stale-guard-ti020.spec.ts",
-      "tests/integrations/github/stale-guard.spec.ts",
-      "tests/release/pack-audit.spec.ts",
-      "tests/release/sbom.spec.ts"
+      "docs/v6-inventory.json"
     ]
   },
   "claimRegistry": {

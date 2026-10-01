@@ -11,6 +11,38 @@ once shipped, so this file is the record of what changed between versions.
 
 ## [Unreleased]
 
+### Two subtractions declined, because the surface they would remove says something the replacement does not
+
+**`mjolnir capability`: delete the M0–M5 ladder, render the tier instead.** The
+two are not two names for one thing. `M0_UNKNOWN … M4_CORPUS_VERIFIED` is an
+_evidence_ axis — how far a capability's detection has been proven — and the tier
+(`core`/`extended`/`quarantine`) is a _shipping_ axis — whether it appears in a
+default scan. They are orthogonal in exactly the case that matters: a capability
+can be corpus-verified and still quarantine, and does. `QA-TEST-001` is
+`M2_IMPLEMENTED` with a measured 60% FP over n=20; the maturity ladder says how
+well its detection is built, the tier says it must not gate a build, and neither
+answer implies the other.
+
+Rendering the tier "instead" would also delete the `next level` line — the
+ladder's actual product, which names the next rung and what it requires
+(`M3_FIXTURE_VERIFIED` — "positive + negative + boundary + adversarial fixtures
+pass deterministically in CI"). That is roadmap information stated as evidence,
+and it is the part a maintainer uses. The arm already says the right thing about
+itself: "shown at the level the machine can prove, or not shown at all."
+
+**Cut the PR tier from 28 gates to 8.** This is a velocity trade, not a defect,
+and it runs opposite to the rest of this release: everything above restored
+verification that had silently stopped running — a suite with 48 failures, a
+typecheck with 8 errors, a coverage ratchet that could not evaluate, an anti-creep
+ratchet that switched itself off at release time. Removing 20 gates from
+per-push verification to save eleven minutes on a machine, while leaving CI's own
+`required` set as the binding one, is a decision about which machine developers
+use. It should be made as that decision, explicitly, not as cleanup.
+
+Five of the plan's nine Phase C items are now either done or refuted, and three
+of the refutations shared a cause: each was written from a directory name or an
+orphan-list reason rather than from reading what the code actually does.
+
 ### Four unwired modules deleted, two of them second implementations of live ones
 
 C1, the orphan list. Deleting an unwired module is only safe when the reason says
