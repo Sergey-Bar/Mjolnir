@@ -1,5 +1,5 @@
 /**
- * `mjolnir baseline` / `mjolnir diff` — Sprint 6 Task 24
+ * A shared finding-set READER. Neither verb it used to serve survives the v6 CLI collapse (plan §3): `baseline` and `diff` are both retired, and the capability they shared is now `mjolnir scan --scope changed`.
  * (Master-Stabilization-Plan.md).
  *
  * Implements Plan.md Phase 10 / §24's key insight: existing debt should
@@ -306,7 +306,9 @@ export function renderBaselineSaved(
       `Replaced an existing baseline — the previous one was saved to ${replaced.backupPath}.`,
     );
   }
-  lines.push(nextStep("mjolnir diff", ui) + " — see only what's new.");
+  lines.push(
+    nextStep("mjolnir scan --scope changed", ui) + " — see only what's new.",
+  );
   return lines.join("\n");
 }
 
@@ -318,7 +320,8 @@ export function renderBaselineDiff(diff: BaselineDiff): string {
   if (!diff.hasBaseline) {
     lines.push("UNKNOWN — no baseline found.");
     lines.push(
-      nextStep("mjolnir baseline", ui) + " to capture a comparison point.",
+      "There is no verb that captures one any more: `mjolnir scan --scope changed`\n" +
+        "compares against the merge-base, which is the comparison you wanted.",
     );
     return lines.join("\n");
   }

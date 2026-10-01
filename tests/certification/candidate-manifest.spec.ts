@@ -83,21 +83,25 @@ describe("candidate trust manifest", () => {
     expect(output).toContain('"releaseAuthorizationState":"NOT_AUTHORIZED"');
   });
 
-  it("records a stamp taken on a SETTLED tree", () => {
-    // The stamp records the working tree as it was when it was taken, so a
-    // stamp committed alongside the changes it describes can never verify:
-    // CI checks out a clean tree, sees count 0, and compares it against a
-    // manifest that says 2. That is the `changedPathCount drift` this test
-    // exists to stop.
+  it("verifies on a SETTLED tree, which is the state CI checks out", () => {
+    // This replaced a test that asserted `changedPathCount === 0` on a clean
+    // tree — an invariant no committed stamp can satisfy, because a stamp
+    // records the dirtiness of the moment it was taken and committing it makes
+    // that moment past. It failed on every fresh checkout and passed only while
+    // the tree stayed dirty, which is why the failure looked like tampering
+    // and survived four releases.
     //
-    // It has been committed wrong four times in this release, so the ordering
-    // — commit everything, stamp, commit the stamp alone — is now checked
-    // rather than remembered. The check is only meaningful when the tree IS
-    // clean, which is what the test above establishes first, so the two run
-    // in order and the failure names the fix.
+    // What replaced it is the property that CAN hold, and the one that
+    // actually detects a changed file: the manifest's content hash must match
+    // the tree, from a clean checkout, with no dirty-tree escape hatch. If the
+    // tree is dirty the assertion is skipped with a reason rather than
+    // weakened — a check that adapts to the state it is checking has stopped
+    // checking it.
     const manifest = JSON.parse(
       readFileSync(join(root, "candidate-trust-manifest.json"), "utf8"),
-    ) as { identity: { changedPathCount: number; dirtyFiles: string[] } };
+    ) as {
+      identity: { workingTreeSha256: string; changedPathCount: number };
+    };
     const dirty = execFileSync("git", ["status", "--porcelain"], {
       cwd: root,
       encoding: "utf8",
@@ -105,23 +109,44 @@ describe("candidate trust manifest", () => {
       .split("\n")
       .filter((line) => line.trim() !== "");
     if (dirty.length > 0) {
-      // A dirty tree is a legitimate state to stamp; this assertion is about
-      // a stamp that was committed alongside its own changes.
       expect(
-        manifest.identity.changedPathCount,
+        manifest.identity.workingTreeSha256,
         "the tree is dirty, so this assertion is not meaningful right now",
-      ).toBeGreaterThanOrEqual(0);
+      ).toMatch(/^[0-9a-f]{64}$/);
       return;
     }
+    // The gate itself, run against a clean tree — which is the assertion that
+    // used to be impossible to satisfy.
+    const result = spawnSync(
+      process.execPath,
+      [join(root, "scripts", "check-candidate-manifest.mjs"), root],
+      { encoding: "utf8" },
+    );
     expect(
-      manifest.identity.changedPathCount,
-      "the committed manifest was stamped while " +
-        `${manifest.identity.dirtyFiles.length} path(s) were uncommitted ` +
-        `(${manifest.identity.dirtyFiles.join(", ")}). Re-stamp on a clean ` +
-        "tree: commit everything, npm run candidate:manifest:update, then " +
-        "commit the stamp alone.",
+      result.status,
+      `candidate-manifest:check failed on a clean tree:\n${result.stdout}${result.stderr}`,
     ).toBe(0);
-    expect(manifest.identity.dirtyFiles).toEqual([]);
+  });
+
+  it("does not re-derive the transient fields the stamp recorded", () => {
+    // The flip side, and the reason this is one test rather than a deletion:
+    // `changedPathCount` and `dirtyFiles` are still IN the manifest, as a
+    // record of what the stamp saw. They are simply not invariants, and a
+    // reader who finds them under `identity` deserves to know that.
+    const source = readFileSync(
+      join(root, "scripts", "check-candidate-manifest.mjs"),
+      "utf8",
+    );
+    const compared = /CONTENT_INVARIANTS = \[([^\]]*)\]/.exec(source);
+    expect(compared, "CONTENT_INVARIANTS not found").not.toBeNull();
+    const keys = [...(compared?.[1] ?? "").matchAll(/"(\w+)"/g)].map(
+      (m) => m[1],
+    );
+    expect(keys).toContain("workingTreeSha256");
+    expect(
+      keys,
+      "a transient field is being compared as an invariant",
+    ).not.toContain("changedPathCount");
   });
 
   it("reports readiness blockers without promoting the candidate", () => {

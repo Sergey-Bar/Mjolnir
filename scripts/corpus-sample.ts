@@ -404,7 +404,7 @@ async function main(): Promise<void> {
   );
   console.log(`\nDone. ${totalSamples} samples across ${totalRules} rules.`);
   console.log("Next: classify verdicts in tests/corpus/verdicts/*.jsonl, then");
-  console.log("run `npm run fp-audit:generate` to compute FP rates.");
+  console.log("run `npm run generate-fp-audit-table` to compute FP rates.");
 }
 
 await main();

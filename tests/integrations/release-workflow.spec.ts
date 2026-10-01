@@ -106,7 +106,7 @@ describe("release candidate workflow", () => {
       "${{ steps.context.outputs.version }}",
     );
     expect(run).toContain(
-      'npm run changelog:check -- --expect-version "$VERSION"',
+      'npm run check-version -- --expect-version "$VERSION"',
     );
     expect(run).toContain('git diff --quiet "$BASE_REF" HEAD -- src/rules');
     expect(run).toContain("--rules-touched");
@@ -190,7 +190,7 @@ describe("release candidate workflow", () => {
       contents: "read",
       "id-token": "write",
     });
-    expect(job?.needs).toEqual(["verify", "tag"]);
+    expect(job?.needs).toEqual(["contract-verify", "tag"]);
     expect(job?.env?.NPM_CONFIG_USERCONFIG).toBe("/dev/null");
 
     const upgrade = stepIndex("publish-npm", (step) =>

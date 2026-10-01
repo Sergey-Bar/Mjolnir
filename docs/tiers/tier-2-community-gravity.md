@@ -51,7 +51,11 @@ Cheaper than ads, generates proof-of-value artifacts publicly.
 The Playwright reporter integration deserves emphasis: it puts Mjölnir
 INSIDE every Playwright run without changing any workflow.
 
-## 10. `mjolnir init --interactive` Onboarding Wizard ✅ DONE — `src/commands/init.ts`
+## 10. Onboarding Wizard ✅ DONE — `src/commands/init.ts`
+
+> **Retired in the v6 carve.** The `init` verb is gone: the config is
+> auto-detected, so a wizard could only ever be a step a reader had to know
+> about and could skip.
 
 Walks through: framework detection results → confirm critical paths →
 choose gate levels → generates config + CI + agent instructions + badge.

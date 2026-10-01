@@ -2,11 +2,22 @@ import { isValidSemver } from "./version-consistency.js";
 
 /**
  * Surfaces that report WHICH BUILD IS RUNNING. These read the working version.
+ *
+ * `capability-manifest.json` joined this list in 6.1 as the resolution of a
+ * defect the config-consumer gate surfaced: the file asserted
+ * `"version": "4.0.0"` while the package was at 5.0.0, and nothing read it —
+ * so it was a capability claim the repository was not keeping. Two options
+ * were available, delete it or make it true. It is the product's
+ * "what this is and is not" manifest, the `notProvided` list is cited by
+ * `docs/M26-SUPPORT-MATRIX.json`, and that is a real record; so it is kept and
+ * bound to the version check instead. A manifest that can drift is worse than
+ * no manifest.
  */
 export const IDENTITY_SURFACE_PATHS = [
   "src/engine/version.ts",
   "src/mcp/server.ts",
   "src/reporter/sarif.ts",
+  "capability-manifest.json",
 ] as const;
 
 /**
@@ -19,7 +30,6 @@ export const INSTALL_SURFACE_PATHS = [
   "smithery.yaml",
   "site/.vitepress/theme/Home.vue",
   "README.md",
-  "README.br.md",
   "site/guide/getting-started.md",
   "site/guide/ci.md",
   "site/guide/forensics.md",
@@ -37,7 +47,6 @@ export const INSTALL_SURFACE_PATHS = [
  */
 export const READER_FACING_SURFACES: ReadonlySet<string> = new Set<string>([
   "README.md",
-  "README.br.md",
   "docs/DISTRIBUTION-KIT.md",
   "site/guide/getting-started.md",
   "site/guide/ci.md",
@@ -133,6 +142,7 @@ export function checkVersionSurfaceEnvelope(
       "src/reporter/sarif.ts",
       ['import { ENGINE_VERSION } from "../engine/version.js"'],
     ],
+    ["capability-manifest.json", [`"version": "${version}"`]],
     // --- install surfaces: the published version ------------------------
     ["action.yml", []],
     [
@@ -149,7 +159,6 @@ export function checkVersionSurfaceEnvelope(
       ],
     ],
     ["README.md", [`mjolnir-qa@${installVersion}`]],
-    ["README.br.md", [`mjolnir-qa@${installVersion}`]],
     ["site/guide/getting-started.md", [`npx mjolnir-qa@${installVersion}`]],
     ["site/guide/ci.md", [`mjolnir-qa@${installVersion}`]],
     ["site/guide/forensics.md", [`npx mjolnir-qa@${installVersion} forensics`]],
@@ -306,6 +315,13 @@ export function synchronizeVersionSurfaceEnvelope(
     'export const ENGINE_VERSION = "',
     version,
   );
+
+  // The capability manifest asserts what this build IS as well as what it
+  // refuses to claim, so its version follows the working version. Written
+  // through the same replaceValue path as every other identity surface, which
+  // is what makes `npm run version:surface:sync` able to fix the drift rather
+  // than only report it.
+  replaceValue("capability-manifest.json", '"version": "', version);
 
   // Identity surfaces follow the working version.
   replaceValue(

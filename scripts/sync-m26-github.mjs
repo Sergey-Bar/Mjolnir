@@ -268,6 +268,24 @@ const dispositionRows = issues.map((row) => {
     state: row.state,
     state_reason: row.state_reason ?? null,
     canonical_disposition: disposition,
+    /**
+     * WHERE the disposition came from, as a field rather than as a convention.
+     *
+     * `GAP-M26-002`: dispositions were once a pure function of the GitHub
+     * `state` field, which contains no engineering judgement, and the fix was
+     * certified against the artifacts the script produced. The judgement file
+     * fixed the substance; this field makes the PROVENANCE legible, so a
+     * consumer can tell a decision from a fallback without parsing prose for
+     * the word "untriaged".
+     *
+     *   `human`   — a person recorded a disposition, a reason and a
+     *               verification in `docs/issue-dispositions.json`.
+     *   `default` — nobody did, so the row is CARRY_FORWARD and stays open.
+     *               A `default` row may not claim a gating disposition; that
+     *               is the whole point, and `check-disposition-provenance`
+     *               enforces it.
+     */
+    disposition_source: entry?.disposition ? "human" : "default",
     // Why this class, in the words of whoever decided it. Empty only when
     // the issue is untriaged, and then the row says so.
     reason:
@@ -324,16 +342,70 @@ const snapshot = {
     not_planned_closures: notPlanned,
   },
 };
+/**
+ * Refuse to overwrite a committed ledger with a smaller one.
+ *
+ * This script regenerates two committed artifacts from whatever `gh api`
+ * returns. `runGh` throws on a non-zero exit, so a failed fetch is loud — but
+ * an authenticated call that returns an EMPTY result is not a failure, and it
+ * produced exactly that outcome here: `docs/M26-ISSUE-DISPOSITIONS.jsonl` went
+ * from 429 rows to a single newline, in a commit, and the only thing that
+ * noticed was `gates:disposition-source` reporting "has no rows — a schema
+ * change must not silently reduce this gate to zero rows".
+ *
+ * A network-shaped source must never be able to DELETE a committed record. The
+ * ledger is the evidence for 429 dispositions; regenerating it from a network
+ * response means the network can remove any of them without a human, which is
+ * the same defect as a gate that can be silenced by an environment variable.
+ *
+ * Shrinking is legitimate — issues get closed and dropped from the milestone —
+ * so this is not a prohibition. It makes the shrink an ACT that has to be
+ * named, which is the difference between a deletion and an accident.
+ */
+function refuseLedgerShrink(artifactPath, next, what) {
+  if (!existsSync(artifactPath)) return;
+  const previous = readFileSync(artifactPath, "utf8")
+    .split("\n")
+    .filter((line) => line.trim()).length;
+  if (next >= previous) return;
+  if (process.argv.includes("--allow-shrink")) {
+    console.warn(
+      `sync-m26-github: ${what} shrank ${previous} → ${next} rows, permitted by --allow-shrink`,
+    );
+    return;
+  }
+  throw new Error(
+    `refusing to write ${what}: the regenerated ledger has ${next} rows and the ` +
+      `committed one has ${previous}. A network-shaped source must not be able to ` +
+      `delete a committed record — check that \`gh\` is authenticated and that the ` +
+      `milestone still has the issues you expect, or pass --allow-shrink if the ` +
+      `reduction is real.`,
+  );
+}
+const dispositionBody = `${dispositionRows.map((row) => JSON.stringify(row)).join("\n")}\n`;
+refuseLedgerShrink(
+  join(root, "docs/M26-ISSUE-DISPOSITIONS.jsonl"),
+  dispositionRows.length,
+  "docs/M26-ISSUE-DISPOSITIONS.jsonl",
+);
 writeFileSync(
   join(root, "docs/M26-ISSUE-DISPOSITIONS.jsonl"),
-  `${dispositionRows.map((row) => JSON.stringify(row)).join("\n")}\n`,
+  dispositionBody,
   "utf8",
 );
-writeFileSync(
-  join(root, "docs/M26-GITHUB-SNAPSHOT.json"),
-  `${JSON.stringify(snapshot, null, 2)}\n`,
-  "utf8",
+
+// The snapshot gets the same guard, and it is not a formality: the run that
+// emptied the disposition ledger emptied THIS in the same commit — 429 issues to
+// zero — and `issue-disposition:check` is the gate that reported 429 phantom
+// dispositions afterwards. Two committed evidence files, one unguarded
+// generator, one invocation.
+const snapshotPath = join(root, "docs/M26-GITHUB-SNAPSHOT.json");
+refuseLedgerShrink(
+  snapshotPath,
+  issues.length,
+  "docs/M26-GITHUB-SNAPSHOT.json",
 );
+writeFileSync(snapshotPath, `${JSON.stringify(snapshot, null, 2)}\n`, "utf8");
 /**
  * The gate is now clearable, which is the point.
  *

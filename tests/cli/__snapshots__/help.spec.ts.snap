@@ -15,20 +15,29 @@ Everything else is optional.
 
   mjolnir [path]                 full-repo scan + WORTHINESS score
   mjolnir explain <RULE-ID>      what/why/fix + measured FP rate for one rule
-  mjolnir rules --unmeasured     the rules running on assumption, not measurement
+  mjolnir explain --list --unmeasured     the rules running on assumption, not measurement
 
 Options:
   --json                  machine-readable output
   --format sarif          SARIF 2.1 for GitHub Code Scanning
   --format codequality    GitLab Code Quality report (MR widget artifact)
   --format mermaid        test-architecture diagram
+  --format trust-report   the terminal trust report (the default)
+  --format pr-comment     a scoped PR comment as Markdown
+  --format github-summary
+    a GitHub Actions step summary
+  --suppressions          print the suppression ledger and stop
+  --suppression-gate      fail on an ungoverned suppression (expired, reasonless,
+                          orphaned)
+  --policy                print the scoring policy in force
   --tone blunt            blunter, pattern-mocking messages
   --verbose               show all findings
   --scope changed         only new/changed lines vs merge-base
   --max-duration <sec>    analysis time budget
   --width <cols>          override terminal width
   --ascii / --no-ascii    force glyph mode
-  --strict                include quarantine-tier rules
+  --strict                include quarantine-tier rules (advisory only — a quarantined
+                          detector never gates; see docs/PRODUCT-DECISIONS.md D-2)
   --debug                 print swallowed rule crashes
   --cache                 reuse local per-file verdicts
   --no-progress           no live scan-progress line on stderr
@@ -40,114 +49,48 @@ Options:
   -v, --version           print the installed version and exit
   -h, --help              show this help
 
-Subcommands — Scan:
-
 Subcommands — CI & PRs:
   ci install [--gate advisory|error|warning] [--no-action] [--force]
     generate the PR workflow (advisory by default; action-based; scan + annotations +
     gate)
-  summary [mjolnir.json] [--stdout] [--path-prefix <dir>]
-    CI annotations + step summary from a saved --json report
-  pr-comment [path] [--base <ref>]                render a scoped PR comment (Markdown)
-  badge [path]                                    shields.io endpoint JSON + snippet
-                                                  from a scan
-  trust-report [path]                             deterministic, self-contained Trust
-                                                  Artifact (md + json)
-  impact [path] [--since <ref>]                   what a commit introduced vs resolved,
-                                                  since a prior commit
-  baseline [path]                                 snapshot the current finding set as
-                                                  the comparison point
-  diff [path] [--json] [scan flags]               lifecycle diff vs the committed
-                                                  baseline
-  verify [path] [--json] [scan flags]             agent-loop digest:
-                                                  resolved/new/unchanged vs baseline +
-                                                  score delta
-  ci-integrity [path] [--policy <file>] [--json]  verify CI workflow integrity and
-                                                  suppression governance
-  ci-adapter <github|gitlab|jenkins> [target]     generate GitHub Actions, GitLab CI, or
-                                                  Jenkins templates
   policy <init|validate|check> [path] [--policy <file>]
     initialize, validate, or check team quality policy gates
-
-Subcommands — Forensics:
-  forensics <test-results-dir-or-report-file> [--no-flaky-md]
-    runtime evidence from a real run: retries, flakes, durations
-  triage <test-results-dir-or-report-file> [--no-md]
-    flaky-triage proposal + TRIAGE.md meeting artifact
-  pw-report <playwright-report.json | test-results-dir>
-    Playwright run summary (counts, true flakes, slowest tests)
-  doctor:playwright [path]                        Playwright deep scan + Selector Health
-                                                  report
-
-Subcommands — Mutation evidence:
-  mutation <mutation-report> [--scan .]           mutation-evidence reader:
-                                                  survived-mutant leaderboard + E1→E2
-                                                  derivation
 
 Subcommands — Maintenance:
   fix [path] [--dry-run]                          apply safe auto-fixes with proof
                                                   (re-scan verifies each)
-  debt [path]                                     test-debt register with an estimated
-                                                  quarterly cost
   stats                                           all-time local counters of fixes seen
                                                   via diff
-  suppressions                                    list suppressed findings (governance
-                                                  transparency)
-  handover [path]                                 new-QA onboarding map of the suite
-  init [--interactive]                            detect frameworks + setup checklist
-                                                  (never overwrites)
   doctor [repo-root]                              self-audit of the rule base (fixture
                                                   firewall, tiers, caps)
-  release-trust [--json] [repo-root]              Release Trust Verdict over the
-                                                  canonical 12 dimensions
-                                                  (docs/RELEASE-TRUST-CONTRACT.md)
-  create-rule <QA-XXX-nnn> --title "Rule title"   scaffold a new rule + fixtures
-                                                  (must-fire, must-not-fire)
-  cross-file [path] [--json]                      analyze cross-file signals:
-                                                  duplicates, shared imports, circular
-                                                  deps
+  explain --list capability [--json] [--kind <k>] [--maturity M0..M5] [--id <substring>]
+    the capability registry: every capability at the maturity the machine can prove
   contract-verify [path] [--contract <scan-json>] [--json]
-    verify machine contract integrity against scan results
-  trust-trend [path] [--history <file>] [--recorded-at <iso>] [--json]
-    track historical trust trends and detect regressions
+    machine-contract + exit-code contract integrity vs a scan
   evidence-graph [path] [--file <path>|--rule <id>] [--json]
     build and query the verification evidence graph
-  framework-maturity [--framework <name>] [--json]
-    track framework maturity levels, especially Playwright F4→F5
-  rules capability [--json] [--kind <k>] [--maturity M0..M5] [--id <substring>]
-    the capability registry: every capability at the maturity the machine can prove
   suppression-gate [path] [--policy <file>] [--json]
     enforce suppression policy governance gate
-  trend <record|show|diff> [path] [--limit <N>]   record, show, or diff local quality
-                                                  trend snapshots
-  exec-report [path]                              generate executive quality KPIs, risk,
-                                                  and recommendations (advisory)
-  analyze [path] --cross-file                     run bounded cross-file analysis with
-                                                  explicit findings
-  dashboard [path] [--output <file>]              generate a self-contained quality
-                                                  dashboard HTML artifact
 
 Subcommands — Meta:
-  rules [--md] [--unmeasured|--measured] [--external] | [--stats] | [--health]
-  [--limit=N] | capability
-    rule catalog + empirical-measurement stats/health (md/json/stats/health/capability)
   explain <RULE-ID> [--fixtures-root <dir>]       what/why/fix + measured FP rate for
                                                   one rule
-  why <file>:<line> [path] [--json <mjolnir.json>]
-    why did Mjölnir flag <file>:<line>? evidence + fix (not a gate)
   handoff [mjolnir.json] [--category <cat>] [--rules <ids>]
     deterministic fix-handoff artifact from a saved --json report
   install [--staged-hook] [--dry-run] [--force]   install the agent instruction surfaces
                                                   + optional staged hook
   mcp                                             run as a read-only MCP server over
-                                                  stdio (scan / explain / diff / verify
-                                                  / forensics / triage / pw-report)
+                                                  stdio (scan / explain / ci verify)
+
+Subcommands — Deep analysis:
+  analyze [path] --cross-file                     run bounded cross-file analysis with
+                                                  explicit findings
 
 Copy-paste starts:
   $ mjolnir                         score this repo's test suite
   $ mjolnir --scope changed         CI gate: only what the branch touched
   $ mjolnir ci install              write the PR workflow
-  $ mjolnir forensics test-results  where the flakes hide
+  $ explain --evidence test-results  where the flakes hide
 
 Per-command help: mjolnir help <verb>   (e.g. mjolnir help fix)
 
@@ -176,7 +119,7 @@ Everything else is optional.
 
   mjolnir [path]                 full-repo scan + WORTHINESS score
   mjolnir explain <RULE-ID>      what/why/fix + measured FP rate for one rule
-  mjolnir rules --unmeasured     the rules running on assumption, not measurement
+  mjolnir explain --list --unmeasured     the rules running on assumption, not measurement
 
 Options:
   --json                  machine-readable output
@@ -184,6 +127,16 @@ Options:
   --format codequality    GitLab Code Quality report (MR
                           widget artifact)
   --format mermaid        test-architecture diagram
+  --format trust-report   the terminal trust report (the
+                          default)
+  --format pr-comment     a scoped PR comment as Markdown
+  --format github-summary
+    a GitHub Actions step summary
+  --suppressions          print the suppression ledger and
+                          stop
+  --suppression-gate      fail on an ungoverned suppression
+                          (expired, reasonless, orphaned)
+  --policy                print the scoring policy in force
   --tone blunt            blunter, pattern-mocking messages
   --verbose               show all findings
   --scope changed         only new/changed lines vs
@@ -192,6 +145,9 @@ Options:
   --width <cols>          override terminal width
   --ascii / --no-ascii    force glyph mode
   --strict                include quarantine-tier rules
+                          (advisory only — a quarantined
+                          detector never gates; see
+                          docs/PRODUCT-DECISIONS.md D-2)
   --debug                 print swallowed rule crashes
   --cache                 reuse local per-file verdicts
   --no-progress           no live scan-progress line on
@@ -208,168 +164,44 @@ Options:
                           exit
   -h, --help              show this help
 
-Subcommands — Scan:
-
 Subcommands — CI & PRs:
   ci install [--gate advisory|error|warning] [--no-action]
   [--force]
     generate the PR workflow (advisory by default;
     action-based; scan + annotations + gate)
-  summary [mjolnir.json] [--stdout] [--path-prefix <dir>]
-    CI annotations + step summary from a saved --json report
-  pr-comment [path] [--base <ref>]                render a scoped
-                                                  PR comment
-                                                  (Markdown)
-  badge [path]                                    shields.io
-                                                  endpoint JSON +
-                                                  snippet from a
-                                                  scan
-  trust-report [path]                             deterministic,
-                                                  self-contained
-                                                  Trust Artifact
-                                                  (md + json)
-  impact [path] [--since <ref>]                   what a commit
-                                                  introduced vs
-                                                  resolved, since
-                                                  a prior commit
-  baseline [path]                                 snapshot the
-                                                  current finding
-                                                  set as the
-                                                  comparison point
-  diff [path] [--json] [scan flags]               lifecycle diff
-                                                  vs the committed
-                                                  baseline
-  verify [path] [--json] [scan flags]             agent-loop
-                                                  digest:
-                                                  resolved/new/unchanged
-                                                  vs baseline +
-                                                  score delta
-  ci-integrity [path] [--policy <file>] [--json]  verify CI
-                                                  workflow
-                                                  integrity and
-                                                  suppression
-                                                  governance
-  ci-adapter <github|gitlab|jenkins> [target]     generate GitHub
-                                                  Actions, GitLab
-                                                  CI, or Jenkins
-                                                  templates
   policy <init|validate|check> [path] [--policy <file>]
     initialize, validate, or check team quality policy gates
-
-Subcommands — Forensics:
-  forensics <test-results-dir-or-report-file>
-  [--no-flaky-md]
-    runtime evidence from a real run: retries, flakes,
-    durations
-  triage <test-results-dir-or-report-file> [--no-md]
-    flaky-triage proposal + TRIAGE.md meeting artifact
-  pw-report <playwright-report.json | test-results-dir>
-    Playwright run summary (counts, true flakes, slowest
-    tests)
-  doctor:playwright [path]                        Playwright deep
-                                                  scan + Selector
-                                                  Health report
-
-Subcommands — Mutation evidence:
-  mutation <mutation-report> [--scan .]           mutation-evidence
-                                                  reader:
-                                                  survived-mutant
-                                                  leaderboard +
-                                                  E1→E2 derivation
 
 Subcommands — Maintenance:
   fix [path] [--dry-run]                          apply safe
                                                   auto-fixes with
                                                   proof (re-scan
                                                   verifies each)
-  debt [path]                                     test-debt
-                                                  register with an
-                                                  estimated
-                                                  quarterly cost
   stats                                           all-time local
                                                   counters of
                                                   fixes seen via
                                                   diff
-  suppressions                                    list suppressed
-                                                  findings
-                                                  (governance
-                                                  transparency)
-  handover [path]                                 new-QA
-                                                  onboarding map
-                                                  of the suite
-  init [--interactive]                            detect
-                                                  frameworks +
-                                                  setup checklist
-                                                  (never
-                                                  overwrites)
   doctor [repo-root]                              self-audit of
                                                   the rule base
                                                   (fixture
                                                   firewall, tiers,
                                                   caps)
-  release-trust [--json] [repo-root]              Release Trust
-                                                  Verdict over the
-                                                  canonical 12
-                                                  dimensions
-                                                  (docs/RELEASE-TRUST-CONTRACT.md)
-  create-rule <QA-XXX-nnn> --title "Rule title"   scaffold a new
-                                                  rule + fixtures
-                                                  (must-fire,
-                                                  must-not-fire)
-  cross-file [path] [--json]                      analyze
-                                                  cross-file
-                                                  signals:
-                                                  duplicates,
-                                                  shared imports,
-                                                  circular deps
-  contract-verify [path] [--contract <scan-json>] [--json]
-    verify machine contract integrity against scan results
-  trust-trend [path] [--history <file>] [--recorded-at
-  <iso>] [--json]
-    track historical trust trends and detect regressions
-  evidence-graph [path] [--file <path>|--rule <id>] [--json]
-    build and query the verification evidence graph
-  framework-maturity [--framework <name>] [--json]
-    track framework maturity levels, especially Playwright
-    F4→F5
-  rules capability [--json] [--kind <k>] [--maturity M0..M5]
-  [--id <substring>]
+  explain --list capability [--json] [--kind <k>]
+  [--maturity M0..M5] [--id <substring>]
     the capability registry: every capability at the
     maturity the machine can prove
+  contract-verify [path] [--contract <scan-json>] [--json]
+    machine-contract + exit-code contract integrity vs a
+    scan
+  evidence-graph [path] [--file <path>|--rule <id>] [--json]
+    build and query the verification evidence graph
   suppression-gate [path] [--policy <file>] [--json]
     enforce suppression policy governance gate
-  trend <record|show|diff> [path] [--limit <N>]   record, show, or
-                                                  diff local
-                                                  quality trend
-                                                  snapshots
-  exec-report [path]                              generate
-                                                  executive
-                                                  quality KPIs,
-                                                  risk, and
-                                                  recommendations
-                                                  (advisory)
-  analyze [path] --cross-file                     run bounded
-                                                  cross-file
-                                                  analysis with
-                                                  explicit
-                                                  findings
-  dashboard [path] [--output <file>]              generate a
-                                                  self-contained
-                                                  quality
-                                                  dashboard HTML
-                                                  artifact
 
 Subcommands — Meta:
-  rules [--md] [--unmeasured|--measured] [--external] |
-  [--stats] | [--health] [--limit=N] | capability
-    rule catalog + empirical-measurement stats/health
-    (md/json/stats/health/capability)
   explain <RULE-ID> [--fixtures-root <dir>]       what/why/fix +
                                                   measured FP rate
                                                   for one rule
-  why <file>:<line> [path] [--json <mjolnir.json>]
-    why did Mjölnir flag <file>:<line>? evidence + fix (not
-    a gate)
   handoff [mjolnir.json] [--category <cat>] [--rules <ids>]
     deterministic fix-handoff artifact from a saved --json
     report
@@ -383,17 +215,21 @@ Subcommands — Meta:
                                                   read-only MCP
                                                   server over
                                                   stdio (scan /
-                                                  explain / diff /
-                                                  verify /
-                                                  forensics /
-                                                  triage /
-                                                  pw-report)
+                                                  explain / ci
+                                                  verify)
+
+Subcommands — Deep analysis:
+  analyze [path] --cross-file                     run bounded
+                                                  cross-file
+                                                  analysis with
+                                                  explicit
+                                                  findings
 
 Copy-paste starts:
   $ mjolnir                         score this repo's test suite
   $ mjolnir --scope changed         CI gate: only what the branch touched
   $ mjolnir ci install              write the PR workflow
-  $ mjolnir forensics test-results  where the flakes hide
+  $ explain --evidence test-results  where the flakes hide
 
 Per-command help: mjolnir help <verb>   (e.g. mjolnir help fix)
 

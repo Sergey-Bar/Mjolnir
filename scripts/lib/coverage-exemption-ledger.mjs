@@ -31,7 +31,19 @@ const PRODUCTION_GLOBS = [
 const CLASSIFICATIONS = [
   "PERMANENT_STRUCTURAL",
   "DEAD_CODE",
+  /**
+   * Read as a spec that is wired except for its test. That is the wrong
+   * reading for every entry currently carrying it, and the wrong reading is
+   * the problem: it presents eleven thousand lines of design documentation for
+   * subsystems with no implementation as work-in-progress.
+   *
+   * `UNIMPLEMENTED_SPEC` says what is true — nothing in `src/` reads it, and
+   * it is not on the shipped surface. Kept in the vocabulary because a
+   * contract that is later WIRED must be able to say so, and a classifier
+   * that has no word for "not built yet" will reach for the flattering one.
+   */
   "CONTRACT_ONLY",
+  "UNIMPLEMENTED_SPEC",
   "SHIPPED_SURFACE",
 ];
 

@@ -1,3 +1,7 @@
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+
 import { describe, expect, it } from "vitest";
 
 import {
@@ -355,16 +359,28 @@ describe("P4 — the surface list is explicit", () => {
     expect(paths).toContain("docs/rules");
   });
 
-  it("finds the locale READMEs, including a three-letter locale", () => {
-    // `zht` is a real locale in this repository. A narrower pattern would
-    // silently skip it, and a linter with an unknown locale coverage is
-    // exactly the problem this module exists to remove.
-    const files = listPublicFiles(process.cwd());
-    const locales = files.filter((f) => f.kind === "locale-readme");
-    // 22 locales + `README.md` itself is scanned as the primary readme.
-    expect(locales.length).toBe(22);
-    expect(locales.some((f) => f.file === "README.zht.md")).toBe(true);
-    expect(locales.some((f) => f.file === "README.ar.md")).toBe(true);
+  it("finds a locale README when one is planted, including a three-letter locale", () => {
+    // `zht` was a real locale in this repository. A narrower pattern would
+    // silently skip it, and a linter with unknown locale coverage is exactly
+    // the problem this module exists to remove — so the fixture plants one
+    // rather than reading a real file.
+    //
+    // The twenty-two machine-assisted translations are gone as of the v6
+    // carve, so there is no live row to count. The recogniser still has to
+    // work: a future contributor who adds a translation must have it linted,
+    // not silently skipped because the category looked extinct.
+    const root = mkdtempSync(join(tmpdir(), "mjolnir-claim-lint-locales-"));
+    try {
+      writeFileSync(join(root, "README.md"), "no claims here", "utf8");
+      writeFileSync(join(root, "README.zht.md"), "no claims here", "utf8");
+      writeFileSync(join(root, "README.ar.md"), "no claims here", "utf8");
+      const files = listPublicFiles(root);
+      const locales = files.filter((f) => f.kind === "locale-readme");
+      expect(locales.some((f) => f.file === "README.zht.md")).toBe(true);
+      expect(locales.some((f) => f.file === "README.ar.md")).toBe(true);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
   });
 
   it("keeps the maturity ladder the one the binding must use", () => {

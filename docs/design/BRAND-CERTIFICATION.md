@@ -276,7 +276,7 @@ Three things the merge settled:
   the merge landed. That is the token system paying for itself.
 
 And a second site-build breakage found on main, of the same class as
-D15: `docs/RULE-LIFECYCLE.md` wrote `mjolnir mutation <report>` as prose,
+D15: `docs/RULE-LIFECYCLE.md` wrote the `mutation` verb's report form as prose,
 Vue's template compiler read `<report>` as an element, and the build
 failed. Both times the cause was the same — **nothing runs the site
 build except the Pages workflow**, and a deploy that fails after merge is
@@ -287,7 +287,7 @@ locally — and both are now fixed for good: see §8c.
 
 This branch surfaced four pre-existing breakages just by running the
 gates: the site build broken twice (`gen-report.mjs` requiring a heading
-the hero asset had dropped; `mjolnir mutation <report>` in a doc read by
+the hero asset had dropped; the mutation report form in a doc read by
 Vue's compiler as an element), a `prettier --check` failure on a
 CHANGELOG blank line, and `<<<<<<<` conflict markers committed in
 `package-lock.json` on main since v1.0.0 — a file npm parses as JSON, so
@@ -380,8 +380,10 @@ vendored woff2 files, and three contract specs.
 - Scoring, detection and evidence semantics are unchanged. The self-scan
   still reports 99/100.
 - The verdict vocabulary is unchanged and still property-locked.
-- The translation workflow stays advisory and community-driven; only the
-  language-independent badge URLs were swept.
+- The translation workflow was advisory and community-driven; the
+  twenty-two translations it fed were removed in the v6 carve, so the
+  only prose surface is now `README.md`. Only the language-independent
+  badge URLs were ever swept here.
 - The demo video's story — a real false-green, a real fix, a real
   re-scan — is unchanged.
 - The logo rule: provided masters are source of truth; re-encode, never
@@ -406,7 +408,15 @@ honest edges of the work as it stands.
    alignment by up to 3.6 columns. Documented in the component.
 4. **Mobile Lighthouse is 88–92**, and the baseline it would be compared
    against is not sound.
-5. **The tour video is rendered and tested but ships nowhere.**
+5. **The tour video was rendered and tested but shipped nowhere — so the
+   v6 carve deleted it.** An 86-second `scan → explain → forensics` walkthrough
+   had a renderer, a contract and a CI workflow, and no publisher, because
+   `forensics` is a DELETE verb in the v6 CLI collapse: its committed render
+   script drew a command that will not exist. Removing the script _before_ the
+   verb — which is why carve step 1.2 precedes 1.6 — kept three contract specs
+   green instead of red. The 34s hero survives, because a false-green CI gate
+   found, fixed, re-proved is the whole positioning and uses only verbs the
+   collapse keeps.
 6. **Pre-existing test flakes** under full parallel load, all green in
    isolation and unrelated to this work: `doctor-json.spec.ts` G5,
    `package-smoke.spec.ts`, and `scale-benchmark.spec.ts`.

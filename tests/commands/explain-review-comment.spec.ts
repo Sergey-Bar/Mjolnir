@@ -131,7 +131,7 @@ describe("explain review-comment language", () => {
     const block = reviewBlock(text);
     expect(block).toContain("COPY-READY REVIEW COMMENT");
     expect(block).toContain("fixture-derived guidance is unavailable");
-    expect(block).toContain("mjolnir rules --md");
+    expect(block).toContain("mjolnir explain --list --md");
     expect(block).not.toContain("apply the rule guidance above");
   });
 });

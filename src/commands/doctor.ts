@@ -17,7 +17,11 @@
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
-import type { QADoctorRule, StrategyReasonCode } from "../rules/rule.js";
+import type {
+  CorePromotion,
+  QADoctorRule,
+  StrategyReasonCode,
+} from "../rules/rule.js";
 import { RETIRED_RULE_IDS, RULES } from "../rules/index.js";
 import { RULE_CATEGORIES } from "../types.js";
 import { MEASURED_FP } from "../rules/measured-fp.generated.js";
@@ -45,6 +49,7 @@ import type { MeasuredFp as MeasuredFpEntry } from "../rules/measured-fp.generat
 import {
   declaredDetectorRevision,
   effectiveTier,
+  hasValidMeasurement,
 } from "../rules/measurement.js";
 // The one error-to-message derivation. This file used to declare its own
 // `errorText`, byte-identical to two others; a doctor's entire value is that
@@ -168,6 +173,38 @@ export function checkRegistry(
         );
       }
     }
+    // A LEXICAL rule that DECLARES `core` on a measurement which does not
+    // clear the ceiling must carry a `corePromotion` (src/rules/rule.ts):
+    // a named owner, an expiry, and a rationale. This is the check that
+    // makes a declared core claim a RECORD rather than a comment — and it is
+    // the live half of the north-star law, which says a rule without a
+    // measured FP rate cannot ship in core. Nineteen rules broke that law
+    // silently before 6.0; they were demoted rather than annotated, and this
+    // is what keeps the next one from arriving unannounced.
+    //
+    // `effectiveTier`, not `r.tier`. A rule that declares NO tier resolves
+    // through the same function every other surface uses — so a rule could
+    // satisfy `checkTierEnforcement`'s core rules by omitting `tier` while
+    // dodging this obligation entirely. The governance record must not be
+    // bypassable by deleting a line. Latent while the tier is empty, and
+    // cheap to close now rather than after the first promotion.
+    if (effectiveTier(r) === "core" && !hasValidMeasurement(r)) {
+      const promotion = r.corePromotion;
+      if (!promotion) {
+        ok = false;
+        details.push(
+          `${r.id}: declares tier "core" without a valid measurement and ` +
+            `without a corePromotion record — add one with a named owner and an ` +
+            `expiry date, or demote to "extended" (docs/ANTI-CREEP.md)`,
+        );
+      } else {
+        const promotionProblems = checkCorePromotion(promotion);
+        for (const problem of promotionProblems) {
+          ok = false;
+          details.push(`${r.id}: corePromotion ${problem}`);
+        }
+      }
+    }
     // Duplicate titles are allowed across languages (TS and Python rules
     // legitimately share a title, e.g. "Skipped test") — only flag exact
     // duplicates within the same category family.
@@ -184,6 +221,186 @@ export function checkRegistry(
     }
   }
   return check("registry-sanity", ok ? "pass" : "fail", details);
+}
+
+/**
+ * Check 12: quarantine ownership.
+ *
+ * The mirror of the `corePromotion` obligation. A rule in quarantine asserts
+ * that it is NOT trusted, and an assertion nobody owns and nobody re-examines
+ * is permanent by default — which is the outcome the tier exists to avoid.
+ *
+ * Kept OUT of `checkRegistry` on purpose. That function answers "is the
+ * registry valid", and its own test asserts zero findings on the real
+ * registry; folding a policy backlog into it would mean either a red build on
+ * the day the check landed or a test that had to be relaxed to permit
+ * failures. A separate check is a separate name in the report, and the
+ * per-rule detail is `docs/QUARANTINE-REMEDIATION.md`, generated from the same
+ * registry.
+ *
+ * Permissive about ABSENCE and strict about PRESENCE until the field is
+ * populated: a rule with no record is a backlog item, and a rule with a
+ * MALFORMED record is a claim somebody made badly. That asymmetry is the same
+ * one the 6.0 demotion ratchet shipped with, and it is why the first run is a
+ * number rather than a red build.
+ */
+export function checkQuarantineOwnership(
+  rules: readonly QADoctorRule[] = RULES,
+): DoctorCheck {
+  const quarantined = rules.filter((r) => effectiveTier(r) === "quarantine");
+  const unowned = quarantined.filter(
+    (r) => r.quarantinePromotion === undefined,
+  );
+  const details: string[] = [];
+  let ok = true;
+
+  // A rule carrying a `quarantinePromotion` while NOT in quarantine is
+  // unaccounted-for in the other direction: the record says "this rule is not
+  // trusted yet, re-measure it by DATE" and the rule has since been promoted
+  // without the record being removed or re-dated. Without this arm the check
+  // would pass a rule whose only ownership record describes a state it has
+  // left — and a stale record is a claim nobody is maintaining.
+  const stranded = rules.filter(
+    (r) =>
+      r.quarantinePromotion !== undefined && effectiveTier(r) !== "quarantine",
+  );
+
+  for (const rule of quarantined) {
+    const promotion = rule.quarantinePromotion;
+    if (promotion === undefined) continue;
+    for (const problem of checkCorePromotion(promotion)) {
+      ok = false;
+      details.push(`${rule.id}: quarantinePromotion ${problem}`);
+    }
+  }
+
+  for (const rule of stranded) {
+    ok = false;
+    details.push(
+      `${rule.id}: carries a quarantinePromotion but resolves to ` +
+        `${effectiveTier(rule)} — remove the record, or re-date it against the ` +
+        "state the rule is actually in",
+    );
+  }
+
+  if (quarantined.length === 0 && stranded.length === 0) {
+    return check("quarantine-ownership", "pass", [
+      "No rules in quarantine, so no quarantine is unowned",
+    ]);
+  }
+  details.unshift(
+    quarantined.length === 0
+      ? `No rules are quarantined, but ${stranded.length} carry a quarantinePromotion record`
+      : `${unowned.length}/${quarantined.length} quarantine rules carry no quarantinePromotion — ` +
+          "no owner, no review date, no exit condition. A quarantine with none is permanent by " +
+          "default. Backfill from the ledger in docs/QUARANTINE-REMEDIATION.md" +
+          // The count is REPORTED, not gated, and the message says so. A cap
+          // here would have to be written at 34 on the day it landed and fall
+          // as the field is filled — which is a number to be lowered on
+          // purpose, not a threshold that can be met the day it is written.
+          // Calling it "becomes blocking as the count falls" described a
+          // ratchet that does not exist.
+          (unowned.length > 0
+            ? ". The count is reported, not gated: a cap here would have to start " +
+              "at 34 and be lowered as the field is filled"
+            : "") +
+          (stranded.length > 0
+            ? `. ${stranded.length} rule(s) carry a record but are no longer quarantined`
+            : ""),
+  );
+  return check("quarantine-ownership", ok ? "pass" : "fail", details);
+}
+
+/**
+ * How long a `corePromotion` may run, in days.
+ *
+ * A grant is a bridge from "the corpus cannot support this" to "a human says
+ * so". A bridge that never ends is a tier, which is what this exists to avoid,
+ * so the default is 90 and the ceiling is 180.
+ *
+ * Named constants because the first version inlined both numbers in the
+ * condition and then wrote a THIRD number in the message — "the default is
+ * 90" against a `days > 180` test, with nothing named anywhere. A reader
+ * comparing the code to the message had to count.
+ */
+const DEFAULT_CORE_PROMOTION_DAYS = 90;
+const MAX_CORE_PROMOTION_DAYS = 180;
+
+/** A rationale has to be an argument, not a verdict. */
+const MIN_RATIONALE_CHARS = 40;
+
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+
+/**
+ * What is wrong with a `corePromotion` record, or `[]` when it is sound.
+ *
+ * Returns sentences rather than booleans because every one of these has to
+ * name the field and say what to put there. A registry check that reports
+ * "invalid corePromotion" sends the reader to the source anyway; a check that
+ * reports "corePromotion.owner is empty — a core claim with nobody's name on
+ * it is a default" is answerable where it is printed.
+ *
+ * Exported because `npm run docs:core-readiness` reports the same verdicts, and
+ * a second implementation of "is this grant sound" would drift from this one —
+ * which is the defect the `declaredCoreWithoutEvidence` ratchet already records
+ * once in this file's history.
+ */
+export function checkCorePromotion(
+  promotion: CorePromotion,
+  today: string = new Date().toISOString().slice(0, 10),
+): string[] {
+  const problems: string[] = [];
+  if (promotion.rationale.trim().length < MIN_RATIONALE_CHARS) {
+    problems.push(
+      "rationale is too short to be an argument — say why this rule is trusted " +
+        "before the corpus can support it (a structural premise is legitimate; " +
+        '"seemed fine" is not)',
+    );
+  }
+  if (promotion.owner.trim().length === 0) {
+    problems.push(
+      "has no owner — a core claim with nobody's name on it is a default, " +
+        "not a decision",
+    );
+  }
+  if (!ISO_DATE.test(promotion.grantedAt)) {
+    problems.push(
+      `grantedAt "${promotion.grantedAt}" is not an ISO-8601 date (YYYY-MM-DD)`,
+    );
+  }
+  if (!ISO_DATE.test(promotion.expiresOn)) {
+    problems.push(
+      `expiresOn "${promotion.expiresOn}" is not an ISO-8601 date (YYYY-MM-DD)`,
+    );
+  } else {
+    if (ISO_DATE.test(promotion.grantedAt)) {
+      if (promotion.expiresOn < promotion.grantedAt) {
+        problems.push(
+          `expiresOn (${promotion.expiresOn}) precedes grantedAt ` +
+            `(${promotion.grantedAt})`,
+        );
+      } else {
+        const days =
+          (Date.parse(promotion.expiresOn) - Date.parse(promotion.grantedAt)) /
+          86_400_000;
+        if (days > MAX_CORE_PROMOTION_DAYS) {
+          problems.push(
+            `runs for ${days} days — the default is ${DEFAULT_CORE_PROMOTION_DAYS} ` +
+              `and the ceiling is ${MAX_CORE_PROMOTION_DAYS}, and a claim that long ` +
+              "is a tier rather than a grant",
+          );
+        }
+      }
+    }
+    if (promotion.expiresOn < today) {
+      problems.push(
+        `EXPIRED on ${promotion.expiresOn} — an expired grant resolves the rule ` +
+          `to "extended" (docs/CORE-READINESS.md reports it as EXPIRED); ` +
+          "re-justify it or let the demotion stand",
+      );
+    }
+  }
+  return problems;
 }
 
 /** Check 3: Trust Metadata presence (informational until full coverage). */
@@ -313,7 +530,7 @@ export function checkTierEnforcement(
   // Classified-verdict count per rule. The shipped src/rules/
   // measured-fp.generated.ts is the HISTORICAL ARTIFACT base (baked in
   // because tests/corpus/verdicts/ is not packed). When running from a
-  // checkout whose verdicts have grown since the last `fp-audit:generate`,
+  // checkout whose verdicts have grown since the last `generate-fp-audit-table`,
   // the live directory is authoritative wherever it has rows.
   const classifiedPerRule = new Map<string, number>();
   const byId = new Map(rules.map((r) => [r.id, r] as const));
@@ -363,45 +580,271 @@ export function checkTierEnforcement(
   }
 
   const coreRules = rules.filter((r) => effectiveTier(r) === "core");
+  // `promotedBy` is the reason this check is not vacuous. The 6.0 demotion
+  // emptied core, so "every core rule has ≥10 verdicts" had nothing to say:
+  // MAX_UNMEASURED_CORE = 0 was satisfied by an empty set, and the next
+  // promotion would have arrived with the check already passing.
+  //
+  // A declared-core rule is now ACCOUNTED FOR by either route, and only
+  // unaccounted rules count against the cap:
+  //
+  //   MEASURED — ≥10 classified live verdicts, the law as written.
+  //   PROMOTED — an unexpired `corePromotion` naming an owner, a rationale
+  //              and an expiry (src/rules/rule.ts). This is the record the
+  //              anti-creep law requires for a core claim the corpus cannot
+  //              support, and counting it here is what makes the two agree.
+  //
+  // A promotion that has EXPIRED, or that fails `checkCorePromotion`, is not
+  // a route to accounting — it resolves the rule to `extended` in
+  // `docs/CORE-READINESS.md`, and it counts against the cap here.
+  const unaccounted: string[] = [];
   for (const r of coreRules) {
     const n = classifiedPerRule.get(r.id) ?? 0;
-    if (n < 10) {
-      details.push(
-        `${r.id}: core tier, measured n=${n} (needs ≥10 classified verdicts)`,
+    if (n >= 10) continue;
+    const promotion = r.corePromotion;
+    if (promotion !== undefined) {
+      const problems = checkCorePromotion(promotion);
+      if (problems.length === 0) {
+        details.push(
+          `${r.id}: core tier on a corePromotion (owner ${promotion.owner}, ` +
+            `expires ${promotion.expiresOn}) — n=${n}, so measurement alone does not clear it`,
+        );
+        continue;
+      }
+      unaccounted.push(
+        `${r.id}: core tier with a DEFECTIVE corePromotion — ${problems[0] ?? "unusable record"}`,
       );
+      continue;
     }
+    unaccounted.push(
+      `${r.id}: core tier, measured n=${n} (needs ≥10 classified verdicts) and no corePromotion`,
+    );
   }
 
   // Ratchet (audit H-2): the law is now an executable cap. Exceeding
   // MAX_UNMEASURED_CORE fails the audit; lowering the constant each
   // release walks the registry toward a fully measured core tier.
-  const unmeasured = details.length;
+  const unmeasured = unaccounted.length;
   const total = coreRules.length;
   const ok = unmeasured <= MAX_UNMEASURED_CORE;
 
+  details.push(...unaccounted);
   details.unshift(
-    ok
-      ? `Ratchet (Law #3): ${unmeasured}/${total} core rules lack a measured FP rate — cap is ${MAX_UNMEASURED_CORE} (Phase 1 closed the unmeasured-core hole)`
-      : `BLOCKING: ${unmeasured}/${total} core rules unmeasured — exceeds the Law #3 ratchet cap of ${MAX_UNMEASURED_CORE}`,
+    total === 0
+      ? `Ratchet (Law #3): 0 core rules, so nothing to account for — cap is ${MAX_UNMEASURED_CORE}. Vacuous by construction: the check governs the NEXT promotion, and it does so by requiring a measurement OR an unexpired corePromotion`
+      : ok
+        ? `Ratchet (Law #3): ${unmeasured}/${total} core rules unaccounted — cap is ${MAX_UNMEASURED_CORE}. A rule is accounted for by ≥10 classified verdicts or by an unexpired corePromotion`
+        : `BLOCKING: ${unmeasured}/${total} core rules unaccounted — exceeds the Law #3 ratchet cap of ${MAX_UNMEASURED_CORE}`,
   );
 
   return check("tier-enforcement", ok ? "pass" : "fail", details);
 }
 
 /**
- * The core-tier cap (Phase 7 — Tempering Plan).
- * Anti-creep restated: core is capped at CORE_CAP rules. Promoting a
- * rule to core requires demoting another. This is enforced, not aspirational.
+ * The absolute core-tier cap (Phase 7 — Tempering Plan).
+ *
+ * A catastrophe guard, and NOT the anti-creep law. `docs/ANTI-CREEP.md` records
+ * why the distinction matters: an absolute cap alone leaves 65 free slots and
+ * lets the launch set grow without limit, which is the opposite of "every
+ * addition requires an equal-size removal". The net-growth ratchet in
+ * `checkAntiCreep` is the law; this is the ceiling above it, exactly as the
+ * 80% coverage floor sits below the coverage high-water ratchet.
  */
 export const CORE_CAP = 65;
 
 /**
+ * Net-growth ratchet for the anti-creep law.
+ *
+ * `docs/ANTI-CREEP-BASELINE.json` records the launch set at a commit; growth
+ * above it is a failure unless the same change demotes a rule or records an
+ * `ANTI-CREEP-EXCEPTION` line in `CHANGELOG.md`. The marker is checked BEFORE
+ * the number, so lowering the baseline does not become a way to skip the
+ * reason.
+ *
+ * The baseline lives in a data file rather than in this constant for the same
+ * reason the coverage high-water marks live in `check-coverage-ratchet.mjs`:
+ * a number that lives next to the check that enforces it gets adjusted to make
+ * the check pass, and nothing is left to review. A number in its own file,
+ * with the commit it was recorded at, is an artifact.
+ *
+ * `null` means no baseline is present — reported as INCONCLUSIVE and
+ * blocking, because a law with no recorded state cannot be evaluated and must
+ * never render as a pass (G2/22).
+ */
+export const ANTI_CREEP_BASELINE_PATH = "docs/ANTI-CREEP-BASELINE.json";
+
+/** The `CHANGELOG.md` marker that makes growth legal, per docs/ANTI-CREEP.md. */
+export const ANTI_CREEP_EXCEPTION_MARKER = "ANTI-CREEP-EXCEPTION";
+
+export interface AntiCreepBaseline {
+  baselineCore: number;
+  /**
+   * The value at the previous recording.
+   *
+   * Present so that LOWERING the baseline is visible to the check rather than
+   * indistinguishable from a demotion. Absent means "treat as lowered", which
+   * makes the first run after this field existed cost one changelog line and
+   * closes a permanent hole thereafter.
+   */
+  previousBaselineCore?: number;
+  recordedAt: string;
+  recordedAtSha: string;
+}
+
+export interface AntiCreepVerdict {
+  ok: boolean;
+  /** The tier's current size. */
+  core: number;
+  /** The committed baseline, or null when it is absent or unreadable. */
+  baseline: number | null;
+  /** Whether THIS change records an `ANTI-CREEP-EXCEPTION`. */
+  exceptionPresent: boolean;
+  /** One line a reader can act on. */
+  summary: string;
+}
+
+/**
+ * The `ANTI-CREEP-EXCEPTION` lines in the UNRELEASED part of the changelog.
+ *
+ * Scoped to the top entry because the first version searched the whole
+ * append-only file — so a marker written once, in any past release, disabled
+ * the ratchet for every commit after it, permanently. With an empty tier and a
+ * baseline of zero, that meant the FIRST core promotion switched the law off
+ * for good: the very change this work makes possible would have been the one
+ * that ended it.
+ *
+ * The top entry is the right scope: a changelog is a sequence of releases, and
+ * a growth claim is made in a release. A promotion lands in one entry, is
+ * justified in that entry, and is released. Nothing needs a marker to survive
+ * past the release that carried it.
+ *
+ * HOW the top section is found, and what that costs: the first `^## `
+ * heading. That is the convention, and `## [Unreleased]` is the first entry in
+ * this repository's file — but a changelog whose top heading is something
+ * else, or whose release headings were demoted to `#`, would scope this
+ * wrongly. `scripts/check-unreleased-entry.mjs` finds its section BY NAME for
+ * exactly that reason, and this function does not. The asymmetry is recorded
+ * here rather than left for a reader to discover: two scripts, two changelog
+ * parsers, different robustness. A consolidation should give both the named
+ * lookup.
+ */
+export function exceptionInUnreleasedChangelog(
+  changelog: string,
+  marker: string = ANTI_CREEP_EXCEPTION_MARKER,
+): boolean {
+  const firstHeading = changelog.search(/^## /m);
+  if (firstHeading === -1) return false;
+  const rest = changelog.slice(firstHeading);
+  const nextHeading = rest.slice(3).search(/^## /m);
+  const entry = nextHeading === -1 ? rest : rest.slice(0, nextHeading + 3);
+  return entry.includes(marker);
+}
+
+/**
+ * The anti-creep law, evaluated.
+ *
+ * Split out from `checkAntiCreep` so the arithmetic is testable without a
+ * `DoctorCheck` — the shipped tree exercises the pass path and no failure path
+ * at all, and a law whose failing branch has never run is not a law.
+ *
+ * The rule, stated exactly as the code implements it:
+ *
+ *     ok  ⟺  (tier ≤ previous baseline)  OR  (unreleased changelog has a marker)
+ *
+ * Two facts close the two escapes the earlier form had:
+ *
+ *   1. The comparison is against `previousBaselineCore`, not `baselineCore`.
+ *      Lowering the baseline to match a grown tier makes `core − baselineCore`
+ *      zero — one uncross-checked JSON edit that promotes a rule and switches
+ *      the law off. Against the PREVIOUS value the growth is still visible.
+ *   2. The marker is scoped to the unreleased `## ` entry, not the whole
+ *      append-only file. A marker written once in any past release used to
+ *      disable the ratchet for every commit after it, permanently — so the
+ *      first core promotion, the one this work makes possible, would have
+ *      switched the law off for good.
+ *
+ * It is an OR, not an AND, and deliberately: growth is legal with a marker
+ * alone, because a demotion in the same change needs no marker and forcing
+ * one would be a paper trail that says nothing. What the AND gets you is
+ * already covered by (1).
+ *
+ * `changelog` is injected rather than read from disk so a caller can pass the
+ * text it already has, and so a test can state a changelog without writing a
+ * file next to the repository (the cross-test interference this repository has
+ * already paid for: `tests/contract/gate-tiers.spec.ts` once rewrote itself).
+ */
+export function evaluateAntiCreep(
+  rules: readonly QADoctorRule[],
+  baseline: AntiCreepBaseline | null,
+  changelog: string,
+): AntiCreepVerdict {
+  const core = rules.filter((r) => effectiveTier(r) === "core");
+  const ids = core.map((r) => r.id).sort();
+  const exceptionPresent = exceptionInUnreleasedChangelog(changelog);
+
+  if (baseline === null) {
+    return {
+      ok: false,
+      core: ids.length,
+      baseline: null,
+      exceptionPresent,
+      summary:
+        `INCONCLUSIVE: ${ANTI_CREEP_BASELINE_PATH} is missing or unreadable — the ` +
+        `anti-creep law has no recorded state, and a law with no state cannot be ` +
+        `evaluated. Record the launch set at a commit (see docs/ANTI-CREEP.md).`,
+    };
+  }
+
+  // The law compares the tier against the PREVIOUS baseline, not the current
+  // one. That single change is what closes the silent escape.
+  //
+  // With a tier of 1 and `baselineCore` lowered to 1, `core - baselineCore` is
+  // zero and the law reads as satisfied — one uncross-checked JSON edit that
+  // promotes a rule and switches the law off. Comparing against
+  // `previousBaselineCore` instead makes that edit visible: the tier is 1, the
+  // previous baseline was 0, so the growth is real and needs a marker, and
+  // lowering the number afterwards changes nothing about whether it was legal.
+  //
+  // A missing `previousBaselineCore` falls back to the current value, which is
+  // the permissive reading; the shipped baseline carries the field, so the
+  // fallback only applies to a file written before this rule existed.
+  const previous =
+    typeof baseline.previousBaselineCore === "number"
+      ? baseline.previousBaselineCore
+      : baseline.baselineCore;
+  const growth = ids.length - previous;
+  const ok = growth <= 0 || exceptionPresent;
+
+  return {
+    ok,
+    core: ids.length,
+    baseline: baseline.baselineCore,
+    exceptionPresent,
+    summary: ok
+      ? growth <= 0
+        ? `Launch set: ${ids.length}, at or under the recorded baseline of ${previous} — net growth ${growth}, no promotion to offset`
+        : `Launch set: ${ids.length} against a previous baseline of ${previous} — growth of ${growth} covered by an ${ANTI_CREEP_EXCEPTION_MARKER} in the unreleased CHANGELOG entry`
+      : `Launch set: ${ids.length} against a previous baseline of ${previous} — net growth of ${growth} with no ${ANTI_CREEP_EXCEPTION_MARKER} in the unreleased CHANGELOG entry. Promote and demote in the same change, or record the exception with its reason`,
+  };
+}
+
+/**
  * Check 6 (Phase 7 — Tempering Plan): anti-creep law enforcement.
- * Core tier is capped at CORE_CAP rules. Exceeding it is a blocking failure.
- * This makes the anti-creep law an executable check, not a sentence in docs.
+ *
+ * Two independent assertions, both one-directional:
+ *
+ *   1. the absolute cap (`CORE_CAP`) — a catastrophe guard;
+ *   2. the net-growth ratchet against `docs/ANTI-CREEP-BASELINE.json` — the
+ *      law itself, which `docs/ANTI-CREEP.md` records.
+ *
+ * Both were one before: the check counted and compared to a number chosen
+ * before any rule could earn the tier, so the tier could grow from zero to
+ * sixty-five without anything noticing.
  */
 export function checkAntiCreep(
   rules: readonly QADoctorRule[] = RULES,
+  baseline: AntiCreepBaseline | null = readAntiCreepBaseline(),
+  changelog: string = readChangelog(),
 ): DoctorCheck {
   const details: string[] = [];
   let ok = true;
@@ -440,11 +883,76 @@ export function checkAntiCreep(
     }
   } else {
     details.push(
-      `Core tier: ${count}/${CORE_CAP} rules (${CORE_CAP - count} slots available)`,
+      `Absolute cap: core tier ${count}/${CORE_CAP} (${CORE_CAP - count} slots available)`,
     );
   }
 
-  return check("anti-creep", ok ? "pass" : "fail", details);
+  const verdict = evaluateAntiCreep(rules, baseline, changelog);
+  details.push(verdict.summary);
+  if (!verdict.ok) {
+    // An unevaluable law is blocking and reported distinctly from a violation
+    // (G2/22): a missing baseline is not a clean tree.
+    details.push(
+      ...(verdict.baseline === null
+        ? [
+            "This is INCONCLUSIVE, not a pass. Restore the baseline file, or " +
+              "record the launch set at a commit — see docs/ANTI-CREEP.md.",
+          ]
+        : [
+            `Rules currently in the launch set: ${
+              rules
+                .filter((r) => effectiveTier(r) === "core")
+                .map((r) => r.id)
+                .sort()
+                .join(", ") || "(none)"
+            }`,
+          ]),
+    );
+  }
+
+  return check("anti-creep", ok && verdict.ok ? "pass" : "fail", details);
+}
+
+/**
+ * Read the net-growth baseline, or null when it is absent or malformed.
+ *
+ * Null rather than a throw: the caller renders INCONCLUSIVE, and a gate that
+ * crashes tells the reader less than one that says which file is missing.
+ */
+function readAntiCreepBaseline(): AntiCreepBaseline | null {
+  try {
+    const parsed: unknown = JSON.parse(
+      readFileSync(join(process.cwd(), ANTI_CREEP_BASELINE_PATH), "utf8"),
+    );
+    if (!isRecord(parsed)) return null;
+    const { baselineCore, recordedAt, recordedAtSha } = parsed;
+    if (typeof baselineCore !== "number" || !Number.isInteger(baselineCore)) {
+      return null;
+    }
+    if (typeof recordedAt !== "string" || typeof recordedAtSha !== "string") {
+      return null;
+    }
+    // `previousBaselineCore` is only set when the file carries it, because
+    // `exactOptionalPropertyTypes` distinguishes "absent" from "undefined" —
+    // and the fallback in `evaluateAntiCreep` is different for each.
+    const previous =
+      typeof parsed.previousBaselineCore === "number" &&
+      Number.isInteger(parsed.previousBaselineCore)
+        ? { previousBaselineCore: parsed.previousBaselineCore }
+        : {};
+    return { baselineCore, recordedAt, recordedAtSha, ...previous };
+  } catch {
+    return null;
+  }
+}
+
+/** The changelog text the exception marker is searched for. */
+function readChangelog(): string {
+  try {
+    return readFileSync(join(process.cwd(), "CHANGELOG.md"), "utf8");
+  } catch {
+    return "";
+  }
 }
 
 /**
@@ -798,7 +1306,7 @@ export function checkMeasurementConsistency(
     const live = liveCounts.get(id);
     if (live !== undefined && live !== m.n) {
       failures.push(
-        `${id}: MEASURED_FP.n=${m.n} but the live corpus has ${live} classified verdict(s) — regenerate (npm run fp-audit:generate)`,
+        `${id}: MEASURED_FP.n=${m.n} but the live corpus has ${live} classified verdict(s) — regenerate (npm run generate-fp-audit-table)`,
       );
     }
     if (live === undefined && m.n > 0) {
@@ -855,6 +1363,7 @@ export function runDoctorSelfAudit(fixturesRoot: string): DoctorReport {
   const checks = [
     checkFixtureFirewall(fixturesRoot),
     checkRegistry(),
+    checkQuarantineOwnership(),
     checkTrustMetadata(),
     checkEvidenceHonesty(),
     checkTierEnforcement(verdictsDir),

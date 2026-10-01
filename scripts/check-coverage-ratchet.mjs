@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 
-import { existsSync, readFileSync, appendFileSync } from "node:fs";
+import { existsSync, readFileSync, appendFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
 const SUMMARY = join(process.cwd(), "coverage", "coverage-summary.json");
+const SRC = join(process.cwd(), "src");
 
 /**
  * TWO different numbers, doing two different jobs. Conflating them is what
@@ -41,7 +42,9 @@ const FLOOR = 80.0;
  */
 const HIGH_WATER = {
   statements: 98.28,
-  // Lowered from 95.58 by the V6 integration, then raised to 94.87 by the
+  // Lowered from 95.58 by the V6 integration, then lowered again to 94.87 by the
+  // Wave 0 archive move — the direction is only ever DOWN, which is what makes it
+  // a floor rather than a target.
   // tests added alongside it. The only mark ever moved down,
   // and its reason is recorded in docs/COVERAGE-GATE.md under "Changing a
   // mark". Statements, functions and lines all held; what fell was
@@ -57,6 +60,49 @@ const HIGH_WATER = {
  */
 const TOLERANCE = 0.5;
 
+/**
+ * THE COMPLETENESS GUARD — a truncated run must not look like a clean one.
+ *
+ * `summary.total` reports percentages, not how many files were measured. A
+ * coverage run that instrumented 2 of 292 files and found them fully covered
+ * produces a summary indistinguishable from a complete run at a glance: every
+ * percentage reads high, every ratchet check passes. The percentage is a
+ * statement about *what was measured*, so the gate has to say what was
+ * measured. Both assertions below fail closed.
+ *
+ * 1. FILE COUNT — the number of non-`total` keys must be within
+ *    `FILE_COUNT_TOLERANCE` of the instrumentable `src/**` file count.
+ * 2. NON-TRIVIAL DENOMINATOR — `total.statements.total` must exceed
+ *    `MIN_TOTAL_STATEMENTS`. A summary covering a handful of statements can
+ *    hit 100% on every axis without touching the rest of the tree.
+ */
+const FILE_COUNT_TOLERANCE = 0.15;
+const MIN_TOTAL_STATEMENTS = 1000;
+
+function countInstrumentableFiles(dir) {
+  let count = 0;
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const full = join(dir, entry.name);
+    if (entry.isDirectory()) {
+      count += countInstrumentableFiles(full);
+    } else if (entry.isFile() && /\.(ts|tsx|mts|cts)$/.test(entry.name)) {
+      count += 1;
+    }
+  }
+  return count;
+}
+
+function sourceFileCount() {
+  if (!existsSync(SRC)) {
+    return null;
+  }
+  try {
+    return countInstrumentableFiles(SRC);
+  } catch {
+    return null;
+  }
+}
+
 if (!existsSync(SUMMARY)) {
   console.error(
     `coverage ratchet: missing ${SUMMARY}; run npm run test:coverage first`,
@@ -66,6 +112,35 @@ if (!existsSync(SUMMARY)) {
 
 const summary = JSON.parse(readFileSync(SUMMARY, "utf8"));
 const total = summary.total;
+
+const measuredFiles = Object.keys(summary).filter((key) => key !== "total");
+const expectedFiles = sourceFileCount();
+const fileRatio =
+  expectedFiles && expectedFiles > 0
+    ? measuredFiles.length / expectedFiles
+    : null;
+
+const completeness = [];
+if (expectedFiles === null) {
+  completeness.push({
+    check: "file-count",
+    ok: false,
+    detail: "src/ could not be walked; cannot confirm the run was complete",
+  });
+} else {
+  completeness.push({
+    check: "file-count",
+    ok: fileRatio >= 1 - FILE_COUNT_TOLERANCE,
+    detail: `${measuredFiles.length} of ${expectedFiles} src files measured (${(fileRatio * 100).toFixed(1)}%), tolerance ${(FILE_COUNT_TOLERANCE * 100).toFixed(0)}%`,
+  });
+}
+const totalStatements = Number(total?.statements?.total);
+completeness.push({
+  check: "denominator",
+  ok:
+    Number.isFinite(totalStatements) && totalStatements >= MIN_TOTAL_STATEMENTS,
+  detail: `summary.total.statements.total = ${Number.isFinite(totalStatements) ? totalStatements : "missing"}, minimum ${MIN_TOTAL_STATEMENTS}`,
+});
 
 const metrics = Object.keys(HIGH_WATER);
 const rows = metrics.map((metric) => {
@@ -107,12 +182,38 @@ const lines = [
     .map((m) => `${m} ${HIGH_WATER[m].toFixed(2)}%`)
     .join(" · ")}`,
   "",
+  "### Run completeness",
+  "",
+  "| Check | Detail | Verdict |",
+  "| --- | --- | --- |",
+  ...completeness.map(
+    ({ check, detail, ok }) =>
+      `| ${check} | ${detail} | ${ok ? "PASS" : "INCOMPLETE"} |`,
+  ),
+  "",
 ];
 
 console.log(lines.join("\n"));
 
 if (process.env["GITHUB_STEP_SUMMARY"]) {
   appendFileSync(process.env["GITHUB_STEP_SUMMARY"], `${lines.join("\n")}\n`);
+}
+
+const incompleteCompleteness = completeness.filter((row) => !row.ok);
+if (incompleteCompleteness.length > 0) {
+  console.error(
+    `coverage gate failed: the coverage run is incomplete (${incompleteCompleteness
+      .map(({ check, detail }) => `${check}: ${detail}`)
+      .join("; ")}).`,
+  );
+  console.error(
+    "\nA partial summary reports high percentages because it measured a small, " +
+      "easy slice. The ratchet is meaningless against it. Re-run " +
+      "`npm run test:coverage:ci`; if a source file is legitimately " +
+      "uninstrumentable, add it to coverage.exclude in vitest.config.ts so " +
+      "the two lists agree by construction.",
+  );
+  process.exit(1);
 }
 
 const failures = rows.filter((row) => !row.ok);

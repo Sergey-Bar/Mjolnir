@@ -1,19 +1,26 @@
 /**
  * `npm run brand:doctor` — the repository-wide brand gate.
  *
- * `site-doctor` Check 8 already compared the brand document's palette
- * table against `vars.css`. That is one edge of a six-node graph, and
- * every unguarded edge had drifted: the terminal and the site disagreed
- * on six semantic roles, the architecture diagram had invented its own
- * neutral ramp, the three README terminal stills wore macOS traffic
- * lights, and the badges in all 23 READMEs still carried a palette
+ * `doctor` (the site's own arm) already compared the brand document's
+ * palette table against `vars.css`. That is one edge of a six-node graph,
+ * and every unguarded edge had drifted: the terminal and the site
+ * disagreed on six semantic roles, the architecture diagram had invented
+ * its own neutral ramp, the three README terminal stills wore macOS
+ * traffic lights, and the badges in every README still carried a palette
  * retired two releases earlier — 92 stale hexes nobody was counting.
+ *
+ * "every README" was 23 files when this was written. The twenty-two
+ * machine-assisted translations are gone (v6 carve 1.1), so Rule 7 now
+ * covers one README and five generated bands. The rule did not weaken to
+ * reach that number: the translations were never a distinct edge, they
+ * were copies of the same badges, and the copy is what made the drift
+ * expensive.
  *
  * This checks every edge against `assets/brand/tokens.json`, which
  * `npm run brand:tokens` emits from `src/brand/tokens.ts`. The JSON is
  * the machine surface deliberately: this script runs on plain Node with
- * zero dependencies, the same way `site-doctor` does, so it can run in
- * any CI step without a TypeScript loader. The JSON's own fidelity to
+ * zero dependencies, the same way the site's own doctor does, so it can
+ * run in any CI step without a TypeScript loader. The JSON's own fidelity to
  * the token module is locked byte-for-byte by
  * `tests/contract/brand-tokens-reproducibility.spec.ts`.
  *

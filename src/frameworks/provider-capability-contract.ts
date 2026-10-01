@@ -380,6 +380,46 @@ const CANONICAL_RECORDS = new Map(
   CI_PROVIDER_CAPABILITY_RECORDS.map((record) => [record.provider, record]),
 );
 
+/**
+ * The declared semantics of one CI provider, or `null` for an unknown slug.
+ *
+ * `CANONICAL_RECORDS` is private and had no accessor, so the census could
+ * ENUMERATE the four providers but could not ASK about one — and a record that
+ * can only be enumerated is a record whose contents are never checked by the
+ * thing that consumes it.
+ *
+ * The alias is the provider's declared name, which is what
+ * `deriveCiProviderEntries` and the framework inventory both use, so
+ * `"azure-pipelines"` and `"azure_pipelines"` both resolve. Normalising here
+ * rather than at four call sites is what makes "ask about a provider" a
+ * one-line call that cannot be written wrong.
+ */
+export function getProviderCapabilities(
+  provider: string,
+): ProviderCapabilityRecord | null {
+  // `_` and whitespace fold to `-` because the product writes `azure_pipelines`
+  // in some places and `azure-pipelines` in others. `.` is folded too: a slug
+  // written with dots is the same name, and returning `null` for it would be
+  // the silent miss this accessor exists to remove.
+  const key = provider
+    .trim()
+    .toLowerCase()
+    .replace(/[_\s.]+/g, "-") as ProviderCapabilityRecord["provider"];
+  return CANONICAL_RECORDS.get(key) ?? null;
+}
+
+/**
+ * Every declared provider, in declaration order.
+ *
+ * A COPY. The first version returned the live `CI_PROVIDER_CAPABILITY_RECORDS`
+ * array under a `readonly` type, which is a promise about the binding and not
+ * about the array: a caller could `push` to it and change the registry of
+ * record. The copy costs four objects and removes the class.
+ */
+export function listProviderCapabilities(): readonly ProviderCapabilityRecord[] {
+  return CI_PROVIDER_CAPABILITY_RECORDS.map((record) => ({ ...record }));
+}
+
 const TOP_LEVEL_KEYS = [
   "schema",
   "provider",

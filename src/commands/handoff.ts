@@ -116,7 +116,7 @@ export function verificationBlock(version: string): string[] {
   return [
     "## Verification procedure",
     "",
-    "1. Before editing (recommended): `mjolnir baseline` captures the pre-fix report.",
+    "1. Before editing (recommended): `mjolnir scan --json` captures the pre-fix report.",
     "2. After the fixes: `npx mjolnir-qa@" +
       version +
       " . --scope changed` re-verifies the targeted surface.",

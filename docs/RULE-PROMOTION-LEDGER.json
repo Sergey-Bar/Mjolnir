@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-09-29",
+  "description": "Upper bounds for the two figures that must only improve. The core tier is the launch set (docs/ANTI-CREEP.md); the unmeasured count is the corpus backlog. Falling behind is normal, moving backwards is not. See scripts/v6/check-promotion-throughput.mjs.",
+  "core": 0,
+  "unmeasured": 6,
+  "unmeasuredIds": [
+    "QA-CI-013",
+    "QA-CI-014",
+    "QA-PW-147",
+    "QA-PY-004",
+    "QA-PY-007",
+    "QA-TQUAL-009"
+  ]
+}

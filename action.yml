@@ -4,11 +4,14 @@
 # documented amendment to the repo's root contract
 # (tests/contract/repo-hygiene.spec.ts), never a silent one.
 #
-# Consumers pin a major tag (`uses: Sergey-Bar/Mjolnir@v3`); the separate
-# action-tags workflow moves that tag only after a stable, non-RC release.
-# Scanning runs through the published npm package (`npx mjolnir-qa@…`),
-# never an `npm ci` of this repo — the action must work for consumers,
-# not contributors.
+# Consumers pin a MAJOR tag — `uses: Sergey-Bar/Mjolnir@v5` at the time of
+# writing, matching `publishedStable` in package.json. The separate
+# action-tags workflow moves that tag only after a stable, non-RC release, and
+# derives the major from the tag being pushed; a hardcoded number here is
+# exactly the defect that comment used to be, because a reader pinned a major
+# that no ref existed for. Scanning runs through the published npm package
+# (`npx mjolnir-qa@…`), never an `npm ci` of this repo — the action must work
+# for consumers, not contributors.
 #
 # SARIF upload: the optional `upload-sarif` input (default true) wires
 # `github/codeql-action/upload-sarif` after the scan, so findings land in

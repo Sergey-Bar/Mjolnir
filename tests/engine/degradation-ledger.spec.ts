@@ -43,7 +43,6 @@ import {
 } from "../../src/engine/ts-ast.js";
 import { discoverWorkspace } from "../../src/discovery/workspace.js";
 import { javaBuildFiles } from "../../src/adapters/java.js";
-import { loadTrendDetail } from "../../src/commands/trend.js";
 import { runScan, type CliArgs } from "../../src/engine/scan-pipeline.js";
 
 const roots: string[] = [];
@@ -215,46 +214,6 @@ describe("W1.1: the previously-uncounted sites now count", () => {
     expect(summarizeDegradations(degradationsSince(unreadable))).toEqual([
       { reason: "java-build-listing-unreadable", count: 1 },
     ]);
-  });
-
-  it("a trend history of unreadable lines reports how many it discarded", () => {
-    const root = tempRoot();
-    mkdirSync(join(root, ".mjolnir"), { recursive: true });
-    writeFileSync(
-      join(root, ".mjolnir", "trend.jsonl"),
-      "not json\nalso not json\n",
-      "utf8",
-    );
-    const load = loadTrendDetail(root);
-    expect(load.snapshots).toEqual([]);
-    expect(load.corruptLines).toBe(2);
-  });
-
-  it("a trend history with one good line keeps the line AND reports the rest", () => {
-    const root = tempRoot();
-    mkdirSync(join(root, ".mjolnir"), { recursive: true });
-    const good = {
-      timestamp: "2026-09-26T00:00:00.000Z",
-      score: 90,
-      totalFindings: 1,
-      errorFindings: 0,
-      warningFindings: 1,
-      frameworks: ["vitest"],
-      summary: "",
-    };
-    writeFileSync(
-      join(root, ".mjolnir", "trend.jsonl"),
-      `${JSON.stringify(good)}\nbroken\n`,
-      "utf8",
-    );
-    const load = loadTrendDetail(root);
-    expect(load.snapshots).toHaveLength(1);
-    expect(load.corruptLines).toBe(1);
-  });
-
-  it("an absent trend history is empty history, not unreadable history", () => {
-    const load = loadTrendDetail(tempRoot());
-    expect(load).toEqual({ snapshots: [], corruptLines: 0 });
   });
 });
 

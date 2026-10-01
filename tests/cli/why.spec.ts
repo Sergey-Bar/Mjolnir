@@ -1,5 +1,5 @@
 /**
- * Agent-handoff plan M2 — `mjolnir why <file>:<line>`.
+ * Agent-handoff plan M2 — `mjolnir explain <file:line> <file>:<line>`.
  *
  * Contracts (plan §9.2, §12): informational evidence/explanation query,
  * NOT a gate — works regardless of verdict/tier, exact file+line
@@ -291,6 +291,6 @@ describe("runWhyCommand — saved-report mode (authoritative)", () => {
   it("exit 10 with usage when no location is given", async () => {
     const cap = capture();
     expect(await runWhyCommand([], cap.io)).toBe(10);
-    expect(cap.errText()).toContain("Usage: mjolnir why");
+    expect(cap.errText()).toContain("Usage: mjolnir explain <file:line>");
   });
 });

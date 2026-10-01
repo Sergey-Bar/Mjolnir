@@ -18,12 +18,34 @@
  * sandbox is the correct pattern and appears throughout the suite. What is
  * forbidden is a write whose target is the checkout itself.
  */
+import { execFileSync } from "node:child_process";
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 const ROOT = join(import.meta.dirname, "..", "..");
 const TESTS = join(ROOT, "tests");
+
+/**
+ * Directories that are not part of this repository's source, however deep
+ * they sit under `tests/`.
+ *
+ * `tests/corpus/.cache/` holds CHECKED-OUT THIRD-PARTY REPOSITORIES — the
+ * Vitest and Vite trees the corpus re-samples against. It is gitignored, so
+ * nothing in it can ever be reviewed or committed, and it is thousands of
+ * files of other people's code that happen to use `process.cwd()`. Scanning it
+ * produced eight violations, none of them this repository's, and it made the
+ * gate fail on any machine that has run `npm run corpus:audit` while
+ * passing on one that has not — the exact "green here, red in CI" split this
+ * guard exists to prevent, pointed the other way.
+ *
+ * `tests/corpus/review/` is NOT gitignored, so it is listed separately rather
+ * than swept in with the cache: it holds seven tracked Markdown review sheets.
+ * The rationale is the same — a human's notes about a fixture are not source —
+ * and stating it on its own line is what stops the exclusion from quietly
+ * growing to cover code nobody intended to skip.
+ */
+const NOT_OUR_SOURCE = ["tests/corpus/.cache/", "tests/corpus/review/"];
 
 /** Every test file, recursively, without a third-party glob. */
 function testFiles(dir: string): string[] {
@@ -32,6 +54,23 @@ function testFiles(dir: string): string[] {
     if (statSync(full).isDirectory()) return testFiles(full);
     return entry.endsWith(".ts") ? [full] : [];
   });
+}
+
+/** Tracked files under a directory, by `git ls-files`. Empty on a non-checkout. */
+function trackedUnder(relPrefix: string): string[] {
+  try {
+    return execFileSync("git", ["ls-files", "--", relPrefix], {
+      cwd: ROOT,
+      encoding: "utf8",
+      maxBuffer: 32 * 1024 * 1024,
+    })
+      .split("\n")
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .filter((file) => file.endsWith(".ts"));
+  } catch {
+    return [];
+  }
 }
 
 /** Repo-relative path in the same form the tables below are written in. */
@@ -121,6 +160,7 @@ describe("no test writes to the repository it runs in", () => {
   for (const file of files) {
     const rel = repoRelative(file);
     if (rel === SELF) continue;
+    if (NOT_OUR_SOURCE.some((prefix) => rel.startsWith(prefix))) continue;
     const source = code(readFileSync(file, "utf8"));
     for (const call of WRITE_CALLS) {
       if (writeCallPattern(call).test(source)) {
@@ -146,6 +186,18 @@ describe("no test writes to the repository it runs in", () => {
 
   it("no filesystem call writes to the checkout root", () => {
     expect(violations).toEqual([]);
+  });
+
+  it("no excluded directory holds tracked TypeScript", () => {
+    // An exclusion has to EARN its place. `add "tests/corpus/review/"` and
+    // every test file written there afterwards is invisible to this guard, with
+    // no diff to review and nothing to notice — the same shape as an exemption
+    // for a deleted file. Both current exclusions are checked-out
+    // third-party trees and Markdown review sheets, and this assertion is what
+    // keeps them that way.
+    for (const prefix of NOT_OUR_SOURCE) {
+      expect(trackedUnder(prefix), prefix).toEqual([]);
+    }
   });
 
   it("the scanner detects the shape that actually occurred", () => {

@@ -3,17 +3,17 @@
   "artifact": "v6-inventory",
   "generatedBy": "npm run docs:v6-inventory",
   "wave": "0",
-  "baseSha": "d17027be65cab65c2026faca8b42ba84cf1bdc98",
+  "baseSha": "94a4c3299c6de382f9b93bc559c545fe4aa3001e",
   "version": "5.0.0",
   "publishedStable": "5.0.0",
   "counts": {
-    "srcFiles": 324,
-    "testSpecs": 677,
+    "srcFiles": 301,
+    "testSpecs": 669,
     "rulesLive": 79,
     "rulesRetired": 22,
-    "rulesMeasured": 74,
+    "rulesMeasured": 73,
     "adapters": 11,
-    "commands": 38,
+    "commands": 33,
     "frameworks": 14,
     "ciProviders": 6,
     "qaDomains": 13,
@@ -34,7 +34,8 @@
     ],
     "census": {
       "M1": 24,
-      "M2": 9
+      "M2": 5,
+      "M3": 4
     },
     "frameworkInventoryLadder": {
       "F4": 1,
@@ -51,20 +52,21 @@
   "ruleRegistry": {
     "live": 79,
     "retired": 22,
-    "measured": 74,
+    "measured": 73,
     "byTier": {
       "quarantine": 34,
-      "extended": 26,
-      "core": 19
+      "extended": 45
     }
   },
   "ledgers": {
     "gapLedger": {
       "total": 17,
       "byStatus": {
-        "CONFIRMED_STILL_OPEN": 14,
-        "STALE_UNVERIFIABLE": 2,
-        "ALREADY_FIXED": 1
+        "CONFIRMED_STILL_OPEN": 7,
+        "STALE_UNVERIFIABLE": 1,
+        "EXTERNAL_PENDING": 7,
+        "ALREADY_FIXED": 1,
+        "CLOSED_DECISION_RECORDED": 1
       },
       "bySeverity": {
         "high": 6,
@@ -110,7 +112,7 @@
     "mcp": "PRESENT",
     "vscode": "ABSENT",
     "githubApp": "ABSENT",
-    "dashboard": "PROVISIONAL"
+    "dashboard": "ABSENT"
   },
   "exitCodes": {
     "frozen": [0, 1, 2, 10, 20],
@@ -154,11 +156,11 @@
       {
         "specSection": "§3",
         "area": "Domain coverage model",
-        "state": "PARTIALLY_COMPLETE",
+        "state": "MISSING",
         "wave": "1",
-        "evidence": ["src/qa/domain-model.ts"],
+        "evidence": [],
         "unverifiedEvidence": [],
-        "note": "11 provisional domain records; the security domain is BLOCKED."
+        "note": "The only implementation was src/qa/domain-model.ts — 11 provisional domain records, security BLOCKED — and it had no importer, so the v6 carve deleted it rather than leave an inventory row citing a file that does not exist. There is no domain coverage model. This row is the work queue, not a description of what exists."
       },
       {
         "specSection": "§4",
@@ -218,7 +220,7 @@
         "state": "ALREADY_COMPLETE",
         "wave": "5",
         "evidence": ["src/engine/runtime-evidence-graph.ts"],
-        "unverifiedEvidence": [],
+        "unverifiedEvidence": ["src/engine/runtime-evidence-graph.ts"],
         "note": "Provisional but present."
       },
       {
@@ -227,7 +229,7 @@
         "state": "ALREADY_COMPLETE",
         "wave": "5",
         "evidence": ["src/engine/runtime-evidence-graph.ts"],
-        "unverifiedEvidence": [],
+        "unverifiedEvidence": ["src/engine/runtime-evidence-graph.ts"],
         "note": "Freshness binding exists."
       },
       {
@@ -245,7 +247,7 @@
         "state": "MISSING",
         "wave": "6",
         "evidence": ["src/mutation/failure-sensitivity.ts"],
-        "unverifiedEvidence": [],
+        "unverifiedEvidence": ["src/mutation/failure-sensitivity.ts"],
         "note": "Contract only, non-gating."
       },
       {
@@ -254,7 +256,7 @@
         "state": "PARTIALLY_COMPLETE",
         "wave": "6",
         "evidence": ["src/mutation/failure-sensitivity.ts"],
-        "unverifiedEvidence": [],
+        "unverifiedEvidence": ["src/mutation/failure-sensitivity.ts"],
         "note": "False-green rules exist; no explicit 5-stage model."
       },
       {
@@ -290,7 +292,7 @@
         "state": "ALREADY_COMPLETE",
         "wave": "7",
         "evidence": ["src/commands/impact.ts", "docs/BLAST-RADIUS-AUDIT.md"],
-        "unverifiedEvidence": [],
+        "unverifiedEvidence": ["src/commands/impact.ts"],
         "note": "Blast radius is computed and audited; the residual gap is that it is per-rule, not per-capability."
       },
       {
@@ -366,13 +368,13 @@
         "note": "Extension domain by design."
       },
       {
-        "specSection": "§26",
+        "specSection": "§8",
         "area": "Accessibility QA",
-        "state": "PARTIALLY_COMPLETE",
+        "state": "MISSING",
         "wave": "8",
-        "evidence": ["src/qa/domain-model.ts"],
+        "evidence": [],
         "unverifiedEvidence": [],
-        "note": "Automation coverage only; human-required axis absent."
+        "note": "The automation half of the axis lived in src/qa/domain-model.ts, which the v6 carve deleted as unwired. The human-required axis was never present, so what remains is not a partial model — it is none, and a row claiming otherwise would be citing a file that does not exist."
       },
       {
         "specSection": "§27",
@@ -521,7 +523,7 @@
           "src/engine/coverage-ingestion.ts",
           "src/rules/ci/qa-ci-005-report-never-generated.ts"
         ],
-        "unverifiedEvidence": [],
+        "unverifiedEvidence": ["src/engine/coverage-ingestion.ts"],
         "note": "Coverage is evidence, not truth."
       },
       {
@@ -548,7 +550,7 @@
         "state": "PARTIALLY_COMPLETE",
         "wave": "7",
         "evidence": ["src/commands/impact.ts", "src/traceability"],
-        "unverifiedEvidence": [],
+        "unverifiedEvidence": ["src/commands/impact.ts"],
         "note": "Impact-driven ordering exists; the risk model itself is not derived from corpus frequency."
       },
       {
@@ -605,7 +607,7 @@
         "state": "ALREADY_COMPLETE",
         "wave": "4",
         "evidence": ["src/frameworks/universal-pack-contract.ts"],
-        "unverifiedEvidence": [],
+        "unverifiedEvidence": ["src/frameworks/universal-pack-contract.ts"],
         "note": "Contracts exist; packs are the Wave 8 work."
       },
       {
@@ -677,7 +679,7 @@
         "state": "PARTIALLY_COMPLETE",
         "wave": "10",
         "evidence": ["src/commands/dashboard.ts"],
-        "unverifiedEvidence": [],
+        "unverifiedEvidence": ["src/commands/dashboard.ts"],
         "note": "Local HTML only."
       },
       {
@@ -740,7 +742,7 @@
         "state": "ALREADY_COMPLETE",
         "wave": "9",
         "evidence": ["src/commands/debt.ts"],
-        "unverifiedEvidence": [],
+        "unverifiedEvidence": ["src/commands/debt.ts"],
         "note": "The debt register ships as a command."
       },
       {
@@ -788,7 +790,7 @@
         "state": "ALREADY_COMPLETE",
         "wave": "11",
         "evidence": ["src/plugins/sdk-contract.ts"],
-        "unverifiedEvidence": [],
+        "unverifiedEvidence": ["src/plugins/sdk-contract.ts"],
         "note": "Custom rules start unproven."
       },
       {

@@ -61,7 +61,7 @@ describe("coverage exclusion truth ledger (V5-000)", () => {
     const ledger = readLedger(ROOT);
     for (const entry of ledger.entries) {
       expect(entry.classification, entry.path).toMatch(
-        /^(PERMANENT_STRUCTURAL|DEAD_CODE|CONTRACT_ONLY|SHIPPED_SURFACE)$/,
+        /^(PERMANENT_STRUCTURAL|DEAD_CODE|CONTRACT_ONLY|UNIMPLEMENTED_SPEC|SHIPPED_SURFACE)$/,
       );
       expect(entry.owner?.length, entry.path).toBeGreaterThan(0);
       expect(entry.justification?.length, entry.path).toBeGreaterThan(0);

@@ -19,7 +19,6 @@
 import { describe, expect, it } from "vitest";
 
 import { parseJunitXml } from "../../src/forensics/parse-junit.js";
-import { parseMutmutXml } from "../../src/mutation/parse-mutmut.js";
 import {
   looksLikeJestJson,
   parseJestJson,
@@ -31,7 +30,7 @@ import {
 import { parsePlaywrightJson } from "../../src/forensics/parse-playwright-json.js";
 import { hostileJsonCases, hostileXmlCases } from "./fuzz-corpus.js";
 
-describe("adversarial fuzz — XML ingesters (junit + mutmut)", () => {
+describe("adversarial fuzz — the XML ingester", () => {
   const cases = hostileXmlCases();
 
   for (const c of cases) {
@@ -39,14 +38,6 @@ describe("adversarial fuzz — XML ingesters (junit + mutmut)", () => {
       const out = parseJunitXml(c.payload);
       expect(Array.isArray(out)).toBe(true);
       expect(Object.getPrototypeOf(out)).toBe(Array.prototype);
-    });
-
-    it(`mutmut contains: ${c.label}`, () => {
-      let out: unknown;
-      expect(() => {
-        out = parseMutmutXml(c.payload);
-      }).not.toThrow();
-      expect(out !== undefined).toBe(true);
     });
   }
 

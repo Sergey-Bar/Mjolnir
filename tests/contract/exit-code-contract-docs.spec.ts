@@ -42,7 +42,6 @@ const DOC_SURFACES = [
   "site/reference/cli.md",
   "site/guide/ci.md",
   "README.md",
-  "README.br.md",
 ];
 
 describe("the exit-code contract is stated the same way everywhere", () => {

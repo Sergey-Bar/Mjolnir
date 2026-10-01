@@ -53,11 +53,10 @@
       "disposition": "TESTED",
       "owner": "qa-owner",
       "evidence": [
-        "tests/reporter/sarif-compliance.spec.ts",
         "tests/reporters/reporters.spec.ts"
       ],
-      "command": "npx vitest run tests/reporter/sarif-compliance.spec.ts tests/reporters/reporters.spec.ts",
-      "fixture": "tests/reporter/sarif-compliance.spec.ts :: schema-valid SARIF and severity mapping; tests/reporters/reporters.spec.ts :: reporter output contract",
+      "command": "npx vitest run tests/reporters/reporters.spec.ts",
+      "fixture": "tests/reporters/reporters.spec.ts :: reporter output contract",
       "observed_result": "PASS",
       "resource_budget": "180s",
       "last_candidate": "mjolnir-working-candidate-001"
@@ -122,11 +121,10 @@
       "disposition": "TESTED",
       "owner": "qa-owner",
       "evidence": [
-        "tests/contract/site-formats.spec.ts",
-        "tests/readme-translations.spec.ts"
+        "tests/contract/site-formats.spec.ts"
       ],
-      "command": "npx vitest run tests/contract/site-formats.spec.ts tests/readme-translations.spec.ts",
-      "fixture": "tests/contract/site-formats.spec.ts :: README/docs links and supported locale references; tests/readme-translations.spec.ts :: README anchors",
+      "command": "npx vitest run tests/contract/site-formats.spec.ts",
+      "fixture": "tests/contract/site-formats.spec.ts :: README/docs links and supported locale references",
       "observed_result": "PASS",
       "resource_budget": "180s",
       "last_candidate": "mjolnir-working-candidate-001"
@@ -922,10 +920,9 @@
       "disposition": "TESTED",
       "owner": "qa-owner",
       "evidence": [
-        "tests/forensics/triage-workflow.spec.ts",
         "tests/engine/analysis/parser-cancellation.spec.ts"
       ],
-      "command": "npx vitest run tests/forensics/triage-workflow.spec.ts tests/engine/analysis/parser-cancellation.spec.ts",
+      "command": "npx vitest run tests/engine/analysis/parser-cancellation.spec.ts",
       "fixture": "Timeout and cancellation workflow fixtures",
       "observed_result": "PASS",
       "resource_budget": "240s",
@@ -2190,7 +2187,6 @@
       "disposition": "BLOCKED",
       "owner": "qa-owner",
       "evidence": [
-        "tests/readme-translations.spec.ts",
         "docs/RELEASE-TRAINS.md"
       ],
       "command": null,

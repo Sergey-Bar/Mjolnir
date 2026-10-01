@@ -79,14 +79,17 @@ const KNOWN_SUBCOMMANDS = [
  * promise the CLI does not keep. The original test only checked the
  * second direction, which is why `diff` and `verify` could be shipped
  * verbs with no README row and nothing failed.
+ *
+ * The list is now EMPTY, and that is the point of having it. `scan` carried an
+ * exception for the whole life of the check — the README documented the default
+ * path as bare `mjolnir`, and the explicit spelling was treated as a synonym.
+ * The v6 carve retired `diff`, and `scan --scope changed` had to be written
+ * out for the PR-gate story, which is what finally put a `mjolnir scan` row in
+ * the table. The exception could then be dropped, and an empty list is the only
+ * version of this map worth keeping: every entry is a command the README
+ * declines to explain.
  */
-const DELIBERATELY_UNDOCUMENTED: ReadonlyMap<string, string> = new Map([
-  [
-    "scan",
-    "the default path — the README documents it as bare `mjolnir`, and the " +
-      "explicit spelling is a synonym, not a separate command worth a row",
-  ],
-]);
+const DELIBERATELY_UNDOCUMENTED: ReadonlyMap<string, string> = new Map();
 
 describe("README command table", () => {
   const commands = extractReadmeCommands(README);

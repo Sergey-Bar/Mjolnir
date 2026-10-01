@@ -26,6 +26,11 @@ import {
   deriveCiProviderEntries,
 } from "../../src/v6/ecosystem-census.js";
 import { FRAMEWORK_INVENTORY } from "../../src/frameworks/framework-inventory.js";
+import {
+  getProviderCapabilities,
+  listProviderCapabilities,
+  validateProviderCapabilityRecord,
+} from "../../src/frameworks/provider-capability-contract.js";
 import { readFileSync } from "node:fs";
 
 const ROOT = join(import.meta.dirname, "..", "..");
@@ -36,21 +41,92 @@ function ciEntries() {
 }
 
 describe("the census derives CI support from the scanner, not from the filesystem", () => {
-  it("every SUPPORTED CI entry names an adapter the scanner actually registers", () => {
-    for (const entry of ciEntries()) {
-      if (entry.state !== "SUPPORTED") continue;
+  it("every CI entry that CLAIMS an adapter is one the scanner registers", () => {
+    // KEYED ON THE ADAPTER, not on `state === "SUPPORTED"`.
+    //
+    // The first version filtered to SUPPORTED entries — and 3.3 demoted every
+    // one of them, so the loop body stopped executing and the file's headline
+    // assertion became a test that cannot fail. That is the failure mode this
+    // whole change set was assembled to remove, appearing inside the test
+    // written to catch it.
+    //
+    // The property that is actually worth holding does not mention the state
+    // at all: if an entry CLAIMS an adapter, that adapter is registered. It
+    // holds for TARGET entries, SUPPORTED entries, and every state between.
+    const claiming = ciEntries().filter(
+      (entry) => (entry.adapter ?? "") !== "",
+    );
+    // The fixture must not be vacuous either — with no entry claiming an
+    // adapter there is nothing to check and the test is green for the wrong
+    // reason.
+    expect(claiming.length).toBeGreaterThan(0);
+    for (const entry of claiming) {
       const ids = (entry.adapter ?? "").split(",").filter(Boolean);
-      expect(
-        ids.length,
-        `${entry.id} is SUPPORTED with no adapter`,
-      ).toBeGreaterThan(0);
       for (const id of ids) {
         expect(
           registeredIds.has(id),
-          `${entry.id} claims SUPPORTED via "${id}", which SCAN_ADAPTERS does not register`,
+          `${entry.id} (${entry.state}) claims an adapter via "${id}", which SCAN_ADAPTERS does not register`,
         ).toBe(true);
       }
     }
+  });
+
+  it("the declared capability record is VALIDATED, not merely enumerated", () => {
+    // `deriveCiProviderEntries` consulted `CI_PROVIDER_CAPABILITY_RECORDS` for
+    // one thing — which providers get an entry — and never ran the contract's
+    // own validator over it, so a record carrying a forbidden
+    // `executable-bypass` field would have been published exactly like a clean
+    // one. The census now calls `validateProviderCapabilityRecord` per provider.
+    for (const entry of ciEntries()) {
+      expect(
+        entry.notApplicableReason ?? "",
+        `${entry.id} carries a capability record its own validator rejected`,
+      ).toBe("");
+    }
+  });
+
+  it("the accessor resolves a provider and refuses an unknown one", () => {
+    // `CANONICAL_RECORDS` was private with no accessor, so the census could
+    // enumerate four providers but could not ASK about one — and a record that
+    // can only be enumerated is one whose contents nothing checks.
+    expect(getProviderCapabilities("azure-pipelines")?.provider).toBe(
+      "azure-pipelines",
+    );
+    // Normalised, so a caller cannot get a silent `null` from a slug written
+    // the other way round.
+    expect(getProviderCapabilities("Azure_Pipelines")?.provider).toBe(
+      "azure-pipelines",
+    );
+    expect(getProviderCapabilities("nope")).toBeNull();
+    expect(listProviderCapabilities().length).toBeGreaterThan(0);
+  });
+
+  it("every provider the census lists has a validated capability record", () => {
+    const slugs = ciEntries().map((entry) => entry.name);
+    expect(slugs.length).toBeGreaterThan(0);
+    for (const slug of slugs) {
+      expect(getProviderCapabilities(slug), slug).not.toBeNull();
+      expect(
+        validateProviderCapabilityRecord(getProviderCapabilities(slug)).valid,
+        `${slug}'s record does not pass its own validator`,
+      ).toBe(true);
+    }
+  });
+
+  it("no CI entry is SUPPORTED, and that is a measurement rather than an absence", () => {
+    // The consequence of 3.3, asserted so the state cannot drift back
+    // unnoticed: `SUPPORTED` now needs an adapter AND a verified fixture quad,
+    // and no CI-provider ecosystem has a complete quad. If a future backfill
+    // earns one, THIS test is the thing that has to be updated deliberately —
+    // which is the point of naming it rather than leaving it implicit.
+    const supported = ciEntries().filter(
+      (entry) => entry.state === "SUPPORTED",
+    );
+    expect(
+      supported.map((entry) => entry.id),
+      "a CI entry reached SUPPORTED; the quad backfill has earned one — update this " +
+        "assertion and the SUPPORTED_WITHOUT_QUAD arm's premise with it",
+    ).toEqual([]);
   });
 
   it("every registered CI-provider adapter is claimed by a census entry", () => {
@@ -61,6 +137,12 @@ describe("the census derives CI support from the scanner, not from the filesyste
     // Scoped to CI_PROVIDER rows on purpose. `SCAN_ADAPTERS` also holds the
     // test-framework adapters (typescript, python), which are not
     // ci-cd-providers and are deliberately absent from this census.
+    //
+    // CLAIMED, not SUPPORTED. The two were conflated until 3.3: an adapter
+    // is a declaration that support exists, and a fixture quad is the
+    // observation that it does. Demoting every adapter-bearing provider
+    // (33 entries) is the honest result of asking the second question, and
+    // this test must not demand the first answer's phrasing back.
     const ciAdapters = new Set(
       FRAMEWORK_INVENTORY.filter((f) => f.entityType === "CI_PROVIDER").flatMap(
         (f) => f.executorAdapterIds,
@@ -68,7 +150,6 @@ describe("the census derives CI support from the scanner, not from the filesyste
     );
     const claimed = new Set(
       ciEntries()
-        .filter((entry) => entry.state === "SUPPORTED")
         .flatMap((entry) => (entry.adapter ?? "").split(","))
         .filter(Boolean),
     );
@@ -96,13 +177,10 @@ describe("the census derives CI support from the scanner, not from the filesyste
     }
     for (const entry of ciEntries()) {
       const expected = declared.get(entry.name) ?? [];
-      if (entry.state !== "SUPPORTED") {
-        expect(
-          expected.some((id) => registeredIds.has(id)),
-          `${entry.id} is not SUPPORTED, but its inventory row declares a registered adapter`,
-        ).toBe(false);
-        continue;
-      }
+      // Every entry records the adapters its inventory row declares, whatever
+      // its state. An entry that hid its adapter while demoted would make the
+      // demotion unreviewable — a reader could not tell "no adapter" from
+      // "adapter, but unproven".
       for (const id of expected) {
         expect(entry.adapter ?? "").toContain(id);
       }

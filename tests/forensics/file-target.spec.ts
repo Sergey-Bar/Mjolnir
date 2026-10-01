@@ -14,19 +14,11 @@
  *    path already produced.
  */
 
-import {
-  existsSync,
-  mkdirSync,
-  mkdtempSync,
-  rmSync,
-  writeFileSync,
-} from "node:fs";
+import { existsSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { runTriageCommand } from "../../src/cli.js";
-import { runForensicsCommand } from "../../src/cli-handlers.js";
 import { analyze, renderLeaderboard } from "../../src/forensics/analyze.js";
 import type { TestRecord } from "../../src/forensics/types.js";
 import { runForensics } from "../../src/forensics/run.js";
@@ -48,33 +40,6 @@ beforeEach(() => {
 afterEach(() => {
   process.chdir(origCwd);
   rmSync(dir, { recursive: true, force: true });
-});
-
-describe("`triage <report-file>` writes TRIAGE.md next to the file (M1)", () => {
-  it("exits 0 and writes TRIAGE.md into the file's directory", () => {
-    mkdirSync(join(dir, "results"));
-    const reportFile = join(dir, "results", "report.xml");
-    writeFileSync(reportFile, JUNIT);
-
-    const code = runTriageCommand([reportFile]);
-
-    expect(code, "the documented single-file usage must not crash").toBe(0);
-    expect(existsSync(join(dir, "results", "TRIAGE.md"))).toBe(true);
-    expect(existsSync(join(dir, "results", "report.xml", "TRIAGE.md"))).toBe(
-      false,
-    );
-  });
-
-  it("directory targets still write TRIAGE.md inside the directory (no behavior change)", () => {
-    const resultsDir = join(dir, "results");
-    mkdirSync(resultsDir);
-    writeFileSync(join(resultsDir, "report.xml"), JUNIT);
-
-    const code = runTriageCommand([resultsDir]);
-
-    expect(code).toBe(0);
-    expect(existsSync(join(resultsDir, "TRIAGE.md"))).toBe(true);
-  });
 });
 
 describe("`forensics <report-file>` FLAKY.md honesty (M2)", () => {
@@ -113,14 +78,6 @@ describe("corrupt single-file reports degrade honestly (M3)", () => {
       const { report } = runForensics(corrupt);
       expect(report.totalTests).toBe(0);
     }).not.toThrow();
-  });
-
-  it("`triage <corrupt.json>` exits 2 (honest), never 20 (internal error)", () => {
-    const corrupt = join(dir, "corrupt.json");
-    writeFileSync(corrupt, "{not json at all");
-
-    const code = runTriageCommand([corrupt]);
-    expect(code).toBe(2);
   });
 });
 
@@ -194,12 +151,14 @@ describe("forensics completeness regressions", () => {
       expect(report.analysisComplete).toBe(false);
       expect(report.skippedReports).toBe(1);
       expect(report.incompleteReasons).toContain("parse-failure");
-      expect(
-        runForensicsCommand([dir, "--no-flaky-md"], {
-          out: () => {},
-          err: () => {},
-        }),
-      ).toBe(2);
+      // The `forensics` VERB is retired in the v6 CLI collapse (plan §3), so
+      // the EXIT-CODE half of this assertion went with it — there is no
+      // command left to return 2. What that code encoded, the report says in
+      // words: `analysisComplete: false` and a `parse-failure` reason, both
+      // asserted above. A partial analysis is now reported as a partial
+      // analysis rather than as a command that failed — the same information
+      // with one fewer thing to go wrong, and the `trust-report` path that
+      // consumes it reads the report, not the exit code.
     },
   );
 

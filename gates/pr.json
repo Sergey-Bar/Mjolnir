@@ -4,11 +4,24 @@
   "description": "Every gate that runs on a pull request. The fastest tier: a contributor waits on this, so a gate that can only run after hours of corpus sampling does not belong here — it belongs in nightly, and nightly is a superset, so nothing is lost by leaving it out. `npm test` and `npm run test:coverage:ci` are the same suite under two names and appear once, as `coverage`.",
   "runsOn": ["pull_request", "push"],
   "workflows": [".github/workflows/ci.yml", ".github/workflows/fuzz.yml"],
+  "alsoRunsIn": [".github/workflows/mjolnir.yml"],
   "gates": [
+    {
+      "id": "certification-surface",
+      "command": "npm run check-certification-surface"
+    },
+    {
+      "id": "certification-matrix",
+      "command": "npm run docs:certification-matrix:check"
+    },
+    {
+      "id": "certification-gaps",
+      "command": "npm run docs:certification-gaps:check"
+    },
     { "id": "build", "command": "npm run build" },
     { "id": "typecheck", "command": "npm run typecheck" },
     { "id": "lint", "command": "npm run lint" },
-    { "id": "version-check", "command": "npm run version:check" },
+    { "id": "version-check", "command": "npm run check-version" },
     { "id": "brand-doctor", "command": "npm run brand:doctor" },
     {
       "id": "brand-doctor-selftest",
@@ -19,10 +32,24 @@
     { "id": "coverage-ratchet", "command": "npm run coverage:ratchet" },
     { "id": "property", "command": "npm run test:property" },
     { "id": "audit", "command": "npm run audit:ci" },
-    { "id": "site-doctor", "command": "npm run site:doctor" },
+    { "id": "site-doctor", "command": "npm run doctor" },
     { "id": "ci-standard", "command": "npm run ci:standard" },
     { "id": "self-scan", "command": "node dist/cli.mjs src --json" },
     { "id": "docs-regen", "command": "npm run docs:regen" },
-    { "id": "fuzz", "command": "npm run test:fuzz" }
+    { "id": "fuzz", "command": "npm run test:fuzz" },
+    {
+      "id": "scripts-unimported",
+      "command": "npm run check-unimported-modules"
+    },
+    { "id": "cli-contract", "command": "npm run check-cli-contract" },
+    { "id": "detector-hashes", "command": "npm run check-detector-hashes" },
+    { "id": "qa-ir-parity", "command": "npm run qa-ir:parity" },
+    { "id": "workflow-scripts", "command": "npm run workflow:scripts" },
+    { "id": "config-consumers", "command": "npm run config:consumers" },
+    { "id": "script-reachability", "command": "npm run scripts:reachable" },
+    { "id": "quad-verified", "command": "npm run check-fixture-quad" },
+    { "id": "promotion-ratchet", "command": "npm run rules:promotion:check" },
+    { "id": "provenance-drift", "command": "npm run docs:provenance-drift" },
+    { "id": "claim-integrity", "command": "npm run gates:claim-integrity" }
   ]
 }

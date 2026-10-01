@@ -87,8 +87,7 @@ A first scan of a mature suite will find plenty. Rather than fixing all of it
 before the gate goes on, snapshot what exists and gate only on what is new:
 
 ```bash
-mjolnir baseline          # snapshot today's findings
-mjolnir diff              # from now on: new or worsened findings only
+mjolnir scan --scope changed   # from now on: new or worsened findings only
 ```
 
 `--scope changed` does the same job per-branch, and the two compose: the
@@ -97,8 +96,8 @@ baseline holds the line on the repo, `--scope changed` holds it on the diff.
 ## Reporting into the pull request
 
 ```bash
-mjolnir pr-comment                 # a scoped PR comment, as Markdown
-mjolnir impact --since origin/main # what this branch changed about the score
+mjolnir --format pr-comment        # a scoped PR comment, as Markdown
+mjolnir scan --scope changed    # what this branch changed, in findings
 ```
 
 Both write Markdown to stdout, so posting them is your CI's job — pipe the

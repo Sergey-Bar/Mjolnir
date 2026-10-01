@@ -2,7 +2,7 @@
 
 **Generated — do not edit by hand.** Regenerate: `npm run docs:v6-inventory`.
 
-Baseline commit `d17027be65cab65c2026faca8b42ba84cf1bdc98`.
+Baseline commit `94a4c3299c6de382f9b93bc559c545fe4aa3001e`.
 
 Two sources, one table. Rows marked **Wave 0** were found by this
 inventory and were carried by no ledger before; rows marked **M26
@@ -75,7 +75,7 @@ the actual scope of v6, and it is much larger than the wave list suggests.
 | ------ | -------------------------- | ---------------------- | ---- |
 | §1     | Maturity model             | **INCORRECT**          | 1    |
 | §2     | Capability registry        | **MISSING**            | 1    |
-| §3     | Domain coverage model      | **PARTIALLY_COMPLETE** | 1    |
+| §3     | Domain coverage model      | **MISSING**            | 1    |
 | §4     | QA-IR                      | **PARTIALLY_COMPLETE** | 2    |
 | §5     | CI-IR                      | **PARTIALLY_COMPLETE** | 3    |
 | §6     | Rule certification factory | **PARTIALLY_COMPLETE** | 4    |
@@ -91,7 +91,7 @@ the actual scope of v6, and it is much larger than the wave list suggests.
 | §23    | Mobile QA                  | **MISSING**            | 8    |
 | §24    | Desktop QA                 | **MISSING**            | 8    |
 | §25    | Embedded / IoT             | **MISSING**            | 8    |
-| §26    | Accessibility QA           | **PARTIALLY_COMPLETE** | 8    |
+| §8     | Accessibility QA           | **MISSING**            | 8    |
 | §27    | Visual regression          | **PARTIALLY_COMPLETE** | 8    |
 | §28    | Cross-browser / device     | **PARTIALLY_COMPLETE** | 8    |
 | §29    | i18n / RTL                 | **MISSING**            | 8    |

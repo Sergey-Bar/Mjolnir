@@ -89,6 +89,28 @@ export default tseslint.config(
     files: ["**/*.{ts,tsx,cts}"],
   })),
   {
+    // The ARCHIVED one-shot scripts, under the plain ruleset rather than the
+    // typed one.
+    //
+    // `scripts/apply-depth-adjudications.ts` moved to `scripts/archive/` in
+    // 6.0 and immediately failed: a `.ts` file under `scripts/` is parsed
+    // against a tsconfig project, and this one resolves an import that only
+    // existed where it used to sit. The right shape for a historical script
+    // is a historical lint posture — it is not built, not run, and is kept
+    // only as the record of how an adjudication was applied. Linting it as
+    // live TypeScript would mean either fixing dead code or deleting the
+    // record, and the record is the point.
+    files: ["scripts/archive/**"],
+    rules: {
+      "@typescript-eslint/no-unsafe-call": "off",
+      "@typescript-eslint/no-unsafe-assignment": "off",
+      "@typescript-eslint/no-unsafe-member-access": "off",
+      "@typescript-eslint/no-unsafe-return": "off",
+      "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/no-non-null-assertion": "off",
+    },
+  },
+  {
     files: ["**/*.{ts,tsx,cts}"],
     languageOptions: {
       parserOptions: {

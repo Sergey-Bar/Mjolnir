@@ -3,7 +3,128 @@
   "artifact": "ecosystem-dispositions",
   "generatedBy": "npm run docs:ecosystem",
   "note": "Baseline of recorded dispositions for QA tools the census has no entry for. A tool missing from this file fails `ecosystem:gaps`; that is the drift-lock, not a reminder.",
-  "baseSha": "9e4d78f012c4230f6dad491cb35828263685861c",
-  "count": 0,
-  "dispositions": []
+  "baseSha": "a806496160aeefe64c1795823f90b64cce582835",
+  "count": 20,
+  "dispositions": [
+    {
+      "name": "@vitest/ui",
+      "disposition": "ACCEPTED_AS_TARGET",
+      "note": "Observed in 1 corpus repository/repositories and classified as report-artifact-format. Declared as a census target: no adapter, no fixture quad, no corpus proof. Promote only with adapter + corpus proof.",
+      "owner": "ecosystem-census"
+    },
+    {
+      "name": "faker",
+      "disposition": "ACCEPTED_AS_TARGET",
+      "note": "Observed in 1 corpus repository/repositories and classified as test-framework. Declared as a census target: no adapter, no fixture quad, no corpus proof. Promote only with adapter + corpus proof.",
+      "owner": "ecosystem-census"
+    },
+    {
+      "name": "hypothesis",
+      "disposition": "ACCEPTED_AS_TARGET",
+      "note": "Observed in 1 corpus repository/repositories and classified as test-framework. Declared as a census target: no adapter, no fixture quad, no corpus proof. Promote only with adapter + corpus proof.",
+      "owner": "ecosystem-census"
+    },
+    {
+      "name": "jest-junit",
+      "disposition": "ACCEPTED_AS_TARGET",
+      "note": "Observed in 1 corpus repository/repositories and classified as report-artifact-format. Declared as a census target: no adapter, no fixture quad, no corpus proof. Promote only with adapter + corpus proof.",
+      "owner": "ecosystem-census"
+    },
+    {
+      "name": "mocha",
+      "disposition": "ACCEPTED_AS_TARGET",
+      "note": "Observed in 1 corpus repository/repositories and classified as test-runner. Declared as a census target: no adapter, no fixture quad, no corpus proof. Promote only with adapter + corpus proof.",
+      "owner": "ecosystem-census"
+    },
+    {
+      "name": "parameterized",
+      "disposition": "ACCEPTED_AS_TARGET",
+      "note": "Observed in 1 corpus repository/repositories and classified as test-framework. Declared as a census target: no adapter, no fixture quad, no corpus proof. Promote only with adapter + corpus proof.",
+      "owner": "ecosystem-census"
+    },
+    {
+      "name": "pytest-asyncio",
+      "disposition": "ACCEPTED_AS_TARGET",
+      "note": "Observed in 1 corpus repository/repositories and classified as test-framework. Declared as a census target: no adapter, no fixture quad, no corpus proof. Promote only with adapter + corpus proof.",
+      "owner": "ecosystem-census"
+    },
+    {
+      "name": "pytest-benchmark",
+      "disposition": "ACCEPTED_AS_TARGET",
+      "note": "Observed in 2 corpus repository/repositories and classified as test-framework. Declared as a census target: no adapter, no fixture quad, no corpus proof. Promote only with adapter + corpus proof.",
+      "owner": "ecosystem-census"
+    },
+    {
+      "name": "pytest-codspeed",
+      "disposition": "ACCEPTED_AS_TARGET",
+      "note": "Observed in 1 corpus repository/repositories and classified as test-framework. Declared as a census target: no adapter, no fixture quad, no corpus proof. Promote only with adapter + corpus proof.",
+      "owner": "ecosystem-census"
+    },
+    {
+      "name": "pytest-cov",
+      "disposition": "ACCEPTED_AS_TARGET",
+      "note": "Observed in 3 corpus repository/repositories and classified as test-framework. Declared as a census target: no adapter, no fixture quad, no corpus proof. Promote only with adapter + corpus proof.",
+      "owner": "ecosystem-census"
+    },
+    {
+      "name": "pytest-httpbin",
+      "disposition": "ACCEPTED_AS_TARGET",
+      "note": "Observed in 1 corpus repository/repositories and classified as test-framework. Declared as a census target: no adapter, no fixture quad, no corpus proof. Promote only with adapter + corpus proof.",
+      "owner": "ecosystem-census"
+    },
+    {
+      "name": "pytest-mock",
+      "disposition": "ACCEPTED_AS_TARGET",
+      "note": "Observed in 2 corpus repository/repositories and classified as test-framework. Declared as a census target: no adapter, no fixture quad, no corpus proof. Promote only with adapter + corpus proof.",
+      "owner": "ecosystem-census"
+    },
+    {
+      "name": "pytest-playwright",
+      "disposition": "ACCEPTED_AS_TARGET",
+      "note": "Observed in 2 corpus repository/repositories and classified as test-framework. Declared as a census target: no adapter, no fixture quad, no corpus proof. Promote only with adapter + corpus proof.",
+      "owner": "ecosystem-census"
+    },
+    {
+      "name": "pytest-randomly",
+      "disposition": "ACCEPTED_AS_TARGET",
+      "note": "Observed in 1 corpus repository/repositories and classified as test-framework. Declared as a census target: no adapter, no fixture quad, no corpus proof. Promote only with adapter + corpus proof.",
+      "owner": "ecosystem-census"
+    },
+    {
+      "name": "pytest-repeat",
+      "disposition": "ACCEPTED_AS_TARGET",
+      "note": "Observed in 1 corpus repository/repositories and classified as test-framework. Declared as a census target: no adapter, no fixture quad, no corpus proof. Promote only with adapter + corpus proof.",
+      "owner": "ecosystem-census"
+    },
+    {
+      "name": "pytest-rerunfailures",
+      "disposition": "ACCEPTED_AS_TARGET",
+      "note": "Observed in 1 corpus repository/repositories and classified as test-framework. Declared as a census target: no adapter, no fixture quad, no corpus proof. Promote only with adapter + corpus proof.",
+      "owner": "ecosystem-census"
+    },
+    {
+      "name": "pytest-split",
+      "disposition": "ACCEPTED_AS_TARGET",
+      "note": "Observed in 1 corpus repository/repositories and classified as test-framework. Declared as a census target: no adapter, no fixture quad, no corpus proof. Promote only with adapter + corpus proof.",
+      "owner": "ecosystem-census"
+    },
+    {
+      "name": "pytest-timeout",
+      "disposition": "ACCEPTED_AS_TARGET",
+      "note": "Observed in 1 corpus repository/repositories and classified as test-framework. Declared as a census target: no adapter, no fixture quad, no corpus proof. Promote only with adapter + corpus proof.",
+      "owner": "ecosystem-census"
+    },
+    {
+      "name": "pytest-xdist",
+      "disposition": "ACCEPTED_AS_TARGET",
+      "note": "Observed in 2 corpus repository/repositories and classified as test-framework. Declared as a census target: no adapter, no fixture quad, no corpus proof. Promote only with adapter + corpus proof.",
+      "owner": "ecosystem-census"
+    },
+    {
+      "name": "testfixtures",
+      "disposition": "ACCEPTED_AS_TARGET",
+      "note": "Observed in 1 corpus repository/repositories and classified as test-framework. Declared as a census target: no adapter, no fixture quad, no corpus proof. Promote only with adapter + corpus proof.",
+      "owner": "ecosystem-census"
+    }
+  ]
 }

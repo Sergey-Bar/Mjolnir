@@ -20,7 +20,7 @@
  *   20 — internal error
  *
  * `--json` prints the machine contract and nothing else, so
- * `mjolnir rules capability --json > registry.json` is a clean file. The
+ * `mjolnir explain --list capability --json > registry.json` is a clean file. The
  * exit code is the gate; the JSON is the evidence.
  */
 
@@ -186,7 +186,7 @@ export function runCapabilityCommand(
   if (unknown.length > 0) {
     io.err(`rules capability: unknown argument ${unknown[0] ?? ""}\n`);
     io.err(
-      "  usage: mjolnir rules capability [--json] [--kind <k>] [--maturity M0..M5] [--id <substring>]\n",
+      "  usage: mjolnir explain --list capability [--json] [--kind <k>] [--maturity M0..M5] [--id <substring>]\n",
     );
     io.err(
       "  note: there is deliberately no --set or --promote. Maturity is derived\n" +

@@ -207,7 +207,7 @@ export function renderRuleDocMd(data: RuleDocData): string {
   lines.push(
     "_Generated from the live rule registry and this rule's own committed " +
       "fixtures by `mjolnir`'s doc generator — do not edit by hand. " +
-      "Regenerate with `npm run docs:rules`._",
+      "Regenerate with `npm run generate-rule-docs`._",
   );
   lines.push("");
   lines.push("| Field | Value |");
@@ -321,13 +321,13 @@ export function renderRuleDocMd(data: RuleDocData): string {
   if (occurrences.length === 0) {
     lines.push(
       "UNKNOWN — this rule has not (yet) fired in any of the real OSS " +
-        "repos tracked by `npm run corpus:regression` (see `docs/FP-AUDIT.md`). " +
+        "repos tracked by `npm run corpus:audit` (see `docs/FP-AUDIT.md`). " +
         'That is not the same as "never fires incorrectly" — it just means ' +
         "no occurrence, correct or not, has been observed there yet.",
     );
   } else {
     lines.push(
-      "Real occurrence counts from `npm run corpus:regression` against " +
+      "Real occurrence counts from `npm run corpus:audit` against " +
         "actively-maintained OSS repos — reproduce yourself, don't just " +
         "trust this table (see `docs/FP-AUDIT.md`):",
     );
@@ -352,7 +352,7 @@ export function renderRuleDocMd(data: RuleDocData): string {
   lines.push("---");
   lines.push("");
   lines.push(
-    `Full catalog: \`mjolnir rules --md\` · Live explanation: \`mjolnir explain ${r.id}\``,
+    `Full catalog: \`mjolnir explain --list --md\` · Live explanation: \`mjolnir explain ${r.id}\``,
   );
   return lines.join("\n");
 }
@@ -385,7 +385,7 @@ export function renderRuleDocsIndexMd(
     "# Mjölnir — Rule Reference",
     "",
     "_Generated from the live rule registry — do not edit by hand. " +
-      "Regenerate with `npm run docs:rules`._",
+      "Regenerate with `npm run generate-rule-docs`._",
     "",
     "One page per rule, each showing a real detected example, the fix, " +
       "confirmation of what it correctly leaves alone, and (when measured) " +

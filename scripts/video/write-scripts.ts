@@ -2,17 +2,17 @@
  * `npm run docs:video:capture` — regenerates the committed video scripts
  * from real Mjolnir executions.
  *
- * Writes assets/video/script.{demo,tour}.json. Those files are the only
- * thing the renderer is allowed to draw, and
- * `tests/contract/video-script.spec.ts` re-runs these same captures and
- * fails if either has drifted from what the CLI now prints.
+ * Writes assets/video/script.demo.json. That file is the only thing
+ * the renderer is allowed to draw, and
+ * `tests/contract/video-script.spec.ts` re-runs this same capture and
+ * fails if it has drifted from what the CLI now prints.
  */
 
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 
 import { stripAnsi } from "../readme-svg.js";
-import { captureDemoScript, captureTourScript } from "./capture.js";
+import { captureDemoScript } from "./capture.js";
 import { assertGlyphCoverage } from "./check-glyphs.js";
 import { scriptPath, serialize } from "./script-io.js";
 import type { VideoScript } from "./script-types.js";
@@ -34,7 +34,7 @@ export function assertCapturedGlyphs(scripts: VideoScript[]): void {
 }
 
 async function main(): Promise<void> {
-  const scripts = [await captureDemoScript(), await captureTourScript()];
+  const scripts = [await captureDemoScript()];
   assertCapturedGlyphs(scripts);
 
   for (const script of scripts) {

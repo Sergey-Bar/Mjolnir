@@ -507,7 +507,7 @@ describe("Playwright reporter publication status is explicit", () => {
 describe("every documented `npm run` command actually exists", () => {
   // A real, shipped defect this locks: all 91 generated rule pages told
   // the reader to reproduce corpus counts with a script whose name had
-  // been changed to "corpus:regression" without updating the generator
+  // been changed to "corpus:audit" without updating the generator
   // string, so the one command a skeptical reader would actually
   // copy-paste failed with "Missing script". For a tool whose whole
   // claim is "we prove it", that is the worst possible first impression

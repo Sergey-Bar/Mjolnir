@@ -10,9 +10,12 @@
       "SHIPPED_SURFACE": "Reachable from a shipped CLI verb, release gate, or MCP tool. The v5 GA hard gate removes every entry in this class."
     },
     "reviewBySemantics": "A passed reviewBy fails the gate. The date is a deadline to either cover the file or delete it — never a silent renewal.",
-    "defectSignatureSemantics": "A SHIPPED_SURFACE entry carries EITHER `defectSignatures` (regexes that MUST still match the named source file) OR a `closureState` (the asserted defect is closed and no surface of it remains) — never neither, never both. A signature is a DRIFT ALARM, not a defect prover: its job is to fire when anything about the thing the entry is about changes, so fixing code forces a ledger update in the same commit. A signature that stops matching fails the gate with 'defect closed or drifted — remove or reclassify'. This is deliberately the same mechanism as tests/corpus/detector-hashes.json: a recorded fingerprint of source that CI diffs. PERMANENT_STRUCTURAL entries are exempt — they are evidenced by a structural reason, not by a defect.",
+    "defectSignatureSemantics": "A SHIPPED_SURFACE entry carries EITHER `defectSignatures` (regexes that MUST still match the named source file) OR a `closureState` (the asserted defect is closed and no surface of it remains) — never neither, never both. A signature is a DRIFT ALARM, not an ADMISSION and not a defect prover, and the distinction is the one this ledger exists to keep. ADMISSION would mean the signature GRANTS coverage: that matching a regex means the file is covered. It does not — the file is not executed and no test asserts anything about it. A signature's only job is to FIRE when something about the thing the entry is about changes, so a fix forces a ledger update in the same commit. A signature that stops matching fails the gate with 'defect closed or drifted — remove or reclassify', and a signature that keeps matching proves only that nobody has touched the file. Read a pin as 'this is watched', never as 'this is licensed'. This is deliberately the same mechanism as tests/corpus/detector-hashes.json: a recorded fingerprint of source that CI diffs. PERMANENT_STRUCTURAL entries are exempt — they are evidenced by a structural reason, not by a defect.",
+    "contractOnlyCeiling": 0,
     "shippedSurfaceCeiling": 10,
-    "shippedSurfaceCeilingMeaning": "Ratchet over shipped surfaces that are not PERMANENT_STRUCTURAL, not a target. The count may fall (removal, merge, real tests) and may never rise. Structural entries are excluded from the count because they are evidenced by a structural reason rather than a removable gap."
+    "shippedSurfaceCeilingMeaning": "Ratchet over shipped surfaces that are not PERMANENT_STRUCTURAL, not a target. The count may fall (removal, merge, real tests) and may never rise. Structural entries are excluded from the count because they are evidenced by a structural reason rather than a removable gap.",
+    "unimplementedSpecs": 12,
+    "unimplementedSpecsMeaning": "Files under src/ that no production path imports and whose subsystem is not implemented. NOT a wiring backlog: m40 was deleted rather than wired because language-manifest already answered the question it was specifying, and the other eleven describe V6 waves with nothing behind them. Counted so the number is visible, not so it can be ratcheted to zero by deleting specifications. The same twelve files are listed as ORPHAN entries in scripts/check-unimported-modules.mjs -- import disclosure there, coverage exclusion here. The two are deliberately not merged: a module can be on one without the other meaning anything, and coupling them would trade a stale-entry risk for a coupling cost."
   },
   "entries": [
     {
@@ -73,26 +76,6 @@
       ]
     },
     {
-      "path": "src/commands/dashboard.ts",
-      "classification": "SHIPPED_SURFACE",
-      "shippedSurface": true,
-      "owner": "maintainers",
-      "reviewBy": "2026-12-31",
-      "removalPlan": "V5-083 — become a projection of the canonical proof; make the last independent-verdict surface a projection of the one determination.",
-      "justification": "Shipped as `dashboard`; the verb still ships, so the file stays excluded until V5-083 makes it a projection. This is removal debt, not a live defect.",
-      "closureState": "CLOSED on both asserted defects (2026-09-26). The hardcoded zeros are gone — every figure is now `!== null ? … : \"N/A\"` — the score band reads src/reporter/presentation.ts instead of a private 60-point split, and the determination comes from the shared `decideClaim`. What remains is a rendering projection, and V5-083 has not landed."
-    },
-    {
-      "path": "src/commands/exec-report.ts",
-      "classification": "SHIPPED_SURFACE",
-      "shippedSurface": true,
-      "owner": "maintainers",
-      "reviewBy": "2026-12-31",
-      "removalPlan": "V5-001 — landed: the fabricated values are removed; V5-083 — make it a proof projection.",
-      "justification": "Shipped as `exec-report`; the verb still ships, so the file stays excluded until V5-083 makes it a proof projection. This is removal debt, not a live defect.",
-      "closureState": "CLOSED on the asserted defect (2026-09-26). Numbers that had no provenance were deleted, and the report no longer carries an independent release verdict: it defers to the one determination function and states plainly that business risk, ROI and release readiness are decisions this tool has no evidence for."
-    },
-    {
       "path": "src/commands/policy.ts",
       "classification": "SHIPPED_SURFACE",
       "shippedSurface": true,
@@ -106,151 +89,14 @@
       ]
     },
     {
-      "path": "src/commands/trend.ts",
-      "classification": "SHIPPED_SURFACE",
-      "shippedSurface": true,
-      "owner": "maintainers",
-      "reviewBy": "2026-12-31",
-      "removalPlan": "V5-090 — merge into trust-trend; dashboards render stored evidence and never invent truth.",
-      "justification": "Shipped as `trend`; duplicates trust-trend, and every stored snapshot carries a wall-clock `timestamp`, so two runs over an unchanged repository write different bytes. The signature below is the field that makes the store non-deterministic.",
-      "defectSignatures": [
-        "export interface TrendSnapshot \\{",
-        "\\n  timestamp: string;\\n"
-      ]
-    },
-    {
-      "path": "src/bench/m48-scale-operating-model.ts",
-      "classification": "CONTRACT_ONLY",
-      "shippedSurface": false,
-      "owner": "maintainers",
-      "reviewBy": "2026-12-31",
-      "removalPlan": "V5-100/V5-102 — make the budgets real against the FileExecutor pool, or state canBlock:false honestly.",
-      "justification": "Scale budgets with no executor behind them; contract test only.",
-      "defectSignatures": ["export function canTransitionM48State\\b"]
-    },
-    {
       "path": "src/change-intelligence.ts",
-      "classification": "CONTRACT_ONLY",
+      "classification": "UNIMPLEMENTED_SPEC",
       "shippedSurface": false,
       "owner": "maintainers",
       "reviewBy": "2026-12-31",
-      "removalPlan": "V5-052/V5-053 — wire the change-impact graph into change-driven selection.",
+      "removalPlan": "SPECIFICATION, NOT BACKLOG. Nothing in src/ imports this and nothing implements the subsystem it describes. Keep it as the design of record until the subsystem is built, then wire it and reclassify as SHIPPED_SURFACE — or delete it, which is recoverable and is the cheaper answer if the wave it belongs to is not going to happen.",
       "justification": "Affected-path and selected-vs-full contracts exist with no production caller.",
       "defectSignatures": ["export function calculateAffectedPaths\\b"]
-    },
-    {
-      "path": "src/engine/m38-challenge-contract.ts",
-      "classification": "CONTRACT_ONLY",
-      "shippedSurface": false,
-      "owner": "maintainers",
-      "reviewBy": "2026-12-31",
-      "removalPlan": "V5-063 — add the production challenge executor that persists results.",
-      "justification": "Caller-driven challenge contract; contract test only.",
-      "defectSignatures": ["export function evaluateM38Challenges\\b"]
-    },
-    {
-      "path": "src/engine/m40-language-expansion-contract.ts",
-      "classification": "CONTRACT_ONLY",
-      "shippedSurface": false,
-      "owner": "maintainers",
-      "reviewBy": "2026-12-31",
-      "removalPlan": "V5-023 — adopt as the single language admission ledger rather than a parallel state machine.",
-      "justification": "Intake/saturation gates are the right model but run no admission today.",
-      "defectSignatures": ["export function evaluateM40LanguageExpansion\\b"]
-    },
-    {
-      "path": "src/engine/m43-system-of-systems.ts",
-      "classification": "CONTRACT_ONLY",
-      "shippedSurface": false,
-      "owner": "maintainers",
-      "reviewBy": "2026-12-31",
-      "removalPlan": "Deferred past 5.0 — stays a catalogued, gated row, never a claim.",
-      "justification": "Cross-repository contract beyond the 5.0 product center.",
-      "defectSignatures": ["export function serializeM43Graph\\b"]
-    },
-    {
-      "path": "src/engine/m44-historical-intelligence.ts",
-      "classification": "CONTRACT_ONLY",
-      "shippedSurface": false,
-      "owner": "maintainers",
-      "reviewBy": "2026-12-31",
-      "removalPlan": "V5-072 — become the durable event/hash chain behind the single evidence store.",
-      "justification": "History model with no persistence; three competing stores exist instead.",
-      "defectSignatures": ["export function validateM44History\\b"]
-    },
-    {
-      "path": "src/engine/m49-experience-parity-contract.ts",
-      "classification": "CONTRACT_ONLY",
-      "shippedSurface": false,
-      "owner": "maintainers",
-      "reviewBy": "2026-12-31",
-      "removalPlan": "W8 — becomes cross-surface projection parity for the canonical proof.",
-      "justification": "Parity contract with no production consumer.",
-      "defectSignatures": [
-        "export function createM49CanonicalResultViewModel\\b"
-      ]
-    },
-    {
-      "path": "src/engine/runtime-evidence-graph.ts",
-      "classification": "CONTRACT_ONLY",
-      "shippedSurface": false,
-      "owner": "maintainers",
-      "reviewBy": "2026-12-31",
-      "removalPlan": "V5-044 — become the single evidence graph, replacing the empty M13/run-identity skeleton.",
-      "justification": "Richest freshness/contradiction model in the repo, with no importer.",
-      "defectSignatures": ["export function buildRuntimeEvidenceGraph\\b"]
-    },
-    {
-      "path": "src/frameworks/universal-pack-contract.ts",
-      "classification": "CONTRACT_ONLY",
-      "shippedSurface": false,
-      "owner": "maintainers",
-      "reviewBy": "2026-12-31",
-      "removalPlan": "V5-092 — ship a pack loader so a pack can extend the capability matrix without an engine edit.",
-      "justification": "Pack format only: no pack loader and no pack registry exist.",
-      "defectSignatures": [
-        "export function createUniversalFrameworkPackFactoryRecord\\b"
-      ]
-    },
-    {
-      "path": "src/governance/m33-m34-contract.ts",
-      "classification": "CONTRACT_ONLY",
-      "shippedSurface": false,
-      "owner": "maintainers",
-      "reviewBy": "2026-12-31",
-      "removalPlan": "Deferred past 5.0 — hosted governance is explicitly out of the 5.0 scope.",
-      "justification": "Governance contract with no executor; contract test only.",
-      "defectSignatures": ["export function createM33ControlPlaneRecord\\b"]
-    },
-    {
-      "path": "src/mutation/failure-sensitivity.ts",
-      "classification": "CONTRACT_ONLY",
-      "shippedSurface": false,
-      "owner": "maintainers",
-      "reviewBy": "2026-12-31",
-      "removalPlan": "V5-062 — integrate so surviving mutants and errored mutants lower trust in the proof.",
-      "justification": "Sensitivity model with no production caller.",
-      "defectSignatures": ["export function assessFailureSensitivity\\b"]
-    },
-    {
-      "path": "src/plugins/sdk-contract.ts",
-      "classification": "CONTRACT_ONLY",
-      "shippedSurface": false,
-      "owner": "maintainers",
-      "reviewBy": "2026-12-31",
-      "removalPlan": "V5-091 — enforce inside src/plugins/load.ts so the SDK becomes the real security boundary.",
-      "justification": "The SDK schema is not enforced by the loader that actually requires plugins.",
-      "defectSignatures": ["export function pluginManifestSigningPayload\\b"]
-    },
-    {
-      "path": "src/qa/domain-model.ts",
-      "classification": "CONTRACT_ONLY",
-      "shippedSurface": false,
-      "owner": "maintainers",
-      "reviewBy": "2026-12-31",
-      "removalPlan": "V5-022 — promote src/engine/qa-model.ts to the IR seam; retire the duplicate domain model.",
-      "justification": "Ships honest UNSUPPORTED/NONE states, but no production importer.",
-      "defectSignatures": ["export function validateQaDomainModel\\b"]
     },
     {
       "path": "src/ledger/m26-validators.ts",
@@ -273,7 +119,7 @@
       "owner": "maintainers",
       "reviewBy": "2026-12-31",
       "removalPlan": "V5-007 — single-source the version identity, then cover the drift-detection branches.",
-      "justification": "Runs inside `npm run version:check` on every certify. Version drift detection that is itself untested is exactly the class of defect this ledger exists to expose. The signatures are the drift rules themselves: dropping one of them would let a surface install a version that does not exist on the registry, or hand a reader a mutable tag with no way to pin it, and nothing else would notice.",
+      "justification": "Runs inside `npm run check-version` on every certify. Version drift detection that is itself untested is exactly the class of defect this ledger exists to expose. The signatures are the drift rules themselves: dropping one of them would let a surface install a version that does not exist on the registry, or hand a reader a mutable tag with no way to pin it, and nothing else would notice.",
       "defectSignatures": [
         "export function checkVersionSurfaceEnvelope\\(",
         "export function checkActionDefaultVersion\\(",

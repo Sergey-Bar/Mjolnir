@@ -33,6 +33,7 @@ import {
   type DegradationCount,
 } from "./degradation-ledger.js";
 import { buildTrustSummary } from "./trust-summary.js";
+import { resolveRunMode } from "../governance/run-mode.js";
 import { buildEvidenceGraph, buildRunIdentity } from "./run-identity.js";
 import {
   createExecutor,
@@ -58,6 +59,7 @@ import {
 import { createIgnoreMatcher, LIMITS } from "../discovery/ignores.js";
 import { RULES } from "../rules/index.js";
 import { MEASURED_FP } from "../rules/measured-fp.generated.js";
+import { effectiveTier } from "../rules/measurement.js";
 import {
   computeDimensions,
   computeTotal,
@@ -136,7 +138,13 @@ export const OVERLAP_META_BY_RULE_ID: ReadonlyMap<string, OverlapMeta> =
     RULES.map((r, order) => {
       const meta: OverlapMeta = {
         ...(r.overlapWith ? { overlapWith: r.overlapWith } : {}),
-        ...(r.tier ? { tier: r.tier } : {}),
+        // `effectiveTier`, not `r.tier`. A rule that declares no tier is
+        // resolved from its measurement by the same function every other
+        // surface uses, and a derived `extended` must reach dedup as
+        // `extended` — otherwise the undeclared default in
+        // `ranksBefore` decides survivor quality on a question this repository
+        // already answers elsewhere.
+        tier: effectiveTier(r),
         order,
       };
       return [r.id, meta] as const;
@@ -193,9 +201,13 @@ export async function buildUniversalRules(
     ...plugins.map((p) => ({ name: p.name, rules: p.rules })),
     { name: LOCAL_RULES_DIR, rules: local.rules },
   ].flatMap((p) => p.rules.map(asUniversal));
+  // `effectiveTier` for registry rules, declared for the rest. A plugin's
+  // rule has no measurement, so `effectiveTier` would resolve it from nothing
+  // and throw the tier away; a registry rule that declares none is resolved
+  // from its measurement, which is the whole point of resolving it.
   const tierByRuleId = new Map<string, Tier>();
   for (const r of RULES) {
-    if (r.tier) tierByRuleId.set(r.id, r.tier);
+    tierByRuleId.set(r.id, effectiveTier(r));
   }
   for (const p of plugins) {
     for (const r of p.rules) {
@@ -271,7 +283,24 @@ export interface CliArgs {
   verbose: boolean;
   maxDurationMs: number;
   scopeChanged: boolean;
-  format: "terminal" | "json" | "sarif" | "mermaid" | "codequality";
+  /**
+   * The output shape.
+   *
+   * `trust-report` | `pr-comment` | `github-summary` are the v6 collapse's
+   * REPLACE arm (plan §3): they were separate verbs whose entire body was
+   * "scan, then render". They are render-only — the scan, the findings, the
+   * score and the exit code are identical under all of them, and under
+   * `terminal`, which is the property that lets a format be a flag.
+   */
+  format:
+    | "terminal"
+    | "json"
+    | "sarif"
+    | "mermaid"
+    | "codequality"
+    | "trust-report"
+    | "pr-comment"
+    | "github-summary";
   /** --width override for terminal box/gauge wrapping (Sprint 5 Task 22). */
   width?: number;
   /** --ascii / --no-ascii override for shouldUseAscii()'s heuristic. */
@@ -363,6 +392,30 @@ export interface CliArgs {
    * mode" (no monorepo analysis).
    */
   monorepo?: boolean;
+  /**
+   * --suppressions (v6 collapse, plan §3): print the suppression LEDGER and
+   * stop. A mode, not a verb.
+   *
+   * It is a mode because the ledger is a view of `mjolnir.config.json` and
+   * nothing else — a verb for it would be a command whose whole body is
+   * "read a file and print it", which is what a flag on the command that
+   * enforces the file is for. It reads the CWD, exactly as the retired verb
+   * did, so the one observable behaviour a script can depend on is unchanged.
+   */
+  suppressions?: boolean;
+  /**
+   * --suppression-gate (v6 collapse, plan §3): fail when a suppression is
+   * ungoverned — expired, reasonless, or covering a rule that no longer
+   * exists. Runs the scan first, because a governance judgement about a
+   * suppression needs the findings the suppression would have hidden.
+   */
+  suppressionGate?: boolean;
+  /**
+   * --policy (v6 collapse, plan §3): print the scoring policy in force and
+   * stop. A policy nobody can read is a policy nobody can check, and the
+   * scorer publishes one on purpose.
+   */
+  policy?: boolean;
 }
 
 export interface ScanHooks {
@@ -1315,6 +1368,18 @@ export function assembleScanResult(o: AssembleScanResultInput): ScanResult {
     ),
     config: o.config ?? null,
     engineVersion: ENGINE_VERSION,
+    // ADR 0012: the run mode is part of the identity, so a hosted artefact
+    // and a local-only one can never be compared as though they were the same
+    // run.
+    //
+    // The empty flag bag is a CONSTANT, not an omission: hosted mode is not
+    // implemented, so there is nothing to read a declaration from and every run
+    // is `local-only` by construction. `resolveRunMode` takes its input as an
+    // argument precisely so that adding a real flag later is a one-line change
+    // here rather than the introduction of a runtime-reachable switch. What
+    // the field buys today is the guarantee that the two modes' artefacts
+    // cannot share an identity once the second mode exists.
+    runMode: resolveRunMode({ env: {}, flags: {} }),
     reportDigest,
     trustModelVersion: TRUST_MODEL_VERSION,
     scoringModelVersion: SCORING_MODEL_VERSION,

@@ -1,12 +1,21 @@
-import { existsSync, readFileSync, readdirSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { join } from "node:path";
+import { tmpdir } from "node:os";
 
-import { describe, expect, it } from "vitest";
+import { afterAll, describe, expect, it } from "vitest";
 
 import {
   REQUIREMENT_CLASSIFICATION,
   WAVE0_GAPS,
   collectRepoFacts,
+  countFiles,
   reconcileArchive,
   verifyRequirements,
 } from "../../scripts/v6/inventory.js";
@@ -392,17 +401,41 @@ describe("the generated Wave 0 artifacts exist and are readable", () => {
 });
 
 describe("Wave 0 — the deferred and superseded markers landed", () => {
-  it("marks PRODUCT-ENHANCEMENT-ANALYSIS.md as not a source of truth", () => {
+  it("points PRODUCT-ENHANCEMENT-ANALYSIS.md at its archive and disclaims itself", () => {
+    // 6.4 MOVED the file rather than editing a marker into it. The
+    // original test asserted the old shape — a `DEFERRED` banner in the first
+    // 800 characters — which was a marker inside a document at a path a reader
+    // finds first. A pointer is the stronger form: the document is no longer
+    // there to be mistaken for, and the old path says so in one line.
+    //
+    // The intent is unchanged and is now asserted directly.
     const text = readFileSync(
       join(ROOT, "PRODUCT-ENHANCEMENT-ANALYSIS.md"),
       "utf8",
     );
-    expect(text.slice(0, 800)).toContain("DEFERRED");
-    expect(text).toContain("docs/ECOSYSTEM-CENSUS.json");
+    expect(text.slice(0, 600)).toMatch(/not a current claim/i);
+    expect(text).toContain("docs/archive/PRODUCT-ENHANCEMENT-ANALYSIS.md");
+    // And the record itself is still intact, which is the reason for moving it
+    // rather than deleting it.
+    expect(
+      readFileSync(
+        join(ROOT, "docs", "archive", "PRODUCT-ENHANCEMENT-ANALYSIS.md"),
+        "utf8",
+      ).length,
+    ).toBeGreaterThan(10_000);
   });
 
   it("marks the Cycle-0 audit as superseded by name and version", () => {
-    const marker = join(ROOT, "QA", "FINAL-RELEASE", "README-SUPERSEDED.md");
+    // Moved to `docs/archive/QA-FINAL-RELEASE/` in 6.4, with the superseded
+    // marker travelling with it — a marker left behind in an empty directory
+    // would be a note about nothing.
+    const marker = join(
+      ROOT,
+      "docs",
+      "archive",
+      "QA-FINAL-RELEASE",
+      "README-SUPERSEDED.md",
+    );
     expect(existsSync(marker)).toBe(true);
     const text = readFileSync(marker, "utf8");
     expect(text).toContain("SUPERSEDED");
@@ -414,5 +447,41 @@ describe("Wave 0 — a wave id is a closed set", () => {
   it("accepts only the waves the program defines", () => {
     const waves: WaveId[] = ["0", "1", "13", "14"];
     for (const wave of waves) expect(wave).toMatch(/^\d{1,2}$/);
+  });
+});
+
+describe("Wave 0 - a derived count must not depend on local clone state", () => {
+  const root = join(tmpdir(), "mjolnir-inventory-cache-probe");
+  const spec = (rel: string): void => {
+    const full = join(root, rel);
+    mkdirSync(join(full, ".."), { recursive: true });
+    writeFileSync(full, "test.describe('x', () => {});\n");
+  };
+
+  afterAll(() => rmSync(root, { recursive: true, force: true }));
+
+  it("counts the repository's own specs and ignores cloned corpus repos", () => {
+    rmSync(root, { recursive: true, force: true });
+    spec("tests/own.spec.ts");
+    spec("tests/nested/own.spec.ts");
+    const owned = countFiles(join(root, "tests"), true);
+    expect(owned).toBe(2);
+
+    // What `npm run corpus:sample` leaves behind: a gitignored tree of
+    // third-party repositories, each carrying its own spec files. Before the
+    // exclusion these moved `docs/v6-inventory.json`'s published
+    // `counts.testSpecs` between ~699 and ~1,024 depending on whether anyone
+    // had run a corpus job on the machine, which is what turned the
+    // provenance-drift contract red for a reason no code change explains.
+    spec("tests/corpus/.cache/some-oss-repo/tests/their.spec.ts");
+    spec("tests/corpus/.cache/another-repo/a/b/c/d.spec.ts");
+    expect(countFiles(join(root, "tests"), true)).toBe(owned);
+  });
+
+  it("still counts the committed fixture corpora, which ARE this repository's data", () => {
+    rmSync(root, { recursive: true, force: true });
+    spec("tests/corpus/positive-fixtures/QA-PW-140/screenshots.spec.ts");
+    spec("tests/corpus/negative-fixtures/QA-PW-140/tolerant.spec.ts");
+    expect(countFiles(join(root, "tests"), true)).toBe(2);
   });
 });

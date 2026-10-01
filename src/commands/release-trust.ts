@@ -1,5 +1,5 @@
 /**
- * `mjolnir release-trust` — the Release Trust Verdict (product-gap
+ * `mjolnir ci release-trust` — the Release Trust Verdict (product-gap
  * master plan §5, plan 1789009691197 R4a).
  *
  * Pure aggregation of already-shipped signals — NO new authority: the
@@ -1032,7 +1032,7 @@ export function renderReleaseTrust(report: ReleaseTrustReport): string {
 }
 
 /**
- * CLI verb: `mjolnir release-trust [--json] [repo-root]`.
+ * CLI verb: `mjolnir ci release-trust [--json] [repo-root]`.
  * Exit contract (frozen set): 0 verdict PASS · 1 verdict non-PASS ·
  * 2 no fixtures root (not an mjolnir checkout — BLOCKED context) ·
  * 10 usage error · 20 internal error.
@@ -1044,7 +1044,7 @@ export function runReleaseTrustCommand(
   const json = argv.includes("--json");
   const unknownFlags = argv.filter((a) => a.startsWith("-") && a !== "--json");
   if (unknownFlags.length > 0) {
-    io.err("Usage: mjolnir release-trust [--json] [repo-root]");
+    io.err("Usage: mjolnir ci release-trust [--json] [repo-root]");
     return 10;
   }
   const targetArg = argv.find((a) => !a.startsWith("-")) ?? process.cwd();

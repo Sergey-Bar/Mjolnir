@@ -26,14 +26,8 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   internalErrorMessage,
   parseArgs,
-  runBadgeCommand,
-  runBaselineCommand,
-  runCreateRuleCommand,
-  runDebtCommand,
-  runForensicsCommand,
   runHandoverCommand,
 } from "../../src/cli.js";
-
 describe("internalErrorMessage: the --debug stack arm", () => {
   const emit = (): { lines: string[]; out: (s: string) => void } => {
     const lines: string[] = [];
@@ -79,34 +73,6 @@ describe("parseArgs: a flag as the last token with nothing after it", () => {
   });
 });
 
-describe("create-rule: id/title argument combinations", () => {
-  it("a valid ID but no --title is a usage error", () => {
-    const errs: string[] = [];
-    const code = runCreateRuleCommand(["QA-PW-999"], {
-      out: () => {},
-      err: (...a) => errs.push(a.map(String).join(" ")),
-    });
-    expect(code).toBe(10);
-    expect(errs.join("\n")).toMatch(/Usage/);
-  });
-
-  it("--title with no ID is a usage error", () => {
-    const code = runCreateRuleCommand(["--title", "Some rule"], {
-      out: () => {},
-      err: () => {},
-    });
-    expect(code).toBe(10);
-  });
-
-  it("an ID that doesn't match the QA-<FAMILY>-<NNN> pattern is a usage error", () => {
-    const code = runCreateRuleCommand(["not-a-valid-id", "--title", "x"], {
-      out: () => {},
-      err: () => {},
-    });
-    expect(code).toBe(10);
-  });
-});
-
 describe("command handlers report a crash (exit 20) instead of throwing, when their write target is unwritable", () => {
   let dir: string;
   let origCwd: string;
@@ -136,94 +102,6 @@ describe("command handlers report a crash (exit 20) instead of throwing, when th
     }
     rmSync(dir, { recursive: true, force: true });
   });
-
-  function locked(): boolean {
-    try {
-      writeFileSync(join(dir, "probe.tmp"), "x");
-      rmSync(join(dir, "probe.tmp"));
-      return false;
-    } catch {
-      return true;
-    }
-  }
-
-  it("`badge` reports exit 20 instead of throwing when its output dir is unwritable", async () => {
-    if (!locked()) return;
-    const errs: string[] = [];
-    await expect(
-      runBadgeCommand([dir], {
-        out: () => {},
-        err: (...a) => errs.push(a.map(String).join(" ")),
-      }),
-    ).resolves.toBe(20);
-    expect(errs.join(" ")).toMatch(/internal error/i);
-  });
-
-  it("`create-rule` reports exit 20 instead of throwing when the repo root is unwritable", () => {
-    if (!locked()) return;
-    let code: number | undefined;
-    expect(() => {
-      code = runCreateRuleCommand(["QA-PW-998", "--title", "x"], {
-        out: () => {},
-        err: () => {},
-      });
-    }).not.toThrow();
-    expect(code).toBe(20);
-  });
-
-  it("`baseline` degrades honestly (exit 1) when .mjolnir/ can't be written", async () => {
-    // Contract change (audit-remediation branch): an unwritable path is
-    // an environment fault, not a Mjölnir bug — the friendly exit-20
-    // "this is a bug in Mjölnir" message would lie. The command now
-    // reports `baseline save FAILED — <reason>` and exits 1.
-    if (!locked()) return;
-    const errs: string[] = [];
-    const code = await runBaselineCommand([dir], {
-      out: () => {},
-      err: (...a) => errs.push(a.map(String).join(" ")),
-    });
-    expect(code).toBe(1);
-    expect(errs.join(" ")).toMatch(/baseline save FAILED/i);
-  });
-});
-
-describe("`forensics` reports exit 20 instead of throwing when the target FILE (not dir) is unreadable", () => {
-  let dir: string;
-  let target: string;
-
-  beforeEach(() => {
-    dir = mkdtempSync(join(tmpdir(), "mjolnir-forensics-crash-"));
-    target = join(dir, "report.json");
-    writeFileSync(target, "{}");
-  });
-
-  afterEach(() => {
-    try {
-      chmodSync(target, 0o644);
-    } catch {
-      /* already gone */
-    }
-    rmSync(dir, { recursive: true, force: true });
-  });
-
-  it("an unreadable single-file target surfaces as a handled crash, not a thrown exception", () => {
-    let madeUnreadable = false;
-    try {
-      chmodSync(target, 0o000);
-      madeUnreadable = true;
-    } catch {
-      /* unsupported on this platform */
-    }
-    if (!madeUnreadable) return;
-
-    let code: number | undefined;
-    expect(() => {
-      code = runForensicsCommand([target], { out: () => {}, err: () => {} });
-    }).not.toThrow();
-    // Either it's read anyway (some platforms don't enforce this) or it's
-    // handled as a clean crash — never an uncaught throw either way.
-    expect([2, 20]).toContain(code);
-  });
 });
 
 describe("`debt` and `handover` still return a documented exit code against an empty repo", () => {
@@ -235,12 +113,6 @@ describe("`debt` and `handover` still return a documented exit code against an e
 
   afterEach(() => {
     rmSync(dir, { recursive: true, force: true });
-  });
-
-  it("`debt` on a directory with no tests at all does not throw", async () => {
-    await expect(
-      runDebtCommand([dir], { out: () => {}, err: () => {} }),
-    ).resolves.toBe(0);
   });
 
   it("`handover` on a directory with no tests at all does not throw", async () => {

@@ -27,10 +27,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
-import {
-  captureDemoScript,
-  captureTourScript,
-} from "../../scripts/video/capture.js";
+import { captureDemoScript } from "../../scripts/video/capture.js";
 import {
   probeGlyphs,
   SELF_TEST_CHAR,
@@ -50,42 +47,34 @@ const REGENERATE =
   "because the videos are drawn from these files and are now stale too.";
 
 describe("committed video scripts still match what the CLI prints", () => {
-  it.each([
-    ["demo", captureDemoScript],
-    ["tour", captureTourScript],
-  ] as const)(
-    "script.%s.json reproduces from a real scan",
-    async (id, capture) => {
-      const fresh = await capture();
-      const onDisk = committed(id);
+  it("script.demo.json reproduces from a real scan", async () => {
+    const id = "demo" as const;
+    const fresh = await captureDemoScript();
+    const onDisk = committed(id);
 
-      // Compare beat by beat before the whole-file comparison: a 250-line
-      // diff of ANSI escapes is unreadable, and the beat that drifted is
-      // the thing a maintainer needs to know.
-      expect(fresh.beats.map((b) => b.id)).toEqual(
-        onDisk.beats.map((b) => b.id),
-      );
-      for (const [i, beat] of fresh.beats.entries()) {
-        const was = onDisk.beats[i];
-        expect(
-          beat.ansi,
-          `beat "${beat.id}" of script.${id}.json no longer matches the ` +
-            `reporter's output. ${REGENERATE}`,
-        ).toEqual(was?.ansi);
-        expect(
-          beat.assertions,
-          `beat "${beat.id}" of script.${id}.json records different scan ` +
-            `facts than a fresh scan produces. ${REGENERATE}`,
-        ).toEqual(was?.assertions);
-      }
-
+    // Compare beat by beat before the whole-file comparison: a 250-line
+    // diff of ANSI escapes is unreadable, and the beat that drifted is
+    // the thing a maintainer needs to know.
+    expect(fresh.beats.map((b) => b.id)).toEqual(onDisk.beats.map((b) => b.id));
+    for (const [i, beat] of fresh.beats.entries()) {
+      const was = onDisk.beats[i];
       expect(
-        serialize(fresh),
-        `script.${id}.json has drifted. ${REGENERATE}`,
-      ).toBe(serialize(onDisk));
-    },
-    60_000,
-  );
+        beat.ansi,
+        `beat "${beat.id}" of script.${id}.json no longer matches the ` +
+          `reporter's output. ${REGENERATE}`,
+      ).toEqual(was?.ansi);
+      expect(
+        beat.assertions,
+        `beat "${beat.id}" of script.${id}.json records different scan ` +
+          `facts than a fresh scan produces. ${REGENERATE}`,
+      ).toEqual(was?.assertions);
+    }
+
+    expect(
+      serialize(fresh),
+      `script.${id}.json has drifted. ${REGENERATE}`,
+    ).toBe(serialize(onDisk));
+  }, 60_000);
 });
 
 describe("the hero video's fix-and-re-run story is true", () => {
@@ -193,24 +182,22 @@ describe("every glyph the videos render resolves in a vendored font", () => {
     expect(probeGlyphs(requiredGlyphs()).missing).toEqual([]);
   });
 
-  it.each(["demo", "tour"] as const)(
-    "everything script.%s.json actually captured is covered",
-    (id) => {
-      const text = committed(id)
-        .beats.flatMap((b) => b.ansi)
-        .map(stripAnsi)
-        .join("");
-      const chars = [
-        ...new Set([...text].filter((c) => (c.codePointAt(0) ?? 0) > 0x20)),
-      ];
-      const { missing } = probeGlyphs(chars);
-      expect(
-        missing,
-        "the captured output contains characters no vendored face can " +
-          "draw — these would render as tofu boxes in the video",
-      ).toEqual([]);
-    },
-  );
+  it("everything script.demo.json actually captured is covered", () => {
+    const id = "demo" as const;
+    const text = committed(id)
+      .beats.flatMap((b) => b.ansi)
+      .map(stripAnsi)
+      .join("");
+    const chars = [
+      ...new Set([...text].filter((c) => (c.codePointAt(0) ?? 0) > 0x20)),
+    ];
+    const { missing } = probeGlyphs(chars);
+    expect(
+      missing,
+      "the captured output contains characters no vendored face can " +
+        "draw — these would render as tofu boxes in the video",
+    ).toEqual([]);
+  });
 });
 
 describe("the render page cannot draw invisible text", () => {
@@ -221,20 +208,18 @@ describe("the render page cannot draw invisible text", () => {
    * the browser default — BLACK — and rendered invisible on a dark
    * window through several published renders before anyone spotted it.
    */
-  it.each(["demo", "tour"] as const)(
-    "script.%s.json's page declares a base text colour",
-    (id) => {
-      const page = buildPage(readScript(id));
-      const base = /#lines\{[^}]*color:\s*(#[0-9a-fA-F]{3,8})/.exec(page);
-      expect(
-        base,
-        "the text container sets no base `color`, so any element without " +
-          "an explicit colour renders in the browser default (black) on a " +
-          "dark terminal",
-      ).not.toBeNull();
-      expect(base?.[1]?.toLowerCase()).not.toBe("#000000");
-    },
-  );
+  it("script.demo.json's page declares a base text colour", () => {
+    const id = "demo" as const;
+    const page = buildPage(readScript(id));
+    const base = /#lines\{[^}]*color:\s*(#[0-9a-fA-F]{3,8})/.exec(page);
+    expect(
+      base,
+      "the text container sets no base `color`, so any element without " +
+        "an explicit colour renders in the browser default (black) on a " +
+        "dark terminal",
+    ).not.toBeNull();
+    expect(base?.[1]?.toLowerCase()).not.toBe("#000000");
+  });
 
   it("the typed command is styled, not left to inherit", () => {
     const page = buildPage(readScript("demo"));

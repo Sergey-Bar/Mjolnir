@@ -18,24 +18,15 @@ import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
-  runBaselineCommand,
-  runCreateRuleCommand,
-  runDebtCommand,
-  runDiffCommand,
   runDoctorCommand,
   runDoctorPlaywright,
   runFixCommand,
-  runForensicsCommand,
   runHandoverCommand,
-  runImpactCommand,
-  runInitCommand,
   runPrCommentCommand,
-  runPwReportCommand,
   runRulesCommand,
   runScanCommand,
   runSuppressions,
 } from "../../src/cli.js";
-
 function capture() {
   const out: string[] = [];
   const errOut: string[] = [];
@@ -102,26 +93,17 @@ describe("scan-target validation across subcommands (audit H-4)", () => {
   it("doctor:playwright rejects a nonexistent target with exit 10", async () => {
     const cap = capture();
     expect(
-      await runDoctorPlaywright(["doctor:playwright", "no-such-dir"], cap.io),
+      await runDoctorPlaywright(
+        ["doctor", "--frameworks", "no-such-dir"],
+        cap.io,
+      ),
     ).toBe(10);
-    expect(cap.errText()).toContain("does not exist");
-  });
-
-  it("debt rejects a nonexistent target with exit 10", async () => {
-    const cap = capture();
-    expect(await runDebtCommand(["no-such-dir"], cap.io)).toBe(10);
     expect(cap.errText()).toContain("does not exist");
   });
 
   it("fix rejects a nonexistent target with exit 10", async () => {
     const cap = capture();
     expect(await runFixCommand(["no-such-dir"], cap.io)).toBe(10);
-    expect(cap.errText()).toContain("does not exist");
-  });
-
-  it("impact rejects a nonexistent target with exit 10", async () => {
-    const cap = capture();
-    expect(await runImpactCommand(["no-such-dir"], cap.io)).toBe(10);
     expect(cap.errText()).toContain("does not exist");
   });
 
@@ -135,12 +117,6 @@ describe("scan-target validation across subcommands (audit H-4)", () => {
     const cap = capture();
     expect(await runHandoverCommand(["no-such-dir"], cap.io)).toBe(10);
     expect(cap.errText()).toContain("does not exist");
-  });
-
-  it("diff prints a friendly usage error and exits 10 on an unknown flag", async () => {
-    const cap = capture();
-    expect(await runDiffCommand(["--bogus"], cap.io)).toBe(10);
-    expect(cap.errText()).toContain('mjolnir: unknown flag "--bogus"');
   });
 });
 
@@ -203,166 +179,6 @@ describe("runDoctorCommand", () => {
     const cap = capture();
     expect(runDoctorCommand([REPO_ROOT], cap.io)).toBe(0);
     expect(cap.text()).toContain("WORTHY");
-  });
-});
-
-describe("runCreateRuleCommand", () => {
-  it("scaffolds a rule and exits 0, then exits 1 on duplicate", () => {
-    process.chdir(dir);
-    const cap = capture();
-    expect(
-      runCreateRuleCommand(["QA-PW-150", "--title", "Viewport"], cap.io),
-    ).toBe(0);
-    expect(cap.text()).toContain("RULE SCAFFOLD CREATED");
-    expect(cap.text()).toContain("qa-pw-150.ts");
-
-    const cap2 = capture();
-    expect(
-      runCreateRuleCommand(["QA-PW-150", "--title", "Viewport"], cap2.io),
-    ).toBe(1);
-    expect(cap2.text()).toContain("already exists");
-  });
-});
-
-describe("runInitCommand", () => {
-  it("uses the package.json name when present", () => {
-    process.chdir(dir);
-    writeFileSync(
-      join(dir, "package.json"),
-      JSON.stringify({ name: "my-repo" }),
-    );
-    const cap = capture();
-    expect(runInitCommand([], cap.io)).toBe(0);
-    expect(cap.text().length).toBeGreaterThan(50);
-  });
-
-  it("falls back to the generic repo name when package.json has no name", () => {
-    process.chdir(dir);
-    writeFileSync(join(dir, "package.json"), "{}");
-    const cap = capture();
-    expect(runInitCommand([], cap.io)).toBe(0);
-    expect(cap.text().length).toBeGreaterThan(50);
-  });
-});
-
-describe("runImpactCommand", () => {
-  function git(cwd: string, args: string[]): void {
-    execFileSync("git", ["-C", cwd, ...args], { stdio: "ignore" });
-  }
-
-  function makeGitRepo(): void {
-    git(dir, ["init", "-b", "main"]);
-    git(dir, ["config", "user.email", "t@t"]);
-    git(dir, ["config", "user.name", "t"]);
-    writeCleanSpec();
-    git(dir, ["add", "."]);
-    git(dir, ["commit", "-m", "clean base"]);
-    writeFindingSpec();
-    git(dir, ["add", "."]);
-    git(dir, ["commit", "-m", "introduce debt"]);
-  }
-
-  it("compares against HEAD~1 by default and exits 0", async () => {
-    makeGitRepo();
-    const cap = capture();
-    expect(await runImpactCommand([dir], cap.io)).toBe(0);
-    expect(cap.text()).toContain("IMPACT REPORT");
-    // The PW-family hard-sleep rule fires on the waitForTimeout line and
-    // is new debt since the clean base commit. Its generic twin
-    // QA-TEST-004 used to co-fire here too (count was 2), but R6
-    // overlap-dedup (Bug Map M-02) removes the declared duplicate — the
-    // honest new-debt count is 1.
-    expect(cap.text()).toContain("NEW DEBT SINCE BASE (1)");
-  });
-
-  it("reports an honest no-comparison when --since equals HEAD (exit 2)", async () => {
-    makeGitRepo();
-    const cap = capture();
-    expect(await runImpactCommand([dir, "--since", "HEAD"], cap.io)).toBe(2);
-    expect(cap.text()).toContain("no comparison could be made");
-  });
-
-  it("reports no comparison for a non-git target with exit 2", async () => {
-    writeCleanSpec();
-    const cap = capture();
-    expect(await runImpactCommand([dir], cap.io)).toBe(2);
-    expect(cap.text()).toContain("not-a-git-repo");
-  });
-});
-
-describe("runBaselineCommand", () => {
-  it("backs up the previous baseline on re-run", async () => {
-    writeFindingSpec();
-    const cap = capture();
-    expect(await runBaselineCommand([dir], cap.io)).toBe(0);
-    expect(cap.text()).not.toContain("Replaced an existing baseline");
-
-    const cap2 = capture();
-    expect(await runBaselineCommand([dir], cap2.io)).toBe(0);
-    expect(cap2.text()).toContain("Replaced an existing baseline");
-    expect(
-      readFileSync(join(dir, ".mjolnir", "baseline.json"), "utf8"),
-    ).toContain("QA-PW-101");
-  });
-});
-
-describe("forensics exit-code mapping", () => {
-  function writePwReport(
-    results: Array<{ status: string; duration: number }>,
-  ): void {
-    const resultsDir = join(dir, "test-results");
-    mkdirSync(resultsDir, { recursive: true });
-    writeFileSync(
-      join(resultsDir, "report.json"),
-      JSON.stringify({
-        suites: [
-          {
-            title: "e2e",
-            suites: [],
-            specs: [
-              {
-                title: "checkout",
-                file: "e2e/checkout.spec.ts",
-                line: 3,
-                tests: [{ projectName: "chromium", results }],
-              },
-            ],
-          },
-        ],
-      }),
-    );
-  }
-
-  it("forensics exits 1 when a true flake exists (pass on attempt >= 2)", () => {
-    writePwReport([
-      { status: "failed", duration: 100 },
-      { status: "passed", duration: 50 },
-    ]);
-    const cap = capture();
-    expect(runForensicsCommand([join(dir, "test-results")], cap.io)).toBe(1);
-    expect(cap.text()).toContain("TRUE-FLAKE");
-  });
-
-  it("forensics exits 1 when a test finally failed", () => {
-    writePwReport([{ status: "failed", duration: 100 }]);
-    const cap = capture();
-    expect(runForensicsCommand([join(dir, "test-results")], cap.io)).toBe(1);
-  });
-
-  it("pw-report exits 1 for a flaky run", () => {
-    writePwReport([
-      { status: "failed", duration: 100 },
-      { status: "passed", duration: 50 },
-    ]);
-    const cap = capture();
-    expect(runPwReportCommand([join(dir, "test-results")], cap.io)).toBe(1);
-    expect(cap.text()).toContain("TRUE-FLAKE");
-  });
-
-  it("pw-report exits 0 when every test passed", () => {
-    writePwReport([{ status: "passed", duration: 25 }]);
-    const cap = capture();
-    expect(runPwReportCommand([join(dir, "test-results")], cap.io)).toBe(0);
   });
 });
 
@@ -573,62 +389,5 @@ describe("handover forensics enrichment", () => {
     const cap = capture();
     expect(await runHandoverCommand([dir], cap.io)).toBe(0);
     expect(cap.text()).toContain("TRUE-FLAKE");
-  });
-});
-
-describe("diff stats recording", () => {
-  function makeDebtRepo(): void {
-    mkdirSync(join(dir, "e2e"), { recursive: true });
-    writeFileSync(
-      join(dir, "e2e", "one.spec.ts"),
-      [
-        "import { test, expect } from '@playwright/test';",
-        "test('one', async ({ page }) => {",
-        "  await page.waitForTimeout(100);",
-        "  await expect(page).toHaveURL('/a');",
-        "});",
-        "",
-      ].join("\n"),
-    );
-  }
-
-  function fixedContent(): string {
-    return [
-      "import { test, expect } from '@playwright/test';",
-      "test('one', async ({ page }) => {",
-      "  await expect(page).toHaveURL('/a');",
-      "});",
-      "",
-    ].join("\n");
-  }
-
-  it("warns when resolved findings cannot be recorded (stats unwritable)", async () => {
-    makeDebtRepo();
-    const capBase = capture();
-    expect(await runBaselineCommand([dir], capBase.io)).toBe(0);
-    writeFileSync(join(dir, "e2e", "one.spec.ts"), fixedContent());
-    // stats.json as a directory: both the resolved-counter write and the
-    // milestone write must fail into warnings, not crash the diff.
-    mkdirSync(join(dir, ".mjolnir", "stats.json"), { recursive: true });
-    const cap = capture();
-    expect(await runDiffCommand([dir], cap.io)).toBe(0);
-    expect(cap.errText()).toContain("counters not recorded");
-    expect(cap.errText()).toContain("milestone not recorded");
-  });
-
-  it("announces the first-debt-reduction milestone exactly once", async () => {
-    makeDebtRepo();
-    const capBase = capture();
-    expect(await runBaselineCommand([dir], capBase.io)).toBe(0);
-
-    writeFileSync(join(dir, "e2e", "one.spec.ts"), fixedContent());
-    const cap1 = capture();
-    expect(await runDiffCommand([dir], cap1.io)).toBe(0);
-    expect(cap1.text()).toContain("MILESTONE: first debt reduction recorded");
-
-    // Second diff witnesses another resolution but must NOT re-announce.
-    const cap2 = capture();
-    expect(await runDiffCommand([dir], cap2.io)).toBe(0);
-    expect(cap2.text()).not.toContain("MILESTONE:");
   });
 });

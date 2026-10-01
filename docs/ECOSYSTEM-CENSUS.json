@@ -4,12 +4,11 @@
   "generatedBy": "npm run docs:ecosystem",
   "censusId": "mjolnir-ecosystem-census",
   "observedAt": "2026-09-28",
-  "baseSha": "9e4d78f012c4230f6dad491cb35828263685861c",
+  "baseSha": "a806496160aeefe64c1795823f90b64cce582835",
   "counts": {
     "entries": 33,
-    "state:TARGET": 20,
+    "state:TARGET": 33,
     "maturity:M1": 24,
-    "state:SUPPORTED": 13,
     "maturity:M2": 9
   },
   "entries": [
@@ -39,7 +38,6 @@
         }
       ],
       "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
-      "maturity": "M1_DECLARED",
       "nextLevelGap": {
         "target": "M2_IMPLEMENTED",
         "missing": [
@@ -48,7 +46,8 @@
         ],
         "owner": "ecosystem-census",
         "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
-      }
+      },
+      "maturity": "M1_DECLARED"
     },
     {
       "id": "ec.api-contract-testing.karate",
@@ -77,7 +76,6 @@
         }
       ],
       "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
-      "maturity": "M1_DECLARED",
       "nextLevelGap": {
         "target": "M2_IMPLEMENTED",
         "missing": [
@@ -86,7 +84,8 @@
         ],
         "owner": "ecosystem-census",
         "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
-      }
+      },
+      "maturity": "M1_DECLARED"
     },
     {
       "id": "ec.api-contract-testing.pact",
@@ -115,7 +114,6 @@
         }
       ],
       "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
-      "maturity": "M1_DECLARED",
       "nextLevelGap": {
         "target": "M2_IMPLEMENTED",
         "missing": [
@@ -124,7 +122,8 @@
         ],
         "owner": "ecosystem-census",
         "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
-      }
+      },
+      "maturity": "M1_DECLARED"
     },
     {
       "id": "ec.api-contract-testing.postman-newman",
@@ -153,7 +152,6 @@
         }
       ],
       "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
-      "maturity": "M1_DECLARED",
       "nextLevelGap": {
         "target": "M2_IMPLEMENTED",
         "missing": [
@@ -162,7 +160,8 @@
         ],
         "owner": "ecosystem-census",
         "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
-      }
+      },
+      "maturity": "M1_DECLARED"
     },
     {
       "id": "ec.api-contract-testing.rest-assured",
@@ -191,7 +190,6 @@
         }
       ],
       "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
-      "maturity": "M1_DECLARED",
       "nextLevelGap": {
         "target": "M2_IMPLEMENTED",
         "missing": [
@@ -200,7 +198,8 @@
         ],
         "owner": "ecosystem-census",
         "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
-      }
+      },
+      "maturity": "M1_DECLARED"
     },
     {
       "id": "ec.bdd-spec-dsl.cucumber",
@@ -229,7 +228,6 @@
         }
       ],
       "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
-      "maturity": "M1_DECLARED",
       "nextLevelGap": {
         "target": "M2_IMPLEMENTED",
         "missing": [
@@ -238,7 +236,8 @@
         ],
         "owner": "ecosystem-census",
         "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
-      }
+      },
+      "maturity": "M1_DECLARED"
     },
     {
       "id": "ec.bdd-spec-dsl.specflow",
@@ -267,7 +266,6 @@
         }
       ],
       "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
-      "maturity": "M1_DECLARED",
       "nextLevelGap": {
         "target": "M2_IMPLEMENTED",
         "missing": [
@@ -276,13 +274,14 @@
         ],
         "owner": "ecosystem-census",
         "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
-      }
+      },
+      "maturity": "M1_DECLARED"
     },
     {
       "id": "ec.ci-cd-provider.azure-pipelines",
       "name": "azure-pipelines",
       "category": "ci-cd-provider",
-      "state": "SUPPORTED",
+      "state": "TARGET",
       "owner": "provider-capability-contract",
       "observedAt": "2026-09-28",
       "signals": [
@@ -299,21 +298,21 @@
       "handledUpstreamMajors": ["2024"],
       "upstreamPackages": [],
       "revisitTrigger": "CI-IR adapter no longer normalizes a azure-pipelines pipeline construct; census staleness trigger demotes SUPPORTED",
-      "maturity": "M2_IMPLEMENTED",
       "nextLevelGap": {
         "target": "M3_FIXTURE_VERIFIED",
         "missing": [
-          "positive + negative + boundary + adversarial fixtures pass deterministically in CI"
+          "the fixture quad for azure-pipelines is not complete — MUST-FIRE, MUST-NOT-FIRE, RECALL and PRECISION are the M3 criteria (evidence: fixtureQuadVerified); `npm run check-fixture-quad` prints the per-leg work list"
         ],
         "owner": "provider-capability-contract",
         "revisitTrigger": "CI-IR adapter no longer normalizes a azure-pipelines pipeline construct; census staleness trigger demotes SUPPORTED"
-      }
+      },
+      "maturity": "M2_IMPLEMENTED"
     },
     {
       "id": "ec.ci-cd-provider.github-actions",
       "name": "github-actions",
       "category": "ci-cd-provider",
-      "state": "SUPPORTED",
+      "state": "TARGET",
       "owner": "provider-capability-contract",
       "observedAt": "2026-09-28",
       "signals": [
@@ -335,15 +334,15 @@
         }
       ],
       "revisitTrigger": "CI-IR adapter no longer normalizes a github-actions pipeline construct; census staleness trigger demotes SUPPORTED",
-      "maturity": "M2_IMPLEMENTED",
       "nextLevelGap": {
         "target": "M3_FIXTURE_VERIFIED",
         "missing": [
-          "positive + negative + boundary + adversarial fixtures pass deterministically in CI"
+          "the fixture quad for github-actions is not complete — MUST-FIRE, MUST-NOT-FIRE, RECALL and PRECISION are the M3 criteria (evidence: fixtureQuadVerified); `npm run check-fixture-quad` prints the per-leg work list"
         ],
         "owner": "provider-capability-contract",
         "revisitTrigger": "CI-IR adapter no longer normalizes a github-actions pipeline construct; census staleness trigger demotes SUPPORTED"
-      }
+      },
+      "maturity": "M2_IMPLEMENTED"
     },
     {
       "id": "ec.ci-cd-provider.gitlab-ci",
@@ -366,7 +365,6 @@
       "handledUpstreamMajors": [],
       "upstreamPackages": [],
       "revisitTrigger": "CI-IR adapter no longer normalizes a gitlab-ci pipeline construct; census staleness trigger demotes SUPPORTED",
-      "maturity": "M2_IMPLEMENTED",
       "nextLevelGap": {
         "target": "M3_FIXTURE_VERIFIED",
         "missing": [
@@ -374,13 +372,14 @@
         ],
         "owner": "provider-capability-contract",
         "revisitTrigger": "CI-IR adapter no longer normalizes a gitlab-ci pipeline construct; census staleness trigger demotes SUPPORTED"
-      }
+      },
+      "maturity": "M2_IMPLEMENTED"
     },
     {
       "id": "ec.ci-cd-provider.jenkins",
       "name": "jenkins",
       "category": "ci-cd-provider",
-      "state": "SUPPORTED",
+      "state": "TARGET",
       "owner": "provider-capability-contract",
       "observedAt": "2026-09-28",
       "signals": [
@@ -397,21 +396,21 @@
       "handledUpstreamMajors": ["2"],
       "upstreamPackages": [],
       "revisitTrigger": "CI-IR adapter no longer normalizes a jenkins pipeline construct; census staleness trigger demotes SUPPORTED",
-      "maturity": "M2_IMPLEMENTED",
       "nextLevelGap": {
         "target": "M3_FIXTURE_VERIFIED",
         "missing": [
-          "positive + negative + boundary + adversarial fixtures pass deterministically in CI"
+          "the fixture quad for jenkins is not complete — MUST-FIRE, MUST-NOT-FIRE, RECALL and PRECISION are the M3 criteria (evidence: fixtureQuadVerified); `npm run check-fixture-quad` prints the per-leg work list"
         ],
         "owner": "provider-capability-contract",
         "revisitTrigger": "CI-IR adapter no longer normalizes a jenkins pipeline construct; census staleness trigger demotes SUPPORTED"
-      }
+      },
+      "maturity": "M2_IMPLEMENTED"
     },
     {
       "id": "ec.component-e2e.cypress",
       "name": "cypress",
       "category": "component-e2e",
-      "state": "SUPPORTED",
+      "state": "TARGET",
       "owner": "framework-inventory",
       "observedAt": "2026-09-28",
       "signals": [
@@ -442,21 +441,21 @@
         }
       ],
       "revisitTrigger": "adapter no longer handles a major version in cypress; census staleness trigger demotes SUPPORTED",
-      "maturity": "M2_IMPLEMENTED",
       "nextLevelGap": {
         "target": "M3_FIXTURE_VERIFIED",
         "missing": [
-          "positive + negative + boundary + adversarial fixtures pass deterministically in CI"
+          "the fixture quad for cypress is not complete — MUST-FIRE, MUST-NOT-FIRE, RECALL and PRECISION are the M3 criteria (evidence: fixtureQuadVerified); `npm run check-fixture-quad` prints the per-leg work list"
         ],
         "owner": "framework-inventory",
         "revisitTrigger": "adapter no longer handles a major version in cypress; census staleness trigger demotes SUPPORTED"
-      }
+      },
+      "maturity": "M2_IMPLEMENTED"
     },
     {
       "id": "ec.component-e2e.playwright",
       "name": "playwright",
       "category": "component-e2e",
-      "state": "SUPPORTED",
+      "state": "TARGET",
       "owner": "framework-inventory",
       "observedAt": "2026-09-28",
       "signals": [
@@ -514,15 +513,15 @@
         }
       ],
       "revisitTrigger": "adapter no longer handles a major version in playwright; census staleness trigger demotes SUPPORTED",
-      "maturity": "M2_IMPLEMENTED",
       "nextLevelGap": {
         "target": "M3_FIXTURE_VERIFIED",
         "missing": [
-          "positive + negative + boundary + adversarial fixtures pass deterministically in CI"
+          "the fixture quad for playwright is not complete — MUST-FIRE, MUST-NOT-FIRE, RECALL and PRECISION are the M3 criteria (evidence: fixtureQuadVerified); `npm run check-fixture-quad` prints the per-leg work list"
         ],
         "owner": "framework-inventory",
         "revisitTrigger": "adapter no longer handles a major version in playwright; census staleness trigger demotes SUPPORTED"
-      }
+      },
+      "maturity": "M2_IMPLEMENTED"
     },
     {
       "id": "ec.component-e2e.playwright-components",
@@ -551,7 +550,6 @@
         }
       ],
       "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
-      "maturity": "M1_DECLARED",
       "nextLevelGap": {
         "target": "M2_IMPLEMENTED",
         "missing": [
@@ -560,7 +558,8 @@
         ],
         "owner": "ecosystem-census",
         "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
-      }
+      },
+      "maturity": "M1_DECLARED"
     },
     {
       "id": "ec.iac-container.kubernetes-manifests",
@@ -588,7 +587,6 @@
         }
       ],
       "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
-      "maturity": "M1_DECLARED",
       "nextLevelGap": {
         "target": "M2_IMPLEMENTED",
         "missing": [
@@ -597,7 +595,8 @@
         ],
         "owner": "ecosystem-census",
         "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
-      }
+      },
+      "maturity": "M1_DECLARED"
     },
     {
       "id": "ec.iac-container.terraform",
@@ -625,7 +624,6 @@
         }
       ],
       "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
-      "maturity": "M1_DECLARED",
       "nextLevelGap": {
         "target": "M2_IMPLEMENTED",
         "missing": [
@@ -634,7 +632,8 @@
         ],
         "owner": "ecosystem-census",
         "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
-      }
+      },
+      "maturity": "M1_DECLARED"
     },
     {
       "id": "ec.load-performance.gatling",
@@ -663,7 +662,6 @@
         }
       ],
       "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
-      "maturity": "M1_DECLARED",
       "nextLevelGap": {
         "target": "M2_IMPLEMENTED",
         "missing": [
@@ -672,7 +670,8 @@
         ],
         "owner": "ecosystem-census",
         "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
-      }
+      },
+      "maturity": "M1_DECLARED"
     },
     {
       "id": "ec.load-performance.k6",
@@ -700,7 +699,6 @@
         }
       ],
       "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
-      "maturity": "M1_DECLARED",
       "nextLevelGap": {
         "target": "M2_IMPLEMENTED",
         "missing": [
@@ -709,7 +707,8 @@
         ],
         "owner": "ecosystem-census",
         "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
-      }
+      },
+      "maturity": "M1_DECLARED"
     },
     {
       "id": "ec.load-performance.locust",
@@ -738,7 +737,6 @@
         }
       ],
       "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
-      "maturity": "M1_DECLARED",
       "nextLevelGap": {
         "target": "M2_IMPLEMENTED",
         "missing": [
@@ -747,13 +745,14 @@
         ],
         "owner": "ecosystem-census",
         "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
-      }
+      },
+      "maturity": "M1_DECLARED"
     },
     {
       "id": "ec.test-framework.jest",
       "name": "jest",
       "category": "test-framework",
-      "state": "SUPPORTED",
+      "state": "TARGET",
       "owner": "framework-inventory",
       "observedAt": "2026-09-28",
       "signals": [
@@ -793,21 +792,21 @@
         }
       ],
       "revisitTrigger": "adapter no longer handles a major version in jest; census staleness trigger demotes SUPPORTED",
-      "maturity": "M2_IMPLEMENTED",
       "nextLevelGap": {
         "target": "M3_FIXTURE_VERIFIED",
         "missing": [
-          "positive + negative + boundary + adversarial fixtures pass deterministically in CI"
+          "the fixture quad for jest is not complete — MUST-FIRE, MUST-NOT-FIRE, RECALL and PRECISION are the M3 criteria (evidence: fixtureQuadVerified); `npm run check-fixture-quad` prints the per-leg work list"
         ],
         "owner": "framework-inventory",
         "revisitTrigger": "adapter no longer handles a major version in jest; census staleness trigger demotes SUPPORTED"
-      }
+      },
+      "maturity": "M2_IMPLEMENTED"
     },
     {
       "id": "ec.test-framework.junit",
       "name": "junit",
       "category": "test-framework",
-      "state": "SUPPORTED",
+      "state": "TARGET",
       "owner": "framework-inventory",
       "observedAt": "2026-09-28",
       "signals": [
@@ -865,22 +864,21 @@
         }
       ],
       "revisitTrigger": "adapter no longer handles a major version in junit; census staleness trigger demotes SUPPORTED",
-      "maturity": "M1_DECLARED",
       "nextLevelGap": {
         "target": "M2_IMPLEMENTED",
         "missing": [
-          "implementation exists",
-          "unit tests for the implementation"
+          "no adapter module resolves for junit (evidence: adapterExists) and the census entry's own `adapter` field is not evidence of one"
         ],
         "owner": "framework-inventory",
         "revisitTrigger": "adapter no longer handles a major version in junit; census staleness trigger demotes SUPPORTED"
-      }
+      },
+      "maturity": "M1_DECLARED"
     },
     {
       "id": "ec.test-framework.nunit",
       "name": "nunit",
       "category": "test-framework",
-      "state": "SUPPORTED",
+      "state": "TARGET",
       "owner": "framework-inventory",
       "observedAt": "2026-09-28",
       "signals": [
@@ -920,22 +918,21 @@
         }
       ],
       "revisitTrigger": "adapter no longer handles a major version in nunit; census staleness trigger demotes SUPPORTED",
-      "maturity": "M1_DECLARED",
       "nextLevelGap": {
         "target": "M2_IMPLEMENTED",
         "missing": [
-          "implementation exists",
-          "unit tests for the implementation"
+          "no adapter module resolves for nunit (evidence: adapterExists) and the census entry's own `adapter` field is not evidence of one"
         ],
         "owner": "framework-inventory",
         "revisitTrigger": "adapter no longer handles a major version in nunit; census staleness trigger demotes SUPPORTED"
-      }
+      },
+      "maturity": "M1_DECLARED"
     },
     {
       "id": "ec.test-framework.pytest",
       "name": "pytest",
       "category": "test-framework",
-      "state": "SUPPORTED",
+      "state": "TARGET",
       "owner": "framework-inventory",
       "observedAt": "2026-09-28",
       "signals": [
@@ -975,15 +972,15 @@
         }
       ],
       "revisitTrigger": "adapter no longer handles a major version in pytest; census staleness trigger demotes SUPPORTED",
-      "maturity": "M2_IMPLEMENTED",
       "nextLevelGap": {
         "target": "M3_FIXTURE_VERIFIED",
         "missing": [
-          "positive + negative + boundary + adversarial fixtures pass deterministically in CI"
+          "the fixture quad for pytest is not complete — MUST-FIRE, MUST-NOT-FIRE, RECALL and PRECISION are the M3 criteria (evidence: fixtureQuadVerified); `npm run check-fixture-quad` prints the per-leg work list"
         ],
         "owner": "framework-inventory",
         "revisitTrigger": "adapter no longer handles a major version in pytest; census staleness trigger demotes SUPPORTED"
-      }
+      },
+      "maturity": "M2_IMPLEMENTED"
     },
     {
       "id": "ec.test-framework.testcontainers",
@@ -1012,7 +1009,6 @@
         }
       ],
       "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
-      "maturity": "M1_DECLARED",
       "nextLevelGap": {
         "target": "M2_IMPLEMENTED",
         "missing": [
@@ -1021,13 +1017,14 @@
         ],
         "owner": "ecosystem-census",
         "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
-      }
+      },
+      "maturity": "M1_DECLARED"
     },
     {
       "id": "ec.test-framework.testng",
       "name": "testng",
       "category": "test-framework",
-      "state": "SUPPORTED",
+      "state": "TARGET",
       "owner": "framework-inventory",
       "observedAt": "2026-09-28",
       "signals": [
@@ -1067,22 +1064,21 @@
         }
       ],
       "revisitTrigger": "adapter no longer handles a major version in testng; census staleness trigger demotes SUPPORTED",
-      "maturity": "M1_DECLARED",
       "nextLevelGap": {
         "target": "M2_IMPLEMENTED",
         "missing": [
-          "implementation exists",
-          "unit tests for the implementation"
+          "no adapter module resolves for testng (evidence: adapterExists) and the census entry's own `adapter` field is not evidence of one"
         ],
         "owner": "framework-inventory",
         "revisitTrigger": "adapter no longer handles a major version in testng; census staleness trigger demotes SUPPORTED"
-      }
+      },
+      "maturity": "M1_DECLARED"
     },
     {
       "id": "ec.test-framework.vitest",
       "name": "vitest",
       "category": "test-framework",
-      "state": "SUPPORTED",
+      "state": "TARGET",
       "owner": "framework-inventory",
       "observedAt": "2026-09-28",
       "signals": [
@@ -1113,21 +1109,21 @@
         }
       ],
       "revisitTrigger": "adapter no longer handles a major version in vitest; census staleness trigger demotes SUPPORTED",
-      "maturity": "M2_IMPLEMENTED",
       "nextLevelGap": {
         "target": "M3_FIXTURE_VERIFIED",
         "missing": [
-          "positive + negative + boundary + adversarial fixtures pass deterministically in CI"
+          "the fixture quad for vitest is not complete — MUST-FIRE, MUST-NOT-FIRE, RECALL and PRECISION are the M3 criteria (evidence: fixtureQuadVerified); `npm run check-fixture-quad` prints the per-leg work list"
         ],
         "owner": "framework-inventory",
         "revisitTrigger": "adapter no longer handles a major version in vitest; census staleness trigger demotes SUPPORTED"
-      }
+      },
+      "maturity": "M2_IMPLEMENTED"
     },
     {
       "id": "ec.test-framework.xunit",
       "name": "xunit",
       "category": "test-framework",
-      "state": "SUPPORTED",
+      "state": "TARGET",
       "owner": "framework-inventory",
       "observedAt": "2026-09-28",
       "signals": [
@@ -1158,16 +1154,15 @@
         }
       ],
       "revisitTrigger": "adapter no longer handles a major version in xunit; census staleness trigger demotes SUPPORTED",
-      "maturity": "M1_DECLARED",
       "nextLevelGap": {
         "target": "M2_IMPLEMENTED",
         "missing": [
-          "implementation exists",
-          "unit tests for the implementation"
+          "no adapter module resolves for xunit (evidence: adapterExists) and the census entry's own `adapter` field is not evidence of one"
         ],
         "owner": "framework-inventory",
         "revisitTrigger": "adapter no longer handles a major version in xunit; census staleness trigger demotes SUPPORTED"
-      }
+      },
+      "maturity": "M1_DECLARED"
     },
     {
       "id": "ec.test-management.azure-test-plans",
@@ -1195,7 +1190,6 @@
         }
       ],
       "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
-      "maturity": "M1_DECLARED",
       "nextLevelGap": {
         "target": "M2_IMPLEMENTED",
         "missing": [
@@ -1204,7 +1198,8 @@
         ],
         "owner": "ecosystem-census",
         "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
-      }
+      },
+      "maturity": "M1_DECLARED"
     },
     {
       "id": "ec.test-management.testrail",
@@ -1232,7 +1227,6 @@
         }
       ],
       "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
-      "maturity": "M1_DECLARED",
       "nextLevelGap": {
         "target": "M2_IMPLEMENTED",
         "missing": [
@@ -1241,7 +1235,8 @@
         ],
         "owner": "ecosystem-census",
         "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
-      }
+      },
+      "maturity": "M1_DECLARED"
     },
     {
       "id": "ec.test-management.xray",
@@ -1270,7 +1265,6 @@
         }
       ],
       "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
-      "maturity": "M1_DECLARED",
       "nextLevelGap": {
         "target": "M2_IMPLEMENTED",
         "missing": [
@@ -1279,7 +1273,8 @@
         ],
         "owner": "ecosystem-census",
         "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
-      }
+      },
+      "maturity": "M1_DECLARED"
     },
     {
       "id": "ec.test-management.zephyr",
@@ -1307,7 +1302,6 @@
         }
       ],
       "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
-      "maturity": "M1_DECLARED",
       "nextLevelGap": {
         "target": "M2_IMPLEMENTED",
         "missing": [
@@ -1316,7 +1310,8 @@
         ],
         "owner": "ecosystem-census",
         "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
-      }
+      },
+      "maturity": "M1_DECLARED"
     },
     {
       "id": "ec.test-runner.robot-framework",
@@ -1345,7 +1340,6 @@
         }
       ],
       "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
-      "maturity": "M1_DECLARED",
       "nextLevelGap": {
         "target": "M2_IMPLEMENTED",
         "missing": [
@@ -1354,13 +1348,14 @@
         ],
         "owner": "ecosystem-census",
         "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
-      }
+      },
+      "maturity": "M1_DECLARED"
     },
     {
       "id": "ec.test-runner.selenium",
       "name": "selenium",
       "category": "test-runner",
-      "state": "SUPPORTED",
+      "state": "TARGET",
       "owner": "framework-inventory",
       "observedAt": "2026-09-28",
       "signals": [
@@ -1436,16 +1431,15 @@
         }
       ],
       "revisitTrigger": "adapter no longer handles a major version in selenium; census staleness trigger demotes SUPPORTED",
-      "maturity": "M1_DECLARED",
       "nextLevelGap": {
         "target": "M2_IMPLEMENTED",
         "missing": [
-          "implementation exists",
-          "unit tests for the implementation"
+          "no adapter module resolves for selenium (evidence: adapterExists) and the census entry's own `adapter` field is not evidence of one"
         ],
         "owner": "framework-inventory",
         "revisitTrigger": "adapter no longer handles a major version in selenium; census staleness trigger demotes SUPPORTED"
-      }
+      },
+      "maturity": "M1_DECLARED"
     }
   ],
   "stalenessDemotions": [],
@@ -1476,7 +1470,6 @@
         }
       ],
       "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
-      "maturity": "M1_DECLARED",
       "nextLevelGap": {
         "target": "M2_IMPLEMENTED",
         "missing": [
@@ -1485,7 +1478,8 @@
         ],
         "owner": "ecosystem-census",
         "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
-      }
+      },
+      "maturity": "M1_DECLARED"
     },
     {
       "id": "ec.api-contract-testing.karate",
@@ -1514,7 +1508,6 @@
         }
       ],
       "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
-      "maturity": "M1_DECLARED",
       "nextLevelGap": {
         "target": "M2_IMPLEMENTED",
         "missing": [
@@ -1523,7 +1516,8 @@
         ],
         "owner": "ecosystem-census",
         "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
-      }
+      },
+      "maturity": "M1_DECLARED"
     },
     {
       "id": "ec.api-contract-testing.pact",
@@ -1552,7 +1546,6 @@
         }
       ],
       "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
-      "maturity": "M1_DECLARED",
       "nextLevelGap": {
         "target": "M2_IMPLEMENTED",
         "missing": [
@@ -1561,7 +1554,8 @@
         ],
         "owner": "ecosystem-census",
         "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
-      }
+      },
+      "maturity": "M1_DECLARED"
     },
     {
       "id": "ec.api-contract-testing.postman-newman",
@@ -1590,7 +1584,6 @@
         }
       ],
       "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
-      "maturity": "M1_DECLARED",
       "nextLevelGap": {
         "target": "M2_IMPLEMENTED",
         "missing": [
@@ -1599,7 +1592,8 @@
         ],
         "owner": "ecosystem-census",
         "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
-      }
+      },
+      "maturity": "M1_DECLARED"
     },
     {
       "id": "ec.api-contract-testing.rest-assured",
@@ -1628,7 +1622,6 @@
         }
       ],
       "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
-      "maturity": "M1_DECLARED",
       "nextLevelGap": {
         "target": "M2_IMPLEMENTED",
         "missing": [
@@ -1637,7 +1630,8 @@
         ],
         "owner": "ecosystem-census",
         "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
-      }
+      },
+      "maturity": "M1_DECLARED"
     },
     {
       "id": "ec.bdd-spec-dsl.cucumber",
@@ -1666,7 +1660,6 @@
         }
       ],
       "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
-      "maturity": "M1_DECLARED",
       "nextLevelGap": {
         "target": "M2_IMPLEMENTED",
         "missing": [
@@ -1675,7 +1668,8 @@
         ],
         "owner": "ecosystem-census",
         "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
-      }
+      },
+      "maturity": "M1_DECLARED"
     },
     {
       "id": "ec.bdd-spec-dsl.specflow",
@@ -1704,7 +1698,6 @@
         }
       ],
       "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
-      "maturity": "M1_DECLARED",
       "nextLevelGap": {
         "target": "M2_IMPLEMENTED",
         "missing": [
@@ -1713,13 +1706,14 @@
         ],
         "owner": "ecosystem-census",
         "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
-      }
+      },
+      "maturity": "M1_DECLARED"
     },
     {
       "id": "ec.ci-cd-provider.azure-pipelines",
       "name": "azure-pipelines",
       "category": "ci-cd-provider",
-      "state": "SUPPORTED",
+      "state": "TARGET",
       "owner": "provider-capability-contract",
       "observedAt": "2026-09-28",
       "signals": [
@@ -1736,21 +1730,21 @@
       "handledUpstreamMajors": ["2024"],
       "upstreamPackages": [],
       "revisitTrigger": "CI-IR adapter no longer normalizes a azure-pipelines pipeline construct; census staleness trigger demotes SUPPORTED",
-      "maturity": "M2_IMPLEMENTED",
       "nextLevelGap": {
         "target": "M3_FIXTURE_VERIFIED",
         "missing": [
-          "positive + negative + boundary + adversarial fixtures pass deterministically in CI"
+          "the fixture quad for azure-pipelines is not complete — MUST-FIRE, MUST-NOT-FIRE, RECALL and PRECISION are the M3 criteria (evidence: fixtureQuadVerified); `npm run check-fixture-quad` prints the per-leg work list"
         ],
         "owner": "provider-capability-contract",
         "revisitTrigger": "CI-IR adapter no longer normalizes a azure-pipelines pipeline construct; census staleness trigger demotes SUPPORTED"
-      }
+      },
+      "maturity": "M2_IMPLEMENTED"
     },
     {
       "id": "ec.ci-cd-provider.github-actions",
       "name": "github-actions",
       "category": "ci-cd-provider",
-      "state": "SUPPORTED",
+      "state": "TARGET",
       "owner": "provider-capability-contract",
       "observedAt": "2026-09-28",
       "signals": [
@@ -1772,15 +1766,15 @@
         }
       ],
       "revisitTrigger": "CI-IR adapter no longer normalizes a github-actions pipeline construct; census staleness trigger demotes SUPPORTED",
-      "maturity": "M2_IMPLEMENTED",
       "nextLevelGap": {
         "target": "M3_FIXTURE_VERIFIED",
         "missing": [
-          "positive + negative + boundary + adversarial fixtures pass deterministically in CI"
+          "the fixture quad for github-actions is not complete — MUST-FIRE, MUST-NOT-FIRE, RECALL and PRECISION are the M3 criteria (evidence: fixtureQuadVerified); `npm run check-fixture-quad` prints the per-leg work list"
         ],
         "owner": "provider-capability-contract",
         "revisitTrigger": "CI-IR adapter no longer normalizes a github-actions pipeline construct; census staleness trigger demotes SUPPORTED"
-      }
+      },
+      "maturity": "M2_IMPLEMENTED"
     },
     {
       "id": "ec.ci-cd-provider.gitlab-ci",
@@ -1803,7 +1797,6 @@
       "handledUpstreamMajors": [],
       "upstreamPackages": [],
       "revisitTrigger": "CI-IR adapter no longer normalizes a gitlab-ci pipeline construct; census staleness trigger demotes SUPPORTED",
-      "maturity": "M2_IMPLEMENTED",
       "nextLevelGap": {
         "target": "M3_FIXTURE_VERIFIED",
         "missing": [
@@ -1811,13 +1804,14 @@
         ],
         "owner": "provider-capability-contract",
         "revisitTrigger": "CI-IR adapter no longer normalizes a gitlab-ci pipeline construct; census staleness trigger demotes SUPPORTED"
-      }
+      },
+      "maturity": "M2_IMPLEMENTED"
     },
     {
       "id": "ec.ci-cd-provider.jenkins",
       "name": "jenkins",
       "category": "ci-cd-provider",
-      "state": "SUPPORTED",
+      "state": "TARGET",
       "owner": "provider-capability-contract",
       "observedAt": "2026-09-28",
       "signals": [
@@ -1834,21 +1828,21 @@
       "handledUpstreamMajors": ["2"],
       "upstreamPackages": [],
       "revisitTrigger": "CI-IR adapter no longer normalizes a jenkins pipeline construct; census staleness trigger demotes SUPPORTED",
-      "maturity": "M2_IMPLEMENTED",
       "nextLevelGap": {
         "target": "M3_FIXTURE_VERIFIED",
         "missing": [
-          "positive + negative + boundary + adversarial fixtures pass deterministically in CI"
+          "the fixture quad for jenkins is not complete — MUST-FIRE, MUST-NOT-FIRE, RECALL and PRECISION are the M3 criteria (evidence: fixtureQuadVerified); `npm run check-fixture-quad` prints the per-leg work list"
         ],
         "owner": "provider-capability-contract",
         "revisitTrigger": "CI-IR adapter no longer normalizes a jenkins pipeline construct; census staleness trigger demotes SUPPORTED"
-      }
+      },
+      "maturity": "M2_IMPLEMENTED"
     },
     {
       "id": "ec.component-e2e.cypress",
       "name": "cypress",
       "category": "component-e2e",
-      "state": "SUPPORTED",
+      "state": "TARGET",
       "owner": "framework-inventory",
       "observedAt": "2026-09-28",
       "signals": [
@@ -1879,21 +1873,21 @@
         }
       ],
       "revisitTrigger": "adapter no longer handles a major version in cypress; census staleness trigger demotes SUPPORTED",
-      "maturity": "M2_IMPLEMENTED",
       "nextLevelGap": {
         "target": "M3_FIXTURE_VERIFIED",
         "missing": [
-          "positive + negative + boundary + adversarial fixtures pass deterministically in CI"
+          "the fixture quad for cypress is not complete — MUST-FIRE, MUST-NOT-FIRE, RECALL and PRECISION are the M3 criteria (evidence: fixtureQuadVerified); `npm run check-fixture-quad` prints the per-leg work list"
         ],
         "owner": "framework-inventory",
         "revisitTrigger": "adapter no longer handles a major version in cypress; census staleness trigger demotes SUPPORTED"
-      }
+      },
+      "maturity": "M2_IMPLEMENTED"
     },
     {
       "id": "ec.component-e2e.playwright",
       "name": "playwright",
       "category": "component-e2e",
-      "state": "SUPPORTED",
+      "state": "TARGET",
       "owner": "framework-inventory",
       "observedAt": "2026-09-28",
       "signals": [
@@ -1951,15 +1945,15 @@
         }
       ],
       "revisitTrigger": "adapter no longer handles a major version in playwright; census staleness trigger demotes SUPPORTED",
-      "maturity": "M2_IMPLEMENTED",
       "nextLevelGap": {
         "target": "M3_FIXTURE_VERIFIED",
         "missing": [
-          "positive + negative + boundary + adversarial fixtures pass deterministically in CI"
+          "the fixture quad for playwright is not complete — MUST-FIRE, MUST-NOT-FIRE, RECALL and PRECISION are the M3 criteria (evidence: fixtureQuadVerified); `npm run check-fixture-quad` prints the per-leg work list"
         ],
         "owner": "framework-inventory",
         "revisitTrigger": "adapter no longer handles a major version in playwright; census staleness trigger demotes SUPPORTED"
-      }
+      },
+      "maturity": "M2_IMPLEMENTED"
     },
     {
       "id": "ec.component-e2e.playwright-components",
@@ -1988,7 +1982,6 @@
         }
       ],
       "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
-      "maturity": "M1_DECLARED",
       "nextLevelGap": {
         "target": "M2_IMPLEMENTED",
         "missing": [
@@ -1997,7 +1990,8 @@
         ],
         "owner": "ecosystem-census",
         "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
-      }
+      },
+      "maturity": "M1_DECLARED"
     },
     {
       "id": "ec.iac-container.kubernetes-manifests",
@@ -2025,7 +2019,6 @@
         }
       ],
       "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
-      "maturity": "M1_DECLARED",
       "nextLevelGap": {
         "target": "M2_IMPLEMENTED",
         "missing": [
@@ -2034,7 +2027,8 @@
         ],
         "owner": "ecosystem-census",
         "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
-      }
+      },
+      "maturity": "M1_DECLARED"
     },
     {
       "id": "ec.iac-container.terraform",
@@ -2062,7 +2056,6 @@
         }
       ],
       "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
-      "maturity": "M1_DECLARED",
       "nextLevelGap": {
         "target": "M2_IMPLEMENTED",
         "missing": [
@@ -2071,7 +2064,8 @@
         ],
         "owner": "ecosystem-census",
         "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
-      }
+      },
+      "maturity": "M1_DECLARED"
     },
     {
       "id": "ec.load-performance.gatling",
@@ -2100,7 +2094,6 @@
         }
       ],
       "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
-      "maturity": "M1_DECLARED",
       "nextLevelGap": {
         "target": "M2_IMPLEMENTED",
         "missing": [
@@ -2109,7 +2102,8 @@
         ],
         "owner": "ecosystem-census",
         "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
-      }
+      },
+      "maturity": "M1_DECLARED"
     },
     {
       "id": "ec.load-performance.k6",
@@ -2137,7 +2131,6 @@
         }
       ],
       "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
-      "maturity": "M1_DECLARED",
       "nextLevelGap": {
         "target": "M2_IMPLEMENTED",
         "missing": [
@@ -2146,7 +2139,8 @@
         ],
         "owner": "ecosystem-census",
         "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
-      }
+      },
+      "maturity": "M1_DECLARED"
     },
     {
       "id": "ec.load-performance.locust",
@@ -2175,7 +2169,6 @@
         }
       ],
       "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
-      "maturity": "M1_DECLARED",
       "nextLevelGap": {
         "target": "M2_IMPLEMENTED",
         "missing": [
@@ -2184,13 +2177,14 @@
         ],
         "owner": "ecosystem-census",
         "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
-      }
+      },
+      "maturity": "M1_DECLARED"
     },
     {
       "id": "ec.test-framework.jest",
       "name": "jest",
       "category": "test-framework",
-      "state": "SUPPORTED",
+      "state": "TARGET",
       "owner": "framework-inventory",
       "observedAt": "2026-09-28",
       "signals": [
@@ -2230,21 +2224,21 @@
         }
       ],
       "revisitTrigger": "adapter no longer handles a major version in jest; census staleness trigger demotes SUPPORTED",
-      "maturity": "M2_IMPLEMENTED",
       "nextLevelGap": {
         "target": "M3_FIXTURE_VERIFIED",
         "missing": [
-          "positive + negative + boundary + adversarial fixtures pass deterministically in CI"
+          "the fixture quad for jest is not complete — MUST-FIRE, MUST-NOT-FIRE, RECALL and PRECISION are the M3 criteria (evidence: fixtureQuadVerified); `npm run check-fixture-quad` prints the per-leg work list"
         ],
         "owner": "framework-inventory",
         "revisitTrigger": "adapter no longer handles a major version in jest; census staleness trigger demotes SUPPORTED"
-      }
+      },
+      "maturity": "M2_IMPLEMENTED"
     },
     {
       "id": "ec.test-framework.junit",
       "name": "junit",
       "category": "test-framework",
-      "state": "SUPPORTED",
+      "state": "TARGET",
       "owner": "framework-inventory",
       "observedAt": "2026-09-28",
       "signals": [
@@ -2302,22 +2296,21 @@
         }
       ],
       "revisitTrigger": "adapter no longer handles a major version in junit; census staleness trigger demotes SUPPORTED",
-      "maturity": "M1_DECLARED",
       "nextLevelGap": {
         "target": "M2_IMPLEMENTED",
         "missing": [
-          "implementation exists",
-          "unit tests for the implementation"
+          "no adapter module resolves for junit (evidence: adapterExists) and the census entry's own `adapter` field is not evidence of one"
         ],
         "owner": "framework-inventory",
         "revisitTrigger": "adapter no longer handles a major version in junit; census staleness trigger demotes SUPPORTED"
-      }
+      },
+      "maturity": "M1_DECLARED"
     },
     {
       "id": "ec.test-framework.nunit",
       "name": "nunit",
       "category": "test-framework",
-      "state": "SUPPORTED",
+      "state": "TARGET",
       "owner": "framework-inventory",
       "observedAt": "2026-09-28",
       "signals": [
@@ -2357,22 +2350,21 @@
         }
       ],
       "revisitTrigger": "adapter no longer handles a major version in nunit; census staleness trigger demotes SUPPORTED",
-      "maturity": "M1_DECLARED",
       "nextLevelGap": {
         "target": "M2_IMPLEMENTED",
         "missing": [
-          "implementation exists",
-          "unit tests for the implementation"
+          "no adapter module resolves for nunit (evidence: adapterExists) and the census entry's own `adapter` field is not evidence of one"
         ],
         "owner": "framework-inventory",
         "revisitTrigger": "adapter no longer handles a major version in nunit; census staleness trigger demotes SUPPORTED"
-      }
+      },
+      "maturity": "M1_DECLARED"
     },
     {
       "id": "ec.test-framework.pytest",
       "name": "pytest",
       "category": "test-framework",
-      "state": "SUPPORTED",
+      "state": "TARGET",
       "owner": "framework-inventory",
       "observedAt": "2026-09-28",
       "signals": [
@@ -2412,15 +2404,15 @@
         }
       ],
       "revisitTrigger": "adapter no longer handles a major version in pytest; census staleness trigger demotes SUPPORTED",
-      "maturity": "M2_IMPLEMENTED",
       "nextLevelGap": {
         "target": "M3_FIXTURE_VERIFIED",
         "missing": [
-          "positive + negative + boundary + adversarial fixtures pass deterministically in CI"
+          "the fixture quad for pytest is not complete — MUST-FIRE, MUST-NOT-FIRE, RECALL and PRECISION are the M3 criteria (evidence: fixtureQuadVerified); `npm run check-fixture-quad` prints the per-leg work list"
         ],
         "owner": "framework-inventory",
         "revisitTrigger": "adapter no longer handles a major version in pytest; census staleness trigger demotes SUPPORTED"
-      }
+      },
+      "maturity": "M2_IMPLEMENTED"
     },
     {
       "id": "ec.test-framework.testcontainers",
@@ -2449,7 +2441,6 @@
         }
       ],
       "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
-      "maturity": "M1_DECLARED",
       "nextLevelGap": {
         "target": "M2_IMPLEMENTED",
         "missing": [
@@ -2458,13 +2449,14 @@
         ],
         "owner": "ecosystem-census",
         "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
-      }
+      },
+      "maturity": "M1_DECLARED"
     },
     {
       "id": "ec.test-framework.testng",
       "name": "testng",
       "category": "test-framework",
-      "state": "SUPPORTED",
+      "state": "TARGET",
       "owner": "framework-inventory",
       "observedAt": "2026-09-28",
       "signals": [
@@ -2504,22 +2496,21 @@
         }
       ],
       "revisitTrigger": "adapter no longer handles a major version in testng; census staleness trigger demotes SUPPORTED",
-      "maturity": "M1_DECLARED",
       "nextLevelGap": {
         "target": "M2_IMPLEMENTED",
         "missing": [
-          "implementation exists",
-          "unit tests for the implementation"
+          "no adapter module resolves for testng (evidence: adapterExists) and the census entry's own `adapter` field is not evidence of one"
         ],
         "owner": "framework-inventory",
         "revisitTrigger": "adapter no longer handles a major version in testng; census staleness trigger demotes SUPPORTED"
-      }
+      },
+      "maturity": "M1_DECLARED"
     },
     {
       "id": "ec.test-framework.vitest",
       "name": "vitest",
       "category": "test-framework",
-      "state": "SUPPORTED",
+      "state": "TARGET",
       "owner": "framework-inventory",
       "observedAt": "2026-09-28",
       "signals": [
@@ -2550,21 +2541,21 @@
         }
       ],
       "revisitTrigger": "adapter no longer handles a major version in vitest; census staleness trigger demotes SUPPORTED",
-      "maturity": "M2_IMPLEMENTED",
       "nextLevelGap": {
         "target": "M3_FIXTURE_VERIFIED",
         "missing": [
-          "positive + negative + boundary + adversarial fixtures pass deterministically in CI"
+          "the fixture quad for vitest is not complete — MUST-FIRE, MUST-NOT-FIRE, RECALL and PRECISION are the M3 criteria (evidence: fixtureQuadVerified); `npm run check-fixture-quad` prints the per-leg work list"
         ],
         "owner": "framework-inventory",
         "revisitTrigger": "adapter no longer handles a major version in vitest; census staleness trigger demotes SUPPORTED"
-      }
+      },
+      "maturity": "M2_IMPLEMENTED"
     },
     {
       "id": "ec.test-framework.xunit",
       "name": "xunit",
       "category": "test-framework",
-      "state": "SUPPORTED",
+      "state": "TARGET",
       "owner": "framework-inventory",
       "observedAt": "2026-09-28",
       "signals": [
@@ -2595,16 +2586,15 @@
         }
       ],
       "revisitTrigger": "adapter no longer handles a major version in xunit; census staleness trigger demotes SUPPORTED",
-      "maturity": "M1_DECLARED",
       "nextLevelGap": {
         "target": "M2_IMPLEMENTED",
         "missing": [
-          "implementation exists",
-          "unit tests for the implementation"
+          "no adapter module resolves for xunit (evidence: adapterExists) and the census entry's own `adapter` field is not evidence of one"
         ],
         "owner": "framework-inventory",
         "revisitTrigger": "adapter no longer handles a major version in xunit; census staleness trigger demotes SUPPORTED"
-      }
+      },
+      "maturity": "M1_DECLARED"
     },
     {
       "id": "ec.test-management.azure-test-plans",
@@ -2632,7 +2622,6 @@
         }
       ],
       "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
-      "maturity": "M1_DECLARED",
       "nextLevelGap": {
         "target": "M2_IMPLEMENTED",
         "missing": [
@@ -2641,7 +2630,8 @@
         ],
         "owner": "ecosystem-census",
         "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
-      }
+      },
+      "maturity": "M1_DECLARED"
     },
     {
       "id": "ec.test-management.testrail",
@@ -2669,7 +2659,6 @@
         }
       ],
       "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
-      "maturity": "M1_DECLARED",
       "nextLevelGap": {
         "target": "M2_IMPLEMENTED",
         "missing": [
@@ -2678,7 +2667,8 @@
         ],
         "owner": "ecosystem-census",
         "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
-      }
+      },
+      "maturity": "M1_DECLARED"
     },
     {
       "id": "ec.test-management.xray",
@@ -2707,7 +2697,6 @@
         }
       ],
       "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
-      "maturity": "M1_DECLARED",
       "nextLevelGap": {
         "target": "M2_IMPLEMENTED",
         "missing": [
@@ -2716,7 +2705,8 @@
         ],
         "owner": "ecosystem-census",
         "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
-      }
+      },
+      "maturity": "M1_DECLARED"
     },
     {
       "id": "ec.test-management.zephyr",
@@ -2744,7 +2734,6 @@
         }
       ],
       "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
-      "maturity": "M1_DECLARED",
       "nextLevelGap": {
         "target": "M2_IMPLEMENTED",
         "missing": [
@@ -2753,7 +2742,8 @@
         ],
         "owner": "ecosystem-census",
         "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
-      }
+      },
+      "maturity": "M1_DECLARED"
     },
     {
       "id": "ec.test-runner.robot-framework",
@@ -2782,7 +2772,6 @@
         }
       ],
       "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof",
-      "maturity": "M1_DECLARED",
       "nextLevelGap": {
         "target": "M2_IMPLEMENTED",
         "missing": [
@@ -2791,13 +2780,14 @@
         ],
         "owner": "ecosystem-census",
         "revisitTrigger": "census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof"
-      }
+      },
+      "maturity": "M1_DECLARED"
     },
     {
       "id": "ec.test-runner.selenium",
       "name": "selenium",
       "category": "test-runner",
-      "state": "SUPPORTED",
+      "state": "TARGET",
       "owner": "framework-inventory",
       "observedAt": "2026-09-28",
       "signals": [
@@ -2873,16 +2863,15 @@
         }
       ],
       "revisitTrigger": "adapter no longer handles a major version in selenium; census staleness trigger demotes SUPPORTED",
-      "maturity": "M1_DECLARED",
       "nextLevelGap": {
         "target": "M2_IMPLEMENTED",
         "missing": [
-          "implementation exists",
-          "unit tests for the implementation"
+          "no adapter module resolves for selenium (evidence: adapterExists) and the census entry's own `adapter` field is not evidence of one"
         ],
         "owner": "framework-inventory",
         "revisitTrigger": "adapter no longer handles a major version in selenium; census staleness trigger demotes SUPPORTED"
-      }
+      },
+      "maturity": "M1_DECLARED"
     }
   ]
 }

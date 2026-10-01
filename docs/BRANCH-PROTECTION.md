@@ -20,7 +20,7 @@ These settings maximize the OpenSSF Scorecard [Branch-Protection](https://securi
     `(windows-latest, 22)` / `(macos-latest, 22)` — CI matrix
   - `property-tests` — property suite
   - `fuzz` — fuzz suite
-  - `site-build` — site build + `site:doctor`
+  - `site-build` — site build + `doctor`
   - `workflow-lint` — actionlint + `npm run ci:standard`
   - `self-scan` — Mjölnir self-scan gate
   - `certification` — doctor self-audit + determinism verify

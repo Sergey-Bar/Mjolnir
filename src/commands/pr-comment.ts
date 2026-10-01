@@ -1,5 +1,5 @@
 /**
- * `mjolnir pr-comment` — Sprint 6 Task 25 (Master-Stabilization-Plan.md).
+ * the `--format pr-comment` render — Sprint 6 Task 25 (Master-Stabilization-Plan.md).
  *
  * Renders a Markdown PR comment body from a scan result, scoped to only
  * what a baseline diff says is new (built on Task 24), or to the

@@ -7,9 +7,8 @@ body:
     attributes:
       value: |
         See `CONTRIBUTING.md`'s "Proposing a new rule" section if you'd
-        like to implement this yourself — `mjolnir create-rule` scaffolds
-        the fixture pairs for you. This template is for proposing the idea
-        even if you can't implement it.
+        like to implement this yourself. This template is for proposing the
+        idea even if you can't implement it.
 
         Note the anti-creep law: every addition to the *launch* rule set
         needs an equal-size removal. New rules in already-mature families

@@ -4,15 +4,7 @@
 
 import { describe, expect, it } from "vitest";
 import { buildHandover, renderHandover } from "../../src/commands/handover.js";
-import {
-  renderInit,
-  runInit,
-  tryReadPackageJson,
-} from "../../src/commands/init.js";
-import {
-  renderPwRunSummary,
-  summarizePwRun,
-} from "../../src/commands/pw-report.js";
+import {} from "../../src/commands/pw-report.js";
 import type { ScanResult } from "../../src/types.js";
 import type {
   ForensicsReport,
@@ -123,89 +115,5 @@ describe("handover", () => {
       null,
     );
     expect(map.summaryLine).toContain("2 things to know");
-  });
-});
-
-describe("init", () => {
-  it("is idempotent — never overwrites existing files", () => {
-    // runInit only reports; it must not create CI workflow itself.
-    const result = runInit("/nonexistent-root", null, {});
-    const wfStep = result.steps.find((s) => s.name === "ci-workflow");
-    // Bug-audit L10: runInit writes nothing — an absent workflow is
-    // reported as advice ("run ci install"), never as "created".
-    expect(wfStep?.status).toBe("advice");
-    expect(wfStep?.detail).toContain("ci install");
-    // And it must not have written anything to the (nonexistent) root.
-    expect(result.nextCommands).toContain("mjolnir ci install");
-  });
-
-  it("reports unknown frameworks honestly", () => {
-    const result = runInit("/nonexistent-root", null, {});
-    const fw = result.steps.find((s) => s.name === "framework-detection");
-    expect(fw?.status).toBe("skipped");
-    expect(result.detectionUnknown).toBe(true);
-  });
-
-  it("renders next commands when files are missing", () => {
-    const text = renderInit(runInit("/nonexistent-root", null, {}));
-    expect(text).toContain("$ mjolnir ci install");
-    expect(text).toContain("safe to re-run");
-  });
-
-  it("tryReadPackageJson returns null on missing/broken file", () => {
-    expect(tryReadPackageJson("/definitely/not/here")).toBeNull();
-  });
-});
-
-describe("pw-report", () => {
-  it("summarizes a run with retries and flakes", () => {
-    const report: ForensicsReport = {
-      forensicsSchemaVersion: 1,
-      source: "playwright-json",
-      totalTests: 3,
-      failed: 1,
-      skipped: 0,
-      retriedTests: 1,
-      flakyTests: 1,
-      totalDurationMs: 5000,
-      verdicts: [
-        verdict({
-          title: "lucky",
-          attempts: 2,
-          passedOnRetry: true,
-          everFailed: true,
-        }),
-        verdict({ title: "dead", finalStatus: "failed", everFailed: true }),
-        verdict({ title: "ok" }),
-      ],
-      analysisComplete: true,
-      skippedReports: 0,
-      incompleteReasons: [],
-    };
-    const s = summarizePwRun(report);
-    expect(s.total).toBe(3);
-    expect(s.trueFlakes).toBe(1);
-    expect(s.slowest.length).toBeGreaterThan(0);
-    const text = renderPwRunSummary(s);
-    expect(text).toContain("TRUE-FLAKE");
-    expect(text).toContain("Slowest:");
-  });
-
-  it("clean run omits retry line entirely", () => {
-    const s = summarizePwRun({
-      forensicsSchemaVersion: 1,
-      source: "junit-xml",
-      totalTests: 1,
-      failed: 0,
-      skipped: 0,
-      retriedTests: 0,
-      flakyTests: 0,
-      totalDurationMs: 100,
-      verdicts: [verdict({})],
-      analysisComplete: true,
-      skippedReports: 0,
-      incompleteReasons: [],
-    });
-    expect(renderPwRunSummary(s)).not.toContain("retried");
   });
 });

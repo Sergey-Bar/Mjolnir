@@ -41,7 +41,11 @@ export { DAY_ONE_SEED };
  * gate.
  */
 
-import { CI_PROVIDER_CAPABILITY_RECORDS } from "../frameworks/provider-capability-contract.js";
+import {
+  CI_PROVIDER_CAPABILITY_RECORDS,
+  getProviderCapabilities,
+  validateProviderCapabilityRecord,
+} from "../frameworks/provider-capability-contract.js";
 import { compareCodePoints } from "../lib/compare.js";
 import { SCAN_ADAPTERS } from "../discovery/scan-adapters.js";
 import {
@@ -56,7 +60,7 @@ import {
   type MaturityEvidence,
 } from "./maturity.js";
 import type { NextLevelGap, Owner } from "./capability-types.js";
-
+import { hasCompleteQuadFor } from "./ecosystem-probe.js";
 export const CENSUS_SCHEMA_VERSION = 1 as const;
 export const CENSUS_ID = "mjolnir-ecosystem-census" as const;
 
@@ -182,6 +186,7 @@ export type CensusDiagnosticCode =
   | "MISSING_OWNER"
   | "MISSING_SIGNALS"
   | "SUPPORTED_WITHOUT_ADAPTER"
+  | "SUPPORTED_WITHOUT_QUAD"
   | "TARGET_WITHOUT_GAP"
   | "GAP_MISSING_OWNER"
   | "DEPRECATED_WITHOUT_SUCCESSOR"
@@ -201,6 +206,20 @@ export type CensusDiagnosticCode =
  * testable without a checkout.
  */
 export interface CensusEvidenceResolver {
+  /**
+   * The checkout this resolver observes.
+   *
+   * Present on the interface rather than passed to `validateCensus`
+   * separately, so the validator cannot be pointed at a DIFFERENT tree than
+   * the resolver it is checking. `SUPPORTED_WITHOUT_QUAD` cross-checks the
+   * resolver's own answer; an arm that re-derived its answer from
+   * `process.cwd()` would be a third opinion, not a check, and would report
+   * errors the resolver never made.
+   *
+   * Optional because a synthetic resolver — a test injecting `() => true` —
+   * has no tree at all, and the arm must still run rather than skip.
+   */
+  readonly root?: string;
   /** An adapter module for the census id exists. */
   adapterExists(entry: CensusEntry): boolean;
   /** The adapter has unit tests. */
@@ -222,6 +241,9 @@ export interface CensusEvidenceResolver {
  * cannot check (Law 1).
  */
 export const BLIND_EVIDENCE_RESOLVER: CensusEvidenceResolver = {
+  // No tree: the blind resolver observes nothing, so there is no root to
+  // report and `root?` is genuinely absent rather than set to undefined —
+  // which `exactOptionalPropertyTypes` distinguishes.
   adapterExists: () => false,
   unitTested: () => false,
   fixtureQuadVerified: () => false,
@@ -562,11 +584,34 @@ export function deriveCiProviderEntries(
       ),
     ];
     const hasAdapter = adapterIds.length > 0;
+
+    // The declared semantics are CHECKED, and the result changes the entry.
+    //
+    // `deriveSignalsFromProvider` reads a hand-curated map keyed by slug, so
+    // the capability contract was consulted for ONE thing — which providers
+    // get a census entry — and its declared semantics were never validated by
+    // the thing that publishes them. A record carrying a forbidden
+    // `executable-bypass` field was enumerated into the census exactly like a
+    // clean one.
+    //
+    // The violations DEMOTE rather than annotate. The first version wrote them
+    // into `notApplicableReason` and left the state alone, so a record its
+    // own validator rejected was published at the same level as a clean one —
+    // the comment two lines above promised the opposite, and the comment was
+    // right. A record that cannot pass its own contract is not a record of a
+    // capability, and `TARGET` is the honest state for one.
+    const declared = records.get(slug) ?? getProviderCapabilities(slug);
+    const declaredViolations = declared
+      ? validateProviderCapabilityRecord(declared).violations
+      : [];
+    const declaredIsSound =
+      declared !== undefined && declaredViolations.length === 0;
+
     const base: Omit<CensusEntry, "maturity" | "nextLevelGap"> = {
       id: `ec.ci-cd-provider.${slug}`,
       name: slug,
       category: "ci-cd-provider",
-      state: hasAdapter ? "SUPPORTED" : "TARGET",
+      state: hasAdapter && declaredIsSound ? "SUPPORTED" : "TARGET",
       owner: "provider-capability-contract",
       observedAt,
       signals: deriveSignalsFromProvider(slug),
@@ -574,7 +619,15 @@ export function deriveCiProviderEntries(
       blocksAxes: ["CI Integrity", "False-Green Detection"],
       successor: null,
       removalDate: null,
-      notApplicableReason: null,
+      // Names WHICH of the three missing things it is, so a reader is never
+      // told "not supported" for a capability that simply has not been proven.
+      notApplicableReason:
+        declaredViolations.length > 0
+          ? `declared capability record failed its own validator: ` +
+            declaredViolations
+              .map((v) => `${v.code} at ${v.path}: ${v.message}`)
+              .join("; ")
+          : null,
       handledUpstreamMajors: normalizeMajors(
         framework?.validatedVersions ?? [],
       ),
@@ -647,6 +700,43 @@ function deriveSignalsFromProvider(slug: string): readonly DetectSignal[] {
   );
 }
 
+/**
+ * Fill in the derived fields, and enforce the SUPPORTED precondition.
+ *
+ * `state` is corrected HERE rather than at the two call sites that set it,
+ * because the precondition is a property of the evidence and the evidence is
+ * resolved here. Patching `:482` and `:569` separately is how the two paths
+ * drifted the first time: the framework path checked only for an adapter while
+ * the CI-provider path checked something else, and the census ended up
+ * advertising SUPPORTED for ecosystems with no fixture evidence at all.
+ *
+ * The precondition has TWO halves, and both are necessary:
+ *
+ *   - an ADAPTER, without which there is nothing implementing the ecosystem;
+ *   - a fixture QUAD, without which nothing has demonstrated it behaves. An
+ *     adapter is a declaration that support exists; a quad is the observation
+ *     that it does.
+ *
+ * The first version had the second half missing on one path and a different
+ * second half on the other, so `SUPPORTED` meant three things. It now means
+ * one: an adapter, and a verified quad.
+ *
+ * Demotion is recorded rather than silent, and the RECORD is derived rather
+ * than typed. Two things the first version got wrong and this one does not:
+ *
+ *   - the maturity was hand-set to `"M1_DECLARED"`, which contradicts
+ *     `src/v6/maturity.ts` — "The only way a capability gets a level" is
+ *     `deriveMaturityFromEvidence`, and there is no `setMaturity` export. An
+ *     entry whose evidence supports M2 and whose maturity says M1 is the same
+ *     split the capability registry fixed in 2.2, reintroduced one module over.
+ *     The evidence-derived `maturity` is kept.
+ *   - the gap said "the fixture quad would earn M2". The quad is the M3
+ *     criterion (`PROMOTION_CRITERIA`); M2's is `IMPLEMENTATION_UNIT_TESTED`.
+ *     A gap that names the wrong level's requirement is worse than no gap,
+ *     because it tells a maintainer that a month's fixture work would earn a
+ *     level it does not. The target is the first level the evidence does not
+ *     support, and the missing list is that level's own criteria.
+ */
 function materialize(
   base: Omit<CensusEntry, "maturity" | "nextLevelGap">,
   resolver: CensusEvidenceResolver,
@@ -657,7 +747,58 @@ function materialize(
     base.owner,
     base.revisitTrigger,
   );
-  return { ...base, maturity, nextLevelGap };
+  const demoted =
+    base.state === "SUPPORTED" &&
+    (!evidence.implemented || !evidence.fixtureQuadVerified);
+  return {
+    ...base,
+    state: demoted ? "TARGET" : base.state,
+    nextLevelGap: demoted
+      ? {
+          target: demotionTarget(evidence),
+          missing: missingFor(demotionTarget(evidence), base.name),
+          owner: base.owner,
+          revisitTrigger: base.revisitTrigger,
+        }
+      : nextLevelGap,
+    maturity,
+  };
+}
+
+/**
+ * The first level this evidence does not support.
+ *
+ * `M2_IMPLEMENTED` when there is no adapter, `M3_FIXTURE_VERIFIED` when there
+ * is an adapter but no quad — the level whose missing criterion is the actual
+ * blocker. Naming M2 in both cases is what produced a gap that pointed at the
+ * wrong work.
+ */
+function demotionTarget(evidence: MaturityEvidence): Maturity {
+  return evidence.implemented ? "M3_FIXTURE_VERIFIED" : "M2_IMPLEMENTED";
+}
+
+/**
+ * The blocker, phrased as the one that has to be cleared.
+ *
+ * `evidence.implemented` is the resolver's `adapterExists`, while the census
+ * entry's own `adapter` FIELD is what `SUPPORTED_WITHOUT_ADAPTER` reads. The
+ * two are different functions and the first version reported the field as
+ * "missing" while it was populated — a machine-readable artifact asserting a
+ * present adapter is absent. So the gap follows the EVIDENCE, and says plainly
+ * which function said what.
+ */
+function missingFor(target: Maturity, name: string): string[] {
+  if (target === "M2_IMPLEMENTED") {
+    return [
+      `no adapter module resolves for ${name} (evidence: adapterExists) and the ` +
+        "census entry's own `adapter` field is not evidence of one",
+    ];
+  }
+  return [
+    `the fixture quad for ${name} is not complete — MUST-FIRE, MUST-NOT-FIRE, ` +
+      "RECALL and PRECISION are the M3 criteria (evidence: fixtureQuadVerified); " +
+      "`npm run check-fixture-quad` prints the per-leg work list",
+  ];
 }
 
 // ─── Assembly ────────────────────────────────────────────────────────
@@ -1331,6 +1472,32 @@ export function validateCensus(
         code: "SUPPORTED_WITHOUT_ADAPTER",
         entryId: entry.id,
         message: "SUPPORTED requires an adapter",
+        severity: "error",
+      });
+    }
+    if (
+      entry.state === "SUPPORTED" &&
+      !hasCompleteQuadFor(entry, resolver.root)
+    ) {
+      // The converse of the check above, and the one that catches the
+      // definition drifting apart from the enforcement. `materialize` demotes
+      // an entry without a quad, so an entry reaching this arm has either
+      // skipped `materialize` or been given a quad by a DIFFERENT resolver than
+      // the one asking — and both are exactly the state where a reader must
+      // not be told "all claims agree".
+      //
+      // It is reachable: `validateCensus` is exported and takes any census,
+      // and `tests/v6/ecosystem-census.spec.ts` exercises it against both a
+      // blind resolver and a hand-built one. It is NOT reachable from
+      // `buildCensus`, which demotes first — and that asymmetry is the honest
+      // description, not a claim that the arm never fires.
+      diagnostics.push({
+        code: "SUPPORTED_WITHOUT_QUAD",
+        entryId: entry.id,
+        message:
+          "SUPPORTED requires a verified fixture quad (MUST-FIRE, MUST-NOT-FIRE, " +
+          "RECALL, PRECISION). An adapter is a declaration that support exists; " +
+          "the quad is the observation that it does",
         severity: "error",
       });
     }

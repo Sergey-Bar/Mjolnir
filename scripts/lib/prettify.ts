@@ -9,9 +9,20 @@
  * One shared implementation — the three generators police their
  * artifacts with the same gates, so divergent formatting rules would
  * make generated outputs disagree (review: duplication track).
+ *
+ * THE WRITE IS ATOMIC. The first version called `writeFileSync` directly,
+ * while `src/lib/fs-atomic.ts` exists precisely because that pattern leaves a
+ * TRUNCATED file at the real path when a write is interrupted, and because on
+ * Windows a rename onto a file another process holds open fails with
+ * EBUSY/EPERM. A generator is exactly the process that runs while a watcher,
+ * an editor or a concurrent `docs:regen` holds the file, so the hazard is not
+ * hypothetical here — it is the normal case. The helper is imported rather
+ * than reimplemented so the Windows retry loop stays in one place.
  */
-import { readFileSync, writeFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { format, resolveConfig } from "prettier";
+
+import { writeFileAtomic } from "../../src/lib/fs-atomic.js";
 
 export async function prettify(filepath: string): Promise<void> {
   const config = await resolveConfig(filepath);
@@ -19,5 +30,5 @@ export async function prettify(filepath: string): Promise<void> {
     ...config,
     filepath,
   });
-  writeFileSync(filepath, formatted);
+  writeFileAtomic(filepath, formatted);
 }

@@ -6,7 +6,7 @@
  * tests/contract/privacy-network-isolation.spec.ts, which scans this file too).
  *
  * HONESTY CONSTRAINT: this command can only count what it has personally
- * witnessed. It accumulates from this repo's own "mjolnir diff" runs —
+ * witnessed. It accumulates from this repo's own "mjolnir scan --scope changed" runs —
  * every time `diff` finds a finding that existed in the baseline and no
  * longer exists, that is real, evidenced proof of a fix, and this file's
  * per-rule counters increment by exactly that amount. It does NOT try to
@@ -44,7 +44,7 @@ export interface StatsFile {
   lastUpdatedAt: string;
   /** Cumulative count of resolved findings per rule, all-time. */
   resolvedByRule: Record<string, number>;
-  /** Number of times `mjolnir diff` has recorded a fix. */
+  /** Number of times `mjolnir scan --scope changed` has recorded a fix. */
   recordedFixEvents: number;
   /**
    * IDs of milestones already announced (Sprint 9 Task 39). A milestone
@@ -66,7 +66,7 @@ export const MILESTONE_MESSAGES: Record<MilestoneId, string> = {
   "first-clean-scan":
     "MILESTONE: first flawless scan recorded for this repo (score 100, zero findings).",
   "first-debt-reduction":
-    "MILESTONE: first debt reduction recorded — mjolnir diff witnessed a real fix.",
+    "MILESTONE: first debt reduction recorded — a scoped scan witnessed a real fix.",
 };
 
 /**
@@ -149,7 +149,7 @@ function emptyStats(now: string): StatsFile {
 
 /**
  * Fold a baseline diff's resolved findings into the stats file. Called
- * automatically by `mjolnir diff` (never by `baseline`, which only
+ * automatically by a scoped scan (never by a plain scan, which only
  * establishes a comparison point and has nothing to record yet).
  */
 export function recordResolved(
@@ -196,16 +196,15 @@ export function renderStats(stats: StatsFile | null): string {
   if (!stats || stats.recordedFixEvents === 0) {
     lines.push("No fixes recorded yet.");
     lines.push(
-      "Fixes are counted here only when observed by mjolnir diff —",
-      "capture a baseline first, then diff after making fixes:",
+      "Fixes are counted here only when observed by a scoped scan —",
+      "fix something, then re-scan with `--scope changed` to see it resolved:",
     );
-    lines.push(nextStep("mjolnir baseline", ui));
-    lines.push(nextStep("mjolnir diff", ui));
+    lines.push(nextStep("mjolnir scan --scope changed", ui));
     lines.push("");
     lines.push(
       "UNKNOWN: totals before tracking started. This command only counts",
     );
-    lines.push("what it has personally witnessed via mjolnir diff.");
+    lines.push("what it has personally witnessed via a scoped scan.");
     return lines.join("\n");
   }
 

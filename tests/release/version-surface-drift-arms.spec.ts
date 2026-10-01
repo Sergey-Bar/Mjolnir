@@ -2,7 +2,7 @@
  * T8 — the version-surface drift checks are release-gate code with no reviewer
  * pressure on them.
  *
- * `src/release/version-surface.ts` runs inside `npm run version:check` on
+ * `src/release/version-surface.ts` runs inside `npm run check-version` on
  * every certify, and it is excluded from the coverage ratchet
  * (`docs/COVERAGE-EXEMPTIONS.json` classifies it SHIPPED_SURFACE debt). The
  * existing contract spec covers the happy path and the drift cases somebody
@@ -63,6 +63,9 @@ function cleanSurfaces(): Surfaces {
     } else if (path === "src/reporter/sarif.ts") {
       surfaces[path] =
         'import { ENGINE_VERSION } from "../engine/version.js"\nexport const version = ENGINE_VERSION;\n';
+    } else if (path === "capability-manifest.json") {
+      surfaces[path] =
+        `{\n  "product": "mjolnir-qa",\n  "version": "${VERSION}"\n}\n`;
     } else if (path === "smithery.yaml") {
       surfaces[path] =
         `"version": "${STABLE}"\ncommand: npx\nargs: ["-y", "mjolnir-qa@${STABLE}"]\n`;
@@ -75,8 +78,6 @@ function cleanSurfaces(): Surfaces {
         "",
       ].join("\n");
     } else if (path === "README.md") {
-      surfaces[path] = `npm i -g mjolnir-qa@${STABLE}\n`;
-    } else if (path === "README.br.md") {
       surfaces[path] = `npm i -g mjolnir-qa@${STABLE}\n`;
     } else if (path === "site/guide/getting-started.md") {
       surfaces[path] = `npx mjolnir-qa@${STABLE}\n`;
@@ -158,7 +159,7 @@ describe("T8: the envelope check refuses a version it cannot reason about", () =
     const surfaces = cleanSurfaces();
     surfaces["site/.vitepress/theme/Home.vue"] = surfaces[
       "site/.vitepress/theme/Home.vue"
-    ]?.replace("Sergey-Bar/Mjolnir@v4", "Sergey-Bar/Mjolnir@v3");
+    ]?.replace("Sergey-Bar/Mjolnir@v4", "Sergey-Bar/Mjolnir@v5");
     const violations = checkVersionSurfaceEnvelope(VERSION, surfaces, STABLE);
     expect(
       violations.some((v) => v.includes("action major v3 does not match v4")),
@@ -255,7 +256,7 @@ describe("T8: synchronization fails loudly rather than writing half a truth", ()
   it("refuses when a rewrite still leaves the envelope inconsistent", () => {
     // The post-condition arm. If a new surface were added to the required
     // map but not to the rewrite loop, the sync would "succeed" and the next
-    // `version:check` would fail — a gate that breaks itself.
+    // `check-version` would fail — a gate that breaks itself.
     const surfaces = cleanSurfaces();
     surfaces["docs/DISTRIBUTION-KIT.md"] = "# distribution kit\n";
     expect(() =>

@@ -109,6 +109,8 @@ describe("the same detection across all four dialects", () => {
     const shapes: Array<[string, string[]]> = [
       ["ts", ["toHaveBeenCalled", "toBe"]],
       ["python", ["assert_called", "assert_equal"]],
+      // `verify` here is Java's JUnit method name, not the retired CLI verb.
+      // A blanket argv rewrite across the spec tree read it as one.
       ["java", ["verify", "assertEquals"]],
       ["csharp", ["Verifiable", "Equal"]],
     ];

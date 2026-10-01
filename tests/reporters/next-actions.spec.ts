@@ -65,7 +65,7 @@ describe("beginner-safe scan next actions", () => {
     expect(nextActionLines(out)).toEqual([
       "= NEXT ACTIONS",
       "$ mjolnir explain QA-TEST-001",
-      "$ mjolnir why tests/login.spec.ts:12",
+      "$ mjolnir explain <file:line> tests/login.spec.ts:12",
       "Existing debt path: capture the current state once, then review only new or",
       "$ mjolnir baseline",
       "$ mjolnir diff",
@@ -101,7 +101,7 @@ describe("beginner-safe scan next actions", () => {
       "= NEXT ACTIONS",
       "Partial scan: do not trust this as a release gate yet. Fix scan coverage or",
       "$ mjolnir explain QA-TEST-001",
-      "$ mjolnir why tests/login.spec.ts:12",
+      "$ mjolnir explain <file:line> tests/login.spec.ts:12",
       "Existing debt path: capture the current state once, then review only new or",
       "$ mjolnir baseline",
       "$ mjolnir diff",
@@ -148,7 +148,7 @@ describe("beginner-safe scan next actions", () => {
     );
     const available = [
       /^mjolnir explain \S+$/,
-      /^mjolnir why \S+:\d+$/,
+      /^mjolnir explain <file:line> \S+:\d+$/,
       /^mjolnir baseline$/,
       /^mjolnir diff$/,
       /^mjolnir ci install$/,

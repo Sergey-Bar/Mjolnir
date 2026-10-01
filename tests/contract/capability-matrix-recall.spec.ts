@@ -38,7 +38,7 @@ interface Row {
   id: string;
   category: string;
   recall: string;
-  recallFixtures: number;
+  positiveFixtureCount: number;
   recallStatus: string;
   knownLimitations: string;
 }
@@ -66,7 +66,7 @@ describe("recall is a derived field, not a constant", () => {
   it("every row carries the three recall fields", () => {
     for (const row of matrix()) {
       expect(row.recall, row.id).toBeDefined();
-      expect(typeof row.recallFixtures, row.id).toBe("number");
+      expect(typeof row.positiveFixtureCount, row.id).toBe("number");
       expect(
         ["must-fire-fixtures-present", "no-must-fire-fixture-directory"],
         `${row.id} has recallStatus ${row.recallStatus}`,
@@ -74,13 +74,13 @@ describe("recall is a derived field, not a constant", () => {
     }
   });
 
-  it("recallFixtures matches the directory on disk, row by row", () => {
-    // The anti-constant assertion. If `recallFixtures` were hardcoded, one
+  it("positiveFixtureCount matches the directory on disk, row by row", () => {
+    // The anti-constant assertion. If `positiveFixtureCount` were hardcoded, one
     // rule differing from the rest would be enough to catch it.
     for (const row of matrix()) {
       const dir = join(POSITIVE, row.id);
       const onDisk = countFixtureFiles(dir);
-      expect(row.recallFixtures, `${row.id} on disk has ${onDisk}`).toBe(
+      expect(row.positiveFixtureCount, `${row.id} on disk has ${onDisk}`).toBe(
         onDisk,
       );
       expect(row.recallStatus, row.id).toBe(
@@ -95,11 +95,11 @@ describe("recall is a derived field, not a constant", () => {
     for (const row of matrix()) {
       if (row.recallStatus === "must-fire-fixtures-present") {
         expect(
-          row.recallFixtures,
+          row.positiveFixtureCount,
           `${row.id} claims fixtures present but counts none`,
         ).toBeGreaterThan(0);
       } else {
-        expect(row.recallFixtures, row.id).toBe(0);
+        expect(row.positiveFixtureCount, row.id).toBe(0);
       }
     }
   });
@@ -147,7 +147,7 @@ describe("the fixture corpus and the matrix describe the same rules", () => {
   it("a retired rule's preserved fixtures are not counted as live evidence", () => {
     // The other half of the contract above: preserved history must not leak
     // into the measured columns. A retired rule that still has a fixture
-    // directory must not acquire a `recallFixtures` count, because a count is
+    // directory must not acquire a `positiveFixtureCount` count, because a count is
     // a claim about the future.
     const retiredWithFixtures = [...RETIRED_RULE_IDS].filter((id) =>
       existsSync(join(POSITIVE, id)),

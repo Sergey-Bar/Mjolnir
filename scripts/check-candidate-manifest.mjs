@@ -26,13 +26,33 @@ for (const source of manifest.sourceRefs ?? []) {
     fail(`missing source reference ${source}`);
 }
 const worktree = inspectCandidateWorktree(root);
-for (const key of [
+// The CONTENT invariants, and only those.
+//
+// `changedPathCount`, `dirtyFiles` and `worktreeInventory` used to be compared
+// here, and that made the gate unsatisfiable in the state it exists to verify.
+// They describe the working tree AT THE MOMENT the stamp was taken, and a stamp
+// that is committed becomes wrong the instant it is committed: the tree that
+// had 28 dirty paths becomes one with 0. So the gate failed on every fresh
+// checkout — CI's state, and the state right after any commit — and passed only
+// while the tree stayed dirty.
+//
+// The failure reads like a tampering alarm, which is why it survived four
+// releases and a documented STAMP ORDER that a reader would reasonably follow
+// and still get it wrong. `scripts/refresh-generated.mjs` proved convergence by
+// running this check immediately after stamping — while the tree it had just
+// dirtied was still dirty — so the proof held for a state nobody commits.
+//
+// A committed artifact cannot record the dirtiness of its own creation as an
+// invariant. It records the CONTENT it describes, and content is what a tamper
+// changes. The three transient fields stay in the manifest, as a record of what
+// the stamp saw, and nothing re-derives them.
+const CONTENT_INVARIANTS = [
   "version",
   "packageSha256",
   "lockfileSha256",
   "workingTreeSha256",
-  "changedPathCount",
-]) {
+];
+for (const key of CONTENT_INVARIANTS) {
   if (worktree[key] !== manifest.identity[key]) fail(`${key} drift`);
 }
 // The base SHA is bookkeeping, not the binding.
@@ -79,18 +99,6 @@ if (manifest.identity.baseSha !== worktree.baseSha) {
   console.log(
     `candidate-manifest: base ${manifest.identity.baseSha.slice(0, 8)} is ${relation}`,
   );
-}
-if (
-  JSON.stringify(worktree.dirtyFiles) !==
-  JSON.stringify(manifest.identity.dirtyFiles)
-) {
-  fail("dirty-file inventory drift");
-}
-if (
-  JSON.stringify(worktree.worktreeInventory) !==
-  JSON.stringify(manifest.identity.worktreeInventory)
-) {
-  fail("worktree inventory drift");
 }
 if (
   !manifest.claimRegistry?.path ||

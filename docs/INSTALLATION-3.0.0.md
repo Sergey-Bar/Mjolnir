@@ -39,7 +39,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@<PINNED_SHA>
-      - uses: Sergey-Bar/Mjolnir@v3
+      - uses: Sergey-Bar/Mjolnir@v5
         with:
           version: 3.0.0
           scope: changed
@@ -72,7 +72,7 @@ mjolnir --version
 mjolnir . --scope changed --json > mjolnir.json
 mjolnir doctor
 mjolnir release-report
-mjolnir release-trust --json
+mjolnir ci release-trust --json
 ```
 
 The MCP/Action/registry installation paths are separate from the local scan

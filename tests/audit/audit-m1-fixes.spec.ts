@@ -24,9 +24,9 @@ import {
 } from "../../src/engine/scan-cache.js";
 import { computeCodeText } from "../../src/engine/code-text.js";
 import { continueOnError } from "../../src/rules/ci/qa-ci-001-continue-on-error.js";
+
 import {
   runScanCommand,
-  runDiffCommand,
   out as defaultOut,
   err as defaultErr,
 } from "../../src/cli.js";
@@ -129,43 +129,6 @@ describe("audit-C5: partial honesty", () => {
       cap.io,
     );
     expect(cap.text()).not.toContain("MILESTONE");
-  });
-
-  it("diff on a truncated scan returns 2 and fires no milestone", async () => {
-    const dir = tmpRepo("c5-diff");
-    mkdirSync(join(dir, "test"), { recursive: true });
-    writeFileSync(
-      join(dir, "test", "a.spec.ts"),
-      "import { test, expect } from '@playwright/test';\n" +
-        "test('x', async ({ page }) => {\n" +
-        "  await page.waitForTimeout(3000);\n" +
-        "  await expect(page).toHaveTitle('t');\n" +
-        "});\n",
-    );
-    mkdirSync(join(dir, ".mjolnir"), { recursive: true });
-    writeFileSync(
-      join(dir, ".mjolnir", "baseline.json"),
-      JSON.stringify({
-        schemaVersion: 1,
-        capturedAt: "2020-01-01T00:00:00.000Z",
-        commit: "unknown",
-        findings: [
-          {
-            ruleId: "QA-PW-101",
-            file: "test/a.spec.ts",
-            message: "`waitForTimeout()` hard sleep.",
-            severity: "warning",
-          },
-        ],
-      }),
-    );
-    const cap = capture();
-    const code = await runDiffCommand([dir, "--max-duration", "0.001"], cap.io);
-    expect(cap.text()).not.toContain("first debt reduction");
-    // The truncation may or may not trip depending on machine speed —
-    // but when it does, exit MUST be 2 and no milestone may fire.
-    if (code === 2) expect(cap.text()).not.toContain("MILESTONE");
-    expect([0, 1, 2]).toContain(code);
   });
 });
 

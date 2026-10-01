@@ -3,7 +3,8 @@
  *
  * Thin wrapper around Playwright's built-in JSON reporter that documents
  * and pins the exact output contract Mjölnir's forensics pipeline
- * ingests (`mjolnir forensics`, `triage`, `pw-report`).
+ * ingests. The verbs that used to do so are retired in the v6 carve; the
+ * report format is unchanged and the evidence path reads it.
  *
  * Usage in playwright.config.ts:
  *

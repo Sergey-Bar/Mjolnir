@@ -22,7 +22,6 @@ describe("Vitest suite boundaries", () => {
   it("keeps property and fuzz suites out of default discovery", () => {
     const discovered = files("vitest.config.ts");
     expect(discovered).not.toContain("tests/scope/property-invariants.spec.ts");
-    expect(discovered).not.toContain("tests/fuzz/parsers.fuzz.ts");
     expect(discovered).not.toContain("tests/fuzz/utils.fuzz.ts");
   });
 
@@ -33,8 +32,13 @@ describe("Vitest suite boundaries", () => {
   });
 
   it("discovers exactly the dedicated fuzz suites", () => {
+    // `tests/fuzz/parsers.fuzz.ts` is gone. It held only the Stryker and
+    // Mutmut parsers, which existed to read mutation-testing reports, and the
+    // `mutation` verb they served is retired in the v6 carve. Deleting a
+    // fuzz suite because the thing it fuzzed stopped existing is the correct
+    // outcome — fuzzing a parser for a format the product no longer reads is
+    // coverage of a dead path. `utils.fuzz.ts` is the general one and stays.
     expect(files("vitest.fuzz.config.ts").sort()).toEqual([
-      "tests/fuzz/parsers.fuzz.ts",
       "tests/fuzz/utils.fuzz.ts",
     ]);
   });

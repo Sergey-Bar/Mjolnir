@@ -1,6 +1,6 @@
 {
   "product": "mjolnir-qa",
-  "version": "4.0.0",
+  "version": "5.0.0",
   "shape": "zero-runtime-dependency local CLI",
   "network": "none — no telemetry, no hosted service, no sync",
   "runtimeDependencies": 0,

@@ -91,7 +91,7 @@ export function explainRule(
   if (!rule) {
     return {
       ok: false,
-      error: `Unknown rule ID "${ruleId}". Run \`mjolnir rules\` for the full catalog.`,
+      error: `Unknown rule ID "${ruleId}". Run \`mjolnir explain --list\` for the full catalog.`,
     };
   }
 
@@ -321,7 +321,9 @@ export function renderExplain(
       "to just what you touched.",
   );
   lines.push("");
-  lines.push(`Docs: mjolnir rules --md   (full catalog, this rule included)`);
+  lines.push(
+    `Docs: mjolnir explain --list --md   (full catalog, this rule included)`,
+  );
   return lines.join("\n");
 }
 
@@ -392,7 +394,7 @@ function defaultFixGuidance(rule: QADoctorRule, noExample: boolean): string {
       `fixture-derived guidance is unavailable for ${rule.id} — run this ` +
       "command from a mjolnir checkout (or pass --fixtures-root) so the " +
       "rule's own must-fire fixture can be shown, or browse the full " +
-      "catalog with `mjolnir rules --md`."
+      "catalog with `mjolnir explain --list --md`."
     );
   }
   return `apply the rule guidance above (tier ${effectiveTier(rule)})`;
@@ -634,7 +636,7 @@ export function renderVerdictExplain(
     scan.partial
       ? "re-run with a higher --max-duration to close the truncated surface"
       : errors > 0
-        ? "mjolnir triage <test-results-dir-or-report> — then fix the top trust risk"
+        ? "fix the top trust risk, then re-scan — a runtime verdict needs run data, and `explain --evidence <dir>` is the verb that will read it (it lands with the next slice of the v6 carve)"
         : "no findings on the analyzed surface — install advisory CI and re-scan the changed scope",
   );
   lines.push("");

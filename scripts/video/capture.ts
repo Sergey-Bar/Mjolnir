@@ -28,11 +28,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import {
-  runExplainCommand,
-  runForensicsCommand,
-  runScan,
-} from "../../src/cli.js";
+import { runScan } from "../../src/cli.js";
 import { renderTerminal } from "../../src/reporter/terminal.js";
 import type { ScanResult } from "../../src/types.js";
 import { FONTS } from "./fonts.js";
@@ -144,21 +140,6 @@ function observed(result: ScanResult): BeatAssertions {
   };
 }
 
-/** Captures a command that writes to an injectable `out` sink. */
-function captureOut(
-  run: (io: {
-    out: (...p: unknown[]) => void;
-    err: (...p: unknown[]) => void;
-  }) => unknown,
-): string[] {
-  const lines: string[] = [];
-  const sink = (...parts: unknown[]): void => {
-    lines.push(parts.map(String).join(" "));
-  };
-  withForcedColor(() => run({ out: sink, err: sink }));
-  return lines.flatMap((l) => l.split("\n")).map(normalize);
-}
-
 /**
  * A copy of the demo repo with the fix the tool itself recommends
  * applied. `examples/demo-repo` is never mutated: the video's "after"
@@ -247,56 +228,5 @@ export async function captureDemoScript(): Promise<VideoScript> {
       before: readFileSync(join(DEMO_REPO, WORKFLOW_REL), "utf8").split("\n"),
       after: readFileSync(FIXED_WORKFLOW, "utf8").split("\n"),
     },
-  };
-}
-
-/** The ~2min tour: the scan, then the three commands it leads to. */
-export async function captureTourScript(): Promise<VideoScript> {
-  // The tour is the deep pass, and its command line says so.
-  const flags: ScanFlags = { verbose: true };
-  const result = await scan(DEMO_REPO, flags);
-
-  const explainId = "QA-CI-009";
-  const beats: Beat[] = [
-    {
-      id: "tour-scan",
-      narrative:
-        "The full report: score, category breakdown, and every finding.",
-      source: "examples/demo-repo",
-      command: scanCommand(flags),
-      ansi: renderScan(result, flags),
-      assertions: { requiredFindings: [explainId], ...observed(result) },
-    },
-    {
-      id: "tour-explain",
-      narrative:
-        "One rule, up close — what it found, why it matters, how to fix it, and whether its false-positive rate has been measured.",
-      source: "tests/fixtures",
-      command: `mjolnir explain ${explainId}`,
-      ansi: captureOut((io) => runExplainCommand([explainId], io)),
-    },
-    {
-      id: "tour-forensics",
-      narrative:
-        "Real run data, not static analysis: a test that only passed on attempt two is a lucky test, and gets labelled TRUE-FLAKE.",
-      source: "examples/demo-repo/test-results",
-      // --no-flaky-md: the command writes FLAKY.md as a side effect, and a
-      // capture must not leave files behind in the repo it read.
-      command: "mjolnir forensics ./test-results/",
-      ansi: captureOut((io) =>
-        runForensicsCommand(
-          [join(DEMO_REPO, "test-results"), "--no-flaky-md"],
-          io,
-        ),
-      ),
-    },
-  ];
-
-  return {
-    schemaVersion: 1,
-    id: "tour",
-    normalization: NORMALIZATION,
-    environment: environment(),
-    beats,
   };
 }

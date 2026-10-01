@@ -1,5 +1,5 @@
 /**
- * `mjolnir why <file>:<line>` — occurrence-level evidence/explanation
+ * `mjolnir explain <file:line> <file>:<line>` — occurrence-level evidence/explanation
  * query (agent-handoff plan M2).
  *
  * Role: an INFORMATIONAL query, not a gate. It works regardless of
@@ -173,7 +173,7 @@ export async function runWhyCommand(
     const value = argv[i];
     if (!isValidCategory(value)) {
       io.err(
-        `mjolnir why: unknown --category: ${value === undefined ? "(missing value)" : value}`,
+        `mjolnir explain <file:line>: unknown --category: ${value === undefined ? "(missing value)" : value}`,
       );
       io.err(`  Valid categories: ${RULE_CATEGORIES.join(", ")}`);
       return 10;
@@ -183,13 +183,15 @@ export async function runWhyCommand(
 
   const locationToken = argv.find((a) => !a.startsWith("-"));
   if (!locationToken) {
-    io.err("Usage: mjolnir why <file>:<line> [--json <mjolnir.json>]");
+    io.err(
+      "Usage: mjolnir explain <file:line> <file>:<line> [--json <mjolnir.json>]",
+    );
     return 10;
   }
   const location = parseFileLine(locationToken);
   if (!location) {
     io.err(
-      `mjolnir why: cannot parse location "${locationToken}" — expected <file>:<line>`,
+      `mjolnir explain <file:line>: cannot parse location "${locationToken}" — expected <file>:<line>`,
     );
     return 10;
   }
@@ -210,14 +212,18 @@ export async function runWhyCommand(
   if (reportPath !== undefined) {
     // Saved-report mode: the report is authoritative.
     if (!reportExists(reportPath)) {
-      io.err(`mjolnir why: report file not found: ${reportPath}`);
+      io.err(
+        `mjolnir explain <file:line>: report file not found: ${reportPath}`,
+      );
       io.err("  Run the scan with --json first: mjolnir --json > mjolnir.json");
       return 10;
     }
     try {
       result = loadSavedReport(reportPath);
     } catch (err) {
-      io.err(`mjolnir why: cannot read ${reportPath}: ${errorMessage(err)}`);
+      io.err(
+        `mjolnir explain <file:line>: cannot read ${reportPath}: ${errorMessage(err)}`,
+      );
       return 2;
     }
   } else {
@@ -225,7 +231,9 @@ export async function runWhyCommand(
     // A nonexistent/non-directory target is a usage error (audit H-4
     // posture), not a silent empty scan.
     if (!existsSync(target)) {
-      io.err(`mjolnir why: scan target does not exist: ${target}`);
+      io.err(
+        `mjolnir explain <file:line>: scan target does not exist: ${target}`,
+      );
       return 10;
     }
     try {
@@ -239,7 +247,7 @@ export async function runWhyCommand(
         strict: argv.includes("--strict"),
       });
     } catch (err) {
-      io.err(`mjolnir why: scan failed: ${errorMessage(err)}`);
+      io.err(`mjolnir explain <file:line>: scan failed: ${errorMessage(err)}`);
       return 20;
     }
   }

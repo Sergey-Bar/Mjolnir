@@ -66,11 +66,11 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm run lint
-      - run: npm run version:check
+      - run: npm run check-version
       # The brand gate. Every colour, typeface and badge in the tree is
       # checked against src/brand/tokens.ts, and every declared
       # foreground/background pairing has its WCAG contrast computed.
-      # Blocking, for the reason site:doctor is blocking in pages.yml: a
+      # Blocking, for the reason doctor is blocking in pages.yml: a
       # brand that is only enforced by review drifts back the moment
       # nobody is looking, which is how six copies of one palette
       # happened.
@@ -174,7 +174,7 @@ jobs:
   # The site build only ran on push-to-main (pages.yml), so a commit that
   # broke it passed every PR check and failed the deploy after merge —
   # twice: gen-report.mjs requiring a heading the hero asset had dropped,
-  # and `mjolnir mutation <report>` in a doc read by Vue's compiler as an
+  # and the `mutation` verb in a doc read by Vue's compiler as an
   # element. This runs the same build + gate pages.yml does, on the PR,
   # where it can still be fixed.
   site-build:
@@ -202,7 +202,7 @@ jobs:
         working-directory: site
         run: npm run build
       - name: Site doctor
-        run: npm run site:doctor
+        run: npm run doctor
 
   workflow-lint:
     runs-on: ubuntu-latest
@@ -236,6 +236,24 @@ jobs:
         run: ./actionlint -color
       - name: CI standard (PR scan gate layers + least-privilege invariants)
         run: npm run ci:standard
+
+      # The claim-integrity gates, as ONE step.
+      #
+      # Each of these is a separate npm script so a failure names the gate
+      # rather than "certify:ci step 14 of 24", and they are chained behind
+      # one entry point so the workflow does not grow a step per gate. The
+      # 6.0 lesson is the reason this is here at all: nine of them ran only
+      # in `certify`/`ci-local`, so a PR that broke IR parity or left a script
+      # wired to nothing passed CI and failed on the maintainer's machine.
+      # `--base` is REQUIRED here, not a convenience. The gate's default reads
+      # `git status`, which is EMPTY on a CI checkout — so without it this
+      # step reports PASS on every run and the one thing it exists to catch
+      # (a change shipped with no release note) is not caught in CI at all.
+      - name: Claim-integrity gates
+        run: npm run gates:claim-integrity
+
+      - name: Unreleased changelog entry
+        run: npm run check-version -- --base=origin/${{ github.base_ref || 'main' }}
 
   # Self-scan gate (§30.2 #7) — activates once rules exist.
   self-scan:
@@ -303,13 +321,13 @@ jobs:
       # the CURRENT version's CHANGELOG section (cheap; the release flow
       # re-runs it release-blocking with --rules-touched semantics).
       - name: CHANGELOG integrity gate (WI-12A)
-        run: npx tsx scripts/check-changelog.ts --expect-version "$(node -p "require('./package.json').version")"
+        run: npm run check-version -- --expect-version "$(node -p "require('./package.json').version")"
       # WI-10 (plan §14): reporter version-sync gate — ADVISORY while the
       # reporter line is unpublished; becomes blocking after three green
       # release cycles. The hard-drift case (reporter AHEAD of the root
       # package; ingestion-contract break) exits 1 even in advisory mode.
       - name: Reporter version-sync gate (advisory)
-        run: npx tsx scripts/check-reporter-version.ts
+        run: npm run check-version
       - name: Doctor self-audit gate (exit 0 = all checks pass)
         run: node dist/cli.mjs doctor . --json > doctor-report.json
       - name: G5 determinism self-verify (second run must be byte-identical)

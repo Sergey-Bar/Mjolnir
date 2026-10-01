@@ -144,7 +144,7 @@ async function loadOne(
   }
 }
 
-async function main() {
+export async function main() {
   const args = process.argv.slice(2);
   const only = args.find((a) => !a.startsWith("--")) ?? null;
   const conc = Number(
@@ -212,4 +212,11 @@ async function main() {
   }
 }
 
-void main();
+// Guarded for the same reason `tests/corpus/audit.ts` is: the re-measure
+// pass is a MODE of `corpus:audit --resample`, so the audit imports and calls
+// `main()` rather than spawning a second process. Without the guard, that
+// import would fire a networked re-measure as a side effect of loading the
+// module.
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
+  await main();
+}

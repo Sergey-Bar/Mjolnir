@@ -35,6 +35,35 @@ export const GAP_STATUSES = [
   "ALREADY_FIXED",
   "CONFIRMED_STILL_OPEN",
   "STALE_UNVERIFIABLE",
+  /**
+   * D-9. The closure depends on something OUTSIDE this repository: a design
+   * partner's codebase, another person's classification, CI minutes on a
+   * platform, an account this process does not hold.
+   *
+   * It is a status and not a deletion because deleting the row is how a
+   * release gate acquires a requirement nobody can meet — and it is not
+   * `STALE_UNVERIFIABLE` because that class means "no evidence in either
+   * direction, so nothing can be claimed", while this one means "the evidence
+   * is well-defined and does not exist yet, and `docs/RELEASE-PATH-RUNBOOK.md`
+   * names who can produce it". The difference is actionable: a
+   * `STALE_UNVERIFIABLE` row needs a revalidation, an `EXTERNAL_PENDING` one
+   * needs an actor.
+   *
+   * It does NOT clear a release blocker. The gate that enforces that is
+   * `npm run gates:disposition-source`, and the box count is held by
+   * `npm run docs:external-evidence`.
+   */
+  "EXTERNAL_PENDING",
+  /**
+   * D-9, and the class the telemetry gap needed. The gap closed because a
+   * DECISION was recorded, not because code changed.
+   *
+   * Distinct from `ALREADY_FIXED` because there is no revalidation to cite —
+   * there is nothing to re-run, and claiming otherwise would put a row in the
+   * class whose defining property is that a command was executed on this tree.
+   * The closure evidence is the document holding the decision.
+   */
+  "CLOSED_DECISION_RECORDED",
 ] as const;
 export const SUPPORT_DISPOSITIONS = [
   "TESTED",
@@ -63,7 +92,22 @@ export type GapStatus = (typeof GAP_STATUSES)[number];
  * evidence does not hold, so the word alone is no longer enough.
  */
 export function isGapCleared(record: { status?: unknown }): boolean {
-  return record.status === "fixed" || record.status === "ALREADY_FIXED";
+  // `CLOSED_DECISION_RECORDED` clears, deliberately and with a cost: a
+  // decision-only closure is a person asserting that nothing needs building,
+  // which is exactly the claim a revalidation command cannot make and exactly
+  // the one a reader should be able to see was made. It clears because the gap
+  // was never about code — `GAP-M26-014` was "the owner decision is not
+  // recorded" — and refusing to close that class would leave a permanently
+  // open row for work that is finished.
+  //
+  // It is kept OUT of `ALREADY_FIXED` precisely so the two are
+  // distinguishable in a ledger read: one cites a command, the other cites a
+  // document.
+  return (
+    record.status === "fixed" ||
+    record.status === "ALREADY_FIXED" ||
+    record.status === "CLOSED_DECISION_RECORDED"
+  );
 }
 export type SupportDisposition = (typeof SUPPORT_DISPOSITIONS)[number];
 export type ExternalValidationStatus =
@@ -1596,7 +1640,20 @@ export function validateGapLedgerRecord(
   //
   // It belongs beside the presence check above and applies to every cleared
   // status, so the four routes are indistinguishable from each other.
-  if (isGapCleared(value)) {
+  //
+  // `CLOSED_DECISION_RECORDED` is the ONE exception, and it is exempt for a
+  // reason rather than by accident: a decision closure has nothing to
+  // revalidate. `GAP-M26-014` was "the code has no telemetry but the owner
+  // decision is not recorded" — there is no command whose exit code speaks to
+  // whether a decision was written down. Demanding a passing revalidation
+  // would force a row to cite a command that does not exist, which is the
+  // fabrication this ledger exists to prevent.
+  //
+  // It is therefore exempt HERE and, symmetrically, its `closure_evidence`
+  // must name a DOCUMENT — checked by requiring `DECISION_RECORDED` in the
+  // result string, below. A decision closure with a blank evidence block is
+  // still rejected.
+  if (isGapCleared(value) && value.status !== "CLOSED_DECISION_RECORDED") {
     const exitCode = normalizedExitCode(value.revalidation);
     if (exitCode !== undefined && exitCode !== 0) {
       addDiagnostic(
@@ -1604,6 +1661,24 @@ export function validateGapLedgerRecord(
         "UNRUN_CLOSURE",
         "$.revalidation.exit_code",
         `status "${String(value.status)}" requires a revalidation that returned 0; this one returned ${exitCode}`,
+      );
+    }
+  }
+  if (value.status === "CLOSED_DECISION_RECORDED") {
+    const result = isRecord(value.closure_evidence)
+      ? value.closure_evidence.result
+      : undefined;
+    if (
+      !isNonEmptyString(result) ||
+      !result.toUpperCase().includes("DECISION_RECORDED")
+    ) {
+      addDiagnostic(
+        diagnostics,
+        "UNRUN_CLOSURE",
+        "$.closure_evidence.result",
+        "a CLOSED_DECISION_RECORDED row has no revalidation to cite, so its " +
+          "closure_evidence must name the document that records the decision",
+        "error",
       );
     }
   }

@@ -1,21 +1,27 @@
-# Renders the demo videos. Manual only.
+# Renders the demo video. Manual only.
 #
 # Deliberately NOT part of the standing CI gate: rendering needs Chromium
 # and a full ffmpeg, and takes minutes of frame-by-frame screenshotting.
-# The contracts that matter on every push — that the committed scripts
-# still match what the CLI prints, and that the fix-and-re-run story is
+# The contracts that matter on every push — that the committed script
+# still matches what the CLI prints, and that the fix-and-re-run story is
 # true — need neither, and run in ci.yml with the rest of the suite.
+#
+# There is one video. There used to be two, and the second — an 86-second
+# `scan → explain → forensics` tour — was removed in the v6 carve because
+# `forensics` is a DELETE verb: the committed render script drew a command
+# that will not exist. The choice input went with it rather than being left
+# offering a video the renderer can no longer produce.
 name: demo-video
 
 on:
   workflow_dispatch:
     inputs:
-      video:
-        description: "Which video to render"
+      publish:
+        description: "Copy the fresh render over the committed asset"
         required: false
-        default: "both"
+        default: "false"
         type: choice
-        options: [both, demo, tour]
+        options: ["false", "true"]
 
 permissions:
   contents: read
@@ -52,12 +58,14 @@ jobs:
       - run: npx vitest run tests/contract/video-script.spec.ts
 
       - name: Render
-        run: |
-          if [ "${{ inputs.video }}" = "both" ]; then
-            npm run docs:video:render
-          else
-            npx tsx scripts/video/render.ts "${{ inputs.video }}"
-          fi
+        run: npm run docs:video:render
+
+      # Publishing is a human's call: it overwrites the two committed files
+      # the README links to, and a workflow that does that unattended on a
+      # manual dispatch is one push away from shipping pixels nobody read.
+      - name: Publish over the committed asset
+        if: inputs.publish == 'true'
+        run: npx tsx scripts/video/render.ts demo --publish
 
       # The media contract runs against what was just built — a contract
       # that only runs when someone remembers to run it is not a contract.

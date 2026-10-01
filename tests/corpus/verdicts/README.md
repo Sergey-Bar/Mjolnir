@@ -135,7 +135,7 @@ UNSURE never counts into `n` (it is excluded from every measured rate), but it
 **always triggers review** — an UNSURE row that is never revisited is an
 unmeasured rule wearing a measurement's name. The adjudication loop:
 
-1. The committed `unsure-ceiling.json` ratchet fails `npm run fp-audit:generate`
+1. The committed `unsure-ceiling.json` ratchet fails `npm run generate-fp-audit-table`
    whenever the UNSURE backlog grows; it only moves DOWN via adjudication
    (upward movement needs an explicit `--update` whose diff names every rule
    that grew — nothing is silent).
@@ -147,7 +147,7 @@ unmeasured rule wearing a measurement's name. The adjudication loop:
    the code does, why the rule's diagnosis does or does not hold, and the
    deterministic alternative where relevant. Prefix the note with
    `adjudicated <date> from source …` so provenance stays auditable.
-4. Re-run `npm run fp-audit:generate` and commit the verdicts — they are the
+4. Re-run `npm run generate-fp-audit-table` and commit the verdicts — they are the
    evidence.
 
 **Adjudication criteria (documented so two classifiers agree):**
@@ -178,7 +178,7 @@ unmeasured rule wearing a measurement's name. The adjudication loop:
 1. Run `npm run corpus:sample` to generate review sheets and empty verdict files
 2. Read `tests/corpus/review/<RULE-ID>.md` for each rule with context
 3. Fill in `verdict` and `note` fields in the corresponding `.jsonl` file
-4. Run `npm run fp-audit:generate` to compute measured FP rates
+4. Run `npm run generate-fp-audit-table` to compute measured FP rates
 5. Commit the verdicts — they are the evidence
 
 ## Rules

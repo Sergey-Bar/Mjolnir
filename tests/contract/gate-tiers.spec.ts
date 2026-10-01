@@ -29,6 +29,7 @@ import {
   mkdirSync,
   mkdtempSync,
   readFileSync,
+  readdirSync,
   rmSync,
   writeFileSync,
 } from "node:fs";
@@ -70,9 +71,16 @@ function readTier(tier: Tier): TierFile {
 }
 
 /**
- * A throwaway copy of everything the checker reads: the three tier files, the
- * workflows they name, and package.json (for the script-chain closure).
- * Nothing outside this directory is read or written.
+ * A throwaway copy of everything the checker reads: the three tier files, EVERY
+ * workflow under `.github/workflows/`, and package.json (for the script-chain
+ * closure). Nothing outside this directory is read or written.
+ *
+ * "Every", not "the declared ones" — that was the change in 6.0. The coverage
+ * arm enumerates the directory and requires every file in it to be claimed or
+ * exempted, so a fixture that copied only the declared workflows made every
+ * claim look unaccounted-for and every exemption look stale. The fixture has to
+ * be a faithful copy of the tree, or the tests below would be measuring the
+ * fixture rather than the check.
  */
 function fixtureTree(): string {
   const dir = mkdtempSync(join(tmpdir(), "mjolnir-gate-tiers-"));
@@ -85,12 +93,12 @@ function fixtureTree(): string {
       join(dir, "gates", `${tier}.json`),
     );
   }
-  const declared = new Set<string>();
-  for (const tier of TIERS) {
-    for (const path of readTier(tier).workflows) declared.add(path);
-  }
-  for (const path of declared) {
-    cpSync(join(ROOT, path), join(dir, path));
+  for (const name of readdirSync(join(ROOT, ".github", "workflows"))) {
+    if (!name.endsWith(".yml") && !name.endsWith(".yaml")) continue;
+    cpSync(
+      join(ROOT, ".github", "workflows", name),
+      join(dir, ".github", "workflows", name),
+    );
   }
   cpSync(join(ROOT, "package.json"), join(dir, "package.json"));
   return dir;
@@ -139,6 +147,21 @@ function withMutatedWorkflow(
   const workflow = parse(readFileSync(path, "utf8")) as CommittedWorkflow;
   mutate(workflow);
   writeFileSync(path, stringify(workflow), "utf8");
+  return runChecker(dir);
+}
+
+/**
+ * A fixture tree, with one extra file dropped into its workflow directory and
+ * an optional edit applied to the tier files.
+ *
+ * The callback receives the TREE ROOT, not the workflow directory: the first
+ * version passed the workflow directory and the test then looked for
+ * `gates/pr.json` inside `.github/workflows/`, which is a mistake worth naming
+ * because it reads as a missing fixture rather than a wrong path.
+ */
+function withAddedWorkflow(add: (root: string) => void): CheckerResult {
+  const dir = fixtureTree();
+  add(dir);
   return runChecker(dir);
 }
 
@@ -279,6 +302,73 @@ describe("the tier checker can fail", () => {
     });
     expect(code).toBe(1);
     expect(output).toContain("description is required");
+  });
+
+  it("fails when a workflow in the tree is named by no tier and exempted by none", () => {
+    // The arm that did not exist. Four workflows ran gates while being named
+    // by no tier at all, so the tier files claimed to be the complete picture
+    // of what gates this repository and were wrong — and a reviewer auditing
+    // `gates/` had no way to know which files they were not being shown.
+    const { code, output } = withAddedWorkflow((root) =>
+      writeFileSync(
+        join(root, ".github", "workflows", "orphan.yml"),
+        "on: [push]\n",
+        "utf8",
+      ),
+    );
+    expect(code).toBe(1);
+    expect(output).toContain("orphan.yml");
+    expect(output).toContain("carries no exemption");
+  });
+
+  it("passes once that workflow is claimed by a tier's alsoRunsIn", () => {
+    // `alsoRunsIn` and not `workflows`: the workflow belongs to the tier, but
+    // its steps must not be able to satisfy the tier's gates — `pages.yml`
+    // builds the site and triggers only on `site/**` pushes, so treating it as
+    // authoritative would let a step removed from `ci.yml` keep passing on the
+    // strength of a workflow that runs one day in twenty.
+    const { code, output } = withAddedWorkflow((root) => {
+      writeFileSync(
+        join(root, ".github", "workflows", "orphan.yml"),
+        "on: [push]\n",
+        "utf8",
+      );
+      for (const tier of TIERS) {
+        const path = join(root, "gates", `${tier}.json`);
+        const parsed = JSON.parse(readFileSync(path, "utf8")) as TierFile;
+        const withExtra = parsed as { alsoRunsIn?: string[] };
+        withExtra.alsoRunsIn = [
+          ...(withExtra.alsoRunsIn ?? []),
+          ".github/workflows/orphan.yml",
+        ];
+        writeFileSync(path, JSON.stringify(parsed, null, 2) + "\n", "utf8");
+      }
+    });
+    expect(code, output).toBe(0);
+  });
+
+  it("fails on a workflow listed in both workflows and alsoRunsIn", () => {
+    // The two lists mean opposite things — authority versus coverage — so a
+    // file in both makes the distinction unreadable at exactly the point a
+    // reviewer needs it.
+    const { code, output } = withMutatedTier("pr", (parsed) => {
+      (parsed as { alsoRunsIn?: string[] }).alsoRunsIn = [...parsed.workflows];
+    });
+    expect(code).toBe(1);
+    expect(output).toContain("in both workflows and alsoRunsIn");
+  });
+
+  it("an exemption for a workflow that no longer exists is a failure", () => {
+    // An exemption is a hole with a comment on it, and it is how a deleted
+    // file stays exempt.
+    const { code, output } = withMutatedTier("pr", (parsed) => {
+      (parsed as { alsoRunsIn?: string[] }).alsoRunsIn = [
+        ...((parsed as { alsoRunsIn?: string[] }).alsoRunsIn ?? []),
+        ".github/workflows/deleted-last-month.yml",
+      ];
+    });
+    expect(code).toBe(1);
+    expect(output).toContain("names a workflow that does not exist");
   });
 
   it("leaves the committed tree untouched", () => {

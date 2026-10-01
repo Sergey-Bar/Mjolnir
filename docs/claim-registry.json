@@ -28,7 +28,7 @@
       ],
       "corpus": ["tests/e2e/journey-2-ci-flow.spec.ts"],
       "benchmark": "N/A",
-      "candidateProof": "npm run version:surface:check",
+      "candidateProof": "npm run check-version",
       "proof": {
         "status": "BLOCKED",
         "artifact": null,
@@ -40,6 +40,8 @@
       },
       "authority": "release-owner",
       "expiry": "on version or support-envelope change",
+      "blockedReason": "The claim is what every consumer's first command reports, so it needs CONSENTED remote evidence: a published `mjolnir-qa@<version>` install observed from outside this checkout. No such observation exists and none can be manufactured from inside the tree that produced the tarball — that is what `scripts/revalidate-claims.mjs` §THE RULE calls self-derivation. The local half is verified continuously by the named verificationCase.",
+      "blockedUntil": "2026-12-27",
       "state": "CURRENT"
     },
     {
@@ -75,6 +77,8 @@
       },
       "authority": "rule-owner",
       "expiry": "on rule or detector revision change",
+      "blockedReason": "The census is generated FROM the verdict corpus, so the corpus cannot be the evidence that the census is right — every verdict it summarises is its own input. Promoting this needs a classifier that has never seen the verdicts it is scored against, which is a held-out split rather than a running command. The measured count is drift-locked by `tests/contract/census-drift.spec.ts` in the meantime.",
+      "blockedUntil": "2026-12-27",
       "state": "GENERATED"
     },
     {
@@ -108,6 +112,8 @@
       },
       "authority": "release-owner",
       "expiry": "on reporter or workflow change",
+      "blockedReason": "The marker is a string both the reporter and the workflow emit, and both sides are in this tree. A consumer-side observation — a PR comment fetched back from the GitHub API on a repository that is not this one — is the only evidence that is not the claim restating itself. That needs a token and an external repository, neither of which belongs in a PR gate.",
+      "blockedUntil": "2026-12-27",
       "state": "CURRENT"
     },
     {
@@ -138,6 +144,8 @@
       },
       "authority": "security-owner",
       "expiry": "on model, data-flow, or boundary change",
+      "blockedReason": "The threat model is APPROVED for the working candidate but has not been reviewed by anyone outside it. An internal approval recorded in the same repository that produced the model is the shape of self-certification this registry exists to refuse, so the claim stays BLOCKED until an external reviewer is named. `docs/adr/0012-hosted-enterprise-boundary.md` records the boundary decision.",
+      "blockedUntil": "2026-11-27",
       "state": "LOCAL_PROVEN"
     }
   ],

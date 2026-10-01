@@ -35,7 +35,6 @@ if (!existsSync(join(ROOT, "dist", "cli.mjs"))) {
 rmSync(DRIFT_DIR, { recursive: true, force: true });
 mkdirSync(DRIFT_DIR, { recursive: true });
 
-const signatures = [];
 let failures = 0;
 
 for (const target of TARGETS) {

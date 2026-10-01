@@ -103,15 +103,15 @@ scoring:
   with an explanation. An **unreviewed** score shift is a regression,
   not an improvement — never run `golden:update` and commit it without
   reading what changed.
-- **Corpus regression** — `npm run corpus:regression` (networked; clones a small
+- **Corpus regression** — `npm run corpus:audit` (networked; clones a small
   set of real OSS repos) must stay green for any PR that adds or
   modifies a rule's detection logic. It fails if a rule fires _more_ on
   real code than the last reviewed baseline — that's a false-positive
   regression signal, not a crash. If the new findings are legitimate,
-  manually read each one, then `npm run corpus:regression:update` and include
+  manually read each one, then `npm run corpus:audit --update` and include
   what you reviewed in the PR description.
-- **Count-lock docs** — after a reviewed `corpus:regression:update`, regenerate
-  `docs/COUNT-LOCK.md` with `npm run fp-audit:generate` so the committed
+- **Count-lock docs** — after a reviewed `corpus:audit --update`, regenerate
+  `docs/COUNT-LOCK.md` with `npm run generate-fp-audit-table` so the committed
   docs page doesn't drift from the baseline that produced it.
 
 ## The two laws
@@ -137,7 +137,8 @@ your change is close to either line.
 
 ## Proposing a new rule
 
-1. Run `mjolnir create-rule <ID> --title "..."` (e.g.
+1. Copy an existing rule directory under `src/rules/families/` and
+   rename it (e.g.
    `QA-PW-150`). This scaffolds the rule file and both fixture
    directories.
 2. **The generated rule is deliberately broken.** It returns zero
@@ -157,7 +158,7 @@ your change is close to either line.
 5. Register the rule in `src/rules/index.ts` (the scaffold prints the
    exact import + array line to add).
 6. Run the standing gate. If your rule detects a pattern likely to
-   appear in real code, run `npm run corpus:regression` and review any new
+   appear in real code, run `npm run corpus:audit` and review any new
    findings before merging.
 
 ## Proposing a plugin
@@ -237,25 +238,29 @@ in [`SUPPORT.md`](SUPPORT.md)).
 
 ## Translations
 
-English [`README.md`](README.md) is canonical — the per-language files
-(`README.zh.md`, `README.de.md`, …) are machine-assisted translations
-carrying an explicit staleness marker, never authoritative docs.
+There are none. [`README.md`](README.md) is the only README.
 
-- Fix typos and logic in the English README first, then port the change
-  into the translations. A fix that lands only in a translation will be
-  lost at the next sync.
-- Translation PRs are welcome. Keep section order, tables and
-  `<details>` blocks identical to the English file (structure parity is
-  enforced by `tests/readme-translations.spec.ts`); keep rule IDs, code
-  blocks and link targets verbatim; recompute in-page anchors from the
-  translated headings; and bump the marker's `Last synced` date to the
-  date of the `README.md` commit you ported.
-- Run `npm run docs:translations` for an advisory staleness report. It
-  never blocks CI — drift is resolved by porting, not by a red build.
-- Terminology: choose one consistent term per language for the key
-  concepts ("worthiness score", "finding", "rule", "false-positive
-  rate", "flaky") and reuse it throughout the file; mention your
-  choices in the PR so later edits stay consistent.
+The repository carried twenty-two machine-assisted translations for most of
+its life, and they were removed in the v6 carve for one reason: every one of
+them was roughly a dozen sections behind the English file, all twenty-two were
+permanently counted as "not fresh" by the ratchet that policed them, and the
+ratchet could therefore only ever be met by deleting the thing it measured. A
+gate whose baseline is satisfiable only by removing its subject measures
+nothing, and a reader who lands on a translation gets a version of the tool
+that no longer exists.
+
+The staleness report was also where the repository's worst version bug lived:
+the release-status sync rewrote the Action's `uses:` ref to a hardcoded major
+on every run, so twenty-two READMEs instructed every non-English reader to pin
+a tag the repository had stopped moving at 3.x — and the next sync put it
+back. The major is now derived from the released version, and
+`tests/contract/census-drift.spec.ts` fails on any live surface that pins one
+that is not the published stable.
+
+If you want to restore translations, the honest version is a documented,
+reviewed process with a real freshness signal, not a machine-assisted copy
+whose drift nobody can act on. That is a contribution, not a chore — open an
+issue before writing the files.
 
 ## PR expectations
 

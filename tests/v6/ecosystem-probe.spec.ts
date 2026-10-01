@@ -1,3 +1,4 @@
+import { maturityRank } from "../../src/v6/maturity.js";
 import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -284,16 +285,32 @@ describe("the probe — evidence resolution", () => {
   it("caps every capability at M2 when no criterion beyond that has a gate", () => {
     // The conservative direction of error is the safe one: an under-claim is
     // honest, an over-claim is a false proof.
+    //
+    // Rewritten after 6.1, when executed fixture verdicts made the quad arm
+    // true for the first time. The first version asserted every entry stayed at
+    // M2 and every quad read false — a fact about the world, not a property of
+    // the code, and it would have kept passing forever if the arm were
+    // unwired again. The property is now the bound: no entry may exceed the
+    // highest criterion its OWN rules satisfy, and M4 stays unreachable
+    // because the corpus arm is still false.
     const index = buildRepoEvidenceIndex(process.cwd());
     const resolver = createEvidenceResolver(index, process.cwd());
     const census = buildCensus({ resolver, observedAt: "2026-01-01" });
     for (const entry of census.entries) {
-      expect(["M0_UNKNOWN", "M1_DECLARED", "M2_IMPLEMENTED"]).toContain(
-        entry.maturity,
-      );
-      expect(resolver.fixtureQuadVerified(entry)).toBe(false);
+      const quad = resolver.fixtureQuadVerified(entry);
+      const ceiling = quad ? "M3_FIXTURE_VERIFIED" : "M2_IMPLEMENTED";
+      expect(
+        maturityRank(entry.maturity),
+        `${entry.id} is ${entry.maturity} with quad=${String(quad)}; the ceiling ` +
+          `for that is ${ceiling}`,
+      ).toBeLessThanOrEqual(maturityRank(ceiling));
+
+      // The two arms that are genuinely unimplemented, and which no amount of
+      // fixture work can turn on: a corpus measurement on real third-party code
+      // and independent field evidence.
       expect(resolver.corpusVerified(entry)).toBe(false);
       expect(resolver.fieldProven(entry)).toBe(false);
+      expect(entry.maturity, entry.id).not.toBe("M4_CORPUS_VERIFIED");
     }
   });
 

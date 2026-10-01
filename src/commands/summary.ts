@@ -1,5 +1,5 @@
 /**
- * `mjolnir summary [report.json]` — CI annotations + step summary
+ * the `--format github-summary` render — CI annotations + step summary
  * (Terminal + CI UX Overhaul plan, M4).
  *
  * Additive command; default report path `mjolnir.json`. Reads a saved
@@ -260,7 +260,7 @@ export function runSummaryCommand(
   const reportPath = positional[0] ?? "mjolnir.json";
 
   if (!existsSync(reportPath)) {
-    io.err(`mjolnir summary: report file not found: ${reportPath}`);
+    io.err(`mjolnir: report file not found: ${reportPath}`);
     io.err("  Run the scan with --json first: mjolnir --json > mjolnir.json");
     return 10;
   }
@@ -269,7 +269,7 @@ export function runSummaryCommand(
   try {
     result = loadValidatedReport(reportPath);
   } catch (err) {
-    io.err(`mjolnir summary: cannot read ${reportPath}: ${errorMessage(err)}`);
+    io.err(`mjolnir: cannot read ${reportPath}: ${errorMessage(err)}`);
     return 2;
   }
 
@@ -294,7 +294,7 @@ export function runSummaryCommand(
       appendFileSync(stepSummaryPath, `${summary}\n`);
     } catch (err) {
       io.err(
-        `mjolnir summary: could not write $GITHUB_STEP_SUMMARY (${errorMessage(err)}); printing to stdout instead.`,
+        `mjolnir: could not write $GITHUB_STEP_SUMMARY (${errorMessage(err)}); printing to stdout instead.`,
       );
       io.out(summary);
     }

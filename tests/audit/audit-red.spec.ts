@@ -33,7 +33,6 @@ import {
   main,
   runScan,
   runScanCommand,
-  runDiffCommand,
   runSuppressions,
   runDoctorPlaywright,
 } from "../../src/cli.js";
@@ -120,7 +119,7 @@ describe("audit-C3: default io sinks are variadic", () => {
         "</testsuite>",
     );
     const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-    await main(["triage", results]);
+    await main(["explain", "--evidence", results]);
     // Read calls BEFORE restore — mockRestore() clears the call log.
     const calls = errSpy.mock.calls.map((c) => c.map(String).join(" "));
     errSpy.mockRestore();
@@ -162,42 +161,6 @@ describe("audit-C5: partial scans never write milestones or fold stats", () => {
     }
     expect(cap.text()).not.toContain("first flawless scan");
   });
-
-  it("diff with a partial (truncated) scan must NOT count resolved findings or fire first-debt-reduction", async () => {
-    const dir = tmpRepo("c5-diff");
-    mkdirSync(join(dir, "test"), { recursive: true });
-    writeFileSync(join(dir, "test", "flaky.spec.ts"), PW_HARD_SLEEP("flaky"));
-    // Baseline captured when the file still had the hard sleep; a
-    // truncated scan that happens to miss the file must not "resolve" it.
-    mkdirSync(join(dir, ".mjolnir"), { recursive: true });
-    writeFileSync(
-      join(dir, ".mjolnir", "baseline.json"),
-      JSON.stringify({
-        schemaVersion: 1,
-        capturedAt: "2020-01-01T00:00:00.000Z",
-        commit: "unknown",
-        findings: [
-          {
-            ruleId: "QA-PW-101",
-            file: "test/flaky.spec.ts",
-            message: "`waitForTimeout()` hard sleep.",
-            severity: "warning",
-          },
-        ],
-      }),
-    );
-    const cap1 = capture();
-    const code = await runDiffCommand(
-      [dir, "--max-duration", "0.001"],
-      cap1.io,
-    );
-    // A truncated (partial) diff must never announce a debt-reduction
-    // milestone: the "fix" may be nothing but a truncated analysis.
-    expect(cap1.text()).not.toContain("first debt reduction");
-    if (code === 2) {
-      expect(cap1.text()).not.toContain("MILESTONE");
-    }
-  });
 });
 
 describe("audit-S8: help contract; handler throws become exit 20", () => {
@@ -216,7 +179,7 @@ describe("audit-S8: help contract; handler throws become exit 20", () => {
 
   it("verb --help routes to the verb page (exit 0)", async () => {
     const cap = capture();
-    const code = await main(["rules", "--help"], cap.io);
+    const code = await main(["explain", "--list", "--help"], cap.io);
     expect(code).toBe(0);
     expect(cap.text()).toContain("rules — ");
   });
@@ -239,7 +202,7 @@ describe("audit-S8: help contract; handler throws become exit 20", () => {
     const dir = tmpRepo("s8-dp");
     // Any downstream crash must be contained by the handler. Today an
     // error propagates as a rejection; after the fix: exit 20.
-    const code = await runDoctorPlaywright(["doctor:playwright", dir], {
+    const code = await runDoctorPlaywright(["doctor", "--frameworks", dir], {
       out: () => {
         throw new Error("probe-crash");
       },

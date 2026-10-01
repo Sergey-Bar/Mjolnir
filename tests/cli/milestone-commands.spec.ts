@@ -12,15 +12,6 @@ import { describe, expect, it } from "vitest";
 import { main, type Output } from "../../src/cli.js";
 import { buildMachineContract } from "../../src/engine/machine-contract.js";
 import { runScan } from "../../src/engine/scan-pipeline.js";
-import {
-  runCIIntegrityCommand,
-  runContractVerifyCommand,
-  runCrossFileCommand,
-  runEvidenceGraphCommand,
-  runFrameworkMaturityCommand,
-  runSuppressionGateCommand,
-  runTrustTrendCommand,
-} from "../../src/commands/milestone.js";
 
 function capture() {
   let stdout = "";
@@ -57,7 +48,7 @@ describe("milestone CLI commands", () => {
   it("runs framework maturity without pretending human calibration is automated", async () => {
     const cap = capture();
     const code = await main(
-      ["framework-maturity", "--framework", "playwright", "--json"],
+      ["doctor", "--frameworks", "--framework", "playwright", "--json"],
       cap.io,
     );
 
@@ -69,13 +60,16 @@ describe("milestone CLI commands", () => {
     });
 
     const all = capture();
-    expect(await main(["framework-maturity", "--json"], all.io)).toBe(0);
+    expect(await main(["doctor", "--frameworks", "--json"], all.io)).toBe(0);
     expect(
       (parseOutput(all) as { frameworks: unknown[] }).frameworks.length,
     ).toBeGreaterThan(1);
     const terminal = capture();
     expect(
-      await main(["framework-maturity", "--format", "terminal"], terminal.io),
+      await main(
+        ["doctor", "--frameworks", "--format", "terminal"],
+        terminal.io,
+      ),
     ).toBe(0);
     expect(terminal.stdout()).toContain("Calibration authority: human");
   });
@@ -153,7 +147,7 @@ describe("milestone CLI commands", () => {
         'import "./other.spec";\ntest("sample", () => {});\n',
       );
       const cap = capture();
-      const code = await main(["cross-file", root, "--json"], cap.io);
+      const code = await main(["explain", "--callers", root, "--json"], cap.io);
 
       expect(code, cap.stdout()).toBe(1);
       const analysis = parseOutput(cap) as { signals?: unknown };
@@ -503,7 +497,9 @@ describe("milestone CLI commands", () => {
     try {
       const historyPath = join(root, "trust-history.json");
       const argv = [
-        "trust-trend",
+        "ci",
+
+        "release-trend",
         root,
         "--history",
         historyPath,
@@ -596,7 +592,7 @@ describe("milestone CLI commands", () => {
       writeFileSync(policyPath, JSON.stringify({ requireExpiration: false }));
       const cap = capture();
       const code = await main(
-        ["ci-integrity", root, "--policy", policyPath, "--json"],
+        ["ci", "integrity", root, "--policy", policyPath, "--json"],
         cap.io,
       );
 
@@ -616,7 +612,7 @@ describe("milestone CLI commands", () => {
       const framework = capture();
       expect(
         await main(
-          ["framework-maturity", "--framework", "playwright"],
+          ["doctor", "--frameworks", "--framework", "playwright"],
           framework.io,
         ),
       ).toBe(0);
@@ -624,7 +620,7 @@ describe("milestone CLI commands", () => {
 
       const jest = capture();
       expect(
-        await main(["framework-maturity", "--framework", "jest"], jest.io),
+        await main(["doctor", "--frameworks", "--framework", "jest"], jest.io),
       ).toBe(0);
       expect(jest.stdout()).toContain("jest");
 
@@ -635,7 +631,7 @@ describe("milestone CLI commands", () => {
       );
 
       const crossFile = capture();
-      expect(await main(["cross-file", root], crossFile.io)).toBe(0);
+      expect(await main(["explain", "--callers", root], crossFile.io)).toBe(0);
       expect(crossFile.stdout()).toContain("Cross-File Analysis Report");
 
       const contract = capture();
@@ -646,7 +642,9 @@ describe("milestone CLI commands", () => {
       expect(
         await main(
           [
-            "trust-trend",
+            "ci",
+
+            "release-trend",
             root,
             "--history",
             join(root, "history.json"),
@@ -659,7 +657,9 @@ describe("milestone CLI commands", () => {
       expect(trust.stdout()).toContain("Trust Trend Analysis");
 
       const defaultHistory = capture();
-      expect(await main(["trust-trend", root], defaultHistory.io)).toBe(0);
+      expect(await main(["ci", "release-trend", root], defaultHistory.io)).toBe(
+        0,
+      );
       expect(defaultHistory.stdout()).toContain("Trust Trend Analysis");
 
       const evidence = capture();
@@ -667,7 +667,7 @@ describe("milestone CLI commands", () => {
       expect(evidence.stdout()).toContain("Evidence Graph Report");
 
       const ci = capture();
-      expect(await main(["ci-integrity", root], ci.io)).toBe(1);
+      expect(await main(["ci", "integrity", root], ci.io)).toBe(1);
       expect(ci.stdout()).toContain("CI Workflow Integrity Report");
     } finally {
       rmSync(root, { recursive: true, force: true });
@@ -738,7 +738,9 @@ describe("milestone CLI commands", () => {
       expect(
         await main(
           [
-            "trust-trend",
+            "ci",
+
+            "release-trend",
             root,
             "--history",
             historyPath,
@@ -755,7 +757,9 @@ describe("milestone CLI commands", () => {
       expect(
         await main(
           [
-            "trust-trend",
+            "ci",
+
+            "release-trend",
             root,
             "--history",
             join(historyParent, "history.json"),
@@ -783,12 +787,14 @@ describe("milestone CLI commands", () => {
       const framework = capture();
       expect(
         await main(
-          ["framework-maturity", "--framework", "unknown"],
+          ["doctor", "--frameworks", "--framework", "unknown"],
           framework.io,
         ),
       ).toBe(10);
       const partial = capture();
-      expect(await main(["cross-file", empty, "--json"], partial.io)).toBe(2);
+      expect(
+        await main(["explain", "--callers", empty, "--json"], partial.io),
+      ).toBe(2);
       const emptyEvidence = capture();
       expect(
         await main(["evidence-graph", empty, "--json"], emptyEvidence.io),
@@ -798,29 +804,16 @@ describe("milestone CLI commands", () => {
     }
   });
 
-  it("uses shared default output sinks for every handler", async () => {
-    expect(
-      runFrameworkMaturityCommand([undefined as unknown as string, "--json"]),
-    ).toBe(0);
-    expect(runFrameworkMaturityCommand(["--unknown"])).toBe(10);
-    expect(await runSuppressionGateCommand(["missing"])).toBe(10);
-    expect(await runCrossFileCommand(["missing"])).toBe(10);
-    expect(await runContractVerifyCommand(["missing"])).toBe(10);
-    expect(await runTrustTrendCommand(["missing"])).toBe(10);
-    expect(await runEvidenceGraphCommand(["missing"])).toBe(10);
-    expect(await runCIIntegrityCommand(["missing"])).toBe(10);
-  });
-
   it("rejects every missing command option value before scanning", async () => {
     const invocations = [
-      ["framework-maturity", "--format"],
-      ["cross-file", "--format"],
-      ["ci-integrity", "--format"],
+      ["doctor", "--frameworks", "--format"],
+      ["explain", "--callers", "--format"],
+      ["ci", "integrity", "--format"],
       ["suppression-gate", "--max-duration"],
-      ["framework-maturity", "--framework"],
+      ["doctor", "--frameworks", "--framework"],
       ["suppression-gate", "--policy"],
-      ["trust-trend", "--history"],
-      ["trust-trend", "--recorded-at"],
+      ["ci", "release-trend", "--history"],
+      ["ci", "release-trend", "--recorded-at"],
       ["contract-verify", "--contract"],
       ["evidence-graph", "--file"],
       ["evidence-graph", "--rule"],
@@ -833,11 +826,11 @@ describe("milestone CLI commands", () => {
     }
 
     for (const argv of [
-      ["cross-file", "--history", "history.json"],
+      ["explain", "--callers", "--history", "history.json"],
       ["contract-verify", "--file", "sample.spec.ts"],
-      ["trust-trend", "--file", "sample.spec.ts"],
+      ["ci", "release-trend", "--file", "sample.spec.ts"],
       ["evidence-graph", "--policy", "policy.json"],
-      ["ci-integrity", "--file", "sample.spec.ts"],
+      ["ci", "integrity", "--file", "sample.spec.ts"],
     ]) {
       const cap = capture();
       expect(await main(argv, cap.io), argv.join(" ")).toBe(10);
@@ -845,7 +838,7 @@ describe("milestone CLI commands", () => {
     }
 
     for (const argv of [
-      ["framework-maturity", "--recorded-at", "not-a-date"],
+      ["doctor", "--frameworks", "--recorded-at", "not-a-date"],
       ["suppression-gate", "--unknown"],
       ["suppression-gate", "one", "two"],
     ]) {
@@ -859,7 +852,7 @@ describe("milestone CLI commands", () => {
     try {
       const file = join(root, "sample.spec.ts");
       const cap = capture();
-      expect(await main(["cross-file", file], cap.io)).toBe(10);
+      expect(await main(["explain", "--callers", file], cap.io)).toBe(10);
       expect(cap.stderr()).toContain("not a directory");
 
       const persisted = capture();
@@ -1013,20 +1006,20 @@ describe("milestone CLI commands", () => {
         join(root, "oversized.spec.ts"),
         "x".repeat(1024 * 1024 + 1),
       );
-      for (const command of [
-        "suppression-gate",
-        "cross-file",
-        "contract-verify",
-        "trust-trend",
-        "evidence-graph",
-        "ci-integrity",
+      for (const argv of [
+        ["suppression-gate", root],
+        ["explain", "--callers", root],
+        ["contract-verify", root],
+        ["ci", "release-trend", root],
+        ["evidence-graph", root],
+        ["ci", "integrity", root],
       ]) {
         const cap = capture();
         const code = await main(
-          [command, root, "--max-duration", "0.000001", "--json"],
+          [...argv, "--max-duration", "0.000001", "--json"],
           cap.io,
         );
-        expect(code, command).toBe(2);
+        expect(code, argv.join(" ")).toBe(2);
       }
     } finally {
       rmSync(root, { recursive: true, force: true });
@@ -1090,7 +1083,7 @@ describe("milestone CLI commands", () => {
       const unexpected = capture();
       expect(
         await main(
-          ["framework-maturity", "--policy", "policy.json"],
+          ["doctor", "--frameworks", "--policy", "policy.json"],
           unexpected.io,
         ),
       ).toBe(10);
@@ -1100,17 +1093,17 @@ describe("milestone CLI commands", () => {
   });
 
   it("returns usage errors before scanning an invalid target", async () => {
-    for (const command of [
-      "suppression-gate",
-      "cross-file",
-      "contract-verify",
-      "trust-trend",
-      "evidence-graph",
-      "ci-integrity",
+    for (const argv of [
+      ["suppression-gate", "missing-target"],
+      ["explain", "--callers", "missing-target"],
+      ["contract-verify", "missing-target"],
+      ["ci", "release-trend", "missing-target"],
+      ["evidence-graph", "missing-target"],
+      ["ci", "integrity", "missing-target"],
     ]) {
       const cap = capture();
-      expect(await main([command, "missing-target"], cap.io), command).toBe(10);
-      expect(cap.stderr(), command).toContain("does not exist");
+      expect(await main(argv, cap.io), argv.join(" ")).toBe(10);
+      expect(cap.stderr(), argv.join(" ")).toContain("does not exist");
     }
   });
 });

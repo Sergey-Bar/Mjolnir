@@ -1,6 +1,6 @@
 # QA-PW-146 — CSS/XPath string selector instead of a normalized locator
 
-_Generated from the live rule registry and this rule's own committed fixtures by `mjolnir`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
+_Generated from the live rule registry and this rule's own committed fixtures by `mjolnir`'s doc generator — do not edit by hand. Regenerate with `npm run generate-rule-docs`._
 
 | Field                                 | Value                                                                                                                                                                                                                                             |
 | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -39,7 +39,7 @@ Verified against `tests/fixtures/QA-PW-146/must-not-fire/selectors.spec.ts` — 
 
 ## Corpus-measured false-positive risk
 
-Real occurrence counts from `npm run corpus:regression` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
+Real occurrence counts from `npm run corpus:audit` against actively-maintained OSS repos — reproduce yourself, don't just trust this table (see `docs/FP-AUDIT.md`):
 
 | Repo                                          | Occurrences |
 | --------------------------------------------- | ----------- |

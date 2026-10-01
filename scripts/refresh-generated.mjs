@@ -28,8 +28,32 @@ const CHECK_ONLY = process.argv.includes("--check");
  * reports BLOCKED while external validation is outstanding, which is the
  * correct state, and folding it in would make this script fail for a reason
  * that has nothing to do with generated files.
+ *
+ * THE ORDER IS TWO-LAYERED, and the layering is a dependency rather than a
+ * preference.
+ *
+ *   1. `docs:regen` FIRST — the content chain everything below reads. The rule
+ *      pages, the FP audit and the capability matrix are all inputs to the
+ *      artifacts that follow, so regenerating one of those first and then
+ *      `docs:regen` would overwrite it.
+ *   2. `docs:v6-inventory` and `docs:registry` NEXT, and they cannot live in
+ *      `docs:regen` at all: both are provenance-stamped, embedding a commit
+ *      SHA, so a regenerating staleness gate would report a diff on every
+ *      commit because the stamp is always the new HEAD. That is the same
+ *      constraint as the coverage high-water mark — see
+ *      `docs/PRODUCT-DECISIONS.md` D-5 and `scripts/check-provenance-artifacts.ts`.
+ *   3. The remaining generators, then formatting, then the manifest LAST.
+ *
+ * 6.0 had a second orchestrator, `regen:ordered`, with a subset of this list
+ * and no convergence proof — two sources of truth for the same ordering, which
+ * is the defect this repository exists to remove. It was deleted rather than
+ * merged: `refresh-generated.mjs` already ends by PROVING convergence, and a
+ * duplicate that proves nothing is worse than no duplicate.
  */
 const GENERATORS = [
+  ["docs:regen", "content chain (rules, FP audit, capability, counts)"],
+  ["docs:v6-inventory", "V6 inventory (provenance-stamped)"],
+  ["docs:registry", "capability registry (provenance-stamped)"],
   ["docs:blast-radius", "blast radius audit"],
   ["docs:readme-brand", "README brand assets"],
   ["docs:translations:sync", "README translation sync"],

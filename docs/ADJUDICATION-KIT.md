@@ -22,10 +22,10 @@ Normative reading order: [CERTIFICATION-POLICY](CERTIFICATION-POLICY.md)
 2. human: read each row's review sheet → call TP / FP / UNSURE
       → edit the .jsonl rows' verdict + note (the note is REQUIRED —
         it is the evidence trail the next human reads)
-3. npm run fp-audit:generate    → recomputes measured FP rates
-4. npm run corpus:regression    → the baselines + ceiling ratchet
+3. npm run generate-fp-audit-table    → recomputes measured FP rates
+4. npm run corpus:audit    → the baselines + ceiling ratchet
       (fails if unclassified rows remain — by design, fix is step 2)
-5. npm run corpus:regression:update  → re-record baselines after review
+5. npm run corpus:audit --update  → re-record baselines after review
 6. docs/rules + RULE-CAPABILITY-MATRIX + census regenerate; the drift
    gates keep every number honest
 ```
@@ -85,12 +85,12 @@ Scenario: `QA-PY-003` (bare `except:` detection) fires on
    }
    ```
 5. Reconcile:
-   - `npm run fp-audit:generate` — the FP count moves; the Coverage line
+   - `npm run generate-fp-audit-table` — the FP count moves; the Coverage line
      updates; the generator FAILS if the measured rate crosses a tier
      boundary (that failure is the §11 loop starting, not an error).
-   - `npm run corpus:regression` — the ceiling ratchet: 0 unclassified
+   - `npm run corpus:audit` — the ceiling ratchet: 0 unclassified
      rows expected after step 4.
-   - Regenerate the derived docs (`npm run docs:rules`,
+   - Regenerate the derived docs (`npm run generate-rule-docs`,
      `npm run docs:capability`, `npm run docs:counts`) — the drift gates
      in CI do exactly this and fail on a stale copy.
 
@@ -106,7 +106,7 @@ Scenario: `QA-PY-003` (bare `except:` detection) fires on
 
 ## The ratchet rules (non-negotiable)
 
-- Blank-verdict rows block `corpus:regression` — the ceiling is 0; the
+- Blank-verdict rows block `corpus:audit` — the ceiling is 0; the
   fix is classification, never `--update`.
 - `--update` after re-classification is a REVIEWED act: the diff must
   show counts moving because verdicts moved, not because rows were

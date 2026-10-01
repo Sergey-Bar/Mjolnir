@@ -1,15 +1,26 @@
-# Demo videos
+# Demo video
 
-Two videos, both generated — never screen-recorded, never mocked up.
+One video, generated — never screen-recorded, never mocked up.
 
-| File                                    | What it is                                                     | Where it lives          |
-| --------------------------------------- | -------------------------------------------------------------- | ----------------------- |
-| `mjolnir-demo.mp4`                      | 34s hero loop: one false-green CI gate found, fixed, re-proved | committed (README hero) |
-| `mjolnir-demo-poster.png`               | Poster frame for the hero                                      | committed               |
-| `mjolnir-tour.mp4`                      | 86s tour: scan → `explain` → `forensics`                       | GitHub Release asset    |
-| `script.demo.json` · `script.tour.json` | The committed evidence both are rendered from                  | committed               |
-| `fixtures/ci.fixed.yml`                 | The workflow after the fix the tool prints                     | committed               |
-| `fonts/`                                | The vendored render stack, with licenses                       | committed               |
+| File                      | What it is                                                     | Where it lives          |
+| ------------------------- | -------------------------------------------------------------- | ----------------------- |
+| `mjolnir-demo.mp4`        | 34s hero loop: one false-green CI gate found, fixed, re-proved | committed (README hero) |
+| `mjolnir-demo-poster.png` | Poster frame for the hero                                      | committed               |
+| `script.demo.json`        | The committed evidence it is rendered from                     | committed               |
+| `fixtures/ci.fixed.yml`   | The workflow after the fix the tool prints                     | committed               |
+| `fonts/`                  | The vendored render stack, with licenses                       | committed               |
+
+There was once an 86-second `tour` here, showing `scan → explain →
+forensics`. It is gone: `forensics` is a DELETE in the v6 CLI collapse
+(plan §3), and a committed render script that draws the retired
+`forensics` verb against a test-results directory is a video whose own
+evidence file asserts a command that will not exist. Removing the script _before_ the verb — which is why
+carve step 1.2 precedes 1.6 — kept three contract specs green instead of
+red, and left the hero, whose story survives the collapse untouched.
+
+If a tour is wanted again, it has to be captured from the post-collapse
+CLI, and it has to earn its 86 seconds. That is a rendering decision, not
+a documentation one, so it does not belong in the carve.
 
 ## Why this is built the way it is
 
@@ -22,7 +33,7 @@ rendered pixels out, with a contract in between.
 real Mjölnir execution
         │  scripts/video/capture.ts        ← evidence
         ▼
-script.{demo,tour}.json
+script.demo.json
         │  tests/contract/video-script.spec.ts   ← runs in the standing gate
         ▼
 deterministic renderer (Chromium, stepped by frame index)

@@ -26,7 +26,6 @@ import {
   renderFlakyMd,
   renderLeaderboard,
 } from "../../src/forensics/analyze.js";
-import { runForensicsCommand } from "../../src/cli-handlers.js";
 import { existsSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -205,45 +204,6 @@ describe("network observation contracts", () => {
     }
   });
 
-  it("propagates a single HAR entry cap and preserves partial status alongside valid tests", () => {
-    const dir = mkdtempSync(join(tmpdir(), "mjolnir-har-single-limit-"));
-    try {
-      const path = join(dir, "network.har");
-      writeFileSync(
-        path,
-        JSON.stringify({
-          log: {
-            entries: [
-              HAR.log.entries[0],
-              ...Array.from({ length: 20_000 }, () => null),
-            ],
-          },
-        }),
-      );
-      const { report } = runForensics(path, { writeFlakyMd: false });
-      expect(report.totalNetworkObservations).toBe(1);
-      expect(report.analysisComplete).toBe(false);
-      expect(report.skippedReports).toBe(0);
-      expect(report.incompleteReasons).toEqual(["entry-count-limit"]);
-      writeFileSync(
-        join(dir, "valid.xml"),
-        '<testsuite><testcase name="ok"/></testsuite>',
-      );
-      const errors: string[] = [];
-      expect(
-        runForensicsCommand([dir, "--no-flaky-md"], {
-          out: () => {},
-          err: (s) => errors.push(String(s)),
-        }),
-      ).toBe(2);
-      expect(errors.join("\n")).toContain("analysis is partial");
-      expect(errors.join("\n")).toContain("entry-count-limit");
-      expect(errors.join("\n")).not.toContain("0 report(s) skipped");
-    } finally {
-      rmSync(dir, { recursive: true, force: true });
-    }
-  });
-
   it("marks structurally invalid HAR partial instead of treating it as an unrelated JSON config", () => {
     const dir = mkdtempSync(join(tmpdir(), "mjolnir-har-shape-"));
     try {
@@ -382,38 +342,17 @@ describe("network observation contracts", () => {
         expect(report.failed).toBe(0);
         expect(report.totalNetworkObservations).toBe(3);
         expect(report.failedNetworkObservations).toBe(2);
-        expect(
-          runForensicsCommand([dir, "--no-flaky-md"], {
-            out: () => {},
-            err: () => {},
-          }),
-        ).toBe(1);
+        // The `forensics` VERB is retired (plan §3): the exit code that
+        // surfaced "a network request failed" no longer has a command to
+        // return 1 from. The report carries the same fact —
+        // `failedNetworkObservations: 2` above — and that is what
+        // `trust-report` and the GitHub evidence sanitizer read, neither of
+        // which goes through the verb. One fewer surface, not one fewer fact.
       } finally {
         rmSync(dir, { recursive: true, force: true });
       }
     },
   );
-
-  it("reports network-only evidence as insufficient for test verification", () => {
-    const dir = mkdtempSync(join(tmpdir(), "mjolnir-har-cli-"));
-    try {
-      const path = join(dir, "network.har");
-      writeFileSync(path, JSON.stringify(HAR));
-      const errors: string[] = [];
-      const output: string[] = [];
-      expect(
-        runForensicsCommand([path, "--no-flaky-md"], {
-          out: (s) => output.push(String(s)),
-          err: (s) => errors.push(String(s)),
-        }),
-      ).toBe(2);
-      expect(errors.join("\n")).toContain("Network observations recognized");
-      expect(errors.join("\n")).not.toContain("No test results recognized");
-      expect(output.join("\n")).not.toContain("nothing suspicious");
-    } finally {
-      rmSync(dir, { recursive: true, force: true });
-    }
-  });
 });
 
 describe("parseHar (text entry point)", () => {

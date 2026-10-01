@@ -9,7 +9,7 @@
  *    human-classified verdicts in tests/corpus/verdicts/*.jsonl
  *    (Phase 3 — Tempering Plan)
  *
- * Usage: npm run fp-audit:generate
+ * Usage: npm run generate-fp-audit-table
  */
 
 import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
@@ -258,8 +258,8 @@ export function renderFpAuditMd(baselines: FpAuditBaseline[]): string {
     "# Corpus Count Lock (Regression Guard)",
     "",
     "**Generated from `tests/corpus/baseline/*.json` — do not edit by hand.**",
-    "Regenerate with `npm run fp-audit:generate` after a reviewed",
-    "`npm run corpus:regression:update` run.",
+    "Regenerate with `npm run generate-fp-audit-table` after a reviewed",
+    "`npm run corpus:audit --update` run.",
     "",
     "This is a **count lock**, not a false-positive audit. It records how many",
     "times each rule fires on real-world repos and fails CI if that number",
@@ -268,7 +268,7 @@ export function renderFpAuditMd(baselines: FpAuditBaseline[]): string {
     "Reproduce:",
     "",
     "```bash",
-    "npm run corpus:regression",
+    "npm run corpus:audit",
     "```",
     "",
     "This clones the real repos below over the network, runs the same",
@@ -464,7 +464,7 @@ export function checkUnclassifiedCompleteness(
         `Blank "verdict" rows silently under-report the measured FP rates — ` +
         `classify the new findings (TP/FP) before regenerating, or, if the ` +
         `growth is deliberate corpus expansion awaiting review, re-record the ` +
-        `ceiling with \`npm run fp-audit:generate -- --update\` after review.`,
+        `ceiling with \`npm run generate-fp-audit-table -- --update\` after review.`,
     );
     for (const r of regressions) console.error(r);
     throw new Error(
@@ -584,7 +584,7 @@ export function checkUnsureAdjudication(
         `Adjudicate per tests/corpus/verdicts/README.md (re-read the cited ` +
         `source, resolve to TP/FP, or keep UNSURE with a sharper note), or, ` +
         `if the growth is deliberate corpus expansion awaiting review, ` +
-        `re-record the ceiling with \`npm run fp-audit:generate -- --update\`.`,
+        `re-record the ceiling with \`npm run generate-fp-audit-table -- --update\`.`,
     );
     for (const r of regressions) console.error(r);
     throw new Error(
@@ -674,7 +674,7 @@ export interface RuleStats {
  * Per-rule TP/FP tallies from the hand-classified corpus verdicts.
  * The single source of truth for "how measured is this rule" — used by
  * the FP-audit page, the shipped `src/rules/measured-fp.generated.ts`,
- * and (via that file) the scan footer, `mjolnir rules`, `explain`, and
+ * and (via that file) the scan footer, `mjolnir explain --list`, `explain`, and
  * `doctor`'s tier-enforcement check.
  */
 export function computeRuleStats(verdicts: Verdict[]): RuleStats[] {
@@ -721,45 +721,56 @@ export function renderMeasuredFpModule(verdicts: Verdict[]): string {
   const ruleRevisions = new Map(
     RULES.map((rule) => [rule.id, rule.detectorRevision]),
   );
-  const entries = computeRuleStats(verdicts)
-    .filter((s) => s.classified >= MEASURED_THRESHOLD && s.fpRate !== null)
-    // A measurement whose recorded revision does not match the rule's CURRENT
-    // revision describes a detector that no longer exists, and must not be
-    // shipped in the file every consumer reads as "current measurements".
-    //
-    // 6.0: `QA-PY-007`'s verdicts are revision 4 and the rule is revision 5,
-    // so the entry was being written with `detectorRevision: 4` — which the
-    // registry ratchet correctly read as "a measurement crossed an
-    // implementation change" and `measurement.ts` correctly read as stale.
-    // Two mechanisms, the same fact, and neither was wrong; the generator was
-    // emitting a row that could not be true of any rule. The rule is now
-    // UNMEASURED, which is the state the plan's §07 asks for: bump the
-    // revision, re-measure, and until then do not claim a rate.
-    .filter((s) => {
-      const recorded = revisions[s.ruleId] ?? 1;
-      const current = ruleRevisions.get(s.ruleId) ?? 1;
-      return recorded === current;
-    })
-    .map((s) => {
-      // 3 dp is plenty for a rate over ≤20 samples; Number() drops
-      // trailing zeros so the literal matches what prettier would keep.
-      const rate = Number((s.fpRate as number).toFixed(3));
-      // detectorRevision (plan §07): the implementation revision the
-      // measurement was taken against, from the hand-maintained sidecar.
-      // Default 1 = the current first-generation detector. The Phase 1
-      // ratchet treats a mismatch as stale → provisional → re-measure.
-      const rev = revisions[s.ruleId] ?? 1;
-      // §20.2: the 95% Wilson interval ships with every measurement so
-      // regression governance compares intervals, not raw point estimates.
-      const ci = wilsonInterval(
-        (s.fpRate as number) * s.classified,
-        s.classified,
-      );
-      return `  "${s.ruleId}": { fpRate: ${rate}, n: ${s.classified}, detectorRevision: ${rev}, ciLow: ${ci.ciLow}, ciHigh: ${ci.ciHigh} },`;
-    });
+  const render = (s: RuleStats): string => {
+    // 3 dp is plenty for a rate over ≤20 samples; Number() drops
+    // trailing zeros so the literal matches what prettier would keep.
+    const rate = Number((s.fpRate as number).toFixed(3));
+    // detectorRevision (plan §07): the implementation revision the
+    // measurement was taken against, from the hand-maintained sidecar.
+    // Default 1 = the current first-generation detector. The Phase 1
+    // ratchet treats a mismatch as stale → provisional → re-measure.
+    const rev = revisions[s.ruleId] ?? 1;
+    // §20.2: the 95% Wilson interval ships with every measurement so
+    // regression governance compares intervals, not raw point estimates.
+    const ci = wilsonInterval(
+      (s.fpRate as number) * s.classified,
+      s.classified,
+    );
+    return `  "${s.ruleId}": { fpRate: ${rate}, n: ${s.classified}, detectorRevision: ${rev}, ciLow: ${ci.ciLow}, ciHigh: ${ci.ciHigh} },`;
+  };
+
+  const qualifies = (s: RuleStats): boolean =>
+    s.classified >= MEASURED_THRESHOLD && s.fpRate !== null;
+  const isCurrent = (s: RuleStats): boolean => {
+    const recorded = revisions[s.ruleId] ?? 1;
+    const current = ruleRevisions.get(s.ruleId) ?? 1;
+    return recorded === current;
+  };
+
+  const all = computeRuleStats(verdicts).filter(qualifies);
+  // Everything that qualifies, revision or not — the raw map below.
+  const rawEntries = all.map(render);
+  // Only what describes a detector that still exists.
+  //
+  // A measurement whose recorded revision does not match the rule's CURRENT
+  // revision describes a detector that no longer exists, and must not be
+  // shipped in the file every consumer reads as "current measurements".
+  //
+  // 6.0: `QA-PY-007`'s verdicts are revision 4 and the rule is revision 5, so
+  // the entry was being written with `detectorRevision: 4` — which the
+  // registry ratchet correctly read as "a measurement crossed an implementation
+  // change" and `measurement.ts` correctly read as stale. Two mechanisms, the
+  // same fact, and neither was wrong; the generator was emitting a row that
+  // could not be true of any rule. The rule is now UNMEASURED, which is the
+  // state the plan's §07 asks for: bump the revision, re-measure, and until
+  // then do not claim a rate.
+  //
+  // It is now ALSO `STALE` rather than merely `UNMEASURED`, which is what the
+  // filter used to destroy — see `MEASURED_FP_RAW` below.
+  const entries = all.filter(isCurrent).map(render);
 
   return [
-    "// GENERATED by `npm run fp-audit:generate` from tests/corpus/verdicts/*.jsonl.",
+    "// GENERATED by `npm run generate-fp-audit-table` from tests/corpus/verdicts/*.jsonl.",
     "// Do not edit by hand. tests/rules/measured-fp.spec.ts locks this to the verdicts.",
     "//",
     "// `fpRate` = FP / (TP + FP); `n` = classified (TP + FP) verdicts. A rule",
@@ -786,6 +797,30 @@ export function renderMeasuredFpModule(verdicts: Verdict[]): string {
     "",
     "export const MEASURED_FP: Readonly<Record<string, MeasuredFp>> = {",
     ...entries,
+    "};",
+    "",
+    "/**",
+    " * Every measurement, INCLUDING the ones whose recorded revision no longer",
+    " * matches the rule's.",
+    " *",
+    " * `MEASURED_FP` above is filtered to measurements that describe a detector",
+    ' * that still exists, which is right for a consumer asking "how measured is',
+    ' * this rule today". It is wrong for a maintainer asking "why is this',
+    ' * unmeasured", because the difference between *no corpus work has been',
+    " * done* and *there are 42 verdicts, they predate revision 5* is exactly",
+    " * the information the filter destroys.",
+    " *",
+    " * `QA-PY-004` (42 verdicts, sidecar revision 3, rule revision 4) and",
+    " * `QA-PY-007` (12 verdicts, sidecar 4, rule 5) are both real corpus work",
+    " * that `MEASURED_FP` silently omits. `src/rules/measurement-status.ts`",
+    " * derives `STALE` from this map; before it existed, that status was",
+    " * unreachable — a member of the union that no input could produce.",
+    " *",
+    " * A rule absent from BOTH maps has zero classified verdicts and ships on",
+    " * assumption.",
+    " */",
+    "export const MEASURED_FP_RAW: Readonly<Record<string, MeasuredFp>> = {",
+    ...rawEntries,
     "};",
     "",
   ].join("\n");
@@ -863,7 +898,7 @@ export function renderMeasuredFpAudit(
             // would be wrong — provisional means UNMEASURED or stale — and
             // rendering it as either tier would be a claim the interval does
             // not support. The arrow says which way it has to move, and the
-            // detail is in `mjolnir rules --explain`.
+            // detail is in `mjolnir explain --list --explain`.
             "TIER-STRADDLE":
               "↔ straddling (interval crosses the tier boundary)",
             UNMEASURED: "◐ unmeasured",

@@ -46,7 +46,21 @@ export const TEST_DIALECTS = [
 
 export type TestDialect = (typeof TEST_DIALECTS)[number];
 
-/** Adapter id → dialect. Seven executor adapters, seven entries. */
+/**
+ * Adapter id → dialect.
+ *
+ * Four entries, four real dialects, and the count is ASSERTED rather than
+ * claimed: a fifth adapter with no dialect here resolves to `"unknown"`, which
+ * is a correct answer to a question this map cannot yet parse — and a
+ * sentence asserting a number is not a check that the number holds. The spec
+ * below is that check.
+ *
+ * The comment this replaces said "Seven executor adapters, seven entries" over
+ * a four-entry map. `SCAN_ADAPTERS` does register seven; three of them are CI
+ * providers, and a CI provider does not run tests in a dialect this IR models.
+ * The sentence was a way of saying "all of them" while describing a different
+ * set, and it is the kind of prose that survives long after the code moves.
+ */
 export const ADAPTER_DIALECT: Readonly<Record<string, TestDialect>> = {
   typescript: "ts",
   python: "python",

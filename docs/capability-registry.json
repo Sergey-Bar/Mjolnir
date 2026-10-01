@@ -3,15 +3,16 @@
   "artifact": "capability-registry",
   "generatedBy": "npm run docs:capability",
   "registryId": "mjolnir-capability-registry",
-  "observedAt": "2026-09-28",
-  "baseSha": "a73248145130df8be7d57235066fec9fe1839509",
+  "observedAt": "2026-09-30",
+  "baseSha": "94a4c3299c6de382f9b93bc559c545fe4aa3001e",
   "counts": {
     "entries": 27,
     "kind:ci-cd-provider": 4,
-    "maturity:M2": 14,
+    "maturity:M2": 8,
     "kind:domain": 13,
-    "maturity:M1": 13,
+    "maturity:M1": 18,
     "kind:test-framework": 9,
+    "maturity:M3": 1,
     "kind:test-runner": 1
   },
   "entries": [
@@ -31,7 +32,7 @@
         "QA-CI-013",
         "QA-CI-014"
       ],
-      "censusId": null,
+      "censusId": "ec.ci-cd-provider.azure-pipelines",
       "frameworkId": null,
       "domains": ["ci-integrity"],
       "blocksAxes": ["CI Integrity", "False-Green Detection"],
@@ -51,7 +52,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-CI-001",
         "digest": null,
-        "observedAt": "2026-09-28",
+        "observedAt": "2026-09-30",
         "authority": "provider-capability-contract"
       }
     },
@@ -71,7 +72,7 @@
         "QA-CI-013",
         "QA-CI-014"
       ],
-      "censusId": null,
+      "censusId": "ec.ci-cd-provider.github-actions",
       "frameworkId": null,
       "domains": ["ci-integrity"],
       "blocksAxes": ["CI Integrity", "False-Green Detection"],
@@ -91,7 +92,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-CI-001",
         "digest": null,
-        "observedAt": "2026-09-28",
+        "observedAt": "2026-09-30",
         "authority": "provider-capability-contract"
       }
     },
@@ -111,7 +112,7 @@
         "QA-CI-013",
         "QA-CI-014"
       ],
-      "censusId": null,
+      "censusId": "ec.ci-cd-provider.gitlab-ci",
       "frameworkId": null,
       "domains": ["ci-integrity"],
       "blocksAxes": ["CI Integrity", "False-Green Detection"],
@@ -131,7 +132,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-CI-001",
         "digest": null,
-        "observedAt": "2026-09-28",
+        "observedAt": "2026-09-30",
         "authority": "provider-capability-contract"
       }
     },
@@ -151,7 +152,7 @@
         "QA-CI-013",
         "QA-CI-014"
       ],
-      "censusId": null,
+      "censusId": "ec.ci-cd-provider.jenkins",
       "frameworkId": null,
       "domains": ["ci-integrity"],
       "blocksAxes": ["CI Integrity", "False-Green Detection"],
@@ -171,7 +172,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-CI-001",
         "digest": null,
-        "observedAt": "2026-09-28",
+        "observedAt": "2026-09-30",
         "authority": "provider-capability-contract"
       }
     },
@@ -181,7 +182,7 @@
       "kind": "domain",
       "owner": "qa-owner",
       "rules": [],
-      "censusId": null,
+      "censusId": "qa.domain.accessibility",
       "frameworkId": null,
       "domains": ["ACCESSIBILITY"],
       "blocksAxes": ["Domain Coverage"],
@@ -215,7 +216,7 @@
       "kind": "domain",
       "owner": "qa-owner",
       "rules": [],
-      "censusId": null,
+      "censusId": "qa.domain.api",
       "frameworkId": null,
       "domains": ["API"],
       "blocksAxes": ["Domain Coverage"],
@@ -249,7 +250,7 @@
       "kind": "domain",
       "owner": "qa-owner",
       "rules": [],
-      "censusId": null,
+      "censusId": "qa.domain.browser",
       "frameworkId": null,
       "domains": ["BROWSER"],
       "blocksAxes": ["Domain Coverage"],
@@ -283,7 +284,7 @@
       "kind": "domain",
       "owner": "qa-owner",
       "rules": [],
-      "censusId": null,
+      "censusId": "qa.domain.exploratory-observability",
       "frameworkId": null,
       "domains": ["EXPLORATORY-OBSERVABILITY"],
       "blocksAxes": ["Domain Coverage"],
@@ -317,7 +318,7 @@
       "kind": "domain",
       "owner": "qa-owner",
       "rules": [],
-      "censusId": null,
+      "censusId": "qa.domain.integration",
       "frameworkId": null,
       "domains": ["INTEGRATION"],
       "blocksAxes": ["Domain Coverage"],
@@ -351,7 +352,7 @@
       "kind": "domain",
       "owner": "qa-owner",
       "rules": [],
-      "censusId": null,
+      "censusId": "qa.domain.mobile",
       "frameworkId": null,
       "domains": ["MOBILE"],
       "blocksAxes": ["Domain Coverage"],
@@ -385,7 +386,7 @@
       "kind": "domain",
       "owner": "qa-owner",
       "rules": [],
-      "censusId": null,
+      "censusId": "qa.domain.performance",
       "frameworkId": null,
       "domains": ["PERFORMANCE"],
       "blocksAxes": ["Domain Coverage"],
@@ -419,7 +420,7 @@
       "kind": "domain",
       "owner": "qa-owner",
       "rules": [],
-      "censusId": null,
+      "censusId": "qa.domain.release-evidence",
       "frameworkId": null,
       "domains": ["RELEASE-EVIDENCE"],
       "blocksAxes": ["Domain Coverage"],
@@ -453,7 +454,7 @@
       "kind": "domain",
       "owner": "qa-owner",
       "rules": [],
-      "censusId": null,
+      "censusId": "qa.domain.requirements",
       "frameworkId": null,
       "domains": ["REQUIREMENTS"],
       "blocksAxes": ["Domain Coverage"],
@@ -487,7 +488,7 @@
       "kind": "domain",
       "owner": "qa-owner",
       "rules": [],
-      "censusId": null,
+      "censusId": "qa.domain.risk",
       "frameworkId": null,
       "domains": ["RISK"],
       "blocksAxes": ["Domain Coverage"],
@@ -521,7 +522,7 @@
       "kind": "domain",
       "owner": "qa-owner",
       "rules": [],
-      "censusId": null,
+      "censusId": "qa.domain.security",
       "frameworkId": null,
       "domains": ["SECURITY"],
       "blocksAxes": ["Domain Coverage"],
@@ -555,7 +556,7 @@
       "kind": "domain",
       "owner": "qa-owner",
       "rules": [],
-      "censusId": null,
+      "censusId": "qa.domain.test-design",
       "frameworkId": null,
       "domains": ["TEST-DESIGN"],
       "blocksAxes": ["Domain Coverage"],
@@ -589,7 +590,7 @@
       "kind": "domain",
       "owner": "qa-owner",
       "rules": [],
-      "censusId": null,
+      "censusId": "qa.domain.unit",
       "frameworkId": null,
       "domains": ["UNIT"],
       "blocksAxes": ["Domain Coverage"],
@@ -623,12 +624,13 @@
       "kind": "test-framework",
       "owner": "framework-inventory",
       "rules": ["QA-CYP-001", "QA-CYP-002", "QA-CYP-003"],
-      "censusId": null,
+      "censusId": "ec.test-framework.cypress",
       "frameworkId": "cypress",
       "domains": [],
       "blocksAxes": ["Discovery"],
       "observedUpstreamMajor": null,
-      "adapter": "src/adapters/typescript.ts",
+      "adapter": null,
+      "executorAdapters": ["src/adapters/typescript.ts"],
       "proven": "M2_IMPLEMENTED",
       "maturity": "M2_IMPLEMENTED",
       "nextLevelGap": {
@@ -643,7 +645,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-CYP-001",
         "digest": null,
-        "observedAt": "2026-09-28",
+        "observedAt": "2026-09-30",
         "authority": "framework-inventory"
       }
     },
@@ -662,18 +664,19 @@
         "QA-JV-106",
         "QA-JV-109"
       ],
-      "censusId": null,
+      "censusId": "ec.test-framework.jest",
       "frameworkId": "jest",
       "domains": [],
       "blocksAxes": ["Discovery"],
       "observedUpstreamMajor": null,
-      "adapter": "src/adapters/typescript.ts",
-      "proven": "M2_IMPLEMENTED",
+      "adapter": null,
+      "executorAdapters": ["src/adapters/typescript.ts"],
+      "proven": "M3_FIXTURE_VERIFIED",
       "maturity": "M2_IMPLEMENTED",
       "nextLevelGap": {
-        "target": "M3_FIXTURE_VERIFIED",
+        "target": "M4_CORPUS_VERIFIED",
         "missing": [
-          "positive + negative + boundary + adversarial fixtures pass deterministically in CI"
+          "real-repository corpus run, n >= 10 classified verdicts, Wilson CI recorded, precision AND recall measured, detectorRev locked"
         ],
         "owner": "framework-inventory",
         "revisitTrigger": "capability test.framework.jest gains evidence for its next level"
@@ -682,7 +685,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-JV-104",
         "digest": null,
-        "observedAt": "2026-09-28",
+        "observedAt": "2026-09-30",
         "authority": "framework-inventory"
       }
     },
@@ -699,14 +702,15 @@
         "QA-TEST-006",
         "QA-TEST-010"
       ],
-      "censusId": null,
+      "censusId": "ec.test-framework.junit",
       "frameworkId": "junit",
       "domains": [],
       "blocksAxes": ["Discovery"],
       "observedUpstreamMajor": null,
-      "adapter": "src/adapters/java.ts",
+      "adapter": null,
+      "executorAdapters": ["src/adapters/java.ts"],
       "proven": "M2_IMPLEMENTED",
-      "maturity": "M2_IMPLEMENTED",
+      "maturity": "M1_DECLARED",
       "nextLevelGap": {
         "target": "M3_FIXTURE_VERIFIED",
         "missing": [
@@ -719,7 +723,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-TEST-001",
         "digest": null,
-        "observedAt": "2026-09-28",
+        "observedAt": "2026-09-30",
         "authority": "framework-inventory"
       }
     },
@@ -736,14 +740,15 @@
         "QA-TEST-006",
         "QA-TEST-010"
       ],
-      "censusId": null,
+      "censusId": "ec.test-framework.nunit",
       "frameworkId": "nunit",
       "domains": [],
       "blocksAxes": ["Discovery"],
       "observedUpstreamMajor": null,
-      "adapter": "src/adapters/csharp.ts",
+      "adapter": null,
+      "executorAdapters": ["src/adapters/csharp.ts"],
       "proven": "M2_IMPLEMENTED",
-      "maturity": "M2_IMPLEMENTED",
+      "maturity": "M1_DECLARED",
       "nextLevelGap": {
         "target": "M3_FIXTURE_VERIFIED",
         "missing": [
@@ -756,7 +761,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-TEST-001",
         "digest": null,
-        "observedAt": "2026-09-28",
+        "observedAt": "2026-09-30",
         "authority": "framework-inventory"
       }
     },
@@ -789,18 +794,19 @@
         "QA-PW-146",
         "QA-PW-147"
       ],
-      "censusId": null,
+      "censusId": "ec.test-framework.playwright",
       "frameworkId": "playwright",
       "domains": [],
       "blocksAxes": ["Discovery"],
       "observedUpstreamMajor": null,
-      "adapter": "src/adapters/typescript.ts",
-      "proven": "M2_IMPLEMENTED",
-      "maturity": "M2_IMPLEMENTED",
+      "adapter": null,
+      "executorAdapters": ["src/adapters/typescript.ts"],
+      "proven": "M3_FIXTURE_VERIFIED",
+      "maturity": "M3_FIXTURE_VERIFIED",
       "nextLevelGap": {
-        "target": "M3_FIXTURE_VERIFIED",
+        "target": "M4_CORPUS_VERIFIED",
         "missing": [
-          "positive + negative + boundary + adversarial fixtures pass deterministically in CI"
+          "real-repository corpus run, n >= 10 classified verdicts, Wilson CI recorded, precision AND recall measured, detectorRev locked"
         ],
         "owner": "framework-inventory",
         "revisitTrigger": "capability test.framework.playwright gains evidence for its next level"
@@ -809,7 +815,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-PW-002",
         "digest": null,
-        "observedAt": "2026-09-28",
+        "observedAt": "2026-09-30",
         "authority": "framework-inventory"
       }
     },
@@ -836,18 +842,19 @@
         "QA-PY-108",
         "QA-PY-104"
       ],
-      "censusId": null,
+      "censusId": "ec.test-framework.pytest",
       "frameworkId": "pytest",
       "domains": [],
       "blocksAxes": ["Discovery"],
       "observedUpstreamMajor": null,
-      "adapter": "src/adapters/python.ts",
-      "proven": "M2_IMPLEMENTED",
+      "adapter": null,
+      "executorAdapters": ["src/adapters/python.ts"],
+      "proven": "M3_FIXTURE_VERIFIED",
       "maturity": "M2_IMPLEMENTED",
       "nextLevelGap": {
-        "target": "M3_FIXTURE_VERIFIED",
+        "target": "M4_CORPUS_VERIFIED",
         "missing": [
-          "positive + negative + boundary + adversarial fixtures pass deterministically in CI"
+          "real-repository corpus run, n >= 10 classified verdicts, Wilson CI recorded, precision AND recall measured, detectorRev locked"
         ],
         "owner": "framework-inventory",
         "revisitTrigger": "capability test.framework.pytest gains evidence for its next level"
@@ -856,7 +863,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-PY-003",
         "digest": null,
-        "observedAt": "2026-09-28",
+        "observedAt": "2026-09-30",
         "authority": "framework-inventory"
       }
     },
@@ -866,18 +873,24 @@
       "kind": "test-runner",
       "owner": "framework-inventory",
       "rules": [],
-      "censusId": null,
+      "censusId": "ec.test-framework.selenium",
       "frameworkId": "selenium",
       "domains": [],
       "blocksAxes": ["Discovery"],
       "observedUpstreamMajor": null,
-      "adapter": "src/adapters/typescript.ts",
-      "proven": "M2_IMPLEMENTED",
-      "maturity": "M2_IMPLEMENTED",
+      "adapter": null,
+      "executorAdapters": [
+        "src/adapters/typescript.ts",
+        "src/adapters/python.ts",
+        "src/adapters/java.ts"
+      ],
+      "proven": "M1_DECLARED",
+      "maturity": "M1_DECLARED",
       "nextLevelGap": {
-        "target": "M3_FIXTURE_VERIFIED",
+        "target": "M2_IMPLEMENTED",
         "missing": [
-          "positive + negative + boundary + adversarial fixtures pass deterministically in CI"
+          "implementation exists",
+          "unit tests for the implementation"
         ],
         "owner": "framework-inventory",
         "revisitTrigger": "capability test.framework.selenium gains evidence for its next level"
@@ -903,14 +916,15 @@
         "QA-TEST-006",
         "QA-TEST-010"
       ],
-      "censusId": null,
+      "censusId": "ec.test-framework.testng",
       "frameworkId": "testng",
       "domains": [],
       "blocksAxes": ["Discovery"],
       "observedUpstreamMajor": null,
-      "adapter": "src/adapters/java.ts",
+      "adapter": null,
+      "executorAdapters": ["src/adapters/java.ts"],
       "proven": "M2_IMPLEMENTED",
-      "maturity": "M2_IMPLEMENTED",
+      "maturity": "M1_DECLARED",
       "nextLevelGap": {
         "target": "M3_FIXTURE_VERIFIED",
         "missing": [
@@ -923,7 +937,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-TEST-001",
         "digest": null,
-        "observedAt": "2026-09-28",
+        "observedAt": "2026-09-30",
         "authority": "framework-inventory"
       }
     },
@@ -942,18 +956,19 @@
         "QA-JV-106",
         "QA-JV-109"
       ],
-      "censusId": null,
+      "censusId": "ec.test-framework.vitest",
       "frameworkId": "vitest",
       "domains": [],
       "blocksAxes": ["Discovery"],
       "observedUpstreamMajor": null,
-      "adapter": "src/adapters/typescript.ts",
-      "proven": "M2_IMPLEMENTED",
+      "adapter": null,
+      "executorAdapters": ["src/adapters/typescript.ts"],
+      "proven": "M3_FIXTURE_VERIFIED",
       "maturity": "M2_IMPLEMENTED",
       "nextLevelGap": {
-        "target": "M3_FIXTURE_VERIFIED",
+        "target": "M4_CORPUS_VERIFIED",
         "missing": [
-          "positive + negative + boundary + adversarial fixtures pass deterministically in CI"
+          "real-repository corpus run, n >= 10 classified verdicts, Wilson CI recorded, precision AND recall measured, detectorRev locked"
         ],
         "owner": "framework-inventory",
         "revisitTrigger": "capability test.framework.vitest gains evidence for its next level"
@@ -962,7 +977,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-JV-104",
         "digest": null,
-        "observedAt": "2026-09-28",
+        "observedAt": "2026-09-30",
         "authority": "framework-inventory"
       }
     },
@@ -979,14 +994,15 @@
         "QA-TEST-006",
         "QA-TEST-010"
       ],
-      "censusId": null,
+      "censusId": "ec.test-framework.xunit",
       "frameworkId": "xunit",
       "domains": [],
       "blocksAxes": ["Discovery"],
       "observedUpstreamMajor": null,
-      "adapter": "src/adapters/csharp.ts",
+      "adapter": null,
+      "executorAdapters": ["src/adapters/csharp.ts"],
       "proven": "M2_IMPLEMENTED",
-      "maturity": "M2_IMPLEMENTED",
+      "maturity": "M1_DECLARED",
       "nextLevelGap": {
         "target": "M3_FIXTURE_VERIFIED",
         "missing": [
@@ -999,7 +1015,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-TEST-001",
         "digest": null,
-        "observedAt": "2026-09-28",
+        "observedAt": "2026-09-30",
         "authority": "framework-inventory"
       }
     }

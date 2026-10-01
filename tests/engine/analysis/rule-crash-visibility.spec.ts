@@ -26,14 +26,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import {
-  runScan,
-  runScanCommand,
-  runBadgeCommand,
-  runBaselineCommand,
-  runDiffCommand,
-  parseArgs,
-} from "../../../src/cli.js";
+import { runScan, runScanCommand, parseArgs } from "../../../src/cli.js";
 import { typescriptAdapter } from "../../../src/adapters/typescript.js";
 import { pythonAdapter } from "../../../src/adapters/python.js";
 import { javaAdapter } from "../../../src/adapters/java.js";
@@ -221,23 +214,14 @@ describe("R-1: --record-milestones is an explicit opt-in", () => {
 });
 
 // ─── H-4 gap: every scanning subcommand refuses a bogus target ────────
-
-describe("H-4 (extended): target validation in all scanning commands", () => {
-  const cases: Array<[string, (argv: string[]) => Promise<number>]> = [
-    ["badge", (a) => runBadgeCommand(a, { out: () => {}, err: () => {} })],
-    [
-      "baseline",
-      (a) => runBaselineCommand(a, { out: () => {}, err: () => {} }),
-    ],
-    ["diff", (a) => runDiffCommand(a, { out: () => {}, err: () => {} })],
-  ];
-  for (const [name, run] of cases) {
-    it(`mjolnir ${name} on a nonexistent target exits 10`, async () => {
-      const missing = join(dir, "does-not-exist");
-      expect(await run([missing])).toBe(10);
-    });
-  }
-});
+//
+// The three cases this arm covered — `badge`, `baseline`, `diff` — are all
+// DELETE verbs in the v6 CLI collapse (plan §3), so the arm has no subjects
+// left. The invariant it protected is real and still worth a test: a scanning
+// command must refuse a nonexistent target with exit 10 rather than scanning
+// an empty directory and reporting success. What is worth testing now is a
+// command that still exists, and the arm is re-anchored in carve 1.6 when
+// `scan` and `explain` become the seven surviving public verbs.
 
 // ─── P-1: the per-file analysis budget ────────────────────────────────
 

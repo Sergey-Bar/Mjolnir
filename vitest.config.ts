@@ -24,7 +24,19 @@ export default defineConfig({
     // suites still declare their own explicit timeout on top of this
     // (`tests/cli/category-consistency.spec.ts` at 300s), which is the
     // convention for a test whose cost is known to be large.
-    testTimeout: 120_000,
+    //
+    // RAISED to 300s in 6.1, from 120s, and the reason is measured rather
+    // than felt. `tests/contract/gate-exit-codes.spec.ts` spawns a real gate
+    // process per case, so its cost is dominated by TypeScript compilation.
+    // Under the certify run's parallelism it exceeded 120s and produced two
+    // intermittent failures in `npm run certify` that had nothing to do with
+    // the tree. That is the worst kind of gate failure: the response to a gate
+    // that is red for no reason is to switch it off.
+    //
+    // 300s is roughly the cost of that suite in the slowest observed run, and
+    // the specific case carries its own 360s so a genuine regression — a gate
+    // that stops exiting — still fails rather than being absorbed.
+    testTimeout: 300_000,
     // Fixture files and the golden repo are DATA, not tests — they must
     // never be executed by our own runner.
     exclude: [
@@ -79,23 +91,8 @@ export default defineConfig({
         "src/playwright/selector-health-types.ts",
         "src/commands/analyze.ts",
         "src/commands/ci-adapter.ts",
-        "src/commands/dashboard.ts",
-        "src/commands/exec-report.ts",
         "src/commands/policy.ts",
-        "src/commands/trend.ts",
-        "src/bench/m48-scale-operating-model.ts",
         "src/change-intelligence.ts",
-        "src/engine/m38-challenge-contract.ts",
-        "src/engine/m40-language-expansion-contract.ts",
-        "src/engine/m43-system-of-systems.ts",
-        "src/engine/m44-historical-intelligence.ts",
-        "src/engine/m49-experience-parity-contract.ts",
-        "src/engine/runtime-evidence-graph.ts",
-        "src/frameworks/universal-pack-contract.ts",
-        "src/governance/m33-m34-contract.ts",
-        "src/mutation/failure-sensitivity.ts",
-        "src/plugins/sdk-contract.ts",
-        "src/qa/domain-model.ts",
         "src/ledger/m26-validators.ts",
         "src/release/version-surface.ts",
         "src/forensics/triage.ts",

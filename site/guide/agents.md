@@ -7,13 +7,13 @@ human maintainer runs, made mechanical. One rule governs the surface:
 ## The loop
 
 ```text
-1. mjolnir baseline        # once — the before-state, committed
+1. mjolnir scan --json     # the before-state, kept as an artifact
 2. (the agent fixes findings)
-3. mjolnir verify          # before/after digest — see below
+3. mjolnir ci verify          # before/after digest — see below
 4. repeat 2–3 until clean, then commit
 ```
 
-`mjolnir verify` prints the digest and exits with the frozen contract:
+`mjolnir ci verify` prints the digest and exits with the frozen contract:
 `0` clean · `1` new error findings · `2` partial scan or no baseline.
 A partial scan never masquerades as a clean verification — the agent
 re-runs or reports honestly, exactly like CI does.

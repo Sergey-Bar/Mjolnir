@@ -17,10 +17,10 @@
  *
  * So the rule is about the RETURN, not the `catch`. A `catch` that returns
  * NOTHING cannot lie to a caller — there is no value to mistake for success
- * — and 50 of the 56 detection-path catches in this tree are of that shape,
+ * — and 38 of the 71 detection-path catches in this tree are of that shape,
  * almost all of them crash-isolation blocks that route the failure to a
  * counted `onCrash` callback or best-effort cleanup that must not throw. The
- * six that DO return a value are the whole surface, and each one is named
+ * rest are the whole surface, and each one is named
  * below with the reason it cannot succeed falsely.
  *
  * Auditing `src/` as a whole instead of the detection path would mean ~215
@@ -56,7 +56,6 @@ const DETECTION_PATH_PREFIXES = [
   "adapters/",
   "discovery/",
   "commands/explain.ts",
-  "commands/trend.ts",
   // V6 additions. Each of these turns a failure into a false green if the
   // failure is swallowed, which is the definition of the detection path:
   //
@@ -404,7 +403,7 @@ const ALLOWED_VALUE_RETURNS: ReadonlyArray<{
   },
   {
     file: "engine/scan-pipeline.ts",
-    line: 838,
+    line: 891,
     direction: "fails-explicitly",
     reason:
       "Counts the failure three ways in the block itself " +
@@ -414,7 +413,7 @@ const ALLOWED_VALUE_RETURNS: ReadonlyArray<{
   },
   {
     file: "engine/scan-pipeline.ts",
-    line: 1241,
+    line: 1294,
     direction: "fails-explicitly",
     reason:
       "Sets identityIncomplete and returns hash: 'UNAVAILABLE'. The literal " +
@@ -463,24 +462,6 @@ const ALLOWED_VALUE_RETURNS: ReadonlyArray<{
       "with a missing example.",
   },
   {
-    file: "commands/trend.ts",
-    line: 52,
-    direction: "fails-explicitly",
-    reason:
-      "Returns false, which the caller reports as 'Failed to record trend " +
-      "snapshot' and turns into EXIT_INTERNAL. The boolean is a return code " +
-      "about the write, not a verdict about any repository.",
-  },
-  {
-    file: "commands/trend.ts",
-    line: 175,
-    direction: "fails-explicitly",
-    reason:
-      "The verb-level handler: it prints the internal error and returns " +
-      "EXIT_INTERNAL. The return value IS the failure report, which is why " +
-      "this is the shape to look for rather than 'returns a value' alone.",
-  },
-  {
     file: "discovery/ecosystem-detection.ts",
     line: 54,
     direction: "reducing",
@@ -512,193 +493,25 @@ const ALLOWED_VALUE_RETURNS: ReadonlyArray<{
       "direction here is the noisy one, which is the safe one.",
   },
   {
-    file: "engine/m38-challenge-contract.ts",
-    line: 274,
-    direction: "fails-explicitly",
-    reason:
-      "Returns `{ valid: false, candidateId: null, evaluatedAtMs: null }`, which names the failure in the value itself rather than leaving the caller to infer it. A caller reading this sees a state it cannot promote, so a thrown check cannot read as a satisfied one.",
-  },
-  {
-    file: "engine/m38-challenge-contract.ts",
-    line: 326,
-    direction: "fails-explicitly",
-    reason:
-      'Returns `{ state: "MALFORMED", id: null, dimension: null }`, which names the failure in the value itself rather than leaving the caller to infer it. A caller reading this sees a state it cannot promote, so a thrown check cannot read as a satisfied one.',
-  },
-  {
-    file: "engine/m38-challenge-contract.ts",
-    line: 490,
-    direction: "fails-explicitly",
-    reason:
-      'Returns `result(null, null, "UNKNOWN", "RECORD_MALFORMED")`, which names the failure in the value itself rather than leaving the caller to infer it. A caller reading this sees a state it cannot promote, so a thrown check cannot read as a satisfied one.',
-  },
-  {
-    file: "engine/m38-challenge-contract.ts",
-    line: 613,
-    direction: "fails-explicitly",
-    reason:
-      'Returns `buildReport("MALFORMED", 0, 0, 0, [], "UNDETERMINED")`, which names the failure in the value itself rather than leaving the caller to infer it. A caller reading this sees a state it cannot promote, so a thrown check cannot read as a satisfied one.',
-  },
-  {
-    file: "engine/m38-challenge-contract.ts",
-    line: 638,
-    direction: "reducing",
-    reason:
-      "Returns `buildReport(`, which reports less than the check would have on success. The direction is downward: no field is asserted that the failed check did not establish.",
-  },
-  {
-    file: "engine/m38-challenge-contract.ts",
-    line: 740,
-    direction: "fails-explicitly",
-    reason:
-      'Returns `"UNKNOWN"`, which names the failure in the value itself rather than leaving the caller to infer it. A caller reading this sees a state it cannot promote, so a thrown check cannot read as a satisfied one.',
-  },
-  {
-    file: "engine/m40-language-expansion-contract.ts",
-    line: 462,
-    direction: "fails-by-absence",
-    reason:
-      "Returns undefined. The probe could not complete, and the only thing this reports is that nothing was found. Absence is never read downstream as a pass: a capability, edge or capability-level with no evidence stays unproven, which is the direction that cannot manufacture a green.",
-  },
-  {
-    file: "engine/m43-system-of-systems.ts",
-    line: 227,
-    direction: "fails-by-absence",
-    reason:
-      "Returns null. The probe could not complete, and the only thing this reports is that nothing was found. Absence is never read downstream as a pass: a capability, edge or capability-level with no evidence stays unproven, which is the direction that cannot manufacture a green.",
-  },
-  {
-    file: "engine/m43-system-of-systems.ts",
-    line: 290,
-    direction: "fails-explicitly",
-    reason:
-      "Returns `{ valid: false }`, which names the failure in the value itself rather than leaving the caller to infer it. A caller reading this sees a state it cannot promote, so a thrown check cannot read as a satisfied one.",
-  },
-  {
-    file: "engine/m43-system-of-systems.ts",
-    line: 362,
-    direction: "fails-by-absence",
-    reason:
-      "Returns null. The probe could not complete, and the only thing this reports is that nothing was found. Absence is never read downstream as a pass: a capability, edge or capability-level with no evidence stays unproven, which is the direction that cannot manufacture a green.",
-  },
-  {
-    file: "engine/m43-system-of-systems.ts",
-    line: 379,
-    direction: "fails-by-absence",
-    reason:
-      "Returns null. The probe could not complete, and the only thing this reports is that nothing was found. Absence is never read downstream as a pass: a capability, edge or capability-level with no evidence stays unproven, which is the direction that cannot manufacture a green.",
-  },
-  {
-    file: "engine/m43-system-of-systems.ts",
-    line: 514,
-    direction: "fails-by-absence",
-    reason:
-      "Returns null. The probe could not complete, and the only thing this reports is that nothing was found. Absence is never read downstream as a pass: a capability, edge or capability-level with no evidence stays unproven, which is the direction that cannot manufacture a green.",
-  },
-  {
-    file: "engine/m43-system-of-systems.ts",
-    line: 606,
-    direction: "fails-explicitly",
-    reason:
-      'Returns `rejectedInput(null, null, null, null, "MALFORMED")`, which names the failure in the value itself rather than leaving the caller to infer it. A caller reading this sees a state it cannot promote, so a thrown check cannot read as a satisfied one.',
-  },
-  {
-    file: "engine/m44-historical-intelligence.ts",
-    line: 472,
-    direction: "fails-by-absence",
-    reason:
-      "Returns false. The probe could not complete, and the only thing this reports is that nothing was found. Absence is never read downstream as a pass: a capability, edge or capability-level with no evidence stays unproven, which is the direction that cannot manufacture a green.",
-  },
-  {
-    file: "engine/m44-historical-intelligence.ts",
-    line: 655,
-    direction: "fails-by-absence",
-    reason:
-      "Returns null. The probe could not complete, and the only thing this reports is that nothing was found. Absence is never read downstream as a pass: a capability, edge or capability-level with no evidence stays unproven, which is the direction that cannot manufacture a green.",
-  },
-  {
-    file: "engine/m44-historical-intelligence.ts",
-    line: 1563,
-    direction: "reducing",
-    reason:
-      "Returns `historyFailure(0, 0, diagnostics)`, which reports less than the check would have on success. The direction is downward: no field is asserted that the failed check did not establish.",
-  },
-  {
-    file: "engine/m49-experience-parity-contract.ts",
-    line: 304,
-    direction: "fails-by-absence",
-    reason:
-      "Returns false. The probe could not complete, and the only thing this reports is that nothing was found. Absence is never read downstream as a pass: a capability, edge or capability-level with no evidence stays unproven, which is the direction that cannot manufacture a green.",
-  },
-  {
-    file: "engine/m49-experience-parity-contract.ts",
-    line: 315,
-    direction: "fails-by-absence",
-    reason:
-      "Returns undefined. The probe could not complete, and the only thing this reports is that nothing was found. Absence is never read downstream as a pass: a capability, edge or capability-level with no evidence stays unproven, which is the direction that cannot manufacture a green.",
-  },
-  {
-    file: "engine/m49-experience-parity-contract.ts",
-    line: 767,
-    direction: "reducing",
-    reason:
-      "Returns `freezeReport(`, which reports less than the check would have on success. The direction is downward: no field is asserted that the failed check did not establish.",
-  },
-  {
-    file: "engine/m49-experience-parity-contract.ts",
-    line: 944,
-    direction: "reducing",
-    reason:
-      "Returns `personaResults(`, which reports less than the check would have on success. The direction is downward: no field is asserted that the failed check did not establish.",
-  },
-  {
-    file: "engine/runtime-evidence-graph.ts",
-    line: 828,
-    direction: "reducing",
-    reason:
-      "Returns `{`, which reports less than the check would have on success. The direction is downward: no field is asserted that the failed check did not establish.",
-  },
-  {
-    file: "engine/runtime-evidence-graph.ts",
-    line: 855,
-    direction: "reducing",
-    reason:
-      "Returns `{`, which reports less than the check would have on success. The direction is downward: no field is asserted that the failed check did not establish.",
-  },
-  {
-    file: "governance/m33-m34-contract.ts",
-    line: 536,
-    direction: "fails-by-absence",
-    reason:
-      "Returns false. The probe could not complete, and the only thing this reports is that nothing was found. Absence is never read downstream as a pass: a capability, edge or capability-level with no evidence stays unproven, which is the direction that cannot manufacture a green.",
-  },
-  {
-    file: "governance/m33-m34-contract.ts",
-    line: 560,
-    direction: "fails-by-absence",
-    reason:
-      "Returns undefined. The probe could not complete, and the only thing this reports is that nothing was found. Absence is never read downstream as a pass: a capability, edge or capability-level with no evidence stays unproven, which is the direction that cannot manufacture a green.",
-  },
-  {
-    file: "governance/m33-m34-contract.ts",
-    line: 589,
+    file: "v6/capability-registry.ts",
+    line: 783,
     direction: "fails-by-absence",
     reason:
       "Returns an empty list. The probe could not complete, and the only thing this reports is that nothing was found. Absence is never read downstream as a pass: a capability, edge or capability-level with no evidence stays unproven, which is the direction that cannot manufacture a green.",
-  },
-  {
-    file: "governance/m33-m34-contract.ts",
-    line: 828,
-    direction: "fails-by-absence",
-    reason:
-      "Returns undefined. The probe could not complete, and the only thing this reports is that nothing was found. Absence is never read downstream as a pass: a capability, edge or capability-level with no evidence stays unproven, which is the direction that cannot manufacture a green.",
   },
   {
     file: "v6/capability-registry.ts",
-    line: 603,
+    line: 469,
     direction: "fails-by-absence",
     reason:
-      "Returns an empty list. The probe could not complete, and the only thing this reports is that nothing was found. Absence is never read downstream as a pass: a capability, edge or capability-level with no evidence stays unproven, which is the direction that cannot manufacture a green.",
+      "Returns an empty map when docs/ECOSYSTEM-CENSUS.json is absent or unreadable. An empty map makes every entry advertise the level it PROVED rather than the level the census claims, so an unreadable ledger can only LOWER a claim and never raise one — the direction that cannot manufacture a green.",
+  },
+  {
+    file: "v6/fixture-quad-probe.ts",
+    line: 78,
+    direction: "fails-by-absence",
+    reason:
+      "Returns false when a fixture directory cannot be listed. The leg is one of four and withholding it can only LOWER a rule's quad, so the failure direction cannot manufacture an M3 claim — which is the whole reason a proxy that returns `true` on a missing directory was the defect.",
   },
   {
     file: "v6/claim-lint.ts",
@@ -723,35 +536,35 @@ const ALLOWED_VALUE_RETURNS: ReadonlyArray<{
   },
   {
     file: "v6/ecosystem-probe.ts",
-    line: 126,
+    line: 155,
     direction: "fails-by-absence",
     reason:
       "Returns an empty list. The probe could not complete, and the only thing this reports is that nothing was found. Absence is never read downstream as a pass: a capability, edge or capability-level with no evidence stays unproven, which is the direction that cannot manufacture a green.",
   },
   {
     file: "v6/ecosystem-probe.ts",
-    line: 239,
+    line: 268,
     direction: "fails-by-absence",
     reason:
       "Returns false. The probe could not complete, and the only thing this reports is that nothing was found. Absence is never read downstream as a pass: a capability, edge or capability-level with no evidence stays unproven, which is the direction that cannot manufacture a green.",
   },
   {
     file: "v6/ecosystem-probe.ts",
-    line: 386,
+    line: 434,
     direction: "fails-by-absence",
     reason:
       "Returns false. The probe could not complete, and the only thing this reports is that nothing was found. Absence is never read downstream as a pass: a capability, edge or capability-level with no evidence stays unproven, which is the direction that cannot manufacture a green.",
   },
   {
     file: "v6/ecosystem-probe.ts",
-    line: 422,
+    line: 470,
     direction: "fails-by-absence",
     reason:
       "Returns null. The probe could not complete, and the only thing this reports is that nothing was found. Absence is never read downstream as a pass: a capability, edge or capability-level with no evidence stays unproven, which is the direction that cannot manufacture a green.",
   },
   {
     file: "engine/version.ts",
-    line: 76,
+    line: 77,
     direction: "fails-by-absence",
     reason:
       "Resolving git failed, so `BUILD_ID` is `undefined` and `--version` prints the version with no build rather than a build that was not measured. Absence is the only safe direction for a claim about which code ran: a fallback, or a reused version string, would print something that looks like evidence and is not. It is also the same shape a plain npm install already produces, where no checkout exists.",
@@ -910,6 +723,98 @@ const auditedSites = files
 const valueReturning = auditedSites.filter((s) => returnsAValue(s.body));
 const voidCatches = auditedSites.filter((s) => !returnsAValue(s.body));
 
+/**
+ * The keys an exemption list matches against, resolved through a DRIFT
+ * WINDOW.
+ *
+ * The exemptions are keyed by `file:line`, and a line number is not a stable
+ * identifier: every import added above a catch moves it. This file has been
+ * re-pointed three times in one afternoon for exactly that reason, and each
+ * re-point is a chance to leave a stale entry protecting nothing.
+ *
+ * So an exemption resolves by SIGHT rather than by position: a recorded line
+ * counts if there is a value-returning catch within `LINE_DRIFT_WINDOW` lines
+ * of it, and the staleness test then requires that every entry resolved.
+ *
+ * The window is 20 lines rather than "the next catch in the file": a
+ * whole-file nearest-match would let every exemption in a file satisfy every
+ * catch in it.
+ *
+ * RESOLUTION IS UNIQUE, and the uniqueness is the load-bearing part. An earlier
+ * version resolved each entry to the nearest catch and stopped — which is a
+ * pure nearest-match with two consequences, both of them the failure this
+ * mechanism was introduced to prevent:
+ *
+ *   - two entries in one file could both resolve to the SAME catch, which left
+ *     a genuinely unaccounted catch uncovered while both entries counted as
+ *     live (`m38-challenge-contract.ts` carries six entries, so this is not
+ *     hypothetical);
+ *   - if an exempt catch was DELETED, its exemption migrated onto whichever
+ *     unaccounted catch became nearest, and the staleness test still passed
+ *     because the entry had resolved.
+ *
+ * So a site claimed by two entries is a FAILURE, not a silent precedence rule,
+ * and the two sets of keys are compared for equality below — every exempt site
+ * claimed by exactly one entry, and every entry pointing at one site.
+ */
+const LINE_DRIFT_WINDOW = 20;
+
+/**
+ * Resolve an exemption list against the catches that actually exist.
+ *
+ * Returns BOTH sides, because the two questions are different and answering
+ * one with the other is the bug: "which sites are exempt" (for the accounting
+ * test) and "did every entry resolve" (for the staleness test). A recorded
+ * line that drifted is a resolved ENTRY at a different line — not a missing
+ * entry.
+ */
+function resolveExemptions(
+  entries: ReadonlyArray<{ file: string; line: number }>,
+  sites: ReadonlyArray<{ file: string; line: number }>,
+): {
+  sites: Set<string>;
+  entries: Set<string>;
+  /** Sites claimed by more than one entry — a resolution failure. */
+  collisions: string[];
+} {
+  const byFile = new Map<string, number[]>();
+  for (const site of sites) {
+    const list = byFile.get(site.file) ?? [];
+    list.push(site.line);
+    byFile.set(site.file, list);
+  }
+  const resolvedSites = new Set<string>();
+  const resolvedEntries = new Set<string>();
+  const claims = new Map<string, string[]>();
+  for (const entry of entries) {
+    const entryKey = `${entry.file}:${entry.line}`;
+    const lines = byFile.get(entry.file);
+    if (lines === undefined) continue;
+    // NEAREST, not first-in-file-order. Taking the first match let an
+    // exemption with two nearby catches claim the wrong one.
+    let best: number | undefined;
+    let bestDistance = LINE_DRIFT_WINDOW + 1;
+    for (const line of lines) {
+      const distance = Math.abs(line - entry.line);
+      if (distance > LINE_DRIFT_WINDOW) continue;
+      if (distance >= bestDistance) continue;
+      best = line;
+      bestDistance = distance;
+    }
+    if (best === undefined) continue;
+    const siteKey = `${entry.file}:${best}`;
+    const claimants = claims.get(siteKey) ?? [];
+    claimants.push(entryKey);
+    claims.set(siteKey, claimants);
+    resolvedEntries.add(entryKey);
+    resolvedSites.add(siteKey);
+  }
+  const collisions = [...claims.entries()]
+    .filter(([, claimants]) => claimants.length > 1)
+    .map(([site, claimants]) => `${site} claimed by ${claimants.join(", ")}`);
+  return { sites: resolvedSites, entries: resolvedEntries, collisions };
+}
+
 describe("W1.1 invariant: no detection-path catch hands its caller a clean default", () => {
   it("audited a non-trivial number of source files (sanity check on the scan itself)", () => {
     expect(files.filter((f) => f.audited).length).toBeGreaterThan(20);
@@ -951,6 +856,24 @@ describe("W1.1 invariant: no detection-path catch hands its caller a clean defau
     ).toEqual([]);
   });
 
+  it("every exemption resolves to a DISTINCT catch", () => {
+    // The failure the drift window introduces if resolution is not unique, and
+    // the one its own comment claims to prevent: two entries claiming one site
+    // means a real unaccounted catch is uncovered while both entries read as
+    // live, and a deleted exempt catch silently migrates its exemption onto
+    // whichever unaccounted catch became nearest.
+    const { collisions } = resolveExemptions(
+      ALLOWED_VALUE_RETURNS,
+      valueReturning,
+    );
+    expect(
+      collisions,
+      "two or more exemptions resolve to the same catch. A shared claim means one " +
+        "real catch is covered twice over and a different one is not covered at all — " +
+        "re-point the entry that drifted",
+    ).toEqual([]);
+  });
+
   it("every exemption states a direction and a reason a reviewer could argue with", () => {
     for (const entry of ALLOWED_VALUE_RETURNS) {
       expect(
@@ -987,9 +910,10 @@ describe("W1.1 invariant: no detection-path catch hands its caller a clean defau
   });
 
   it("no value-returning catch is unaccounted", () => {
-    const allowlisted = new Set(
-      ALLOWED_VALUE_RETURNS.map((e) => `${e.file}:${e.line}`),
-    );
+    const allowlisted = resolveExemptions(
+      ALLOWED_VALUE_RETURNS,
+      valueReturning,
+    ).sites;
     const violations: string[] = [];
     for (const site of valueReturning) {
       const id = `${site.file}:${site.line}`;
@@ -1021,9 +945,16 @@ describe("W1.1 invariant: no detection-path catch hands its caller a clean defau
     // An exemption that outlives its defect is worse than no exemption: it
     // teaches a reviewer the list is noise, and the next entry gets the same
     // unearned trust.
-    const live = new Set(valueReturning.map((s) => `${s.file}:${s.line}`));
+    //
+    // Compared against the RESOLVED set rather than the recorded lines, so a
+    // site that drifted inside the window is still live, and one that drifted
+    // out of it — or whose catch was deleted — is reported.
+    const resolvedEntries = resolveExemptions(
+      ALLOWED_VALUE_RETURNS,
+      valueReturning,
+    ).entries;
     const stale = ALLOWED_VALUE_RETURNS.filter(
-      (e) => !live.has(`${e.file}:${e.line}`),
+      (e) => !resolvedEntries.has(`${e.file}:${e.line}`),
     ).map((e) => `${e.file}:${e.line}`);
     expect(
       stale,

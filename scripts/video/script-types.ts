@@ -44,7 +44,7 @@ export interface Beat {
 export interface VideoScript {
   schemaVersion: 1;
   /** Which video this drives. */
-  id: "demo" | "tour";
+  id: "demo";
   /**
    * The only normalization applied to captured output, spelled out so a
    * reader can tell exactly how far the recording is from raw stdout.

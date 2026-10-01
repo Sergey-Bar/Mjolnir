@@ -57,9 +57,6 @@ export function posterPath(id: VideoScript["id"]): string {
  * reproducible provenance, the media contract checked the render output
  * instead of the file readers download, and the two could disagree
  * indefinitely without anything noticing. They had.
- *
- * The tour is not published: it is a longer walkthrough kept as a CI
- * artifact, not a committed asset.
  */
 export function publishedVideoPath(): string {
   return join(SCRIPT_DIR, "mjolnir-demo.mp4");
@@ -219,7 +216,7 @@ async function main(): Promise<void> {
   const argv = process.argv.slice(2);
   const only = argv.filter((a) => !a.startsWith("-"));
   const ids: Array<VideoScript["id"]> =
-    only.length > 0 ? (only as Array<VideoScript["id"]>) : ["demo", "tour"];
+    only.length > 0 ? (only as Array<VideoScript["id"]>) : ["demo"];
 
   // --preview[=1,2,3] screenshots frames instead of encoding a video.
   const preview = argv.find((a) => a.startsWith("--preview"));
@@ -232,10 +229,22 @@ async function main(): Promise<void> {
 
   for (const id of ids) await renderVideo(id);
 
-  // Publishing is part of rendering, not a separate thing to remember.
-  if (ids.includes("demo")) {
+  // Publishing is EXPLICIT, and was not until the demo-video workflow started
+  // offering a render that overwrote two committed files. `npm run
+  // docs:video:render` passes --publish, so the documented way to regenerate
+  // the shipped asset is unchanged; a bare `npx tsx scripts/video/render.ts`
+  // and the workflow both leave `assets/video/mjolnir-demo.mp4` alone, because
+  // a manual dispatch that silently replaces a binary a reader downloads is a
+  // way to ship pixels nobody reviewed.
+  if (argv.includes("--publish") && ids.includes("demo")) {
     publishDemo();
     console.log(`  demo: published -> ${publishedVideoPath()}`);
+  } else if (ids.includes("demo")) {
+    console.log(
+      "  demo: rendered to " +
+        videoPath("demo") +
+        " — not published. Pass --publish to copy it over the committed asset.",
+    );
   }
 }
 

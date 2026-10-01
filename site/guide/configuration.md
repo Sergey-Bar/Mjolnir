@@ -35,5 +35,5 @@ never changes detection semantics.
   (blunter messages), `--max-duration <sec>` (bounded partial scan).
 - Rule suppression and deprecation lifecycle: [Rule lifecycle](/reference/rule-lifecycle).
 
-`ignore` entries also power the standalone `mjolnir suppressions` command,
+`ignore` entries also power the standalone `mjolnir scan --suppressions` command,
 which lists what's currently suppressed and when each entry expires.

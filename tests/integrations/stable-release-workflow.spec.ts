@@ -152,7 +152,7 @@ describe("stable release workflow", () => {
       ?.map((step) => step.run ?? "")
       .join("\n");
     expect(run).toContain(
-      'npm run changelog:check -- --expect-version "$VERSION"',
+      'npm run check-version -- --expect-version "$VERSION"',
     );
     expect(run).toContain('git diff --quiet "$BASE_REF" HEAD -- src/rules');
     expect(run).toContain("--rules-touched");

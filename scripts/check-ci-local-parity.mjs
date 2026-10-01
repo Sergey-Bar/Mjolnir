@@ -11,7 +11,7 @@ const localRequired = [
   "npm run build",
   "npm run typecheck",
   "npm run lint",
-  "npm run version:check",
+  "npm run check-version",
   "npm run test:property",
   "npm run test:fuzz",
   "npm run coverage:ratchet",
@@ -19,7 +19,7 @@ const localRequired = [
   "npm run brand:doctor",
   "npm run brand:doctor:selftest",
   "npm run brand:fonts:check",
-  "npm run site:doctor",
+  "npm run doctor",
   "npm run ci-local:parity",
 ];
 
@@ -36,7 +36,7 @@ const remoteRequired = [
   "npm run build",
   "npm run typecheck",
   "npm run lint",
-  "npm run version:check",
+  "npm run check-version",
   "npm run brand:doctor",
   "npm run brand:doctor:selftest",
   "npm run brand:fonts:check",
@@ -44,16 +44,25 @@ const remoteRequired = [
   "npm run test:coverage:ci",
   "npm run coverage:ratchet",
   "npm run test:property",
-  "npm run site:doctor",
+  "npm run doctor",
 ];
 
+/**
+ * What `certify` has to run.
+ *
+ * The coverage run, not the bare suite. `npm run test` is a subset of
+ * `npm run test:coverage` — the same vitest invocation with an instrumenter
+ * attached — so requiring coverage is the stronger claim, and the plan asks for
+ * coverage on the pre-push path precisely because a gate that cannot see
+ * uncovered lines cannot tell a shrinking floor from a shrinking test.
+ */
 const certifyRequired = [
-  "npm run version:check",
-  "npm run test",
+  "npm run check-version",
+  "npm run test:coverage",
   "npx vitest run tests/contract/",
 ];
 const certifyCiRequired = [
-  "npm run version:check",
+  "npm run check-version",
   "npm run test:coverage:ci",
   "npx vitest run tests/contract/",
 ];
@@ -205,19 +214,100 @@ function checkCommand(workflow, command, label) {
 const pkg = JSON.parse(readFileSync(join(ROOT, "package.json"), "utf8"));
 const scripts = pkg.scripts ?? {};
 const ciLocal = scripts["ci-local"] ?? "";
-const certify = scripts.certify ?? "";
 const certifyCi = scripts["certify:ci"] ?? "";
 
+/**
+ * Every command a script reaches, following `npm run X` chains.
+ *
+ * The flat `chain.includes(command)` this replaced read a script's own text,
+ * so grouping the chain into phases made every member look absent —
+ * `certify` was reported as missing `npm run build` on the day it was
+ * reorganised into `certify:claims` + `certify:integrity`. The same shape
+ * `check-gate-tiers.mjs` has solved with a transitive closure, and the same
+ * reason: a claim about what a chain runs is only true if you follow the
+ * chain.
+ *
+ * Memoised, with a PATH-SCOPED visited set, so a cycle in package.json is a stop
+ * rather than a hang — and a cycle is a defect worth reporting, so it is.
+ */
+const resolvedCache = new Map();
+function resolvedChain(name, seen = []) {
+  if (resolvedCache.has(name)) return resolvedCache.get(name);
+  if (seen.includes(name)) {
+    failures.push(`scripts.${name} is part of an npm-script cycle`);
+    return new Set();
+  }
+  const body = scripts[name] ?? "";
+  const out = new Set();
+  for (const ref of [
+    // Both spellings, because the chain holds `npm run X` names AND the raw
+    // commands a requirement list is written with — `npx vitest run
+    // tests/contract/` is in the chain verbatim and is not an npm script.
+    ...[...body.matchAll(/npm run ([\w:.-]+)/g)].map((m) => m[1]),
+    ...body
+      .split("&&")
+      .map((part) => part.trim())
+      .filter(Boolean),
+  ]) {
+    // A SELF-REFERENCE is not a cycle. `build` ends with
+    // `npm run build --workspaces --if-present`, which npm resolves against
+    // the workspace packages rather than the root — and a regex cannot see the
+    // flags, so the first version reported "scripts.build is part of an
+    // npm-script cycle" about a package.json with no cycle in it.
+    if (ref === name || ref.startsWith("npm run ")) {
+      out.add(ref);
+      continue;
+    }
+    if (out.has(ref)) continue;
+    out.add(ref);
+    for (const deep of resolvedChain(ref, [...seen, name])) out.add(deep);
+  }
+  resolvedCache.set(name, out);
+  return out;
+}
+
+const ciLocalChain = resolvedChain("ci-local");
+const certifyChain = resolvedChain("certify");
+const certifyCiChain = resolvedChain("certify:ci");
+
+/**
+ * A requirement to a name the chain walk can match.
+ *
+ * The lists are written as COMMANDS, because that is what a reader checks
+ * them against in package.json. Two of them are not `npm run` at all — the
+ * contract suite is invoked as `npx vitest run tests/contract/`, and a walk
+ * that collects `npm run X` names cannot see it. So a requirement is reduced to
+ * the token the walk knows how to produce: the script name for `npm run Y`, and
+ * a normalised form of the raw command for anything else.
+ *
+ * Without this, the first version of the resolver reported
+ * `ci-local: missing npm run build` about a chain that plainly contained
+ * `build` — and would then have reported the contract suite missing for the
+ * same reason, one level down.
+ */
+function requirementKey(command) {
+  const run = /^npm run ([\w:.-]+)/.exec(command);
+  if (run) return run[1];
+  // Non-`npm run` commands are compared by their whitespace-normalised text,
+  // because the chain holds them verbatim and normalising both sides keeps a
+  // line-wrap from deciding whether a requirement is met.
+  return command.replace(/\s+/g, " ").trim();
+}
+
 for (const command of localRequired) {
-  if (!ciLocal.includes(command) && !certifyCi.includes(command)) {
+  if (
+    !ciLocalChain.has(requirementKey(command)) &&
+    !certifyCiChain.has(requirementKey(command))
+  ) {
     failures.push(`ci-local chain: missing ${command}`);
   }
 }
 for (const command of certifyRequired) {
-  if (!certify.includes(command)) failures.push(`certify: missing ${command}`);
+  if (!certifyChain.has(requirementKey(command)))
+    failures.push(`certify: missing ${command}`);
 }
 for (const command of certifyCiRequired) {
-  if (!certifyCi.includes(command))
+  if (!certifyCiChain.has(requirementKey(command)))
     failures.push(`certify:ci: missing ${command}`);
 }
 if (!ciLocal.includes("npm run certify:ci")) {

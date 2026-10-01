@@ -78,13 +78,23 @@ const FIXTURE_FILE_PATTERN = /\.(?:ts|tsx|js|mjs|cjs|py|java|cs|ya?ml|json)$/;
  */
 function recallEvidence(ruleId: string): {
   recall: "UNCLASSIFIED";
-  recallFixtures: number;
+  /**
+   * Files under `tests/corpus/positive-fixtures/<ruleId>/`.
+   *
+   * Named for what it counts. The first version called it `recallFixtures`,
+   * and a field called "recall fixtures" reads as evidence ABOUT recall while
+   * being a directory listing — the artifact counting its own input tree.
+   * `recall` itself stays `"UNCLASSIFIED"` because computing one is a corpus
+   * run, and a value derived from the mere existence of files would be
+   * fabricated evidence.
+   */
+  positiveFixtureCount: number;
   recallStatus: "must-fire-fixtures-present" | "no-must-fire-fixture-directory";
 } {
   const dir = join(POSITIVE_FIXTURES_ROOT, ruleId);
   return {
     recall: "UNCLASSIFIED",
-    recallFixtures: countFixtureFiles(dir),
+    positiveFixtureCount: countFixtureFiles(dir),
     recallStatus: existsSync(dir)
       ? "must-fire-fixtures-present"
       : "no-must-fire-fixture-directory",
@@ -327,14 +337,21 @@ export interface CapabilityRow {
   ciHigh: number | "UNCLASSIFIED";
   recall: "UNCLASSIFIED";
   /**
-   * Must-fire fixture count from `tests/corpus/positive-fixtures/<id>/`.
+   * Files under `tests/corpus/positive-fixtures/<id>/`.
    *
    * 6.0. The precondition for B5: recall is measurable only against a set of
    * cases that must fire, and the tree already declares that set. A count is
    * a fact about the repository; a recall number is a measurement, and this
    * is not one.
+   *
+   * Named for what it counts. The first version called it `recallFixtures`,
+   * and a field called "recall fixtures" reads as evidence ABOUT recall while
+   * being a directory listing — the artifact counting its own input tree.
+   * `recall` itself stays `"UNCLASSIFIED"` because computing one is a corpus
+   * run, and a value derived from the mere existence of files would be
+   * fabricated evidence.
    */
-  recallFixtures: number;
+  positiveFixtureCount: number;
   /**
    * Whether a per-rule must-fire fixture directory exists.
    *
@@ -429,7 +446,7 @@ export function buildRows(
         // each rule over its fixtures and counting the misses, which is a
         // corpus run, and inventing a value from the mere existence of a
         // directory would be exactly the fabricated evidence this release
-        // exists to remove. `recallFixtures` and `recallStatus` are facts
+        // exists to remove. `positiveFixtureCount` and `recallStatus` are facts
         // about the tree; `recall` stays unmeasured until something runs.
         //
         // The label is "no per-rule directory", NOT "no fixtures": the CI

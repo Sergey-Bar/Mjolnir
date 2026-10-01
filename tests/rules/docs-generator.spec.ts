@@ -229,7 +229,7 @@ describe("renderRuleDocMd — content contract", () => {
     const data = collectRuleDocData(rule, FIXTURES_ROOT);
     const md = renderRuleDocMd(data);
     expect(md).toContain(`mjolnir explain ${rule.id}`);
-    expect(md).toContain("mjolnir rules --md");
+    expect(md).toContain("mjolnir explain --list --md");
   });
 });
 

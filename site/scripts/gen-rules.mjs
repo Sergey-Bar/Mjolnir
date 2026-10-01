@@ -1,7 +1,7 @@
 /**
  * Generates the site's rule catalog from `docs/rules/*.md`.
  *
- * The chain of truth is: rule registry -> `mjolnir rules` doc generator ->
+ * The chain of truth is: rule registry -> `mjolnir explain --list` doc generator ->
  * `docs/rules/` (committed) -> this script -> `site/rules/` (build output,
  * gitignored). Nothing here is hand-maintained, so the catalog cannot
  * drift from the registry the way a copied table would.
@@ -102,7 +102,7 @@ export function siteBody(id, md) {
   // 1. Drop the generator preamble - it is a note to repo readers.
   out = out.replace(/^_Generated from the live rule registry.*_\n\n?/m, "");
 
-  // 2. Drop the CLI-only footer ("Full catalog: `mjolnir rules --md` ...").
+  // 2. Drop the CLI-only footer ("Full catalog: `mjolnir explain --list --md` ...").
   out = out.replace(/\n+---\n+Full catalog:.*$/s, "\n");
 
   // 3. Cross-doc links.
@@ -279,7 +279,7 @@ pattern it correctly leaves alone.
 
 ::: tip Generated, not written
 This catalog is generated from the live rule registry — it cannot drift.
-Get the same data locally with \`mjolnir rules --md\`, or one rule at a
+Get the same data locally with \`mjolnir explain --list --md\`, or one rule at a
 time with \`mjolnir explain <RULE-ID>\`.
 :::
 `;

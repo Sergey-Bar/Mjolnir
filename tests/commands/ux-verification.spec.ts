@@ -3,23 +3,13 @@
  */
 
 import { describe, expect, it, vi } from "vitest";
-import {
-  existsSync,
-  mkdirSync,
-  readFileSync,
-  writeFileSync,
-  rmSync,
-} from "node:fs";
+import { existsSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
-import { runExecReportCommand } from "../../src/commands/exec-report.js";
 import { runPolicyCommand } from "../../src/commands/policy.js";
-import { runTrendCommand, loadTrend } from "../../src/commands/trend.js";
-import { runCiAdapterCommand } from "../../src/commands/ci-adapter.js";
 import { runAnalyzeCommand } from "../../src/commands/analyze.js";
 import { EXIT_CLEAN, EXIT_USAGE, EXIT_INTERNAL } from "../../src/exit-codes.js";
-import { ENGINE_VERSION } from "../../src/engine/version.js";
 
 const out = vi.fn();
 const err = vi.fn();
@@ -33,21 +23,6 @@ function makeTempDir(): string {
   mkdirSync(join(dir, "test-results"), { recursive: true });
   return dir;
 }
-
-describe("EXEC-REPORT (QM-3)", () => {
-  it("produces structured executive output", async () => {
-    const dir = makeTempDir();
-    writeFileSync(join(dir, "results.json"), JSON.stringify({ suites: [] }));
-    const code = await runExecReportCommand([dir], { out, err });
-    expect(code).toBe(EXIT_CLEAN);
-    rmSync(dir, { recursive: true, force: true });
-  });
-  it("exits usage on non-existent target", async () => {
-    const code = await runExecReportCommand(["/nonexistent"], { out, err });
-    expect(code).toBe(EXIT_USAGE);
-    expect(err).toHaveBeenCalled();
-  });
-});
 
 describe("POLICY (TL-2)", () => {
   it("init creates valid policy file", async () => {
@@ -91,81 +66,6 @@ describe("POLICY (TL-2)", () => {
   });
 });
 
-describe("TREND (QM-2)", () => {
-  it("record stores snapshots", async () => {
-    const dir = makeTempDir();
-    const code = await runTrendCommand(["record", dir], { out, err });
-    expect(code).toBe(EXIT_CLEAN);
-    const snapshots = loadTrend(dir, 10);
-    expect(snapshots.length).toBeGreaterThanOrEqual(1);
-    expect(snapshots[0]).toHaveProperty("score");
-    expect(snapshots[0]).toHaveProperty("timestamp");
-    rmSync(dir, { recursive: true, force: true });
-  });
-  it("show displays trend table", async () => {
-    const dir = makeTempDir();
-    await runTrendCommand(["record", dir], { out, err });
-    const code = await runTrendCommand(["show", dir], { out, err });
-    expect(code).toBe(EXIT_CLEAN);
-    rmSync(dir, { recursive: true, force: true });
-  });
-  it("diff compares snapshots", async () => {
-    const dir = makeTempDir();
-    await runTrendCommand(["record", dir], { out, err });
-    await runTrendCommand(["record", dir], { out, err });
-    const code = await runTrendCommand(["diff", dir], { out, err });
-    expect(code).toBe(EXIT_CLEAN);
-    rmSync(dir, { recursive: true, force: true });
-  });
-  it("shows helpful message when no data", async () => {
-    const dir = makeTempDir();
-    const code = await runTrendCommand(["show", dir], { out, err });
-    expect(code).toBe(EXIT_CLEAN);
-    expect(out).toHaveBeenCalledWith(expect.stringContaining("No trend data"));
-    rmSync(dir, { recursive: true, force: true });
-  });
-});
-
-describe("CI-ADAPTER (SDET-4)", () => {
-  it("generates GitHub workflow", () => {
-    const dir = makeTempDir();
-    const code = runCiAdapterCommand(["github", dir], { out, err });
-    expect(code).toBe(EXIT_CLEAN);
-    expect(out).toHaveBeenCalledWith(expect.stringContaining("qa-check.yml"));
-    const workflow = readFileSync(join(dir, "qa-check.yml"), "utf8");
-    expect(workflow).toContain(
-      "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
-    );
-    expect(workflow).toContain(`mjolnir-qa@${ENGINE_VERSION} --blocking error`);
-    expect(workflow).not.toContain("npx mjolnir scan");
-    rmSync(dir, { recursive: true, force: true });
-  });
-  it("generates GitLab CI config", () => {
-    const dir = makeTempDir();
-    const code = runCiAdapterCommand(["gitlab", dir], { out, err });
-    expect(code).toBe(EXIT_CLEAN);
-    const workflow = readFileSync(join(dir, ".gitlab-ci.yml"), "utf8");
-    expect(workflow).toContain(`mjolnir-qa@${ENGINE_VERSION} --blocking error`);
-    expect(workflow).not.toContain("npx mjolnir scan");
-    rmSync(dir, { recursive: true, force: true });
-  });
-  it("generates Jenkinsfile", () => {
-    const dir = makeTempDir();
-    const code = runCiAdapterCommand(["jenkins", dir], { out, err });
-    expect(code).toBe(EXIT_CLEAN);
-    const workflow = readFileSync(join(dir, "Jenkinsfile"), "utf8");
-    expect(workflow).toContain(`mjolnir-qa@${ENGINE_VERSION} --blocking error`);
-    expect(workflow).not.toContain("npx mjolnir scan");
-    rmSync(dir, { recursive: true, force: true });
-  });
-  it("exits usage for unknown adapter", () => {
-    const dir = makeTempDir();
-    const code = runCiAdapterCommand(["unknown", dir], { out, err });
-    expect(code).toBe(EXIT_USAGE);
-    rmSync(dir, { recursive: true, force: true });
-  });
-});
-
 describe("ANALYZE --cross-file (SDET-7)", () => {
   it("analyzes target directory", () => {
     const dir = makeTempDir();
@@ -188,12 +88,6 @@ describe("ANALYZE --cross-file (SDET-7)", () => {
 });
 
 describe("EDGE CASES", () => {
-  it("trend record handles empty dir", async () => {
-    const dir = makeTempDir();
-    const code = await runTrendCommand(["record", dir], { out, err });
-    expect(code).toBe(EXIT_CLEAN);
-    rmSync(dir, { recursive: true, force: true });
-  });
   it("analyze handles non-existent dir", () => {
     const code = runAnalyzeCommand(["/nonexistent"], { out, err });
     expect(code).toBe(EXIT_USAGE);

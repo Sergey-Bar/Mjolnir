@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "artifact": "claim-lint-report",
   "generatedBy": "npm run claims:prose",
-  "surfacesScanned": 404,
+  "surfacesScanned": 409,
   "findings": [
     {
       "location": "PRODUCT-ENHANCEMENT-ANALYSIS.md:55",

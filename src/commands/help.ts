@@ -37,134 +37,16 @@ export const HELP_ENTRIES: HelpEntry[] = [
     next: "mjolnir --scope changed",
   },
   {
-    verb: "pr-comment",
-    summary: "render a scoped PR comment (Markdown)",
-    usage: "mjolnir pr-comment [path] [--base <ref>]",
-    examples: [
-      "mjolnir pr-comment .",
-      "mjolnir pr-comment . --base origin/main",
-    ],
-  },
-  {
-    verb: "summary",
-    summary: "CI annotations + step summary from a saved --json report",
-    usage: "mjolnir summary [mjolnir.json] [--stdout] [--path-prefix <dir>]",
-    examples: [
-      "mjolnir --json > mjolnir.json && mjolnir summary mjolnir.json",
-      "mjolnir summary mjolnir.json --stdout",
-    ],
-  },
-  {
-    verb: "forensics",
-    summary: "runtime evidence from a real run: retries, flakes, durations",
-    usage:
-      "mjolnir forensics <test-results-dir-or-report-file> [--no-flaky-md]",
-    examples: ["mjolnir forensics test-results"],
-  },
-  {
-    verb: "triage",
-    summary: "flaky-triage proposal + TRIAGE.md meeting artifact",
-    usage: "mjolnir triage <test-results-dir-or-report-file> [--no-md]",
-    examples: ["mjolnir triage test-results --no-md"],
-  },
-  {
-    verb: "mutation",
-    summary:
-      "mutation-evidence reader: survived-mutant leaderboard + E1→E2 derivation",
-    usage: "mjolnir mutation <mutation-report> [--scan .]",
-    examples: [
-      "mjolnir mutation reports/mutation-report.json",
-      "mjolnir mutation reports/… --scan .",
-    ],
-  },
-  {
-    verb: "pw-report",
-    summary: "Playwright run summary (counts, true flakes, slowest tests)",
-    usage: "mjolnir pw-report <playwright-report.json | test-results-dir>",
-    examples: ["mjolnir pw-report test-results"],
-  },
-  {
-    verb: "doctor:playwright",
-    summary: "Playwright deep scan + Selector Health report",
-    usage: "mjolnir doctor:playwright [path]",
-    examples: ["mjolnir doctor:playwright e2e"],
-  },
-  {
     verb: "fix",
     summary: "apply safe auto-fixes with proof (re-scan verifies each)",
     usage: "mjolnir fix [path] [--dry-run]",
     examples: ["mjolnir fix --dry-run", "mjolnir fix ."],
   },
   {
-    verb: "baseline",
-    summary: "snapshot the current finding set as the comparison point",
-    usage: "mjolnir baseline [path]",
-    examples: ["mjolnir baseline", "mjolnir diff"],
-    next: "mjolnir diff",
-  },
-  {
-    verb: "diff",
-    summary: "lifecycle diff vs the committed baseline",
-    usage: "mjolnir diff [path] [--json] [scan flags]",
-    examples: ["mjolnir diff"],
-  },
-  {
-    verb: "verify",
-    summary:
-      "agent-loop digest: resolved/new/unchanged vs baseline + score delta",
-    usage: "mjolnir verify [path] [--json] [scan flags]",
-    examples: ["mjolnir verify"],
-  },
-  {
-    verb: "impact",
-    summary: "what a commit introduced vs resolved, since a prior commit",
-    usage: "mjolnir impact [path] [--since <ref>]",
-    examples: ["mjolnir impact . --since HEAD~1"],
-  },
-  {
-    verb: "debt",
-    summary: "test-debt register with an estimated quarterly cost",
-    usage: "mjolnir debt [path]",
-    examples: ["mjolnir debt"],
-  },
-  {
-    verb: "handover",
-    summary: "new-QA onboarding map of the suite",
-    usage: "mjolnir handover [path]",
-    examples: ["mjolnir handover"],
-  },
-  {
     verb: "stats",
     summary: "all-time local counters of fixes seen via diff",
     usage: "mjolnir stats",
     examples: ["mjolnir stats"],
-  },
-  {
-    verb: "badge",
-    summary: "shields.io endpoint JSON + snippet from a scan",
-    usage: "mjolnir badge [path]",
-    examples: ["mjolnir badge ."],
-  },
-  {
-    verb: "trust-report",
-    summary: "deterministic, self-contained Trust Artifact (md + json)",
-    usage: "mjolnir trust-report [path]",
-    examples: ["mjolnir trust-report ."],
-  },
-  {
-    verb: "init",
-    summary: "detect frameworks + setup checklist (never overwrites)",
-    usage: "mjolnir init [--interactive]",
-    examples: ["mjolnir init"],
-  },
-  {
-    verb: "why",
-    summary: "why did Mjölnir flag <file>:<line>? evidence + fix (not a gate)",
-    usage: "mjolnir why <file>:<line> [path] [--json <mjolnir.json>]",
-    examples: [
-      "mjolnir why e2e/a.spec.ts:3",
-      "mjolnir why e2e/a.spec.ts:3 --json mjolnir.json",
-    ],
   },
   {
     verb: "handoff",
@@ -179,62 +61,33 @@ export const HELP_ENTRIES: HelpEntry[] = [
     verb: "explain",
     summary: "what/why/fix + measured FP rate for one rule",
     usage: "mjolnir explain <RULE-ID> [--fixtures-root <dir>]",
-    examples: ["mjolnir explain QA-TEST-001", "mjolnir rules --unmeasured"],
+    examples: [
+      "mjolnir explain QA-TEST-001",
+      "mjolnir explain --list --unmeasured",
+    ],
   },
   {
-    verb: "rules capability",
+    verb: "explain --list capability",
     summary:
       "the capability registry: every capability at the maturity the machine can prove",
     usage:
-      "mjolnir rules capability [--json] [--kind <k>] [--maturity M0..M5] [--id <substring>]",
+      "mjolnir explain --list capability [--json] [--kind <k>] [--maturity M0..M5] [--id <substring>]",
     // No --set and no --promote, and that absence is the contract:
     // maturity is derived from evidence (ADR 0001), so this subcommand
     // shows and checks. A verb that could raise a level would be a verb
     // that could lie about one. It lives under `rules` because the
     // capability registry and the rule catalog are the same evidence.
     examples: [
-      "mjolnir rules capability",
-      "mjolnir rules capability --maturity M2",
-      "mjolnir rules capability --json > registry.json",
+      "mjolnir explain --list capability",
+      "mjolnir explain --list capability --maturity M2",
+      "mjolnir explain --list capability --json > registry.json",
     ],
   },
   {
-    verb: "rules",
-    summary:
-      "rule catalog + empirical-measurement stats/health (md/json/stats/health/capability)",
-    usage:
-      "mjolnir rules [--md] [--unmeasured|--measured] [--external] | [--stats] | [--health] [--limit=N] | capability",
-    examples: [
-      "mjolnir rules --md --unmeasured",
-      "mjolnir rules --stats",
-      "mjolnir rules --health --limit=20",
-    ],
-  },
-  {
-    verb: "suppressions",
-    summary: "list suppressed findings (governance transparency)",
-    usage: "mjolnir suppressions",
-    examples: ["mjolnir suppressions"],
-  },
-  {
-    verb: "ci-integrity",
-    summary: "verify CI workflow integrity and suppression governance",
-    usage: "mjolnir ci-integrity [path] [--policy <file>] [--json]",
-    examples: [
-      "mjolnir ci-integrity",
-      "mjolnir ci-integrity . --policy mjolnir.policy.json --json",
-    ],
-    next: "mjolnir suppressions",
-  },
-  {
-    verb: "framework-maturity",
-    summary: "track framework maturity levels, especially Playwright F4→F5",
-    usage: "mjolnir framework-maturity [--framework <name>] [--json]",
-    examples: [
-      "mjolnir framework-maturity",
-      "mjolnir framework-maturity --framework playwright",
-    ],
-    next: "mjolnir ci-integrity",
+    verb: "contract-verify",
+    summary: "machine-contract + exit-code contract integrity vs a scan",
+    usage: "mjolnir contract-verify [path] [--contract <scan-json>] [--json]",
+    examples: ["mjolnir contract-verify --contract mjolnir.json"],
   },
   {
     verb: "suppression-gate",
@@ -244,36 +97,7 @@ export const HELP_ENTRIES: HelpEntry[] = [
       "mjolnir suppression-gate",
       "mjolnir suppression-gate . --policy mjolnir.policy.json",
     ],
-    next: "mjolnir framework-maturity",
-  },
-  {
-    verb: "cross-file",
-    summary:
-      "analyze cross-file signals: duplicates, shared imports, circular deps",
-    usage: "mjolnir cross-file [path] [--json]",
-    examples: ["mjolnir cross-file", "mjolnir cross-file . --json"],
-    next: "mjolnir suppression-gate",
-  },
-  {
-    verb: "contract-verify",
-    summary: "verify machine contract integrity against scan results",
-    usage: "mjolnir contract-verify [path] [--contract <scan-json>] [--json]",
-    examples: [
-      "mjolnir contract-verify",
-      "mjolnir contract-verify . --contract scan.json --json",
-    ],
-    next: "mjolnir cross-file",
-  },
-  {
-    verb: "trust-trend",
-    summary: "track historical trust trends and detect regressions",
-    usage:
-      "mjolnir trust-trend [path] [--history <file>] [--recorded-at <iso>] [--json]",
-    examples: [
-      "mjolnir trust-trend",
-      "mjolnir trust-trend . --history .mjolnir/trust-history.json --json",
-    ],
-    next: "mjolnir contract-verify",
+    next: "mjolnir doctor --frameworks",
   },
   {
     verb: "evidence-graph",
@@ -283,26 +107,13 @@ export const HELP_ENTRIES: HelpEntry[] = [
       "mjolnir evidence-graph",
       "mjolnir evidence-graph . --rule QA-TEST-001 --json",
     ],
-    next: "mjolnir trust-trend",
-  },
-  {
-    verb: "create-rule",
-    summary: "scaffold a new rule + fixtures (must-fire, must-not-fire)",
-    usage: 'mjolnir create-rule <QA-XXX-nnn> --title "Rule title"',
-    examples: ['mjolnir create-rule QA-PW-131 --title "No request waits"'],
+    next: "mjolnir ci release-trend",
   },
   {
     verb: "doctor",
     summary: "self-audit of the rule base (fixture firewall, tiers, caps)",
     usage: "mjolnir doctor [repo-root]",
     examples: ["mjolnir doctor"],
-  },
-  {
-    verb: "release-trust",
-    summary:
-      "Release Trust Verdict over the canonical 12 dimensions (docs/RELEASE-TRUST-CONTRACT.md)",
-    usage: "mjolnir release-trust [--json] [repo-root]",
-    examples: ["mjolnir release-trust", "mjolnir release-trust --json"],
   },
   {
     verb: "install",
@@ -313,22 +124,9 @@ export const HELP_ENTRIES: HelpEntry[] = [
   {
     verb: "mcp",
     summary:
-      "run as a read-only MCP server over stdio (scan / explain / diff / verify / forensics / triage / pw-report)",
+      "run as a read-only MCP server over stdio (scan / explain / ci verify)",
     usage: "mjolnir mcp",
     examples: ["mjolnir mcp"],
-  },
-  {
-    verb: "trend",
-    summary: "record, show, or diff local quality trend snapshots",
-    usage: "mjolnir trend <record|show|diff> [path] [--limit <N>]",
-    examples: ["mjolnir trend record .", "mjolnir trend show ."],
-  },
-  {
-    verb: "exec-report",
-    summary:
-      "generate executive quality KPIs, risk, and recommendations (advisory)",
-    usage: "mjolnir exec-report [path]",
-    examples: ["mjolnir exec-report ."],
   },
   {
     verb: "policy",
@@ -345,18 +143,6 @@ export const HELP_ENTRIES: HelpEntry[] = [
     usage: "mjolnir analyze [path] --cross-file",
     examples: ["mjolnir analyze . --cross-file"],
   },
-  {
-    verb: "ci-adapter",
-    summary: "generate GitHub Actions, GitLab CI, or Jenkins templates",
-    usage: "mjolnir ci-adapter <github|gitlab|jenkins> [target]",
-    examples: ["mjolnir ci-adapter github ."],
-  },
-  {
-    verb: "dashboard",
-    summary: "generate a self-contained quality dashboard HTML artifact",
-    usage: "mjolnir dashboard [path] [--output <file>]",
-    examples: ["mjolnir dashboard . --output dashboard.html"],
-  },
 ];
 
 /** Scan-flag entries documented per-flag via the overview. */
@@ -368,13 +154,51 @@ export const HELP_FLAGS: Array<{ flag: string; summary: string }> = [
     summary: "GitLab Code Quality report (MR widget artifact)",
   },
   { flag: "--format mermaid", summary: "test-architecture diagram" },
+  // The v6 collapse's REPLACE arm (plan §3). These three were whole verbs
+  // whose body was "scan, then render" — a command surface to remember rather
+  // than a capability to use. Listed here so `mjolnir scan --help` is the one
+  // place the whole vocabulary lives.
+  {
+    flag: "--format trust-report",
+    summary: "the terminal trust report (the default)",
+  },
+  {
+    flag: "--format pr-comment",
+    summary: "a scoped PR comment as Markdown",
+  },
+  {
+    flag: "--format github-summary",
+    summary: "a GitHub Actions step summary",
+  },
+  { flag: "--suppressions", summary: "print the suppression ledger and stop" },
+  {
+    flag: "--suppression-gate",
+    summary:
+      "fail on an ungoverned suppression (expired, reasonless, orphaned)",
+  },
+  { flag: "--policy", summary: "print the scoring policy in force" },
   { flag: "--tone blunt", summary: "blunter, pattern-mocking messages" },
   { flag: "--verbose", summary: "show all findings" },
   { flag: "--scope changed", summary: "only new/changed lines vs merge-base" },
   { flag: "--max-duration <sec>", summary: "analysis time budget" },
   { flag: "--width <cols>", summary: "override terminal width" },
   { flag: "--ascii / --no-ascii", summary: "force glyph mode" },
-  { flag: "--strict", summary: "include quarantine-tier rules" },
+  {
+    flag: "--strict",
+    // D-2: a trust tier is a CLAIM about this repository, not a
+    // configuration choice, so it does not gate — and saying only "include
+    // quarantine-tier rules" invites the opposite reading. A user who reaches
+    // for `--strict` expecting more enforcement should learn here that a
+    // quarantined detector is advisory BY DESIGN, and that the path to changing
+    // that is a `corePromotion` or a re-measure — both reviewable edits to this
+    // repository, not a flag.
+    //
+    // The market agrees: in ESLint, Ruff and golangci-lint what fails a build
+    // is the user's SEVERITY configuration. Severity is user-controlled and
+    // gates. Trust is tool-controlled and does not.
+    summary:
+      "include quarantine-tier rules (advisory only — a quarantined detector never gates; see docs/PRODUCT-DECISIONS.md D-2)",
+  },
   { flag: "--debug", summary: "print swallowed rule crashes" },
   { flag: "--cache", summary: "reuse local per-file verdicts" },
   { flag: "--no-progress", summary: "no live scan-progress line on stderr" },
@@ -458,61 +282,47 @@ export function renderVerbHelp(
 const DOCS_URL = "https://github.com/Sergey-Bar/Mjolnir#readme";
 
 /** The overview's grouped one-line sections, in display order. */
+/**
+ * The root help's groups, by what a reader is ASKING rather than by where the
+ * code lives.
+ *
+ * It used to list twenty-nine verbs across five sections, and the renderer
+ * silently skipped the twenty that no longer existed — so the list read as a
+ * graveyard and a maintainer could not tell which entries were live. A group
+ * whose verbs are all retired renders as a heading over nothing, which is worse
+ * than no heading.
+ *
+ * So the list is now the fourteen entries the catalogue actually has, and the
+ * renderer omits an empty group rather than printing one. Four of the groups
+ * the old list had are gone entirely (Forensics, Mutation evidence, and the
+ * emptied Scan and the CI & PRs bulk), and the capability registry moved to
+ * Maintenance beside `doctor` and `contract-verify`, because all three answer
+ * the same question: what does this tool actually know.
+ */
 const GROUPS: Array<{ title: string; verbs: string[] }> = [
-  { title: "Scan", verbs: [] },
   {
     title: "CI & PRs",
-    verbs: [
-      "ci install",
-      "summary",
-      "pr-comment",
-      "badge",
-      "trust-report",
-      "impact",
-      "baseline",
-      "diff",
-      "verify",
-      "ci-integrity",
-      "ci-adapter",
-      "policy",
-    ],
-  },
-  {
-    title: "Forensics",
-    verbs: ["forensics", "triage", "pw-report", "doctor:playwright"],
-  },
-  {
-    title: "Mutation evidence",
-    verbs: ["mutation"],
+    verbs: ["ci install", "policy"],
   },
   {
     title: "Maintenance",
     verbs: [
       "fix",
-      "debt",
       "stats",
-      "suppressions",
-      "handover",
-      "init",
       "doctor",
-      "release-trust",
-      "create-rule",
-      "cross-file",
+      "explain --list capability",
       "contract-verify",
-      "trust-trend",
       "evidence-graph",
-      "framework-maturity",
-      "rules capability",
       "suppression-gate",
-      "trend",
-      "exec-report",
-      "analyze",
-      "dashboard",
     ],
   },
   {
     title: "Meta",
-    verbs: ["rules", "explain", "why", "handoff", "install", "mcp"],
+    verbs: ["explain", "handover", "handoff", "install", "mcp"],
+  },
+  {
+    title: "Deep analysis",
+    verbs: ["analyze"],
   },
 ];
 
@@ -642,7 +452,7 @@ export function renderRootHelp(
     "  mjolnir explain <RULE-ID>      what/why/fix + measured FP rate for one rule",
   );
   lines.push(
-    "  mjolnir rules --unmeasured     the rules running on assumption, not measurement",
+    "  mjolnir explain --list --unmeasured     the rules running on assumption, not measurement",
   );
   lines.push("");
   lines.push("Options:");
@@ -664,8 +474,14 @@ export function renderRootHelp(
   });
   lines.push("");
   for (const g of GROUPS) {
+    // A group whose last verb was retired is a heading over nothing. The
+    // collapse emptied two of them, and a table of contents that promises a
+    // section it does not have is the same class of claim as a command that
+    // does not exist.
+    const rows = g.verbs.filter((verb) => byVerb.get(verb) !== undefined);
+    if (rows.length === 0) continue;
     lines.push(`Subcommands — ${g.title}:`);
-    for (const verb of g.verbs) {
+    for (const verb of rows) {
       const e = byVerb.get(verb);
       if (!e) continue;
       pushAlignedHelpRow(lines, e.usage.replace(/^mjolnir /, ""), e.summary, {
@@ -683,7 +499,7 @@ export function renderRootHelp(
     "  $ mjolnir --scope changed         CI gate: only what the branch touched",
   );
   lines.push("  $ mjolnir ci install              write the PR workflow");
-  lines.push("  $ mjolnir forensics test-results  where the flakes hide");
+  lines.push("  $ explain --evidence test-results  where the flakes hide");
   lines.push("");
   lines.push("Per-command help: mjolnir help <verb>   (e.g. mjolnir help fix)");
   lines.push("");

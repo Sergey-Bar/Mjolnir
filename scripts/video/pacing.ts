@@ -65,7 +65,7 @@ const DEMO: Pacing = {
 };
 
 /**
- * The tour is longer and denser — a verbose report scrolls past, so each
+ * A verbose report scrolls past, so each
  * line gets more time and each beat a longer settle before the next
  * command.
  */

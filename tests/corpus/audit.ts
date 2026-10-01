@@ -704,6 +704,18 @@ async function main(): Promise<number> {
     console.error("--update and --refresh-provenance are mutually exclusive");
     return 1;
   }
+  // `--resample` is the re-measurement pass §07 asks for after a rework
+  // bumps a detectorRevision: same corpus, same pinned SHAs, current
+  // detector. It was its own npm name and its own file; it is a MODE of
+  // the same corpus audit, so it is a flag now. Candidates, not verdicts —
+  // `scripts/resample-unmeasured.ts` stops at candidates by design and that
+  // is the whole point: a finding is not an FP until a human says so.
+  if (process.argv.includes("--resample")) {
+    const { main: resample } =
+      await import("../../scripts/resample-unmeasured.js");
+    await resample();
+    return 0;
+  }
   // --only <name>[,<name>]: re-check or re-record a subset (used to
   // re-verify a repo after a transient truncation without re-scanning
   // the whole corpus). Never narrows the failure threshold: a filtered

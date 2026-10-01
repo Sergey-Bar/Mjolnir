@@ -30,7 +30,7 @@ jobs:
           cache: npm
       - run: npm ci
       - name: Audit corpus against deterministic baselines
-        run: npm run corpus:regression
+        run: npm run corpus:audit
         env:
           NODE_OPTIONS: --max-old-space-size=8192
 
@@ -42,7 +42,7 @@ jobs:
   # Second, the release certification chain. `ecosystem:gaps` exits 3 on
   # BLOCKED — the corpus cache is absent on a fresh runner, which is the
   # honest "this did not run" state — and it only reaches PASS once
-  # `corpus:regression` has populated that cache, so the corpus job and the
+  # `corpus:audit` has populated that cache, so the corpus job and the
   # gate jobs must share a cache. They are the same job for that reason and
   # not for tidiness.
   nightly-gates:
@@ -91,9 +91,11 @@ jobs:
           run_gate v6:archive:check      npm run v6:archive:check
           run_gate thresholds:parity     npm run thresholds:parity
           run_gate coverage:exemptions   npm run coverage:exemptions
-          run_gate unimported:modules     npm run unimported:check
+          run_gate unimported:modules     npm run check-unimported-modules
           run_gate verbs:budget          npm run verbs:budget
-          run_gate build:determinism     npm run build:determinism
+          run_gate claim-integrity      npm run gates:claim-integrity
+          run_gate verify-build-determinism     npm run verify-build-determinism
+          run_gate corpus:audit --resample      npm run corpus:audit --resample
           run_gate m26:integrity         npm run m26:audit
           run_gate candidate:readiness   npm run candidate:readiness
           run_gate gate-tiers            node scripts/check-gate-tiers.mjs

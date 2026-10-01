@@ -4,7 +4,7 @@
  *
  * `src/ledger/m26-validators.ts` runs inside `npm run m26:audit` on every
  * certify, and `src/release/version-surface.ts` runs inside
- * `npm run version:check`. Neither is inside the coverage ratchet
+ * `npm run check-version`. Neither is inside the coverage ratchet
  * (`docs/COVERAGE-EXEMPTIONS.json` classifies both as SHIPPED_SURFACE debt),
  * so the reject arms — the paths that only execute when something is WRONG —
  * are exactly the paths with no reviewer pressure on them.

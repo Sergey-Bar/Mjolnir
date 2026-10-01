@@ -9,7 +9,7 @@ new findings. Everything else (`forensics`, `debt`, `handover`, `impact`,
 should be read as such.
 
 Honesty surface: <!-- census:measured-of-total -->73 of 79<!-- /census:measured-of-total --> rules carry a false-positive rate measured against
-real OSS code (`docs/FP-AUDIT.md`). The scan footer, `mjolnir rules
+real OSS code (`docs/FP-AUDIT.md`). The scan footer, `mjolnir explain --list
 --unmeasured`, and every `mjolnir explain` page report which rules are which.
 
 ## Status

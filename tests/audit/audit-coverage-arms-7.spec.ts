@@ -6,25 +6,13 @@
  * single-entry byte-cap arm, and qa-ci-001's anchor-miss fallbacks.
  */
 
-import {
-  mkdirSync,
-  mkdtempSync,
-  readFileSync,
-  rmSync,
-  writeFileSync,
-} from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import {
-  main,
-  runBaselineCommand,
-  runDoctorPlaywright,
-  runImpactCommand,
-  runSuppressions,
-} from "../../src/cli.js";
+import { main, runDoctorPlaywright, runSuppressions } from "../../src/cli.js";
 import { createScanCache } from "../../src/engine/scan-cache.js";
 import { continueOnError } from "../../src/rules/ci/qa-ci-001-continue-on-error.js";
 import {
@@ -75,7 +63,7 @@ describe("doctor:playwright catch arms (S8)", () => {
     specWithTest(dir);
     writeFileSync(join(dir, "mjolnir.config.json"), "{ not json");
     const cap = capture();
-    const code = await runDoctorPlaywright(["doctor:playwright", dir], {
+    const code = await runDoctorPlaywright(["doctor", "--frameworks", dir], {
       out: cap.io.out,
       err: cap.io.err,
     });
@@ -89,7 +77,7 @@ describe("doctor:playwright catch arms (S8)", () => {
     writeFileSync(join(dir, "mjolnir.config.json"), "{ not json");
     const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     try {
-      const code = await runDoctorPlaywright(["doctor:playwright", dir], {
+      const code = await runDoctorPlaywright(["doctor", "--frameworks", dir], {
         out: () => {},
       });
       expect(code).toBe(10);
@@ -104,7 +92,7 @@ describe("doctor:playwright catch arms (S8)", () => {
     specWithTest(dir);
     const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     try {
-      const code = await runDoctorPlaywright(["doctor:playwright", dir], {
+      const code = await runDoctorPlaywright(["doctor", "--frameworks", dir], {
         out: () => {
           throw new Error("probe-crash");
         },
@@ -201,7 +189,7 @@ describe("runSuppressions sink fallback arms", () => {
     specWithTest(dir);
     const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     try {
-      const code = await runDoctorPlaywright(["doctor:playwright", dir], {
+      const code = await runDoctorPlaywright(["doctor", "--frameworks", dir], {
         out: () => {
           // eslint-disable-next-line @typescript-eslint/only-throw-error -- the arm under test: a non-Error thrown value
           throw 42;
@@ -232,29 +220,6 @@ describe("git-resolve PATHEXT-undefined arm", () => {
     } finally {
       if (envSnapshot !== undefined) process.env["PATHEXT"] = envSnapshot;
       process.env["PATH"] = pathSnapshot;
-    }
-  });
-});
-
-describe("impact git-failure degrade arms", () => {
-  it("a scan of a fake .git dir with git unreachable degrades honestly (git helpers return null)", async () => {
-    const dir = tmpRepo("fakegit");
-    specWithTest(dir);
-    // A .git DIRECTORY (not a repo) passes the existsSync gate, so the
-    // impact helpers' git() and gitBuffer() run and fail — with PATH
-    // stripped, resolveGitPath() returns null AND the bare-name exec
-    // fails: both degrade arms fire, and the command still completes
-    // with a degraded-but-honest report.
-    mkdirSync(join(dir, ".git"), { recursive: true });
-    const realPath = process.env["PATH"];
-    _resetGitResolutionForTests();
-    process.env["PATH"] = "";
-    try {
-      const cap = capture();
-      const code = await runImpactCommand([dir, "--since", "HEAD~1"], cap.io);
-      expect([0, 1, 2]).toContain(code);
-    } finally {
-      process.env["PATH"] = realPath;
     }
   });
 });
@@ -372,26 +337,5 @@ describe("qa-ci-001 anchor-miss fallback arms (S5)", () => {
       },
     });
     for (const f of findings) expect(f.line).toBeGreaterThanOrEqual(1);
-  });
-});
-
-describe("git unavailable: baseline save degrades (S1 lineage)", () => {
-  it("records commit unknown when git is unreachable", async () => {
-    const dir = tmpRepo("nogit2");
-    specWithTest(dir);
-    const realPath = process.env["PATH"];
-    _resetGitResolutionForTests();
-    process.env["PATH"] = "";
-    try {
-      const cap = capture();
-      const code = await runBaselineCommand([dir], cap.io);
-      expect(code).toBe(0);
-      const saved = JSON.parse(
-        readFileSync(join(dir, ".mjolnir", "baseline.json"), "utf8"),
-      ) as { commit?: string };
-      expect(saved.commit).toBe("unknown");
-    } finally {
-      process.env["PATH"] = realPath;
-    }
   });
 });

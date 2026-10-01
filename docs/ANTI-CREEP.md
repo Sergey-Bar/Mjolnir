@@ -1,0 +1,121 @@
+# Anti-creep law
+
+`CLAUDE.md` law 1: **every addition to the launch set requires an equal-size
+removal.** This file records what the launch set is, how the law is executed,
+and the one number a change has to move to make a promotion legal.
+
+## The launch set is the core tier
+
+The law said "the launch set" and named nothing. Three candidates existed:
+
+| Candidate          | Count | Why it is not the answer                                                                                                                  |
+| ------------------ | ----: | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| All live rules     |    79 | Counting every rule makes the law unfalsifiable — nothing is ever removed                                                                 |
+| Rules that gate CI |     0 | Quarantine findings are capped to `info`/`E0` by `src/rules/tier-policy.ts`, so they never gate. A set of zero cannot be grown by removal |
+| **The core tier**  | **0** | **The rules that ship in the default report**                                                                                             |
+
+The core tier is the launch set. "Ships by default" is what makes the law
+mean something: adding a rule to the default report adds a claim to every
+user's first scan, and the law is the mechanism for noticing.
+
+## Two caps, not one
+
+`src/commands/doctor.ts` exports both. They are independent and both are
+one-directional.
+
+### 1. The absolute cap — `CORE_CAP = 65`
+
+A catastrophe guard, exactly like the 80% coverage floor in
+[`docs/COVERAGE-GATE.md`](COVERAGE-GATE.md). It is not a statement about this
+repository and does not need to be; it exists so a change that promotes a
+whole category at once cannot pass unnoticed.
+
+It is currently **vacuous in both directions**: the tier holds zero rules, so
+65 slots are free. That is the honest state, and the second cap exists because
+a guard that has never fired is not a policy.
+
+### 2. The net-growth ratchet — `docs/ANTI-CREEP-BASELINE.json`
+
+The cap the law actually describes. The baseline records the launch set at a
+commit, plus **its own previous value**:
+
+```json
+{
+  "baselineCore": 0,
+  "previousBaselineCore": 0,
+  "recordedAt": "2026-09-28",
+  "recordedAtSha": "a806496160aeefe64c1795823f90b64cce582835"
+}
+```
+
+A pull request that leaves the tier bigger than the **previous** baseline
+fails. It passes when either of the following is true:
+
+1. **The tier did not grow past `previousBaselineCore`.** Net growth ≤ 0, so
+   promoting `QA-PW-117` and demoting `QA-JV-105` is legal in one commit with
+   no paperwork.
+2. **The unreleased `CHANGELOG.md` entry carries an `ANTI-CREEP-EXCEPTION`
+   line**, with the reason.
+
+It is an OR, and deliberately. A marker is a paper trail that says "yes, this
+time, and here is why"; requiring one even for a net-zero change would train
+people to paste it without reading it. The interlock that matters is not the
+OR — it is _which baseline the comparison is against_, which is what closes the
+escape the first version had:
+
+> The check compares the tier against `previousBaselineCore`, not against
+> `baselineCore`.
+
+Lowering `baselineCore` to match a grown tier makes `core − baselineCore`
+zero, and the law reads as satisfied — one uncross-checked JSON edit that
+promotes a rule and switches the law off. Against the _previous_ value the
+growth is still visible and still needs a marker. The shipped baseline carries
+both fields; a file written before `previousBaselineCore` existed falls back to
+`baselineCore` for one run, and a test asserts the shipped file carries it so
+that fallback can never become the permanent reading.
+
+The marker's scope is the other half. The first version searched the whole
+append-only changelog, so a marker written once in any past release disabled
+the ratchet for every commit after it, permanently. With an empty tier and a
+zero baseline, the FIRST core promotion would have switched the law off for
+good — the very change this work makes possible. The marker is now scoped to
+the top `## ` entry: a changelog is a sequence of releases and a growth claim
+is made in a release, so a marker has to survive exactly until its release is
+cut.
+
+## What this does not do
+
+It does not decide which rules _ought_ to be in core. That is a measured
+question, and it is answered by the corpus rather than by a cap:
+
+- The core ceiling is a 10% Wilson upper bound (`CORE_FP_CEILING`,
+  `src/rules/measurement.ts`).
+- A rule observing zero false positives needs **n ≥ 35** to clear it
+  (`samplesForZeroFp`, and this was wrong by a transposition until 6.0 — it
+  reported 1).
+- The minimum `ciHigh` across all 73 measured rules is **0.138**. Zero rules
+  earn core today.
+
+So the tier is empty, and the ratchet above is the mechanism that governs the
+_next_ promotion. The queue of candidates is
+[`docs/CORE-READINESS.md`](CORE-READINESS.md), generated by
+`npm run docs:core-readiness`.
+
+## Moving the baseline
+
+Down as a consequence of a demotion — set `baselineCore` to the new size and
+`previousBaselineCore` to the size you are replacing, in the same commit. Up
+only alongside an `ANTI-CREEP-EXCEPTION` line in the same unreleased
+`CHANGELOG.md` entry that explains the promotion, which for a core promotion
+means an unexpired `corePromotion` record on the rule (`src/rules/rule.ts`),
+naming a human who owns the claim and a date the claim expires.
+
+The check reports the count and the ids currently in the tier, which together
+answer "what moved". It does not report a membership DIFF: the baseline is a
+count, and inventing an `added`/`removed` list against a count-only baseline
+would be a diff computed from nothing.
+
+Raising the ceiling to make a rule fit is not available. `CORE_FP_CEILING` is
+0.1 because the product's thesis is that its false-positive rate is near zero;
+moving it to admit a rule with a 13.8% interval is tuning a threshold to fit
+data, which is the failure mode this repository exists to detect.

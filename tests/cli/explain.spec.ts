@@ -59,7 +59,7 @@ describe("explainRule — error handling", () => {
     const result = explainRule("QA-NOPE-999", FIXTURES_ROOT);
     expect(result.ok).toBe(false);
     expect(result.error).toContain("QA-NOPE-999");
-    expect(result.error).toContain("mjolnir rules");
+    expect(result.error).toContain("mjolnir explain --list");
   });
 
   it("degrades honestly (metadata only, no fabricated example) when the fixtures root doesn't exist", () => {

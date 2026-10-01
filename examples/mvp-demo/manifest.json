@@ -56,7 +56,7 @@
       "status": "active",
       "surfaces": ["forensics"],
       "files": ["run-reports/junit-report.xml"],
-      "expectation": "`mjolnir forensics run-reports/junit-report.xml` parses the JUnit XML (source junit-xml); corroboration honestly caps at file level."
+      "expectation": "the JUnit XML at run-reports/junit-report.xml parses (source junit-xml); corroboration honestly caps at file level."
     },
     {
       "id": "playwright-json-evidence",
