@@ -56,7 +56,6 @@ const DETECTION_PATH_PREFIXES = [
   "adapters/",
   "discovery/",
   "commands/explain.ts",
-  "commands/trend.ts",
   // V6 additions. Each of these turns a failure into a false green if the
   // failure is swallowed, which is the definition of the detection path:
   //
@@ -404,7 +403,7 @@ const ALLOWED_VALUE_RETURNS: ReadonlyArray<{
   },
   {
     file: "engine/scan-pipeline.ts",
-    line: 849,
+    line: 891,
     direction: "fails-explicitly",
     reason:
       "Counts the failure three ways in the block itself " +
@@ -414,7 +413,7 @@ const ALLOWED_VALUE_RETURNS: ReadonlyArray<{
   },
   {
     file: "engine/scan-pipeline.ts",
-    line: 1252,
+    line: 1294,
     direction: "fails-explicitly",
     reason:
       "Sets identityIncomplete and returns hash: 'UNAVAILABLE'. The literal " +
@@ -463,24 +462,6 @@ const ALLOWED_VALUE_RETURNS: ReadonlyArray<{
       "with a missing example.",
   },
   {
-    file: "commands/trend.ts",
-    line: 52,
-    direction: "fails-explicitly",
-    reason:
-      "Returns false, which the caller reports as 'Failed to record trend " +
-      "snapshot' and turns into EXIT_INTERNAL. The boolean is a return code " +
-      "about the write, not a verdict about any repository.",
-  },
-  {
-    file: "commands/trend.ts",
-    line: 175,
-    direction: "fails-explicitly",
-    reason:
-      "The verb-level handler: it prints the internal error and returns " +
-      "EXIT_INTERNAL. The return value IS the failure report, which is why " +
-      "this is the shape to look for rather than 'returns a value' alone.",
-  },
-  {
     file: "discovery/ecosystem-detection.ts",
     line: 54,
     direction: "reducing",
@@ -510,181 +491,6 @@ const ALLOWED_VALUE_RETURNS: ReadonlyArray<{
       "directory is scanned rather than skipped. Scanning a fixture directory " +
       "produces findings; skipping it would hide them, so the failure " +
       "direction here is the noisy one, which is the safe one.",
-  },
-  {
-    file: "engine/m38-challenge-contract.ts",
-    line: 274,
-    direction: "fails-explicitly",
-    reason:
-      "Returns `{ valid: false, candidateId: null, evaluatedAtMs: null }`, which names the failure in the value itself rather than leaving the caller to infer it. A caller reading this sees a state it cannot promote, so a thrown check cannot read as a satisfied one.",
-  },
-  {
-    file: "engine/m38-challenge-contract.ts",
-    line: 326,
-    direction: "fails-explicitly",
-    reason:
-      'Returns `{ state: "MALFORMED", id: null, dimension: null }`, which names the failure in the value itself rather than leaving the caller to infer it. A caller reading this sees a state it cannot promote, so a thrown check cannot read as a satisfied one.',
-  },
-  {
-    file: "engine/m38-challenge-contract.ts",
-    line: 490,
-    direction: "fails-explicitly",
-    reason:
-      'Returns `result(null, null, "UNKNOWN", "RECORD_MALFORMED")`, which names the failure in the value itself rather than leaving the caller to infer it. A caller reading this sees a state it cannot promote, so a thrown check cannot read as a satisfied one.',
-  },
-  {
-    file: "engine/m38-challenge-contract.ts",
-    line: 613,
-    direction: "fails-explicitly",
-    reason:
-      'Returns `buildReport("MALFORMED", 0, 0, 0, [], "UNDETERMINED")`, which names the failure in the value itself rather than leaving the caller to infer it. A caller reading this sees a state it cannot promote, so a thrown check cannot read as a satisfied one.',
-  },
-  {
-    file: "engine/m38-challenge-contract.ts",
-    line: 638,
-    direction: "reducing",
-    reason:
-      "Returns `buildReport(`, which reports less than the check would have on success. The direction is downward: no field is asserted that the failed check did not establish.",
-  },
-  {
-    file: "engine/m38-challenge-contract.ts",
-    line: 740,
-    direction: "fails-explicitly",
-    reason:
-      'Returns `"UNKNOWN"`, which names the failure in the value itself rather than leaving the caller to infer it. A caller reading this sees a state it cannot promote, so a thrown check cannot read as a satisfied one.',
-  },
-  {
-    file: "engine/m43-system-of-systems.ts",
-    line: 227,
-    direction: "fails-by-absence",
-    reason:
-      "Returns null. The probe could not complete, and the only thing this reports is that nothing was found. Absence is never read downstream as a pass: a capability, edge or capability-level with no evidence stays unproven, which is the direction that cannot manufacture a green.",
-  },
-  {
-    file: "engine/m43-system-of-systems.ts",
-    line: 290,
-    direction: "fails-explicitly",
-    reason:
-      "Returns `{ valid: false }`, which names the failure in the value itself rather than leaving the caller to infer it. A caller reading this sees a state it cannot promote, so a thrown check cannot read as a satisfied one.",
-  },
-  {
-    file: "engine/m43-system-of-systems.ts",
-    line: 362,
-    direction: "fails-by-absence",
-    reason:
-      "Returns null. The probe could not complete, and the only thing this reports is that nothing was found. Absence is never read downstream as a pass: a capability, edge or capability-level with no evidence stays unproven, which is the direction that cannot manufacture a green.",
-  },
-  {
-    file: "engine/m43-system-of-systems.ts",
-    line: 379,
-    direction: "fails-by-absence",
-    reason:
-      "Returns null. The probe could not complete, and the only thing this reports is that nothing was found. Absence is never read downstream as a pass: a capability, edge or capability-level with no evidence stays unproven, which is the direction that cannot manufacture a green.",
-  },
-  {
-    file: "engine/m43-system-of-systems.ts",
-    line: 514,
-    direction: "fails-by-absence",
-    reason:
-      "Returns null. The probe could not complete, and the only thing this reports is that nothing was found. Absence is never read downstream as a pass: a capability, edge or capability-level with no evidence stays unproven, which is the direction that cannot manufacture a green.",
-  },
-  {
-    file: "engine/m43-system-of-systems.ts",
-    line: 606,
-    direction: "fails-explicitly",
-    reason:
-      'Returns `rejectedInput(null, null, null, null, "MALFORMED")`, which names the failure in the value itself rather than leaving the caller to infer it. A caller reading this sees a state it cannot promote, so a thrown check cannot read as a satisfied one.',
-  },
-  {
-    file: "engine/m44-historical-intelligence.ts",
-    line: 472,
-    direction: "fails-by-absence",
-    reason:
-      "Returns false. The probe could not complete, and the only thing this reports is that nothing was found. Absence is never read downstream as a pass: a capability, edge or capability-level with no evidence stays unproven, which is the direction that cannot manufacture a green.",
-  },
-  {
-    file: "engine/m44-historical-intelligence.ts",
-    line: 655,
-    direction: "fails-by-absence",
-    reason:
-      "Returns null. The probe could not complete, and the only thing this reports is that nothing was found. Absence is never read downstream as a pass: a capability, edge or capability-level with no evidence stays unproven, which is the direction that cannot manufacture a green.",
-  },
-  {
-    file: "engine/m44-historical-intelligence.ts",
-    line: 1563,
-    direction: "reducing",
-    reason:
-      "Returns `historyFailure(0, 0, diagnostics)`, which reports less than the check would have on success. The direction is downward: no field is asserted that the failed check did not establish.",
-  },
-  {
-    file: "engine/m49-experience-parity-contract.ts",
-    line: 304,
-    direction: "fails-by-absence",
-    reason:
-      "Returns false. The probe could not complete, and the only thing this reports is that nothing was found. Absence is never read downstream as a pass: a capability, edge or capability-level with no evidence stays unproven, which is the direction that cannot manufacture a green.",
-  },
-  {
-    file: "engine/m49-experience-parity-contract.ts",
-    line: 315,
-    direction: "fails-by-absence",
-    reason:
-      "Returns undefined. The probe could not complete, and the only thing this reports is that nothing was found. Absence is never read downstream as a pass: a capability, edge or capability-level with no evidence stays unproven, which is the direction that cannot manufacture a green.",
-  },
-  {
-    file: "engine/m49-experience-parity-contract.ts",
-    line: 767,
-    direction: "reducing",
-    reason:
-      "Returns `freezeReport(`, which reports less than the check would have on success. The direction is downward: no field is asserted that the failed check did not establish.",
-  },
-  {
-    file: "engine/m49-experience-parity-contract.ts",
-    line: 944,
-    direction: "reducing",
-    reason:
-      "Returns `personaResults(`, which reports less than the check would have on success. The direction is downward: no field is asserted that the failed check did not establish.",
-  },
-  {
-    file: "engine/runtime-evidence-graph.ts",
-    line: 828,
-    direction: "reducing",
-    reason:
-      "Returns `{`, which reports less than the check would have on success. The direction is downward: no field is asserted that the failed check did not establish.",
-  },
-  {
-    file: "engine/runtime-evidence-graph.ts",
-    line: 855,
-    direction: "reducing",
-    reason:
-      "Returns `{`, which reports less than the check would have on success. The direction is downward: no field is asserted that the failed check did not establish.",
-  },
-  {
-    file: "governance/m33-m34-contract.ts",
-    line: 536,
-    direction: "fails-by-absence",
-    reason:
-      "Returns false. The probe could not complete, and the only thing this reports is that nothing was found. Absence is never read downstream as a pass: a capability, edge or capability-level with no evidence stays unproven, which is the direction that cannot manufacture a green.",
-  },
-  {
-    file: "governance/m33-m34-contract.ts",
-    line: 560,
-    direction: "fails-by-absence",
-    reason:
-      "Returns undefined. The probe could not complete, and the only thing this reports is that nothing was found. Absence is never read downstream as a pass: a capability, edge or capability-level with no evidence stays unproven, which is the direction that cannot manufacture a green.",
-  },
-  {
-    file: "governance/m33-m34-contract.ts",
-    line: 589,
-    direction: "fails-by-absence",
-    reason:
-      "Returns an empty list. The probe could not complete, and the only thing this reports is that nothing was found. Absence is never read downstream as a pass: a capability, edge or capability-level with no evidence stays unproven, which is the direction that cannot manufacture a green.",
-  },
-  {
-    file: "governance/m33-m34-contract.ts",
-    line: 828,
-    direction: "fails-by-absence",
-    reason:
-      "Returns undefined. The probe could not complete, and the only thing this reports is that nothing was found. Absence is never read downstream as a pass: a capability, edge or capability-level with no evidence stays unproven, which is the direction that cannot manufacture a green.",
   },
   {
     file: "v6/capability-registry.ts",

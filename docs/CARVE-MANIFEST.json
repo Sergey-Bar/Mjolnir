@@ -1,0 +1,519 @@
+{
+  "schemaVersion": 1,
+  "manifestId": "mjolnir-carve-manifest-001",
+  "generatedBy": "scripts/v6/carve-manifest.mjs",
+  "note": "FACTS are generated; DISPOSITIONS are hand-written and preserved across regeneration. Phase 0 admits every file with KEEP. A DELETE disposition names the evidence that made deletion safe and the commit that carries it — directory names are not evidence.",
+  "scope": {
+    "dirs": [
+      "src/ledger",
+      "src/gaps",
+      "src/traceability",
+      "src/benchmark",
+      "src/v6",
+      "src/release"
+    ],
+    "files": [
+      "src/capabilities.ts",
+      "src/claim-evidence.ts",
+      "src/store/legacy-import.ts"
+    ]
+  },
+  "files": {
+    "src/benchmark/index.ts": {
+      "lines": 14,
+      "exports": 7,
+      "importedBy": [],
+      "imported": false,
+      "shipped": false,
+      "testedBy": [],
+      "disposition": {
+        "action": "KEEP",
+        "reason": "Not yet adjudicated. The facts beside it are the evidence; the decision is a reviewable edit to this file."
+      }
+    },
+    "src/benchmark/trust-benchmark-schema.ts": {
+      "lines": 162,
+      "exports": 7,
+      "importedBy": [
+        "src/benchmark/index.ts"
+      ],
+      "imported": true,
+      "shipped": false,
+      "testedBy": [
+        "tests/benchmark/trust-benchmark-schema.spec.ts"
+      ],
+      "disposition": {
+        "action": "KEEP",
+        "reason": "Not yet adjudicated. The facts beside it are the evidence; the decision is a reviewable edit to this file."
+      }
+    },
+    "src/capabilities.ts": {
+      "lines": 321,
+      "exports": 12,
+      "importedBy": [
+        "scripts/generate-playwright-capabilities.ts"
+      ],
+      "imported": true,
+      "shipped": false,
+      "testedBy": [
+        "tests/capabilities-branch.spec.ts",
+        "tests/contract/carve-manifest.spec.ts",
+        "tests/contract/playwright-capabilities.spec.ts"
+      ],
+      "disposition": {
+        "action": "KEEP",
+        "reason": "Not yet adjudicated. The facts beside it are the evidence; the decision is a reviewable edit to this file."
+      }
+    },
+    "src/claim-evidence.ts": {
+      "lines": 200,
+      "exports": 8,
+      "importedBy": [
+        "src/cli-handlers.ts",
+        "src/cli.ts"
+      ],
+      "imported": true,
+      "shipped": true,
+      "testedBy": [
+        "tests/commands/fabricated-claims.spec.ts",
+        "tests/contract/carve-manifest.spec.ts",
+        "tests/contract/coverage-state.spec.ts",
+        "tests/contract/exit-matrix.spec.ts"
+      ],
+      "disposition": {
+        "action": "KEEP",
+        "reason": "Not yet adjudicated. The facts beside it are the evidence; the decision is a reviewable edit to this file."
+      }
+    },
+    "src/gaps/gap-registry.ts": {
+      "lines": 1374,
+      "exports": 12,
+      "importedBy": [
+        "src/gaps/index.ts"
+      ],
+      "imported": true,
+      "shipped": false,
+      "testedBy": [
+        "tests/engine/gap-registry.spec.ts"
+      ],
+      "disposition": {
+        "action": "KEEP",
+        "reason": "Not yet adjudicated. The facts beside it are the evidence; the decision is a reviewable edit to this file."
+      }
+    },
+    "src/gaps/index.ts": {
+      "lines": 18,
+      "exports": 8,
+      "importedBy": [],
+      "imported": false,
+      "shipped": false,
+      "testedBy": [],
+      "disposition": {
+        "action": "KEEP",
+        "reason": "Not yet adjudicated. The facts beside it are the evidence; the decision is a reviewable edit to this file."
+      }
+    },
+    "src/ledger/m26-validators.ts": {
+      "lines": 2856,
+      "exports": 43,
+      "importedBy": [
+        "scripts/check-m26-ledgers.ts",
+        "scripts/v6/inventory.ts"
+      ],
+      "imported": true,
+      "shipped": true,
+      "testedBy": [
+        "tests/config/coverage-exclusion-guard.spec.ts",
+        "tests/contract/gate-exit-codes.spec.ts",
+        "tests/ledger/m26-validator-reject-arms.spec.ts",
+        "tests/ledger/m26-validators.spec.ts"
+      ],
+      "disposition": {
+        "action": "KEEP",
+        "reason": "Not yet adjudicated. The facts beside it are the evidence; the decision is a reviewable edit to this file."
+      }
+    },
+    "src/release/decision.ts": {
+      "lines": 49,
+      "exports": 3,
+      "importedBy": [
+        "scripts/release-decision.ts",
+        "scripts/release-verify.ts"
+      ],
+      "imported": true,
+      "shipped": false,
+      "testedBy": [
+        "tests/release/candidate-decision.spec.ts",
+        "tests/release/decision.spec.ts"
+      ],
+      "disposition": {
+        "action": "KEEP",
+        "reason": "Not yet adjudicated. The facts beside it are the evidence; the decision is a reviewable edit to this file."
+      }
+    },
+    "src/release/pack-audit.ts": {
+      "lines": 111,
+      "exports": 7,
+      "importedBy": [],
+      "imported": false,
+      "shipped": false,
+      "testedBy": [
+        "tests/release/pack-audit.spec.ts"
+      ],
+      "disposition": {
+        "action": "KEEP",
+        "reason": "Not yet adjudicated. The facts beside it are the evidence; the decision is a reviewable edit to this file."
+      }
+    },
+    "src/release/provenance.ts": {
+      "lines": 125,
+      "exports": 5,
+      "importedBy": [],
+      "imported": false,
+      "shipped": false,
+      "testedBy": [
+        "tests/release/provenance.spec.ts"
+      ],
+      "disposition": {
+        "action": "KEEP",
+        "reason": "Not yet adjudicated. The facts beside it are the evidence; the decision is a reviewable edit to this file."
+      }
+    },
+    "src/release/reproducibility.ts": {
+      "lines": 199,
+      "exports": 3,
+      "importedBy": [],
+      "imported": false,
+      "shipped": false,
+      "testedBy": [
+        "tests/release/reproducibility-edge.spec.ts",
+        "tests/release/reproducibility.spec.ts"
+      ],
+      "disposition": {
+        "action": "KEEP",
+        "reason": "Not yet adjudicated. The facts beside it are the evidence; the decision is a reviewable edit to this file."
+      }
+    },
+    "src/release/sbom.ts": {
+      "lines": 153,
+      "exports": 6,
+      "importedBy": [],
+      "imported": false,
+      "shipped": false,
+      "testedBy": [
+        "tests/release/sbom.spec.ts"
+      ],
+      "disposition": {
+        "action": "KEEP",
+        "reason": "Not yet adjudicated. The facts beside it are the evidence; the decision is a reviewable edit to this file."
+      }
+    },
+    "src/release/version-consistency.ts": {
+      "lines": 55,
+      "exports": 3,
+      "importedBy": [
+        "src/release/version-surface.ts"
+      ],
+      "imported": true,
+      "shipped": true,
+      "testedBy": [
+        "tests/release/version-consistency.spec.ts"
+      ],
+      "disposition": {
+        "action": "KEEP",
+        "reason": "Not yet adjudicated. The facts beside it are the evidence; the decision is a reviewable edit to this file."
+      }
+    },
+    "src/release/version-surface.ts": {
+      "lines": 402,
+      "exports": 8,
+      "importedBy": [
+        "scripts/check-version-surface.ts",
+        "scripts/sync-version-surface.ts"
+      ],
+      "imported": true,
+      "shipped": true,
+      "testedBy": [
+        "tests/config/coverage-exclusion-guard.spec.ts",
+        "tests/contract/version-surface.spec.ts",
+        "tests/ledger/m26-validator-reject-arms.spec.ts",
+        "tests/release/version-surface-drift-arms.spec.ts"
+      ],
+      "disposition": {
+        "action": "KEEP",
+        "reason": "Not yet adjudicated. The facts beside it are the evidence; the decision is a reviewable edit to this file."
+      }
+    },
+    "src/store/legacy-import.ts": {
+      "lines": 273,
+      "exports": 11,
+      "importedBy": [],
+      "imported": false,
+      "shipped": false,
+      "testedBy": [
+        "tests/contract/carve-manifest.spec.ts",
+        "tests/store/legacy-import.spec.ts"
+      ],
+      "disposition": {
+        "action": "KEEP",
+        "reason": "Not yet adjudicated. The facts beside it are the evidence; the decision is a reviewable edit to this file."
+      }
+    },
+    "src/traceability/index.ts": {
+      "lines": 14,
+      "exports": 11,
+      "importedBy": [],
+      "imported": false,
+      "shipped": false,
+      "testedBy": [],
+      "disposition": {
+        "action": "KEEP",
+        "reason": "Not yet adjudicated. The facts beside it are the evidence; the decision is a reviewable edit to this file."
+      }
+    },
+    "src/traceability/rtm.ts": {
+      "lines": 429,
+      "exports": 11,
+      "importedBy": [
+        "src/traceability/index.ts"
+      ],
+      "imported": true,
+      "shipped": false,
+      "testedBy": [
+        "tests/engine/rtm.spec.ts"
+      ],
+      "disposition": {
+        "action": "KEEP",
+        "reason": "Not yet adjudicated. The facts beside it are the evidence; the decision is a reviewable edit to this file."
+      }
+    },
+    "src/v6/capability-registry.ts": {
+      "lines": 1020,
+      "exports": 29,
+      "importedBy": [
+        "scripts/v6/check-capability-registry.ts",
+        "scripts/v6/check-fixture-quad.ts",
+        "scripts/v6/check-rule-quality.ts",
+        "scripts/v6/generate-capability.ts",
+        "src/commands/capability.ts"
+      ],
+      "imported": true,
+      "shipped": true,
+      "testedBy": [
+        "tests/v6/capability-command.spec.ts",
+        "tests/v6/capability-registry.spec.ts"
+      ],
+      "disposition": {
+        "action": "KEEP",
+        "reason": "Not yet adjudicated. The facts beside it are the evidence; the decision is a reviewable edit to this file."
+      }
+    },
+    "src/v6/capability-types.ts": {
+      "lines": 278,
+      "exports": 29,
+      "importedBy": [
+        "scripts/v6/generate-inventory.ts",
+        "scripts/v6/inventory.ts",
+        "src/v6/capability-registry.ts",
+        "src/v6/ecosystem-census.ts"
+      ],
+      "imported": true,
+      "shipped": true,
+      "testedBy": [
+        "tests/v6/capability-types.spec.ts",
+        "tests/v6/inventory.spec.ts"
+      ],
+      "disposition": {
+        "action": "KEEP",
+        "reason": "Not yet adjudicated. The facts beside it are the evidence; the decision is a reviewable edit to this file."
+      }
+    },
+    "src/v6/claim-lint.ts": {
+      "lines": 404,
+      "exports": 16,
+      "importedBy": [
+        "scripts/v6/check-claims-prose.ts"
+      ],
+      "imported": true,
+      "shipped": false,
+      "testedBy": [
+        "tests/v6/claim-lint.spec.ts",
+        "tests/v6/edge-cases.spec.ts"
+      ],
+      "disposition": {
+        "action": "KEEP",
+        "reason": "Not yet adjudicated. The facts beside it are the evidence; the decision is a reviewable edit to this file."
+      }
+    },
+    "src/v6/ecosystem-census.ts": {
+      "lines": 1942,
+      "exports": 44,
+      "importedBy": [
+        "scripts/v6/check-ecosystem.ts",
+        "scripts/v6/ecosystem-census.ts",
+        "scripts/v6/inventory.ts",
+        "src/v6/ecosystem-probe.ts",
+        "src/v6/tool-coverage.ts"
+      ],
+      "imported": true,
+      "shipped": true,
+      "testedBy": [
+        "tests/v6/branches.spec.ts",
+        "tests/v6/ecosystem-census-honesty.spec.ts",
+        "tests/v6/ecosystem-census.spec.ts",
+        "tests/v6/ecosystem-probe.spec.ts",
+        "tests/v6/schemas.spec.ts",
+        "tests/v6/test-doubles.spec.ts",
+        "tests/v6/tool-coverage.spec.ts"
+      ],
+      "disposition": {
+        "action": "KEEP",
+        "reason": "Not yet adjudicated. The facts beside it are the evidence; the decision is a reviewable edit to this file."
+      }
+    },
+    "src/v6/ecosystem-probe.ts": {
+      "lines": 732,
+      "exports": 18,
+      "importedBy": [
+        "scripts/v6/check-ecosystem.ts",
+        "scripts/v6/ecosystem-census.ts",
+        "scripts/v6/inventory.ts",
+        "src/v6/capability-registry.ts",
+        "src/v6/ecosystem-census.ts"
+      ],
+      "imported": true,
+      "shipped": true,
+      "testedBy": [
+        "tests/v6/branches.spec.ts",
+        "tests/v6/ecosystem-probe.spec.ts"
+      ],
+      "disposition": {
+        "action": "KEEP",
+        "reason": "Not yet adjudicated. The facts beside it are the evidence; the decision is a reviewable edit to this file."
+      }
+    },
+    "src/v6/fixture-quad-probe.ts": {
+      "lines": 233,
+      "exports": 11,
+      "importedBy": [
+        "scripts/corpus/quad-verdicts.ts",
+        "scripts/v6/check-fixture-quad.ts",
+        "src/v6/capability-registry.ts",
+        "src/v6/ecosystem-probe.ts"
+      ],
+      "imported": true,
+      "shipped": true,
+      "testedBy": [
+        "tests/contract/rule-docs-set.spec.ts",
+        "tests/v6/capability-registry.spec.ts",
+        "tests/v6/fixture-quad-probe.spec.ts"
+      ],
+      "disposition": {
+        "action": "KEEP",
+        "reason": "Not yet adjudicated. The facts beside it are the evidence; the decision is a reviewable edit to this file."
+      }
+    },
+    "src/v6/maturity.ts": {
+      "lines": 506,
+      "exports": 28,
+      "importedBy": [
+        "scripts/v6/check-claims-prose.ts",
+        "scripts/v6/check-fixture-quad.ts",
+        "scripts/v6/check-rule-quality.ts",
+        "scripts/v6/ecosystem-census.ts",
+        "scripts/v6/generate-capability.ts",
+        "scripts/v6/generate-inventory.ts",
+        "scripts/v6/inventory.ts",
+        "src/commands/capability.ts",
+        "src/v6/capability-registry.ts",
+        "src/v6/capability-types.ts",
+        "src/v6/ecosystem-census.ts"
+      ],
+      "imported": true,
+      "shipped": true,
+      "testedBy": [
+        "tests/v6/capability-registry.spec.ts",
+        "tests/v6/capability-types.spec.ts",
+        "tests/v6/claim-lint.spec.ts",
+        "tests/v6/ecosystem-census.spec.ts",
+        "tests/v6/ecosystem-probe.spec.ts",
+        "tests/v6/edge-cases.spec.ts",
+        "tests/v6/maturity-vocabulary.spec.ts",
+        "tests/v6/maturity.spec.ts",
+        "tests/v6/schemas.spec.ts"
+      ],
+      "disposition": {
+        "action": "KEEP",
+        "reason": "Not yet adjudicated. The facts beside it are the evidence; the decision is a reviewable edit to this file."
+      }
+    },
+    "src/v6/qa-ir-parity.ts": {
+      "lines": 285,
+      "exports": 6,
+      "importedBy": [
+        "scripts/v6/check-qa-ir-parity.ts"
+      ],
+      "imported": true,
+      "shipped": false,
+      "testedBy": [
+        "tests/v6/qa-ir.spec.ts"
+      ],
+      "disposition": {
+        "action": "KEEP",
+        "reason": "Not yet adjudicated. The facts beside it are the evidence; the decision is a reviewable edit to this file."
+      }
+    },
+    "src/v6/qa-ir.ts": {
+      "lines": 588,
+      "exports": 19,
+      "importedBy": [
+        "scripts/v6/check-qa-ir-parity.ts",
+        "src/v6/qa-ir-parity.ts",
+        "src/v6/test-doubles.ts",
+        "src/v6/tool-coverage.ts"
+      ],
+      "imported": true,
+      "shipped": false,
+      "testedBy": [
+        "tests/v6/qa-ir.spec.ts",
+        "tests/v6/test-doubles.spec.ts",
+        "tests/v6/tool-coverage.spec.ts"
+      ],
+      "disposition": {
+        "action": "KEEP",
+        "reason": "Not yet adjudicated. The facts beside it are the evidence; the decision is a reviewable edit to this file."
+      }
+    },
+    "src/v6/test-doubles.ts": {
+      "lines": 207,
+      "exports": 9,
+      "importedBy": [
+        "src/v6/tool-coverage.ts"
+      ],
+      "imported": true,
+      "shipped": false,
+      "testedBy": [
+        "tests/v6/test-doubles.spec.ts"
+      ],
+      "disposition": {
+        "action": "KEEP",
+        "reason": "Not yet adjudicated. The facts beside it are the evidence; the decision is a reviewable edit to this file."
+      }
+    },
+    "src/v6/tool-coverage.ts": {
+      "lines": 252,
+      "exports": 8,
+      "importedBy": [],
+      "imported": false,
+      "shipped": false,
+      "testedBy": [
+        "tests/contract/carve-manifest.spec.ts",
+        "tests/v6/tool-coverage.spec.ts"
+      ],
+      "disposition": {
+        "action": "KEEP",
+        "reason": "Not yet adjudicated. The facts beside it are the evidence; the decision is a reviewable edit to this file."
+      }
+    }
+  }
+}

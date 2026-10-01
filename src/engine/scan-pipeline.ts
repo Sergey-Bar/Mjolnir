@@ -283,7 +283,24 @@ export interface CliArgs {
   verbose: boolean;
   maxDurationMs: number;
   scopeChanged: boolean;
-  format: "terminal" | "json" | "sarif" | "mermaid" | "codequality";
+  /**
+   * The output shape.
+   *
+   * `trust-report` | `pr-comment` | `github-summary` are the v6 collapse's
+   * REPLACE arm (plan §3): they were separate verbs whose entire body was
+   * "scan, then render". They are render-only — the scan, the findings, the
+   * score and the exit code are identical under all of them, and under
+   * `terminal`, which is the property that lets a format be a flag.
+   */
+  format:
+    | "terminal"
+    | "json"
+    | "sarif"
+    | "mermaid"
+    | "codequality"
+    | "trust-report"
+    | "pr-comment"
+    | "github-summary";
   /** --width override for terminal box/gauge wrapping (Sprint 5 Task 22). */
   width?: number;
   /** --ascii / --no-ascii override for shouldUseAscii()'s heuristic. */
@@ -375,6 +392,30 @@ export interface CliArgs {
    * mode" (no monorepo analysis).
    */
   monorepo?: boolean;
+  /**
+   * --suppressions (v6 collapse, plan §3): print the suppression LEDGER and
+   * stop. A mode, not a verb.
+   *
+   * It is a mode because the ledger is a view of `mjolnir.config.json` and
+   * nothing else — a verb for it would be a command whose whole body is
+   * "read a file and print it", which is what a flag on the command that
+   * enforces the file is for. It reads the CWD, exactly as the retired verb
+   * did, so the one observable behaviour a script can depend on is unchanged.
+   */
+  suppressions?: boolean;
+  /**
+   * --suppression-gate (v6 collapse, plan §3): fail when a suppression is
+   * ungoverned — expired, reasonless, or covering a rule that no longer
+   * exists. Runs the scan first, because a governance judgement about a
+   * suppression needs the findings the suppression would have hidden.
+   */
+  suppressionGate?: boolean;
+  /**
+   * --policy (v6 collapse, plan §3): print the scoring policy in force and
+   * stop. A policy nobody can read is a policy nobody can check, and the
+   * scorer publishes one on purpose.
+   */
+  policy?: boolean;
 }
 
 export interface ScanHooks {

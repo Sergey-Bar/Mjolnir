@@ -40,7 +40,7 @@ type Gate = {
 
 const GATES: readonly Gate[] = [
   { name: "M26 audit", script: "m26:audit", blocking: true },
-  { name: "version surface", script: "version:check", blocking: true },
+  { name: "version surface", script: "check-version", blocking: true },
   { name: "claim registry", script: "claims:check", blocking: true },
   {
     name: "candidate manifest",
@@ -128,7 +128,7 @@ const decision = decideRelease({
   publishedVersion: pkg.publishedStable ?? pkg.version,
   candidateStatus: statusOf("candidate:readiness"),
   m26Status: statusOf("m26:audit"),
-  versionStatus: statusOf("version:check") === "PASS" ? "PASS" : "FAIL",
+  versionStatus: statusOf("check-version") === "PASS" ? "PASS" : "FAIL",
   claimsStatus: statusOf("claims:check") === "PASS" ? "PASS" : "FAIL",
   roadmapStatus: statusOf("docs:roadmap:check") === "PASS" ? "PASS" : "FAIL",
 });
@@ -140,7 +140,7 @@ const extraBlocked = results
       ![
         "candidate:readiness",
         "m26:audit",
-        "version:check",
+        "check-version",
         "claims:check",
         "docs:roadmap:check",
       ].includes(r.gate.script),

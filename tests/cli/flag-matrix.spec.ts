@@ -161,11 +161,17 @@ describe("subcommands — return a documented exit code without crashing unexpec
     { name: "badge", argv: (d) => ["badge", d] },
     { name: "debt", argv: (d) => ["debt", d] },
     { name: "fix --dry-run", argv: (d) => ["fix", d, "--dry-run"] },
-    { name: "handover", argv: (d) => ["handover", d] },
+    { name: "handover", argv: (d) => ["explain", "--plan", d] },
     { name: "forensics (no report present)", argv: (d) => ["forensics", d] },
-    { name: "triage (no report present)", argv: (d) => ["triage", d] },
-    { name: "pw-report (no report present)", argv: (d) => ["pw-report", d] },
-    { name: "doctor:playwright", argv: (d) => ["doctor:playwright", d] },
+    {
+      name: "triage (no report present)",
+      argv: (d) => ["explain", "--evidence", d],
+    },
+    {
+      name: "pw-report (no report present)",
+      argv: (d) => ["explain", "--playwright", d],
+    },
+    { name: "doctor:playwright", argv: (d) => ["doctor", "--frameworks", d] },
   ];
 
   for (const c of subcommands) {

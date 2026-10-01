@@ -132,9 +132,7 @@ describe("reporter version-sync gate (WI-10, plan §14)", () => {
     const pkg = JSON.parse(
       readFileSync(join(ROOT, "package.json"), "utf8"),
     ) as { scripts: Record<string, string> };
-    expect(pkg.scripts["reporter:version-check"]).toContain(
-      "check-reporter-version",
-    );
+    expect(pkg.scripts["check-version"]).toContain("check-reporter-version");
   });
 
   it("the reporter keeps the ingestion contract: default output is mjolnir.report.json", () => {

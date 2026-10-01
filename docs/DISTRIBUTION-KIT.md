@@ -108,7 +108,7 @@ configs and CI workflows, for gates that cannot go red. 79 active rules;
 | awesome-actions    | Linting / testing categories — list the ACTION, not the npm package | pending |
 
 **Agent-loop listing angles (P7):** the MCP registries' entries and the
-awesome PR bodies should lead with the agent loop — `mjolnir verify`
+awesome PR bodies should lead with the agent loop — `mjolnir ci verify`
 gives an agent a before/after digest (resolved per §15 lifecycle, new,
 unchanged by ruleId+location, score delta) with frozen exit semantics;
 the MCP `verify` tool is 1:1 under the same transport guardrails. The

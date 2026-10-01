@@ -797,7 +797,7 @@ function missingFor(target: Maturity, name: string): string[] {
   return [
     `the fixture quad for ${name} is not complete — MUST-FIRE, MUST-NOT-FIRE, ` +
       "RECALL and PRECISION are the M3 criteria (evidence: fixtureQuadVerified); " +
-      "`npm run rules:quad:check` prints the per-leg work list",
+      "`npm run check-fixture-quad` prints the per-leg work list",
   ];
 }
 

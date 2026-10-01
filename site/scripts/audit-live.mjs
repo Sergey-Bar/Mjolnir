@@ -13,7 +13,7 @@
  *   - layout stability and paint timing (CLS / LCP), measured from the
  *     browser's own Performance APIs rather than inferred
  *
- * Kept OUT of `npm run site:doctor` and the pages.yml gate on purpose:
+ * Kept OUT of `npm run doctor` and the pages.yml gate on purpose:
  * it needs axe-core and a Playwright browser, and site/ deliberately has
  * neither. Run it from the repo root, where those already exist:
  *

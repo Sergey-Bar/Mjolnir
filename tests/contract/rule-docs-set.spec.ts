@@ -168,7 +168,7 @@ describe("the quad is measured, and its work list is a list", () => {
   });
 
   it("rules with a complete quad are MEASURED, and any are named", () => {
-    // 6.1 raised this from zero: `npm run corpus:quad:verdicts` executes the
+    // 6.1 raised this from zero: `npm run check-fixture-quad --verdicts` executes the
     // scanner over every rule's own fixture and records what it did, so 19 rules
     // now hold all four legs. The first version of this test asserted the count
     // was 0 and was asserting a fact about the world rather than about the

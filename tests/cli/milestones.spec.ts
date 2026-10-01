@@ -9,7 +9,6 @@
  * contracts) and must never change score or exit code.
  */
 
-import { execFileSync } from "node:child_process";
 import {
   existsSync,
   mkdirSync,
@@ -22,12 +21,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 
-import {
-  main,
-  runBaselineCommand,
-  runDiffCommand,
-  runScanCommand,
-} from "../../src/cli.js";
+import { main, runScanCommand } from "../../src/cli.js";
 import type { StatsFile } from "../../src/commands/stats.js";
 
 const createdDirs: string[] = [];
@@ -66,41 +60,6 @@ function makeCleanRepo(): string {
       "  });\n" +
       "});\n",
   );
-  return d;
-}
-
-function git(cwd: string, args: string[]): void {
-  execFileSync("git", args, { cwd, stdio: "ignore" });
-}
-
-function makeGitRepoWithRealFix(): string {
-  const d = mkdtempSync(join(tmpdir(), "mjolnir-milestones-fix-"));
-  createdDirs.push(d);
-  git(d, ["init", "-q", "-b", "main"]);
-  git(d, ["config", "user.email", "test@example.com"]);
-  git(d, ["config", "user.name", "Test"]);
-  mkdirSync(join(d, "e2e"), { recursive: true });
-  writeFileSync(
-    join(d, "e2e", "a.spec.ts"),
-    "import { test, expect } from '@playwright/test';\n" +
-      "test('a', async ({ page }) => {\n" +
-      "  await page.goto('/');\n" +
-      "  await page.waitForTimeout(3000);\n" +
-      "  await expect(page).toHaveTitle('x');\n" +
-      "});\n",
-  );
-  git(d, ["add", "-A"]);
-  git(d, ["commit", "-q", "-m", "commit 1"]);
-  writeFileSync(
-    join(d, "e2e", "a.spec.ts"),
-    "import { test, expect } from '@playwright/test';\n" +
-      "test('a', async ({ page }) => {\n" +
-      "  await page.goto('/');\n" +
-      "  await expect(page).toHaveTitle('x');\n" +
-      "});\n",
-  );
-  git(d, ["add", "-A"]);
-  git(d, ["commit", "-q", "-m", "commit 2: fixed the hard sleep"]);
   return d;
 }
 
@@ -167,48 +126,6 @@ describe("first-clean-scan milestone", () => {
   it("does not change the exit code for an otherwise-clean scan", async () => {
     const dir = makeCleanRepo();
     const code = await runScanCommand([dir], capture().io);
-    expect(code).toBe(0);
-  });
-});
-
-describe("first-debt-reduction milestone", () => {
-  it("announces the milestone the first time diff witnesses a real fix", async () => {
-    const dir = makeGitRepoWithRealFix();
-    const commit1 = execFileSync("git", ["rev-parse", "HEAD~1"], {
-      cwd: dir,
-      encoding: "utf8",
-    }).trim();
-    git(dir, ["checkout", "-q", commit1]);
-    await runBaselineCommand([dir], capture().io);
-    git(dir, ["checkout", "-q", "main"]);
-
-    const cap = capture();
-    const code = await runDiffCommand([dir], cap.io);
-    expect(code).toBe(0);
-    expect(cap.text()).toContain("MILESTONE: first debt reduction");
-    expect(readStats(dir).milestonesAnnounced).toEqual([
-      "first-debt-reduction",
-    ]);
-  });
-
-  it("never announces the milestone when diff has a baseline but nothing was resolved", async () => {
-    const dir = makeGitRepoWithRealFix();
-    await runBaselineCommand([dir], capture().io); // baseline against current (already-fixed) tree
-    const cap = capture();
-    await runDiffCommand([dir], cap.io);
-    expect(cap.text()).not.toContain("MILESTONE");
-  });
-
-  it("does not change diff's exit code", async () => {
-    const dir = makeGitRepoWithRealFix();
-    const commit1 = execFileSync("git", ["rev-parse", "HEAD~1"], {
-      cwd: dir,
-      encoding: "utf8",
-    }).trim();
-    git(dir, ["checkout", "-q", commit1]);
-    await runBaselineCommand([dir], capture().io);
-    git(dir, ["checkout", "-q", "main"]);
-    const code = await runDiffCommand([dir], capture().io);
     expect(code).toBe(0);
   });
 });

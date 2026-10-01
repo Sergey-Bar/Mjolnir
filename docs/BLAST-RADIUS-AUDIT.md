@@ -7,35 +7,32 @@ contract enforces: **every external import in src/ must belong to the
 allowlist**, and the shipped surface (adapters, rules, flags, formats, exit
 codes) must match this document exactly.
 
-## Inventory: 333 files, 90611 LOC
+## Inventory: 309 files, 75559 LOC
 
 | Area              | Files | LOC   |
 | ----------------- | ----- | ----- |
-| src/engine        | 56    | 19928 |
-| src/commands      | 38    | 13134 |
 | src/rules         | 89    | 12997 |
-| src/v6            | 11    | 6435  |
-| src/(root)        | 8     | 3908  |
-| src/reporter      | 14    | 3838  |
-| src/forensics     | 17    | 3065  |
+| src/engine        | 44    | 11954 |
+| src/commands      | 33    | 11483 |
+| src/v6            | 11    | 6436  |
+| src/(root)        | 8     | 3809  |
+| src/reporter      | 13    | 3623  |
+| src/forensics     | 17    | 3067  |
 | src/ledger        | 1     | 2855  |
-| src/governance    | 2     | 2834  |
-| src/frameworks    | 6     | 2718  |
-| src/plugins       | 5     | 1946  |
+| src/certification | 6     | 2622  |
+| src/frameworks    | 5     | 2015  |
 | src/discovery     | 10    | 1817  |
 | src/adapters      | 11    | 1778  |
 | src/gaps          | 2     | 1390  |
-| src/integrations  | 9     | 1355  |
-| src/qa            | 1     | 1282  |
-| src/release       | 7     | 1090  |
-| src/bench         | 5     | 1063  |
-| src/mutation      | 6     | 831   |
+| src/integrations  | 9     | 1356  |
+| src/release       | 7     | 1087  |
 | src/mcp           | 3     | 825   |
 | src/brand         | 3     | 817   |
+| src/plugins       | 4     | 715   |
 | src/store         | 2     | 665   |
-| src/certification | 2     | 571   |
+| src/scorer        | 4     | 634   |
+| src/bench         | 4     | 592   |
 | src/config        | 3     | 559   |
-| src/scorer        | 3     | 537   |
 | src/lib           | 7     | 468   |
 | src/traceability  | 2     | 441   |
 | src/scope         | 2     | 427   |
@@ -43,40 +40,41 @@ codes) must match this document exactly.
 | src/playwright    | 2     | 332   |
 | src/benchmark     | 2     | 174   |
 | src/anti-gaming   | 2     | 169   |
+| src/governance    | 1     | 90    |
 
 ## Internal fan-in — top 15 (change-blast candidates)
 
 | Module                          | Importers |
 | ------------------------------- | --------- |
-| src/types                       | 134       |
+| src/types                       | 125       |
 | src/rules/rule                  | 82        |
 | src/rules/shared/positions      | 62        |
-| src/lib/safe-json               | 23        |
-| src/reporter/ui                 | 21        |
-| src/lib/compare                 | 20        |
 | src/cli-io                      | 20        |
-| src/forensics/types             | 20        |
-| src/lib/fs-atomic               | 18        |
+| src/lib/safe-json               | 19        |
+| src/lib/compare                 | 19        |
+| src/forensics/types             | 18        |
 | src/rules/index                 | 16        |
+| src/reporter/ui                 | 15        |
 | src/engine/adapter              | 14        |
-| src/engine/degradation-ledger   | 13        |
+| src/lib/fs-atomic               | 13        |
 | src/rules/measured-fp.generated | 13        |
-| src/reporter/presentation       | 12        |
+| src/engine/degradation-ledger   | 12        |
 | src/discovery/ignores           | 11        |
+| src/rules/measurement           | 11        |
 
 ## External dependency allowlist (containment)
 
 | Dependency         | Files importing it |
 | ------------------ | ------------------ |
-| node:fs            | 69                 |
-| node:path          | 66                 |
-| node:crypto        | 21                 |
+| node:fs            | 65                 |
+| node:path          | 63                 |
+| node:crypto        | 15                 |
 | ts-morph           | 7                  |
-| node:child_process | 5                  |
 | node:url           | 4                  |
-| node:os            | 3                  |
+| node:child_process | 4                  |
 | web-tree-sitter    | 3                  |
 | yaml               | 2                  |
+| node:os            | 2                  |
 | node:process       | 2                  |
 | node:util          | 2                  |
 | node:zlib          | 1                  |
@@ -88,6 +86,6 @@ codes) must match this document exactly.
 
 - **Adapters** (7): typescript, python, java, csharp, github-actions, azure-pipelines, jenkins
 - **Rules registry**: 79 live, 22 retired, 73 measured
-- **CLI flags**: "--ascii" "--base" "--blocking" "--cache" "--category" "--classic" "--debug" "--enable-plugins" "--format" "--help" "--json" "--max-duration" "--monorepo" "--no-ascii" "--no-progress" "--record-milestones" "--require-full-coverage" "--scope" "--score" "--staged" "--strict" "--tone" "--verbose" "--width" "-h"
+- **CLI flags**: "--ascii" "--base" "--blocking" "--cache" "--category" "--classic" "--debug" "--enable-plugins" "--format" "--help" "--json" "--max-duration" "--monorepo" "--no-ascii" "--no-progress" "--policy" "--record-milestones" "--require-full-coverage" "--scope" "--score" "--staged" "--strict" "--suppression-gate" "--suppressions" "--tone" "--verbose" "--width" "-h"
 - **Report formats**: codequality, json, mermaid, sarif, terminal
 - **Exit codes** (frozen): 0 clean · 1 findings at/above gate · 2 inconclusive (partial or unsupported analysis — a CI step should fail on it) · 10 usage error · 20 internal error (frozen, docs/VERSIONING.md)

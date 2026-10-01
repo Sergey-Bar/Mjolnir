@@ -104,7 +104,8 @@ function fixtureTree({ wireBeta }: { wireBeta: boolean }): string {
         // the "healthy" case would fail for a reason unrelated to the module
         // graph under test.
         scripts: {
-          "unimported:check": "node scripts/check-unimported-modules.mjs",
+          "check-unimported-modules":
+            "node scripts/check-unimported-modules.mjs",
         },
       },
       null,

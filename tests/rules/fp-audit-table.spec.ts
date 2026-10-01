@@ -4,7 +4,7 @@
  * The generator (`scripts/generate-fp-audit-table.ts`) turns the
  * committed `tests/corpus/baseline/*.json` files into a markdown page —
  * it must never be hand-edited, since the whole point is that it cannot
- * drift from what `npm run corpus:regression` actually measured. This test
+ * drift from what `npm run corpus:audit` actually measured. This test
  * proves the render function produces valid, deterministic markdown
  * from a fixture baseline, independent of whatever the real baseline
  * currently contains.
@@ -52,7 +52,7 @@ describe("renderFpAuditMd", () => {
     expect(md).toContain("| QA-PW-004 | 1 |");
     expect(md).toContain("| QA-TEST-001 | 2 |");
     expect(md).toContain("Total findings: **3**");
-    expect(md).toContain("npm run corpus:regression");
+    expect(md).toContain("npm run corpus:audit");
   });
 
   it("is deterministic for identical input", () => {
@@ -104,7 +104,7 @@ describe("generated docs/COUNT-LOCK.md", () => {
       expect(
         content,
         `docs/COUNT-LOCK.md is missing a section for baseline "${name}" — ` +
-          `regenerate with npm run fp-audit:generate`,
+          `regenerate with npm run generate-fp-audit-table`,
       ).toContain(`## ${name}`);
     }
   });

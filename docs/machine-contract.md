@@ -137,5 +137,5 @@ contract (object):
   Presentation text (message/why/fix) is excluded: rewording detector
   prose does not change the digest of identical semantics.
 
-Full catalog: `mjolnir rules --md` · Source:
+Full catalog: `mjolnir explain --list --md` · Source:
 `src/engine/machine-contract.ts`

@@ -118,7 +118,7 @@ function verdictsFor(
  *
  * Recursive because `tests/corpus/verdicts/quad/` holds the per-rule files
  * this repository generates by EXECUTING the scanner
- * (`npm run corpus:quad:verdicts`). The first version read only the top level
+ * (`npm run check-fixture-quad --verdicts`). The first version read only the top level
  * and reported `PRECISION: 0` with 7,666 executed verdict rows sitting on disk
  * one directory down — a probe that silently skips a directory of evidence
  * reads as a finding, and that is worse than one that fails.
@@ -193,7 +193,7 @@ export function ruleHasCompleteQuad(
  * `some` is the right reading for a CAPABILITY. A framework is not un-fixtured
  * because one of its thirty rules has no negative fixture; the claim being
  * made is "we have fixtures for this ecosystem", and a ratio is a better
- * instrument for that than a threshold. `rules:quad:check` publishes the
+ * instrument for that than a threshold. `check-fixture-quad` publishes the
  * per-capability ratio so `some` is visible rather than implied.
  *
  * An empty rule list is 0 of 0, and `capabilityQuadComplete` reads that as

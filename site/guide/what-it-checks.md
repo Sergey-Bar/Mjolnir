@@ -55,7 +55,7 @@ OSS code; the remaining 5 are explicitly unmeasured and non-core:
   audited set.
 - Every scan footer reports how many of the rules that _fired_ are
   measured.
-- `mjolnir rules --unmeasured` lists the ones that aren't.
+- `mjolnir explain --list --unmeasured` lists the ones that aren't.
 - Every rule's `mjolnir explain` page states its status.
 
 Rates are published even when they're unflattering — a rule that audits
@@ -78,7 +78,7 @@ consumer suite — not a binding library's own tests — has been audited.
 ## Getting the catalog locally
 
 ```bash
-mjolnir rules --md          # full catalog as Markdown
-mjolnir rules --unmeasured  # only the rules running on assumption
+mjolnir explain --list --md          # full catalog as Markdown
+mjolnir explain --list --unmeasured  # only the rules running on assumption
 mjolnir explain QA-CI-001   # what / why / fix + FP status for one rule
 ```

@@ -59,7 +59,7 @@ describe("bus-factor program artifacts (P9)", () => {
       expect(t, `kit missing the ${verdict} standard`).toContain(verdict);
     }
     expect(t.toLowerCase()).toContain("fully worked");
-    expect(t).toContain("corpus:regression");
+    expect(t).toContain("corpus:audit");
     // The ratchet rules are present and anti-Goodhart.
     expect(t).toContain("Blank-verdict rows block");
     expect(t).toContain("never rewritten");

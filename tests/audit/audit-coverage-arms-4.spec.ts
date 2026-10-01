@@ -21,16 +21,13 @@ import { writeFileAtomic } from "../../src/lib/fs-atomic.js";
 import { loadLocalRules } from "../../src/plugins/local-rules.js";
 import { continueOnError } from "../../src/rules/ci/qa-ci-001-continue-on-error.js";
 import { pyNoAssertions } from "../../src/rules/python/qa-py-003-no-assertions.js";
-import { createRuleScaffold } from "../../src/commands/create-rule.js";
+
 import {
   main,
   runScan,
   runExplainCommand,
-  runImpactCommand,
-  runDiffCommand,
   type ScanHooks,
 } from "../../src/cli.js";
-
 const createdDirs: string[] = [];
 function tmpRepo(prefix: string): string {
   const d = mkdtempSync(join(tmpdir(), `mjolnir-arms4-${prefix}-`));
@@ -160,21 +157,6 @@ describe("rule data-shape arms (PY-003)", () => {
   });
 });
 
-describe("create-rule parseId arms", () => {
-  it("rejects an unknown family and an empty title", () => {
-    const bad = createRuleScaffold(
-      { id: "QA-XX-001", title: "t" },
-      tmpRepo("fam"),
-    );
-    expect(bad.ok).toBe(false);
-    const noTitle = createRuleScaffold(
-      { id: "QA-PW-001", title: "  " },
-      tmpRepo("ttl"),
-    );
-    expect(noTitle.ok).toBe(false);
-  });
-});
-
 describe("CLI explain/impact/diff flag-validation arms", () => {
   it("explain --fixtures-root without a value exits 10", async () => {
     const cap = capture();
@@ -184,13 +166,6 @@ describe("CLI explain/impact/diff flag-validation arms", () => {
     );
     expect(code).toBe(10);
     expect(cap.errText()).toContain("--fixtures-root requires a value");
-  });
-
-  it("impact --since without a value exits 10", async () => {
-    const cap = capture();
-    const code = await runImpactCommand(["--since"], cap.io);
-    expect(code).toBe(10);
-    expect(cap.errText()).toContain("--since requires a value");
   });
 
   it("bare subcommand stems and typo'd verbs are usage errors, not scans", async () => {
@@ -205,15 +180,6 @@ describe("CLI explain/impact/diff flag-validation arms", () => {
       errSpy.mockRestore();
       logSpy.mockRestore();
     }
-  });
-
-  it("diff on a partial scan head exits 2 with the partial gate (C5 lineage)", async () => {
-    const dir = tmpRepo("difftmp");
-    const cap = capture();
-    const code = await runDiffCommand([dir], cap.io);
-    // No baseline exists in the tmp dir — the diff degrades honestly
-    // (exit 0 with the no-baseline render or 10 usage), never crashes.
-    expect([0, 2, 10]).toContain(code);
   });
 });
 

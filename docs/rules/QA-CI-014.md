@@ -1,6 +1,6 @@
 # QA-CI-014 — try/catch swallows a verification-stage failure
 
-_Generated from the live rule registry and this rule's own committed fixtures by `mjolnir`'s doc generator — do not edit by hand. Regenerate with `npm run docs:rules`._
+_Generated from the live rule registry and this rule's own committed fixtures by `mjolnir`'s doc generator — do not edit by hand. Regenerate with `npm run generate-rule-docs`._
 
 | Field                                 | Value                                                                                           |
 | ------------------------------------- | ----------------------------------------------------------------------------------------------- |
@@ -39,7 +39,7 @@ Verified against `tests/fixtures/QA-CI-014/must-not-fire/Jenkinsfile` — a legi
 
 ## Corpus-measured false-positive risk
 
-UNKNOWN — this rule has not (yet) fired in any of the real OSS repos tracked by `npm run corpus:regression` (see `docs/FP-AUDIT.md`). That is not the same as "never fires incorrectly" — it just means no occurrence, correct or not, has been observed there yet.
+UNKNOWN — this rule has not (yet) fired in any of the real OSS repos tracked by `npm run corpus:audit` (see `docs/FP-AUDIT.md`). That is not the same as "never fires incorrectly" — it just means no occurrence, correct or not, has been observed there yet.
 
 ---
 

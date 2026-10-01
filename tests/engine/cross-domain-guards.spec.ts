@@ -26,11 +26,7 @@ import { cypFocusedTest } from "../../src/rules/cypress/qa-cyp-002-focused-test.
 import { cypConfigSecurity } from "../../src/rules/cypress/qa-cyp-003-config-security.js";
 import { hardSleepFamily } from "../../src/rules/families/hard-sleep.js";
 import { jvNoAssertions } from "../../src/rules/java/qa-jv-103-no-assertions.js";
-import {
-  runBadgeCommand,
-  runDebtCommand,
-  runTriageCommand,
-} from "../../src/cli.js";
+
 import type { ScanResult } from "../../src/types.js";
 import type { Tree } from "web-tree-sitter";
 
@@ -91,77 +87,6 @@ describe("tree-sitter-ast — concurrency slot + dispose contract", () => {
 });
 
 // ─── CLI guard branches (badge/debt/triage usage errors) ─────────────
-
-describe("CLI guard branches — badge/debt/triage usage errors", () => {
-  it("runBadgeCommand with an unknown flag → friendly stderr error, exit 10, no usage wall", async () => {
-    const out: string[] = [];
-    const errs: string[] = [];
-    const code = await runBadgeCommand(["--bogus"], {
-      out: (s: unknown) => out.push(String(s)),
-      err: (s: unknown) => errs.push(String(s)),
-    });
-    expect(code).toBe(10);
-    // Plan M2 contract: friendly did-you-mean on stderr; stdout stays
-    // findings-only (no usage wall after the error).
-    expect(errs.join("\n")).toContain('mjolnir: unknown flag "--bogus"');
-    expect(out.join("\n")).not.toContain("Usage:");
-  });
-
-  it("runDebtCommand with an unknown flag → friendly stderr error, exit 10, no usage wall", async () => {
-    const out: string[] = [];
-    const errs: string[] = [];
-    const code = await runDebtCommand(["--bogus"], {
-      out: (s: unknown) => out.push(String(s)),
-      err: (s: unknown) => errs.push(String(s)),
-    });
-    expect(code).toBe(10);
-    expect(errs.join("\n")).toContain('mjolnir: unknown flag "--bogus"');
-    expect(out.join("\n")).not.toContain("Usage:");
-  });
-
-  it("runTriageCommand without a target → usage + exit 10", () => {
-    const err: string[] = [];
-    const code = runTriageCommand([], {
-      out: () => {},
-      err: (s: unknown) => err.push(String(s)),
-    });
-    expect(code).toBe(10);
-    expect(err.join("\n")).toContain("Usage: mjolnir triage");
-  });
-
-  it("runBadgeCommand on a nonexistent target → exit 10 (validateScanTarget)", async () => {
-    const err: string[] = [];
-    const code = await runBadgeCommand([join(tmpdir(), "mjolnir-nope-zz")], {
-      out: () => {},
-      err: (s: unknown) => err.push(String(s)),
-    });
-    expect(code).toBe(10);
-    expect(err.join("\n")).toContain("does not exist");
-  });
-
-  it("runDebtCommand on a nonexistent target → exit 10", async () => {
-    const err: string[] = [];
-    const code = await runDebtCommand([join(tmpdir(), "mjolnir-nope-zz")], {
-      out: () => {},
-      err: (s: unknown) => err.push(String(s)),
-    });
-    expect(code).toBe(10);
-    expect(err.join("\n")).toContain("does not exist");
-  });
-
-  it("runTriageCommand on a directory with no reports degrades to exit 2 (usage-shaped)", () => {
-    const d = mkdtempSync(join(tmpdir(), "mjolnir-triage-"));
-    dirs.push(d);
-    const err: string[] = [];
-    const code = runTriageCommand([d], {
-      out: () => {},
-      err: (s: unknown) => err.push(String(s)),
-    });
-    // The forensics layer reports "No test results recognized" as a
-    // usage error (exit 2), not an internal error.
-    expect(code).toBe(2);
-  });
-});
 
 // ─── cli.ts runRulesCommand — --external with a local rules dir ─────
 

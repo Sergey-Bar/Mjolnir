@@ -11,6 +11,685 @@ once shipped, so this file is the record of what changed between versions.
 
 ## [Unreleased]
 
+### Names: one command, one name
+
+`package.json` carried eight families of stragglers — two names for the same
+command, a name and its write arm under different spellings, and a chain whose
+members each had a name of their own. Nothing failed, because npm has no
+opinion and a second name is indistinguishable from a first one.
+
+- **`build --determinism` and `unimported --check` had twins.** `unimported:check`
+  and `check-unimported-modules` both ran `scripts/check-unimported-modules.mjs`;
+  `build:determinism` and `verify-build-determinism` both ran
+  `scripts/verify-build-determinism.mjs`; and so on for
+  `fp-audit:generate`/`generate-fp-audit-table` and `docs:rules`/`generate-rule-docs`.
+  A reader who typed the wrong one got the right answer and no signal that the
+  name was wrong.
+- **`check-cli-contract` is the gate that made it visible.** It reads
+  `docs/cli-contract.json`, which carries one disposition per verb in
+  `src/engine/cli-command-names.ts`, and it fails when two npm names resolve to
+  the same entry with the same argv, when a verb has no disposition, and when
+  any `.md`, workflow, or Action names an `npm run` script that does not exist.
+  A check arm and a write arm of one generator is **not** a duplicate — that is
+  a declared convention in eleven places — so the rule is about the command,
+  not the file.
+- **`corpus:regression`, `corpus:regression:update`, `corpus:resample` and
+  `corpus:regression:refresh-provenance` are now `corpus:audit` with flags.**
+  Same subject, four names. `scripts/resample-unmeasured.ts` became a guarded
+  module the audit imports rather than a second entry point.
+- **`rules:quad:check`, `rules:quad:write` and `corpus:quad:verdicts` are now
+  `check-fixture-quad` with flags.** The census's own report already told
+  readers to run `npm run check-fixture-quad --verdicts`, which was not a name
+  that existed.
+- **`version:check`, `version:surface:check`, `reporter:version-check`,
+  `changelog:check` and `changelog:unreleased` are now `check-version`.** It is
+  a file, not an npm chain, for a reason that bit during this change: `ci.yml`
+  runs the unreleased-entry check with `--base=origin/<base>`, and npm appends a
+  flag to the LAST command of a chain. A chain that is reordered by one line
+  routes the flag to a check that ignores it, and the step keeps reporting PASS
+  while comparing against an empty `git status` on a fresh CI checkout. The flag
+  now has exactly one consumer, dispatched explicitly, and any other argument is
+  a usage error rather than a silent no-op.
+- **`site:doctor` is now `doctor`**, and `doctor` runs the product's own
+  self-audit before the site's, so the name a maintainer types is the name that
+  diagnoses Mjölnir.
+
+### Carve 1.1 — twenty-two READMEs, and the gate that could only be met by deleting them
+
+`README.<lang>.md` existed for 22 languages, machine-assisted, each about a
+dozen sections behind the English file. `docs/TRANSLATION-RATCHET.json` recorded
+`translationsNotFresh: 22` against a ceiling of 22 — so the ratchet could only
+ever be satisfied by deleting the thing it measured, and the maintainer had
+already documented that the failing branch was unreachable for the shape of
+regression it was written for. It was, in the end, a gate that measured nothing.
+
+Deleted: the 22 files, the advisory report, the strict variant, the ratchet, the
+release-status sync, the shared language list, and the three specs that policed
+them. `README.md` is the only README. `docs/EXTERNAL-CONFIG.md` and the three
+gate rows in `gates/{pr,release,nightly}.json` were updated rather than left
+pointing at commands that no longer exist, and `tests/contract/gate-exit-codes.spec.ts`
+now asserts the machinery is _absent_ — a deleted gate is a hole with a comment
+on it, and the comment is the only thing that survives to be trusted.
+
+The relic that went with them: `package/README.md`, a hand-maintained 778-line
+copy of the root README that nothing read and that had drifted 62 lines behind
+its own source. `pack-audit` matches tarball entries by name, so the fixture
+directory was never a real one.
+
+### Phase 2 — the matrix and the gaps: a claim, and a work queue
+
+**`generate-certification-matrix`** writes `docs/CERTIFICATION-MATRIX.md` from
+three artifacts — the language manifest, the declared surface, and the cell
+records — and `--check` is a gate in all three tiers. The first output is
+**`0/100 cells certified`**, which is the honest number and not a failing state:
+a gate that blocks on progress reports nothing else.
+
+The header says what the percentage means on every rendering, because a bare
+percentage beside a language name is exactly the misreading §5.4 warns about:
+_"the fraction of this ecosystem's required detection surface backed by
+certified evidence"_ — **not** how trustworthy a language is.
+
+**`generate-certification-gaps`** turns each of those 100 open cells into an
+issue-ready entry: the ecosystem, the concept, the language and framework, the
+gate that fails, **the arithmetic of why**, and the floor that closes it. A gap
+entry that says "n too small" is a task description; one that says
+`precision n=0 is below 35` is a specification.
+
+**Gate D was unfalsifiable, and the generated report is what showed it.** It
+failed any cell whose concept had more than one language binding — which means
+no cell of the three-language concepts could _ever_ pass, and 40 of the 100 open
+entries listed gate D. Language parity is a property of the SET, computed by
+the ecosystem roll-up in the matrix; a single cell cannot answer it. What a cell
+_can_ answer is whether it names a language its concept is bound to, which is
+what gate D says now.
+
+**Seven missing manifest rows, added.** §5.1's table claims eleven ecosystems
+with none deleted, and seven had no row — so the matrix had nothing to print for
+GitHub Actions, Playwright, Cypress, Selenium, GitLab CI, Jenkins or Azure
+Pipelines. Every one is `DISCOVERED`, which is §5.1's own definition for "we
+have seen it exist"; `UNMEASURED` would claim a measurement nobody ran.
+`ECOSYSTEM_MANIFEST` and `ALL_ECOSYSTEMS` are the new names, with the old
+`LANGUAGE_MANIFEST` kept because four specs import it — renaming an export to
+fix a noun is a breaking change dressed as tidying.
+
+**Three PENDING-CONSUMER rows deleted themselves**, which is the mechanism
+working rather than a nuisance. `validate.ts`, `record.schema.ts` and
+`language-manifest.ts` were allowlisted because nothing imported them; the
+moment the matrix generator imported them the orphan gate said _"an entry that
+no longer describes reality is a lie in a data file"_ and failed. An exemption
+that outlives its reason is how a gate starts protecting things nobody
+remembers.
+
+### Phase 2 — the §6 cell record: counts in, verdicts out, and what the schema refuses
+
+**`src/certification/record.schema.ts`** — one record per
+`concept × language × framework`, as a JSON Schema plus a type-aware validator,
+following the repository's existing pattern (`src/config/config-schema.ts`)
+rather than buying a schema library for one file.
+
+**Three things the schema refuses, and one it cannot.**
+
+It refuses a stored Wilson bound in three places — the `not` clause, the
+`additionalProperties: false`, and the validator — because the plan's
+counter-example (`{fp: 5, n: 250, fpWilsonUpper: 0.02}`) reads as valid to
+anything that does not recompute it. It refuses one _nested_ inside the counts,
+which is where someone actually pastes a rate they just computed; a top-level
+check passes it. And it refuses `standard: "manifest-v5"` on a cell record.
+
+It cannot express `n === tp + fp`, so the validator does. An `n` that disagrees
+with its own parts asserts something the evidence beside it does not support —
+the arithmetic twin of the stored-bound defect, and one nothing recomputes
+because an integer looks final.
+
+**§5.2's two columns, spelled.** `CELL_STATES` is `v6-PENDING`,
+`v6-PARSEABLE`, `v6-CERTIFIED`, … and the validator rejects a bare
+`CERTIFIED`. TypeScript must read as `CERTIFIED (manifest-v5, n=240) · 0/9 cells
+(v6-abcdef, PENDING)` — the plan's own worked example, and the reason a cell
+state carries its standard in the name. A bare `PENDING` beside a `CERTIFIED` in
+the same row is a sentence two readers will contradict each other about.
+
+**§6.4's re-attachment needs an arm.** `legacyVerdicts[].arm` exists because
+multi-arm rules are real here: `TQUAL-001` carries a no-assertion arm and a
+mock-only arm, `PW-124` a project-split arm and a config-gap arm. Keying on
+`(oldRuleId)` alone would attach half a rule's verdicts to the wrong arm.
+
+### Phase 2 — `EXPECTED_CERTIFICATION_SURFACE`: the denominator, declared
+
+**`src/certification/surface-manifest.ts`** — 107 cells across all eleven §5.1
+ecosystems, each `REQUIRED` or `NOT_APPLICABLE` **with a reason**, plus
+`check-certification-surface` and its committed baseline.
+
+Without a committed denominator, "60% → 100%" is achievable by deleting the
+five cells that were not certified. That is the one move that improves every
+number in the report without anybody writing a fixture, and no metrics-only
+report can tell it from progress.
+
+Four properties, each with a test:
+
+- **The surface cannot shrink silently.** The gate compares the manifest
+  against a committed baseline, so a removal committed last month is still
+  visible today. A gate that compared the manifest against itself could not
+  see it at all — the change would already have passed.
+- **`REQUIRED` may grow freely.** Raising the bar is never gated; only
+  shrinking is, and only with `--acknowledge-surface-change=<why>`, which moves
+  the baseline and records the reason beside the new list.
+- **Every exclusion NAMES AN ALTERNATIVE.** `NOT_APPLICABLE` is a first-class
+  state and it is printed, but a reason that says only why _not here_ is a
+  deletion wearing a label. The gate rejects it; the plan's own example — a CI
+  concept on a Python ecosystem — shows the real shape.
+- **No cell names a concept the vocabulary does not have.** This caught three on
+  the first run: `frameloctor-…`, `ignored-exit-code-or-true` and
+  `trial-click-…` were ids I guessed rather than read, and a `REQUIRED` cell for
+  an undefined concept is a denominator entry nobody can ever close.
+
+**The three wave-C ecosystems with zero corpus repositories STAY.** Deleting
+GitLab CI, Jenkins and Azure Pipelines would improve every percentage in the
+report by removing the ecosystems nobody has measured. §5.1 retains all
+eleven; a wave is a ranking, not a deletion.
+
+**Two defects the spec found in the gate it was written for.**
+
+The gate computed `removed` and `added` with the _same_ filter over the current
+keys — so `removed` was really the added set, and a genuine shrink was
+invisible. The gate that exists to catch a shrinking denominator did not
+detect one. The fixture shrank the surface by a cell and the gate said PASS,
+which is how it was found.
+
+And the gate **swallowed a failure to read its own manifest**: with no
+`node_modules` in the fixture tree the `tsx` spawn failed, the error was
+ignored, and it printed `PASS — 107 cells`. A gate that reports a pass because
+it could not read its input is the loudest possible wrong answer, so an
+unreadable manifest is now exit 10 and says so. The fixture needed a
+`node_modules` junction for a different reason: it copied the gate and then
+invoked the _real_ one, which computes its root from its own location — so the
+mutation was applied to a copy nobody read, for three runs.
+
+### Phase 2 — the concept vocabulary, and the §6 contract that judges a cell
+
+**`src/certification/concepts.ts`** — 60 concepts covering all 79 rules,
+**generated** from the registry by `scripts/generate-concepts.ts`, **committed**
+for review, and **verified** by `tests/contract/certification-concepts.spec.ts`.
+The registry is the authority; the table is a claim about it a reader can check.
+
+A concept is a failure MODE and a rule is that mode in one language. The
+derivation is mechanical because the titles in this tree already assert the
+grouping: `QA-TEST-004` ("Hard sleep in test", TypeScript) and `QA-PY-005`
+("time.sleep() in test", Python) are different rules for the same concept, and
+§6 certifies `concept × language × framework` — so a concept that split them
+would certify one detector twice and report two cells where there is one.
+
+It yields 60 concepts where the plan says 32, because the plan's concepts are
+COARSER: it calls `test-cannot-fail` one concept, the tree calls it five ("Test
+without assertions", "Empty test body", "Skipped test", "Focused test",
+"Disabled test"). Both are defensible and they measure different things, so
+the fine cut is committed and the coarse groupings are expressible as a VIEW
+over it — additive and reviewable, where merging rows is not. The count is
+reported, not gated, which is the plan's own rule for counts.
+
+**`src/certification/validate.ts`** — §6 as code: six independent gates, counts
+in and verdicts out.
+
+**Counts are stored; intervals never are.** `CellEvidence` has no
+`fpWilsonUpper` field and `assertCountsOnly` rejects a JSON record that has
+grown one — walking the TREE, because the first version checked only the top
+level and `fpRate` nested inside `precision` is exactly where someone would
+paste it. The plan's own counter-example is `{fp: 5, n: 250}` with a stored
+0.02 upper bound: it looks valid to anything that does not recompute it.
+
+The thresholds are pinned by tests, because they are not round numbers:
+`n ≥ 35` is where a PERFECT 35-of-35 clears both a `≤ 0.10` FP upper bound and a
+`≥ 0.90` recall lower bound — `wilson(0,35) = 0.0989` and `wilson(35,35) =
+0.9011`. That coincidence is the entire justification for the concept bar, and
+`n ≥ 34` failing is asserted beside it, because a threshold nobody fails is not
+a threshold.
+
+**Three wrong readings of the Wilson bound, and the tests caught all three.**
+`wilsonInterval(x, n)` is a proportion of SUCCESSES. For precision the successes
+are the FALSE POSITIVES; for recall they are the TRUE POSITIVES. Reading `fn`,
+or reading the complement `n - tp`, gives a lower bound of exactly **0** on a
+perfect cell — the Wilson bound at p = 0 is 0 — so every cell in the repository
+fails gate B. The plan's own numbers settle it: `wilson(35,35) = 0.9011` is a
+lower bound on a cell with no failures.
+
+The tiering is asserted as a RELATIONSHIP rather than a comparison: the same
+24-of-24 evidence clears the cell bar (0.862 ≥ 0.80) and fails the concept bar
+(0.862 < 0.90, and `n = 24 < 35`). That is the reason §5.5b has two tiers, and
+an assertion comparing a bound to a count would have passed for no reason at
+all — which is what the first version of that test did.
+
+**One commit-time self-caught defect.** Registering the two new npm scripts, the
+first draft was `check-concepts: "… generate-concepts.ts"` plus
+`generate-concepts: "… generate-concepts.ts --write"` — two names, one file,
+one command. That is the exact straggler pattern Phase 0 existed to remove,
+committed by the person removing it, and caught by the gate built for the
+purpose.
+
+`validate.ts` is on the orphan list as `PENDING-CONSUMER`, with the reason that
+its first production caller is `generate-certification-matrix.ts`. It is filed
+as pending rather than as an exemption on purpose: this gate fails an allowlist
+row that something now IMPORTS, so the row disappears the moment the matrix
+generator lands.
+
+### Carve 1.6.1 — the order-dependent pair, and why they are still reachable
+
+The plan marks `historical-trust.ts` and `machine-contract-verification.ts` as
+deletable **only** after `commands/milestone.ts` stops needing them, and says to
+do it here rather than in 1.5 for exactly that reason. Every refactor that
+removed a verb left `milestone.ts` as the home of the survivors, so two modules
+on the delete list stayed reachable through a filename that no longer described
+what the file was.
+
+`commands/milestone.ts` went from 1,049 lines to 463, split along the seams it
+already had:
+
+- **`milestone-args.ts`** — the arg parser, the target validator and the
+  workflow-file check. Seven commands used them and they are **shared**, not
+  copied seven times: a flag rule that exists twice can disagree with itself,
+  and the copy a pipeline runs is the one that has to be right.
+- **`contract-verify.ts`** — the ~280 lines of nested type guards that decide
+  whether a file on disk is the document the tool claims it wrote, plus the
+  command.
+- **`release-trend.ts`** — the trust-snapshot history and `ci release-trend`.
+
+**The two engine modules stay, and `docs/cli-contract.json` records why with
+their importer named.** `contract-verify` is a live verb (the plan's merge into
+`ci verify` is a behaviour change to a live command, recorded as
+`plannedTarget` rather than done), and `ci release-trend` is a live subcommand.
+The delete list was written when those verbs were going away; the capability
+moved rather than vanished. "On a delete list" and "reachable from three
+places" are both true, and only one of them is a reason to delete.
+
+A range extraction cannot see what a slice depended on, and the compiler listed
+all 300 resulting errors. Four of them are worth recording because each is a way
+this goes wrong quietly:
+
+- `ContractDocument` is `ScanResult & { contract }`, not a wrapper with a `scan`
+  field. I guessed the wrapper. A persisted contract artifact is the scan with
+  its own verdict attached, and a reader that has to know which of the two
+  shapes it holds is a reader that will hold it wrong.
+- `MilestoneArgs` was declared _above_ the extracted range, so the module that
+  PARSES it no longer contained it. A type with three homes is a type with
+  none; it belongs where the parsing is.
+- `STRICT_SUPPRESSION_POLICY` sat immediately above the range and stayed behind
+  with its only reader gone — moved down to it.
+- `ContractDocument` ended up declared in two of the new files, because a
+  declaration and its first use can straddle a boundary. Two identical copies
+  are invisible to the compiler, which is the reason to look for them by hand.
+
+### Carve 1.6 (MOVE arm, group 3) — three internal verbs folded, two arrows that do not connect
+
+`pw-report`, `framework-maturity` and `doctor:playwright` all fold into flags —
+`explain --playwright`, `doctor --frameworks`, `doctor --frameworks` — which is
+what the plan calls INTERNAL for all three: none is a capability a reader is
+meant to reach for. `doctor --frameworks` is a FLAG and not a second
+`argv[0] === "doctor"` branch, because `tests/contract/readme-commands.spec.ts`
+reads those literals as the known subcommand set and one verb with two entries
+in it is a set that no longer means what it says.
+
+**Three of the plan's arrows do not connect, and the contract says so.**
+
+- `contract-verify` → `ci verify`. `ci verify` is the BLOCKING CHECK and does
+  not run the machine-contract or exit-code validators. Folding it is a
+  behaviour change to a live command, not a rename, so the verb, the
+  implementation and its eleven tests stay and the row reads
+  `plannedTarget: ci verify` with the reason.
+- `analyze` → `explain`. `analyze` is CROSS-FILE analysis — shared imports,
+  duplicated blocks, circular dependencies — and its findings reference
+  multiple files. `explain` answers "what does this finding mean"; making it
+  answer "which files import each other" would give a verb a capability it
+  does not have.
+- `handoff` → `install agent-rules`. `install` writes agent INSTRUCTION
+  surfaces; `handoff` renders a deterministic remediation plan from a saved
+  report. One configures an environment, the other renders a document an agent
+  can execute.
+
+**Two routing bugs the collapse introduced and this step fixed.**
+
+- `mjolnar ci install --help` started running the installer. The `--help` rule
+  was positional in its first form and had a second special case for the
+  three-token case; the collapse generalised the first and deleted the second,
+  taking the `ci install --help` path with it. The rule is now "a `--help`
+  anywhere in the invocation asks for help", which is the rule that was always
+  true.
+- `mjolnar ci verify --help` rendered **`ci install`'s** page, because the
+  dispatcher built the subject as `ci:install` and the catalogue keys it
+  `"ci install"` — a space, because no verb name contains one. A `:` was
+  chosen to avoid colliding with `doctor:playwright`, which read as clever
+  right up to the moment it sent a reader to a page that does not exist.
+
+The root help also no longer prints a section whose verbs are all retired: the
+collapse emptied two groups and left the headings, and a table of contents that
+promises a section it does not have is the same class of claim as a command
+that does not exist. The `GROUPS` list itself was rewritten to name the fourteen
+entries the catalogue actually has — it used to list twenty-nine, of which the
+renderer silently skipped twenty, so the file read as a graveyard.
+
+`tests/cli/help.spec.ts` gained a sweep that renders every catalogue entry and
+both composite pages and asserts none names a retired verb, reading the
+retirements out of `docs/cli-contract.json` rather than listing them. The
+pattern covers slash-separated tool lists as well as invocations, because the
+`mcp` line carried three retired names in that shape and the narrower sweep was
+blind to it.
+
+### Carve 1.6 (MOVE arm, group 2) — five capabilities became `explain` arms
+
+`explain` is the question verb. Five capabilities were top-level verbs that all
+answer a variation of that question, and each is a flag on it:
+
+| Was          | Now                   |                                                       |
+| ------------ | --------------------- | ----------------------------------------------------- |
+| `rules`      | `explain --list`      | the rule catalogue, with each rule's measured FP rate |
+| `why`        | `explain <file:line>` | already an arm — see below                            |
+| `cross-file` | `explain --callers`   | who calls this symbol                                 |
+| `handover`   | `explain --plan`      | who owns what, and what to do next                    |
+| `triage`     | `explain --evidence`  | runtime evidence from a real run                      |
+
+**`why` never moved.** `explain` has delegated the `file:line` subject form to
+that command since before the collapse, so retiring the verb removed a second
+name for a capability `explain` already had. The cheapest MOVE in the set and
+the one most likely to be got wrong: `mjolnir why file.ts:12` is now a usage
+error, and the fix is a different word in the same position.
+
+`--playwright` is the internal arm (the plan says so), and it is marked as such
+in the table. `pw-report` summarised a Playwright run for a person reading CI
+output; the same information arrives through `--evidence` once that arm reads a
+report rather than one runner's format, and one flag that means "the run
+summary" beats two that mean it for one of them.
+
+The arms table has the same shape as `CI_SUBCOMMANDS` and for the same reason:
+it is the single source the dispatcher reads **and** the help renders from.
+Arms are dispatched **before** the subject is read, because `--list` and
+`--plan` take no subject and the subject check is what `mjolnar explain --plan`
+would otherwise have hit.
+
+**One residue worth naming.** `cli-handlers.ts` carried
+`import {} from "./forensics/triage.js";` — an empty import left behind when the
+`triage` VERB was retired, because every specifier in that statement became
+unused and the statement survived. Legal TypeScript, imports nothing, and it
+points at the file a maintainer would go looking in for where triage lives.
+
+The generator of the 101 rule-doc footers was fixed before the files were, so
+`mjolnir rules --md` did not come back on the next `npm run generate-rule-docs`.
+The 22 PRESERVED retired-rule pages still name it, correctly: they record what
+a rule said while it existed, and the gate now skips a rule doc whose ID is not
+in the live registry — a fact read from the registry, not a pattern exemption.
+
+### Carve 1.6 (MOVE arm, group 1) — five verbs became `ci <subcommand>`
+
+`ci` is the right home for all five, and the word is not incidental: each one is
+a check a pipeline runs, and `ci` is already the verb whose meaning is "the
+thing a pipeline does".
+
+| Was               | Now                  |                                                         |
+| ----------------- | -------------------- | ------------------------------------------------------- |
+| `ci-adapter`      | `ci adapters`        | which ecosystems can be analysed, and how well          |
+| `ci-integrity`    | `ci integrity`       | the generated workflow is itself correct                |
+| `verify`          | `ci verify`          | run the blocking check and the suppression policy       |
+| `release-trust`   | `ci release-trust`   | the signed measurement release's trust record           |
+| `trust-trend`     | `ci release-trend`   | how that record has moved across releases               |
+| `contract-verify` | `ci verify` (merged) | its two checks are the judgement `verify` already makes |
+
+`integrity` and `verify` are the sharpest case in the whole collapse: as
+top-level verbs, `mjolnir integrity` and `mjolnir verify` read as two
+products that happened to share a surface nobody could see from the command
+list. `contract-verify` is recorded as a **merge with its destination named**,
+not a rename — "the checks went somewhere" has to be checkable.
+
+**The table is the claim.** `CI_SUBCOMMANDS` in `src/cli.ts` is one object, the
+dispatcher reads it by name, and `mjolnir ci --help` renders from it — so a
+subcommand that exists is documented and one that is documented exists. A
+dispatcher with five inline `if` arms plus a separate help string is how the two
+drift apart, and this repository has that shape somewhere in every other
+subsystem. An unknown subcommand names the known ones and exits 10.
+
+Two routing bugs the collapse fixed on the way: `ci --help` rendered the ROOT
+help, and `ci verify --help` rendered **`ci install`'s** help, because the
+`--help` rule hardcoded `["ci", "install"]`. Both are now derived from the
+request rather than from a constant.
+
+### Carve 1.6 (REPLACE arm) — four verbs became flags, and two could not
+
+`scan` gained three `--format` values and three modes:
+
+| Retired verb       | Replacement                    | What the flag is                                                                               |
+| ------------------ | ------------------------------ | ---------------------------------------------------------------------------------------------- |
+| `trust-report`     | `scan --format trust-report`   | the terminal render, spelled out                                                               |
+| `pr-comment`       | `scan --format pr-comment`     | the same renderer plus the stored-baseline diff, so a comment can still say RESOLVED           |
+| `summary`          | `scan --format github-summary` | named after its CONSUMER, because `summary` was ambiguous with the terminal's own summary band |
+| `suppressions`     | `scan --suppressions`          | the ledger, now reading the TARGET rather than the cwd                                         |
+| `suppression-gate` | `scan --suppression-gate`      | **delegates** to the command; the flag lands first                                             |
+| `policy`           | `scan --policy`                | the SCORING table, printed from the constants                                                  |
+
+`scan --policy` is the new file here: `src/scorer/scoring-policy.ts` imports
+`NORMALIZATION_K`, `SMOOTHING_C`, both ceilings and the deduction-mass bands
+and renders them, so the table cannot drift from the code that scored the run.
+The `NORMALIZATION_K` line says **declared, not fitted** in the table itself,
+because printing a bare `5` among measured numbers reads as a measurement, and
+it is not one.
+
+**Two of the plan's REPLACE rows were not honest replacements, and are recorded
+as pending rather than done.** `stats → scan --json` would replace a milestone
+ledger with a scan result — a different document wearing the same name. `rules →
+explain --list` and `why → explain <file:line>` name arms that do not exist
+yet. And `policy` keeps its verb, because `mjolnir policy init` and
+`validate` manage `mjolnir.policy.json`, a file that gates CI; folding a
+subcommand tree into a flag would lose both. Each row in
+`docs/cli-contract.json` now says what is missing, because "the plan says so" is
+not a disposition.
+
+`--suppression-gate` delegates rather than reimplementing: a governance rule
+that exists twice can disagree with itself, and the flag and the command are
+the same judgement, so the flag synthesises argv and calls it.
+
+### Carve 1.6 slice 2 — `mutation`, `forensics` and `triage`, and a directory that had to stay
+
+The `mutation` verb is gone with `src/mutation/` (501 lines): reading Stryker
+and Mutmut reports is reading another tool's opinion of the code, and the
+directory had no importer but the verb's own runner. Two fuzz harnesses are
+narrowed rather than deleted, and the loss of mutation-format fuzz coverage is
+recorded here rather than left in a file that was about to be deleted.
+
+**`src/forensics/` stays.** The plan makes `forensics` a DELETE, and the verb
+is deleted — but the import graph says the directory is not dead:
+`evidence-hygiene.ts` is imported by `commands/trust-report.ts` and
+`integrations/github/evidence-sanitization.ts`, the path the GitHub Action's PR
+comment goes through, and `triage.ts` is imported by `mcp/server.ts` under a
+parity contract. Deleting 2,600 lines by name would have broken the PR commenter
+and the MCP server, and the diff would have been green. That is the plan's own
+"names are not evidence" applied to a directory the plan did not enumerate.
+
+`triage` is a MOVE to `explain --evidence` and the flag lands with the next
+slice, so the contract records `targetStatus: PENDING` rather than claiming the
+capability has arrived. The verb goes now so nothing can depend on it; the
+capability arrives when the flag does.
+
+**The generated output was naming the dead tool at users.** `FLAKY.md` and
+`TRIAGE.md` stamp themselves "Generated by `mjolnir triage`" — a string
+written into a file a user commits to their repository, asserting a command
+ran. Both now name Mjölnir and the data source instead, which is both true and
+stable across the verb's next move.
+
+One source-layer miss worth recording: the rule `fix` strings that told users
+to run the retired verbs live in `src/rules/`, and I edited the _generated_
+`docs/rules/*.md` first. `npm run generate-rule-docs` would have put them
+straight back — the same class of bug as the hardcoded `@v3` in the
+translation sync, one level up. The rules are the source; the docs, the site
+pages and the demo report are all downstream of them, and changing a generated
+file without changing its generator is a decision that survives exactly until
+the next regeneration.
+
+Two artifacts turned out to be hand-maintained with no writer:
+`assets/readme/demo-report.json` (four readers, no generator) and
+`packages/playwright-reporter/` (unpublished, 0.1.0, its whole description
+about the three retired verbs). Both are noted rather than quietly patched; the
+reporter is a Phase 7 decision, since its output format is still what the
+evidence path will read.
+
+### Carve 1.6 (DELETE arm) — ten verbs removed, and every place that named one
+
+`badge` · `debt` · `impact` · `trend` · `exec-report` · `dashboard` ·
+`baseline` · `diff` · `create-rule` · `init` are gone: the command module, the
+`cli.ts` `VERBS` row, the `argv[0] === "…"` literal that
+`tests/contract/readme-commands.spec.ts` reads, the import and re-export lists,
+the `cli-handlers.ts` runner, the help-catalogue entry, and 117 tests across 27
+spec files — four of which were deleted outright because the removed verb was
+their entire subject.
+
+**A verb's disposition is about the verb, not the module.** `baseline` is the
+case that would have shipped a green build and a broken product: the module is
+imported by `stats.ts`, `verify.ts`, `mcp/server.ts` and
+`reporter/pr-report-shared.ts`, so deleting it with the verb would have broken
+the MCP server, the PR reporter and `verify`. The module survives as a shared
+reader with a header that says so; the verb does not, because a stored
+"yesterday was fine" is the same trust-the-green-check failure the product
+exists to catch. That is the plan's own instruction — _names are not evidence_ —
+applied to an object it did not name.
+
+**The suggestions the product printed were the bug nobody filed.** The
+reporter's `nextStep` strings are not documentation; they are the next thing
+printed into the terminal. `nextStep("mjolnir diff")` in a product whose `diff`
+was retired in the same commit is a command that does not exist, in the one
+place a user is guaranteed to be looking. `check-cli-contract` treats `src/`
+as a live surface for exactly this reason, and it is why `src/` was swept too
+rather than left to a later documentation pass.
+
+**The contract is now a record of removals, not only of presences.**
+`docs/cli-contract.json` gained `retiredVerbs`, and the gate learned to check
+it: a `DELETE` row for a verb that has left `cli-command-names.ts` must appear
+in `retiredVerbs` with the commit that made it, and a `retiredVerbs` entry for
+a verb that is still registered fails too. Ten verbs retired; the gate now
+fails any README, site page, workflow, Action or source string that names one.
+
+Follow-through, all of it found by gates rather than by looking: three coverage
+exemptions whose subject is gone, three `vitest.config.ts` coverage exclusions,
+two degradation exemptions, the dashboard-template assertion (which asserted
+"exactly one generator" and became vacuous when the generator was deleted, so
+it now asserts the invariant that still has teeth — that two renderers cannot
+both claim a band), and the demo asset, regenerated.
+
+`forensics` stays. The plan makes it a DELETE too, and it will be — its
+subsystem and the `triage` relocation into `explain --evidence` are the next
+slice. Its row says KEEP until they land, because a contract that asserts a
+deletion the binary does not honour is worse than one that is merely out of
+date.
+
+### Carve 1.5 — 14,986 lines of unwired modules, and one the plan got wrong
+
+Nineteen modules with zero importers, all nineteen already on the committed
+orphan list, all nineteen with a dedicated spec file that imported nothing but
+them. A module with a test and no caller is the shape that makes dead code look
+alive: `tests/` counted as coverage of a file the product never reached.
+
+Deleted: `evidence-artifacts` · `finalize-scan-result` · `pipeline-stages` ·
+`semantic-model-api` · `runtime-evidence-graph` (1,857 lines) ·
+`runtime-static-correlation` · `coverage-ingestion` · `evidence-enforcement` ·
+`reporter/sarif-compliance` · `m38-challenge-contract` ·
+`m43-system-of-systems` · `m44-historical-intelligence` (2,247) ·
+`m49-experience-parity-contract` · `bench/m48-scale-operating-model` ·
+`governance/m33-m34-contract` (2,745) · `qa/domain-model` ·
+`frameworks/universal-pack-contract` · `plugins/sdk-contract` ·
+`mutation/failure-sensitivity` — and their twenty specs. Nineteen stale
+allowlist rows went with them, because a row describing a file that no longer
+exists is the same lie as a row describing a file something now imports.
+
+**The plan listed a twentieth as a true orphan, and it is not one.**
+`src/engine/evidence-graph.ts` has two importers and is shipped-reachable —
+`src/commands/milestone.ts` is one of them, which is the command that serves
+the `evidence-graph` verb. Deleting it would have removed the only way to reach
+a query surface the §3 table does not even mention. It stays, and
+`docs/cli-contract.json` now records the import-graph evidence rather than the
+plan's assertion.
+
+The check that caught it is worth naming, because the first version of it was
+wrong: it resolved the plan's bare filenames (`evidence-graph.ts`) against
+`src/`, where they do not live, so the import graph returned an empty importer
+list for all twenty and every one of them looked like a safe deletion. The
+files are under `src/engine/`, `src/bench/`, `src/governance/`, `src/qa/`,
+`src/frameworks/`, `src/plugins/` and `src/mutation/`. A graph lookup that
+answers "no importers" for a path that does not exist is not evidence of
+anything, and the plan's own instruction — _names are not evidence_ — applies
+to the plan's file list exactly as it applies to the tree.
+
+### Carve 1.3 — the brand self-audit survives, and its header stopped lying
+
+`npm run brand:doctor` is a nine-rule self-audit over a six-node graph, and
+it still passes 9 of 9 with an empty `KNOWN_OPEN` ratchet. The tokens stay:
+`src/brand/tokens.ts` is load-bearing for the reporter, the site theme, the
+README generators and the mark hashes, and `assets/brand/tokens.json` is
+byte-locked against it.
+
+What changed is the gate's own description of the tree. It said the badge
+drift appeared "in all 23 READMEs" and referred to a `site-doctor` check by a
+name that no longer exists. "Every README" is now one file plus five generated
+bands, and the rule did not weaken to reach that number — the twenty-two
+translations were never a distinct edge, they were copies of the same badges,
+and the copying is what made the drift expensive.
+
+Site gate after the step: `gen`, `test`, `doctor` (0 of 8 failing), `build`,
+with no generated drift.
+
+### Carve 1.2 — the 86-second tour drew a command the product will not have
+
+`assets/video/script.tour.json` rendered `mjolnir forensics
+./test-results/`, and `forensics` is a DELETE verb in the v6 CLI collapse
+(plan §3). A committed render script is evidence: it is what the renderer
+is allowed to draw, and it was drawing a command that will not exist.
+
+Removed: `captureTourScript()`, the `tour` script id, `script.tour.json`,
+the `tour` arm in three contract specs, the `both|demotour` choice on the
+`demo-video` workflow, and the tour rows in the video README. Order mattered —
+this runs before the CLI collapse so the three specs that re-run the capture
+and fail on drift stay green instead of going red on a verb the carve was
+about to remove.
+
+The hero stays. Its story — a false-green CI gate found, fixed, re-proved —
+is the whole positioning, and it uses only verbs the collapse keeps.
+
+One behaviour change while the file was open: rendering no longer overwrites
+the committed MP4. `publishDemo()` used to run unconditionally after any
+render, so a manual workflow dispatch replaced two binaries the README links
+to without asking. Publishing is now an explicit `--publish`, which
+`npm run docs:video:render` passes, so regenerating the shipped asset is
+unchanged for a human and safe by default for a workflow.
+
+### The Action major tag every reader was told to pin did not exist
+
+`action.yml` documented `uses: Sergey-Bar/Mjolnir@v3` while the published stable
+was **5.0.0** — and `scripts/readme-release-status.mjs` did not merely inherit
+that, it re-wrote it. Every translation sync ran
+
+```js
+replaceAll("Sergey-Bar/Mjolnir@v1", "Sergey-Bar/Mjolnir@v3");
+```
+
+so twenty-two translated READMEs instructed every non-English reader to pin a
+tag the repository stopped moving at 3.x, and the next sync put it back. A
+hardcoded major is a syntactically valid ref; it fails for the reader as a 404
+and for nobody in this repository.
+
+The sync now derives the major from the released version, and
+`tests/contract/census-drift.spec.ts` sweeps every live surface for a
+`Sergey-Bar/Mjolnir@vN` that is not the published major, with the same
+dormant-shape and match-count discipline the census sweep already uses.
+
+### The carve manifest: 28 files, and the one that mattered
+
+Phase 1 removes ~10,000 lines across twenty areas. The cheapest way for that to
+go wrong is for a reviewer to trust a folder name, and the plan's own evidence
+says not to: `src/ledger/` reads like bookkeeping and is 2,856 lines of M26
+validators that four scripts import. So `docs/CARVE-MANIFEST.json` records, per
+file, who imports it, whether it ships, which specs name it, and how big it is —
+generated facts, hand-written dispositions that survive regeneration, and a gate
+(`npm run check-carve-manifest`) that fails when the two disagree.
+
+All 28 files start at KEEP. Nine have no importer; every one of them was already
+on the disclosed orphan list, so the manifest found no new dead code — it found
+the size of the code that a directory name would have hidden.
+
+The gate also fails on the case a directory-based review cannot see: a file that
+left the tree without a DELETE disposition. That is the difference between a
+reviewed removal and an accident, and it is one field.
+
 ### Claim integrity — the gates that could not fail
 
 Every item here is a check that was running, reporting, and could not have
@@ -65,7 +744,7 @@ load-bearing and held nothing.
 - **Two hardcoded-`false` quad resolvers, in two files.** They could not fail
   and the census's directory-size proxy answered a different question from the
   registry's `false`. Both now read one filesystem probe.
-- **Seven gates ran only locally.** `qa-ir:parity` and `unimported:check` were
+- **Seven gates ran only locally.** `qa-ir:parity` and `check-unimported-modules` were
   on a nightly cron, so a PR that broke either passed CI and failed on the
   maintainer's machine. The other seven are new here. All nine are in
   `gates:claim-integrity`, which `ci.yml` runs as one step — named per gate
@@ -77,15 +756,15 @@ load-bearing and held nothing.
 `npm run gates:claim-integrity` chains the nine claim-integrity checks so a
 failure names its gate instead of a step number. Also new: `workflow:scripts`,
 `config:consumers`, `scripts:reachable`, `translations:ratchet`,
-`docs:provenance-drift`, `rules:quad:check`, `rules:promotion:check`,
+`docs:provenance-drift`, `check-fixture-quad`, `rules:promotion:check`,
 `check-changelog`.
 
 ### Deliberate omissions
 
 - **The 4-leg fixture backfill (148 legs) is not in this change.** The plan
   requires the quad to be _executed_, not merely present; writing 148 legs
-  no detector had run against would have made `rules:quad:check` green by
-  construction. `npm run rules:quad:check` prints the work list — 53 rules
+  no detector had run against would have made `check-fixture-quad` green by
+  construction. `npm run check-fixture-quad` prints the work list — 53 rules
   have `MUST-FIRE`, 40 `MUST-NOT-FIRE`, 75 `RECALL`, **0 `PRECISION`**, and 0
   of 79 have all four — so the backfill is driven by data rather than memory.
   `PRECISION` is zero because it demands a classified `TN` on a negative
@@ -780,9 +1459,9 @@ This release is software-complete and locally certified for the declared enginee
 
 - Added seven milestone commands to the public CLI and root help:
   - `mjolnir ci-integrity` validates GitHub/GitLab/Jenkins scan gates and reports non-blocking or disabled candidates.
-  - `mjolnir framework-maturity` reports bounded F0–F5 maturity while preserving human calibration authority.
+  - `mjolnir doctor --frameworks` reports bounded F0–F5 maturity while preserving human calibration authority.
   - `mjolnir suppression-gate` evaluates reasons, expiry, allowlists, total counts, and matched-finding mass suppression.
-  - `mjolnir cross-file` reports duplicate test names, shared imports, circular dependencies, and amplified findings.
+  - `mjolnir explain --callers` reports duplicate test names, shared imports, circular dependencies, and amplified findings.
   - `mjolnir contract-verify` validates machine-contract fields and binds persisted contracts to a fresh scan.
   - `mjolnir trust-trend` persists, deduplicates, and compares trust snapshots.
   - `mjolnir evidence-graph` builds provenance-bearing evidence graphs and supports file/rule queries.
@@ -1743,7 +2422,7 @@ Azure DevOps support: guarded azure-pipelines.yml parsing, the QA-CI Azure arms,
   preserved byte-identically (differential preservation suite).
 - **Explain v2 (WI-7).** `mjolnir explain` gains verdict mode
   (`mjolnir explain verdict --json <mjolnir.json>`) and finding mode
-  (file:line delegates to `mjolnir why`); every mode now answers the §8
+  (file:line delegates to `mjolnir explain <file:line>`); every mode now answers the §8
   checklist including WHAT WOULD CHANGE THE VERDICT and NEXT ACTION.
 - **Triage v2 (WI-8).** `mjolnir triage` now runs the §9 guided workflow —
   CLASSIFY → EVIDENCE → TRUST VERDICT → NEXT ACTION per row, every row
@@ -1944,7 +2623,7 @@ Azure DevOps support: guarded azure-pipelines.yml parsing, the QA-CI Azure arms,
 
 ### Added
 
-- **`mjolnir why <file>:<line>`** — occurrence-level evidence query
+- **`mjolnir explain <file:line> <file>:<line>`** — occurrence-level evidence query
   (informational, NOT a gate): exact file+line match, severity icon,
   message/why/fix, evidence level, trust level, measured FP rate
   (or the honest "ships on assumption"), runtime corroboration when
@@ -2354,7 +3033,7 @@ rules… → Scoring…`) fed by the new additive `ScanHooks.onProgress`.
   unified filter excludes them from non-strict scans exactly like core
   (post-scan cap still observable under `--strict`; the cli-scan-arms
   test updated to cover both sides).
-- **Drift-checked:** `mjolnir rules --md --external` renders the
+- **Drift-checked:** `mjolnir explain --list --md --external` renders the
   catalog from the LOADED external rules with a provenance column
   (`core`/`external`) — an on-disk edit changes the next render; the
   catalog can never drift from what actually ships.
@@ -2913,7 +3592,7 @@ SEMANTIC | FRAMEWORK | RUNTIME`) instead of free text: `src/rules/rule.ts`
 
 ### Added — UNSURE adjudication gate + QA-PW-101 measured (plan §11.5)
 
-- **UNSURE ceiling ratchet:** `npm run fp-audit:generate` now fails when the
+- **UNSURE ceiling ratchet:** `npm run generate-fp-audit-table` now fails when the
   UNSURE backlog grows beyond the committed
   `tests/corpus/verdicts/unsure-ceiling.json` (the §11.5 mechanism: UNSURE
   never counts into `n` but always triggers review). The ceiling only moves
@@ -2982,7 +3661,7 @@ detectorRevision, FP ≤ 10%, n ≥ 10`), on any detectorRevision mismatch
 - **`mjolnir doctor`**: `MAX_UNMEASURED_CORE` lowered 40 → **0** (Phase 1
   exit gate: 0 unmeasured in effective core, now enforced); tier checks
   consume `effectiveTier` + stale-measurement logic. Display surfaces
-  (`mjolnir explain`, `mjolnir rules`, generated rule docs, capability
+  (`mjolnir explain`, `mjolnir explain --list`, generated rule docs, capability
   matrix) render the PROVISIONAL status honestly.
 
 ### Verification Trust Evolution, Phase 0 + Phase 1 prep
@@ -3012,7 +3691,7 @@ detectorRevision, FP ≤ 10%, n ≥ 10`), on any detectorRevision mismatch
 - **`tests/corpus/detector-revisions.json` sidecar**: hand-maintained,
   one entry per measured rule (all at revision 1 today), diffable.
   `MEASURED_FP` entries now carry `detectorRevision` stamped from the
-  sidecar by `fp-audit:generate`; `docs/FP-AUDIT.md` gains a
+  sidecar by `generate-fp-audit-table`; `docs/FP-AUDIT.md` gains a
   `detectorRev` column. Measurement inheritance law (§07): a measurement
   belongs to a specific detector implementation, not merely to a rule
   ID. Drift lock extended in `tests/measured-fp-generated.spec.ts`
@@ -3241,21 +3920,21 @@ detectorRevision, FP ≤ 10%, n ≥ 10`), on any detectorRevision mismatch
   code; that fact previously lived only in `docs/FP-AUDIT.md` and
   `mjolnir doctor`. Now surfaced everywhere a user looks:
   - The scan footer reports how many of the rules that _fired_ are measured.
-  - `mjolnir rules --unmeasured` / `--measured` filter the catalog; a new
+  - `mjolnir explain --list --unmeasured` / `--measured` filter the catalog; a new
     "FP (measured)" column in `rules --md`; a "Measured FP rate" row on every
     `docs/rules/` page and in `mjolnir explain`.
   - JSON findings carry `measuredFpRate` and `measuredFpN` (additive —
     `schemaVersion` is still 1).
 - `src/rules/measured-fp.generated.ts` bakes the rates into the shipped
   package (the raw verdicts are not packed); regenerated by
-  `npm run fp-audit:generate`, drift-locked by a test, and now the single
+  `npm run generate-fp-audit-table`, drift-locked by a test, and now the single
   source `mjolnir doctor` reads.
 - Scoring is unchanged — this is visibility only.
 - **Corpus expanded 6 → 13 repos** so the previously-silent rule families
   (QA-TEST, QA-TQUAL, most QA-PW, QA-CI-001) fire on real consumer code:
   added `next-auth`, `vite`, `sveltekit`, `astro`, `TanStack/query`,
   `eslint-plugin-playwright`, `playwright-pytest`. `corpus:sample` and
-  `corpus:regression` now scan with `--strict` (quarantine rules were
+  `corpus:audit` now scan with `--strict` (quarantine rules were
   invisible to both before). `docs/FP-AUDIT.md` is 15/91 (down from 19 —
   see the dispatch fix below, which retired the leaked cross-language
   verdicts for QA-PW-101/112 and QA-TEST-004/QA-ENV-001 on Java/Python
@@ -3456,7 +4135,7 @@ by a `must-not-fire` fixture so the class cannot return silently.
 - Upgrade-Plan-v3 Phase 0.1: expanded the false-positive corpus with two
   additional Python repos (`pytest-dev/pytest`, `psf/requests`) so all
   QA-PY-001..012 rules are exercised against real code via
-  `npm run corpus:regression`.
+  `npm run corpus:audit`.
 - Added `CHANGELOG.md` (this file) per Upgrade-Plan-v3 critical item #3:
   user-visible rule behavior changes get a first-class entry from now on.
 - Upgrade-Plan-v3 Phase 1: five new TypeScript/Playwright rules —
@@ -3501,17 +4180,17 @@ by a `must-not-fire` fixture so the class cannot return silently.
   Promoted to core: QA-CS-101 (0% FP, n=20), QA-JV-105 (10% FP, n=20).
   Quarantined rules still ship and are still documented — they are opt-in via
   `--strict` rather than shaping the default report.
-- `mjolnir rules` (`--json` and `--md`) now exposes each rule's `tier`, and
+- `mjolnir explain --list` (`--json` and `--md`) now exposes each rule's `tier`, and
   every generated page under `docs/rules/` shows it in the metadata table.
 
 ### Fixed — documentation claims a `grep` disproved
 
 - Every generated rule page told the reader to reproduce corpus counts with
-  a `corpus:audit` script. That script had been renamed to `corpus:regression` in
+  a `corpus:audit` script. That script had been renamed to `corpus:audit` in
   the Tempering plan and the generator string was never updated — the command
   printed on 91 published pages did not exist. Same dead name in
   `docs/PUBLISHING.md`
-  (`corpus:audit:update` → `corpus:regression:update`).
+  (`corpus:audit:update` → `corpus:audit --update`).
 - **`docs/FP-AUDIT.md` under-reported the rule base as 84 rules when the
   registry holds 91.** The coverage denominator was built by grepping source
   for `id: "QA-…"`, which silently missed the seven rules that the Phase 6

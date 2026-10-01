@@ -29,12 +29,14 @@ import { isProofStatus, PROOF_STATUSES } from "./lib/proof-statuses.mjs";
 /**
  * How old a proof may be, per claim type, in days.
  *
- * The budget pattern already exists in this repository —
- * `MAX_EVIDENCE_AGE_MS` in `src/governance/m33-m34-contract.ts` (1 day) and
- * `M48_EVIDENCE_MAX_AGE_MS` in `src/bench/m48-scale-operating-model.ts` — and
+ * The budget pattern used to live in two modules here —
+ * `MAX_EVIDENCE_AGE_MS` in the M33–M34 governance contract and
+ * `M48_EVIDENCE_MAX_AGE_MS` in the M48 scale operating model — and
  * `check-claim-registry.mjs` applied neither. `observedAt` was required to be
  * present and not `"NONE"`, so `null` passed, and a 2026-06 verdict was
- * treated exactly like yesterday's.
+ * treated exactly like yesterday's. Both modules had no importer and the v6
+ * carve deleted them, so these budgets are now the only place the pattern
+ * exists: a gate whose rule lives in the file it checks keeps the rule.
  *
  * The budgets are per type because the claims are not the same kind of thing.
  * A `REMOTE_PROVEN` claim rests on an external observation of a published

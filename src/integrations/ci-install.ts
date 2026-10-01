@@ -116,7 +116,8 @@ export function publishedVersionForInstall(
 
 /**
  * Template v2 (Terminal + CI UX Overhaul plan, M4): the summary step
- * calls `mjolnir summary mjolnir.json` — annotations + step summary via
+ * calls `mjolnir --format github-summary mjolnir.json` — annotations +
+ * step summary via
  * ONE emitter — instead of the v1 inline SUMMARY_SCRIPT. The gate
  * script is unchanged (reads `partial`, `findings[].severity`).
  */

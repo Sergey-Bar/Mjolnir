@@ -4,13 +4,16 @@ Static flakiness detection is guessing. A rule can tell you a test
 _looks_ flaky — a hard sleep, a `networkidle` wait — but it cannot tell
 you whether that test actually failed last Tuesday.
 
-Forensics reads **real execution data**: Playwright JSON reports, Jest
-JSON (`--json --outputFile`), Vitest JSON (`--reporter=json`) and JUnit
-XML from any runner.
+The evidence path reads **real execution data**: Playwright JSON reports,
+Jest JSON (`--json --outputFile`), Vitest JSON (`--reporter=json`) and
+JUnit XML from any runner.
 
-```bash
-mjolnir forensics ./test-results/
-```
+> **The command is between names.** The `forensics` and `triage` verbs are
+> retired in the v6 carve; this capability arrives as
+> `mjolnir explain --evidence <dir>` with the next slice. Everything on
+> this page is already true of the code — only the way you reach it is
+> moving. See [the CLI contract](https://github.com/Sergey-Bar/Mjolnir/blob/main/docs/cli-contract.json)
+> for the disposition of every verb.
 
 <ForensicsSample which="forensics" />
 
@@ -29,11 +32,10 @@ This is the difference between the two halves of the tool:
 
 ## Commands
 
-| Command                             | What it does                                        |
-| ----------------------------------- | --------------------------------------------------- |
-| `mjolnir forensics ./test-results/` | Flakiness leaderboard + writes `FLAKY.md`           |
-| `mjolnir triage ./test-results/`    | Quarantine proposal from execution history          |
-| `mjolnir pw-report ./test-results/` | Playwright run summary — retries / flakes / slowest |
+| Command                                        | What it does                                        |
+| ---------------------------------------------- | --------------------------------------------------- |
+| `mjolnir explain --evidence <dir>`             | Flakiness leaderboard + quarantine proposal         |
+| `mjolnir explain --playwright ./test-results/` | Playwright run summary — retries / flakes / slowest |
 
 All three accept a directory or a single report file. They read
 Playwright's JSON reporter output, Jest's and Vitest's JSON reports, and
@@ -43,7 +45,7 @@ JUnit XML all work.
 ## Reporter package status
 
 The MVP path does **not** require the Mjölnir Playwright reporter package.
-Use Playwright's built-in JSON reporter, or point `mjolnir forensics` at
+Use Playwright's built-in JSON reporter, or point the evidence path at
 an existing JSON/JUnit report file.
 
 The workspace package at `packages/playwright-reporter` is
@@ -81,7 +83,7 @@ The headline static metric for Playwright suites — how resilient your
 locators are to a DOM refactor:
 
 ```bash
-mjolnir doctor:playwright
+mjolnir doctor --frameworks
 ```
 
 <ForensicsSample which="selector-health" />

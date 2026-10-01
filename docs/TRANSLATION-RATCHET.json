@@ -1,6 +1,0 @@
-{
-  "schemaVersion": 1,
-  "description": "Upper bound on the number of README translations that are not fresh. Ratcheted, not a target: closing the gap lowers this, widening it is an explicit edit a reviewer can see. See scripts/check-translation-ratchet.mjs.",
-  "translationsNotFresh": 22,
-  "languagesTracked": 22
-}

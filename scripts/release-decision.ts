@@ -38,7 +38,7 @@ const simpleStatus = (result: CommandResult) =>
   result.status === 0 ? "PASS" : "FAIL";
 const candidate = run("candidate:readiness");
 const m26 = run("m26:audit");
-const version = run("version:check");
+const version = run("check-version");
 const claims = run("claims:check");
 const roadmap = run("docs:roadmap:check");
 const currentVersion = (

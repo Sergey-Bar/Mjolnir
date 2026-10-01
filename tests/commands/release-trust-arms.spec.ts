@@ -15,7 +15,6 @@ import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 
 import {
-  buildReleaseTrust,
   checkAgentSafety,
   checkArtifactIntegrity,
   checkMachineContractVersion,
@@ -23,12 +22,10 @@ import {
   checkReleaseVersionConsistency,
   checkScopeIntegrity,
   checkZeroNetworkImports,
-  compareSemver,
   computeVerdict,
   fromDoctorChecks,
   releaseTrustJson,
   renderReleaseTrust,
-  runReleaseTrustCommand,
   type DimensionRecord,
   type ReleaseTrustReport,
 } from "../../src/commands/release-trust.js";
@@ -69,20 +66,6 @@ const cleanInvariant: ReleaseTrustReport["invariant"] = {
   contradictions: "none",
   provenance: "PROVEN",
 };
-
-describe("compareSemver (applicability gate)", () => {
-  it.each([
-    ["1.2.3", "1.2.4", -1],
-    ["2.0.0", "1.9.9", 1],
-    ["1.2.3", "1.2.3", 0],
-    ["1.2", "1.2.0", 0],
-    // parseInt("x") falls back to 0 — "1.x.3" parses as 1.0.3, which is
-    // LESS than 1.2.4 at the minor position.
-    ["1.x.3", "1.2.4", -2],
-  ] as const)("%s vs %s ⇒ %i", (a, b, expected) => {
-    expect(compareSemver(a, b)).toBe(expected);
-  });
-});
 
 describe("fromDoctorRefs arms", () => {
   it("a passing doctor check ⇒ PROVEN + PASS", () => {
@@ -447,99 +430,5 @@ describe("rendering arms", () => {
       "engine-integrity",
       "future",
     ]);
-  });
-});
-
-describe("CLI verb arms (frozen exit contract)", () => {
-  it("unknown flags ⇒ usage error 10", () => {
-    const errs: unknown[] = [];
-    const code = runReleaseTrustCommand(["--bogus"], {
-      out: () => {},
-      err: (m) => errs.push(m),
-    });
-    expect(code).toBe(10);
-    expect(errs.map(String).join(" ")).toContain(
-      "Usage: mjolnir release-trust",
-    );
-  });
-
-  it("a non-mjolnir directory ⇒ honest BLOCKED exit 2", () => {
-    const errs: unknown[] = [];
-    const code = runReleaseTrustCommand([tmpRepo()], {
-      out: () => {},
-      err: (m) => errs.push(m),
-    });
-    expect(code).toBe(2);
-    expect(errs.map(String).join(" ")).toContain("No fixtures directory at");
-  });
-
-  it("the shipped repo renders PASS (exit 0) in both text and --json modes", () => {
-    const outs: unknown[] = [];
-    const code = runReleaseTrustCommand([], {
-      out: (m) => outs.push(m),
-      err: () => {},
-    });
-    // On failure the rendered verdict block IS the diagnosis: print it
-    // with the assertion so the failing dimension is never a mystery.
-    expect(code, outs.map(String).join("\n")).toBe(0);
-    expect(outs.map(String).join("\n")).toContain("RELEASE-TRUST: PASS");
-
-    const jsonOuts: unknown[] = [];
-    const jsonCode = runReleaseTrustCommand(["--json"], {
-      out: (m) => jsonOuts.push(m),
-      err: () => {},
-    });
-    expect(jsonCode).toBe(0);
-    const parsed = JSON.parse(jsonOuts.map(String).join("\n")) as {
-      contract: string;
-    };
-    expect(parsed.contract).toBe("mjolnir.release-trust@1");
-  });
-
-  it("a hostile fixtures root degrades to an honest non-PASS exit, never a crash", () => {
-    const repo = tmpRepo();
-    mkdirSync(join(repo, "tests", "fixtures"), { recursive: true });
-    mkdirSync(join(repo, "src"), { recursive: true });
-    // buildReleaseTrust's baseline reads (package.json + CHANGELOG.md).
-    writeFileSync(join(repo, "package.json"), `{"version":"1.0.0"}`);
-    writeFileSync(join(repo, "CHANGELOG.md"), "## [1.0.0] — x\n");
-    writeFileSync(
-      join(repo, "src", "bad.ts"),
-      `import axios from "axios";\nexport const x = 1;\n`,
-    );
-    const outs: unknown[] = [];
-    const errs: unknown[] = [];
-    const code = runReleaseTrustCommand([repo], {
-      out: (m) => outs.push(m),
-      err: (m) => errs.push(m),
-    });
-    // Zero-network violation ⇒ a required dimension FAILED ⇒ exit 1
-    // (the frozen non-PASS code), with the verdict block still rendered.
-    expect(code).toBe(1);
-    expect(errs.map(String).join(" ").length).toBe(0);
-    expect(outs.map(String).join("\n")).toContain("RELEASE-TRUST: FAILED");
-  });
-});
-
-describe("buildReleaseTrust on a degraded repo (doctor arms end-to-end)", () => {
-  it("a repo whose doctor checks go inconclusive renders INCONCLUSIVE evidence, not a fake PASS", () => {
-    const repo = tmpRepo();
-    mkdirSync(join(repo, "tests", "fixtures"), { recursive: true });
-    // buildReleaseTrust's baseline reads (package.json + CHANGELOG.md).
-    writeFileSync(join(repo, "package.json"), `{"version":"1.0.0"}`);
-    writeFileSync(join(repo, "CHANGELOG.md"), "## [1.0.0] — x\n");
-    const report = buildReleaseTrust(join(repo, "tests", "fixtures"));
-    // The DOCTOR-DERIVED dimensions have no fixtures content to evaluate:
-    // they must be honest about it (never a fabricated PASS). The
-    // context-free structural checks (zero-network, determinism, version
-    // consistency) legitimately still evaluate on the temp tree.
-    const doctorDerived = report.dimensions.filter((d) =>
-      d.evidenceRefs.some((r) => r.startsWith("doctor:")),
-    );
-    expect(doctorDerived.length).toBeGreaterThan(0);
-    for (const d of doctorDerived) {
-      expect(d.determination, d.id).not.toBe("PASS");
-    }
-    expect(report.verdict.releaseTrust).toBe("FAILED");
   });
 });

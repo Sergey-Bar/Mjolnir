@@ -714,7 +714,7 @@ onBeforeUnmount(() => {
         Above: every finding the demo repo scan reported for
         <code class="ic">{{ SCAN.file }}</code
         >, at the line it reported. With SARIF upload or
-        <code class="ic">mjolnir summary</code>, this is how they show up in a
+        <code class="ic">mjolnir --format github-summary</code>, this is how
         pull request.
       </p>
     </div>
@@ -989,7 +989,7 @@ onBeforeUnmount(() => {
         <div class="streams" data-reveal>
           <Term
             :lines="data.forensics"
-            title="mjolnir forensics ./test-results/"
+            title="mjolnir explain --evidence ./test-results/"
           />
           <p class="fine">
             TRUE-FLAKE means the test failed at least once and then passed.
@@ -997,7 +997,7 @@ onBeforeUnmount(() => {
           </p>
         </div>
         <div class="streams" data-reveal>
-          <Term :lines="data.selectors" title="mjolnir doctor:playwright" />
+          <Term :lines="data.selectors" title="mjolnir doctor --frameworks" />
           <p class="fine">
             Selector health grades how each locator finds its element. It
             measures resilience, not correctness.

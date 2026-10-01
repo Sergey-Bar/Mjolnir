@@ -78,7 +78,30 @@ export interface RepoFacts {
   surfaces: Record<string, "PRESENT" | "ABSENT" | "PROVISIONAL">;
 }
 
-function countFiles(dir: string, test = false): number {
+/**
+ * Directories that are never part of this repository's own source.
+ *
+ * `node_modules` and `dist` are obvious. `.cache*` is the one that was
+ * missing, and it made a PUBLISHED number unreproducible:
+ * `tests/corpus/.cache/` holds shallow clones of 30+ third-party corpus
+ * repositories, each full of its own `*.spec.ts` files, and it is
+ * gitignored — present or absent depending on whether anyone has run
+ * `npm run corpus:sample` or `npm run corpus:audit` on this machine.
+ *
+ * With a populated cache, `counts.testSpecs` measured ~1,024; with an empty
+ * one, ~708. Both were "correct" answers to a question nobody asked, and
+ * the provenance-drift gate went red on a machine that had merely run a
+ * corpus job. `vitest.config.ts` already excludes the `.cache` clone dirs
+ * for exactly this reason — a cloned repo's own spec files are test DATA
+ * for this project, not its tests. The inventory count now agrees with it.
+ */
+const UNCOUNTED_DIRS = new Set(["node_modules", "dist", ".git"]);
+
+function isUncountedDir(name: string): boolean {
+  return UNCOUNTED_DIRS.has(name) || name.startsWith(".cache");
+}
+
+export function countFiles(dir: string, test = false): number {
   if (!existsSync(dir)) return 0;
   let total = 0;
   const walk = (current: string, depth: number): void => {
@@ -90,7 +113,7 @@ function countFiles(dir: string, test = false): number {
       return;
     }
     for (const entry of entries) {
-      if (entry.name === "node_modules" || entry.name === "dist") continue;
+      if (isUncountedDir(entry.name)) continue;
       const full = join(current, entry.name);
       if (entry.isDirectory()) {
         walk(full, depth + 1);
@@ -176,12 +199,13 @@ export function collectRepoFacts(root = ROOT): RepoFacts {
     frameworks: FRAMEWORK_INVENTORY.length,
     frameworkMaturity: tally(FRAMEWORK_INVENTORY.map((f) => f.maturity)),
     // Both of these are counted from the ledgers rather than by importing
-    // the modules that declare them. `src/qa/domain-model.ts` is classified
+    // the modules that declare them. The domain model was classified
     // `CONTRACT_ONLY` in `docs/COVERAGE-EXEMPTIONS.json` with a removal plan
-    // to retire it, so a truth baseline that imports it would couple the
-    // baseline to a module scheduled for deletion — and would give a module
-    // declared to have no production importer a production importer. The
-    // support matrix is the ledger of record for both numbers.
+    // to retire it, and the v6 carve carried that out — a truth baseline that
+    // imports a module would also give a module declared to have no
+    // production importer a production importer, which is the one thing the
+    // orphan gate exists to prevent. The support matrix is the ledger of
+    // record for both numbers.
     ciProviders: new Set(
       supportMatrix.cells
         .filter(
@@ -325,10 +349,10 @@ export const REQUIREMENT_CLASSIFICATION: readonly (RequirementClassification & {
   {
     specSection: "§3",
     area: "Domain coverage model",
-    state: "PARTIALLY_COMPLETE",
-    evidence: ["src/qa/domain-model.ts"],
+    state: "MISSING",
+    evidence: [],
     wave: "1",
-    note: "11 provisional domain records; the security domain is BLOCKED.",
+    note: "The only implementation was src/qa/domain-model.ts — 11 provisional domain records, security BLOCKED — and it had no importer, so the v6 carve deleted it rather than leave an inventory row citing a file that does not exist. There is no domain coverage model. This row is the work queue, not a description of what exists.",
   },
   {
     specSection: "§4",
@@ -514,12 +538,12 @@ export const REQUIREMENT_CLASSIFICATION: readonly (RequirementClassification & {
     note: "Extension domain by design.",
   },
   {
-    specSection: "§26",
+    specSection: "§8",
     area: "Accessibility QA",
-    state: "PARTIALLY_COMPLETE",
-    evidence: ["src/qa/domain-model.ts"],
+    state: "MISSING",
+    evidence: [],
     wave: "8",
-    note: "Automation coverage only; human-required axis absent.",
+    note: "The automation half of the axis lived in src/qa/domain-model.ts, which the v6 carve deleted as unwired. The human-required axis was never present, so what remains is not a partial model — it is none, and a row claiming otherwise would be citing a file that does not exist.",
   },
   {
     specSection: "§27",

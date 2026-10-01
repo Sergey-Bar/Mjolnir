@@ -41,7 +41,7 @@ Every QA team has a weekly "flaky test meeting". It's miserable and it's
 where QA engineers burn out. Build the artifact that ends it:
 
 ```text
-mjolnir triage
+
 ```
 
 Generates `TRIAGE.md` for the meeting:
@@ -149,7 +149,7 @@ QA knows the debt; nobody above them sees it. Make it a first-class,
 exportable artifact:
 
 ```text
-mjolnir debt
+
 ```
 
 ```text
@@ -173,7 +173,7 @@ Every QA joining a team spends week one discovering where the bodies are
 buried. One command generates the map:
 
 ```text
-mjolnir handover
+mjolnir explain --plan
 ```
 
 ```text
@@ -218,7 +218,6 @@ QUICK WINS (< 1 week each, huge resonance):
   └─ Tone audit pass (#30)               ← copywriting day
 
 NEXT QUARTER:
-  ├─ mjolnir triage + TRIGAGE.md       ← needs forensics data (R4)
   ├─ coverage-honesty command            ← consumes existing reports
   └─ debt register export                ← trivial over current findings
 

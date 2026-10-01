@@ -11,9 +11,12 @@
  *
  * The instruction was "re-validate the ledger against the working tree" —
  * but six rows still read `open` while their `revalidation_command` now
- * PASSES, and `GAP-M26-005` reads `fixed` while its own command FAILS
- * (`provisional artifact missing: src/governance/m33-m34-contract.ts`).
- * Neither fact is visible by reading the file, and both are exactly the
+ * PASSES, and `GAP-M26-005` read `fixed` while its own command FAILED. Its
+ * recorded failure named a provisional artifact — the M33–M34 governance
+ * contract — that the v6 carve later deleted as unwired, so the row is now
+ * `CONFIRMED_STILL_OPEN` with an `ACCEPTED` disposition: the cycles it reports
+ * are a real property of how the waves were approved, not a verifier defect.
+ * Neither fact was visible by reading the file, and both are exactly the
  * drift this release exists to end. So the command is executed, its exit
  * code is recorded, and the commit it ran at is stamped into the row.
  *
@@ -77,12 +80,12 @@ const OBSERVED = {
     "wired into any candidate-bound command or release flow, and no train is " +
     "marked proven.",
   "GAP-M26-007":
-    "npm run version:check exits 0: version:surface:check reports PASS across " +
+    "npm run check-version exits 0: check-version reports PASS across " +
     "13 surfaces, the reporter version check passes in advisory mode, and the " +
     "changelog gate passes. The version surfaces agree; the historical ledger " +
     "remains the open part.",
   "GAP-M26-008":
-    "npm run corpus:regression did not complete within 15 minutes on this " +
+    "npm run corpus:audit did not complete within 15 minutes on this " +
     "tree, so no current measurement exists either way. Treated as unverified, " +
     "not as passing.",
   "GAP-M26-009":
@@ -118,7 +121,7 @@ const OBSERVED = {
     "named support SLA or escalation execution exists.",
 };
 
-/** Per-command cap. `corpus:regression` does not complete on this tree
+/** Per-command cap. `corpus:audit` does not complete on this tree
  *  in any reasonable time; capping it turns a hang into an honest
  *  `TIMEOUT` outcome, which is STALE_UNVERIFIABLE — not a pass. */
 const COMMAND_TIMEOUT_MS = 240_000;

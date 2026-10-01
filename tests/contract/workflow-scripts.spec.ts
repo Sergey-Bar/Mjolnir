@@ -2,18 +2,24 @@
  * P0-3 / P0-5 — the workflow-script gate, and the defect it exists for.
  *
  * `pages.yml` once ran the SITE's own doctor script in a step with no
- * `working-directory`. The root package.json has no `doctor` script; it
- * exists only in `site/package.json`. The step could never pass, and the
+ * `working-directory`. The root package.json had no `doctor` script; it
+ * existed only in `site/package.json`. The step could never pass, and the
  * workflow only triggers on `site/**`, `docs/**`, `src/**` and manual
  * dispatch, so nobody watched it fail.
  *
- * The tree is correct today — the step carries `working-directory: site` —
- * which is exactly why the assertion below is worth having. A correct line
- * found by reading is not an invariant, and the next edit does not have to
+ * The tree is correct today — the step carries `working-directory: site`, and
+ * the root `doctor` script now runs the product's own self-audit before the
+ * site's — which is exactly why the assertion below is worth having. A correct
+ * line found by reading is not an invariant, and the next edit does not have to
  * be as careful as the last one. The gate is spawned against fixture trees,
  * never against the repository: the first version of a mutation test that
  * edits a committed file is how `candidate-manifest` once reported a
  * `workingTreeSha256 drift` three suites away from the cause.
+ *
+ * Those negative tests therefore probe a name the fixture ADDS to the site
+ * manifest and never to the root one. `doctor` was the natural probe while the
+ * root did not define it; once the root did, using it would have made these
+ * tests pass for the wrong reason and then quietly stop testing anything.
  */
 
 import { execFileSync } from "node:child_process";
@@ -63,7 +69,19 @@ afterEach(() => {
 /**
  * A copy of everything the checker reads: the root package.json, every
  * workflow, and the `site/` manifest those workflows resolve against.
+ *
+ * The site manifest also gains one script that the ROOT manifest does not
+ * have, and `pages.yml` is given a step that runs it. That is the shipped
+ * defect — `site:doctor` was site-only and a step ran it with no
+ * `working-directory` — but the name it happened to use is no longer a usable
+ * probe: the root manifest now owns `doctor` itself, and a probe has to be a
+ * name the root does not define or the checker has nothing to catch. Building
+ * the probe into the fixture keeps these tests measuring the CHECKER, which is
+ * what they are for, instead of quietly measuring whether a particular name is
+ * still site-only.
  */
+const SITE_ONLY_PROBE = ["site", "-only-probe"].join("");
+
 function fixtureTree(): string {
   const dir = mkdtempSync(join(tmpdir(), "mjolnir-workflow-scripts-"));
   scratch.push(dir);
@@ -77,6 +95,35 @@ function fixtureTree(): string {
   }
   mkdirSync(join(dir, "site"), { recursive: true });
   cpSync(join(ROOT, "site", "package.json"), join(dir, "site", "package.json"));
+
+  const site = JSON.parse(
+    readFileSync(join(dir, "site", "package.json"), "utf8"),
+  ) as { scripts: Record<string, string> };
+  site.scripts[SITE_ONLY_PROBE] = "node scripts/probe.mjs";
+  writeFileSync(
+    join(dir, "site", "package.json"),
+    `${JSON.stringify(site, null, 2)}\n`,
+    "utf8",
+  );
+
+  const pages = parse(
+    readFileSync(join(dir, ".github", "workflows", "pages.yml"), "utf8"),
+  ) as { jobs: Record<string, { steps: Array<Record<string, unknown>> }> };
+  for (const job of Object.values(pages.jobs)) {
+    if (job.steps.some((s) => s["run"] === `npm run ${SITE_ONLY_PROBE}`))
+      continue;
+    job.steps.push({
+      name: "site-only probe",
+      "working-directory": "site",
+      run: `npm run ${SITE_ONLY_PROBE}`,
+    });
+    break;
+  }
+  writeFileSync(
+    join(dir, ".github", "workflows", "pages.yml"),
+    stringify(pages),
+    "utf8",
+  );
   return dir;
 }
 
@@ -122,12 +169,12 @@ describe("every workflow step's npm script resolves where it runs", () => {
   it("the shipped defect is caught: a site-only script run from the repo root", () => {
     // Exactly the shape pages.yml had: a `doctor` script that exists only in
     // site/package.json, run from a step with no `working-directory`. The name
-    // is assembled rather than written out, because a literal in this file
-    // would be a literal a repository-wide grep finds — and the
-    // docs-consistency gate reports any `npm run <name>` in tracked source
-    // that package.json does not define, which is the same class of
-    // "this file tells a reader to run something that does not exist".
-    const siteOnly = ["doc", "tor"].join("");
+    // is the fixture's own site-only probe rather than `doctor`, which the
+    // ROOT manifest now defines, and it is assembled rather than written out,
+    // because a literal in this file would be a literal a repository-wide grep
+    // finds — and the docs-consistency gate reports any `npm run <name>` in
+    // tracked source that package.json does not define, which is the same class
+    // of "this file tells a reader to run something that does not exist".
     const { code, output } = withMutatedStep("pages.yml", (workflow) => {
       for (const job of Object.values(
         workflow["jobs"] as Record<string, { steps?: unknown[] }>,
@@ -141,7 +188,7 @@ describe("every workflow step's npm script resolves where it runs", () => {
       }
     });
     expect(code).toBe(1);
-    expect(output).toContain(`npm run ${siteOnly}`);
+    expect(output).toContain(`npm run ${SITE_ONLY_PROBE}`);
     expect(output).toContain("does not define");
     // The failure names the file, so a maintainer is not left guessing which of
     // two identically-named manifests was consulted.
@@ -152,7 +199,6 @@ describe("every workflow step's npm script resolves where it runs", () => {
     // The other direction of the same mistake: pointing the step at a real
     // directory is not sufficient, the script has to be IN it. So the
     // site-only script is aimed at the ROOT manifest this time.
-    const siteOnly = ["doc", "tor"].join("");
     const { code, output } = withMutatedStep("pages.yml", (workflow) => {
       for (const job of Object.values(
         workflow["jobs"] as Record<string, { steps?: unknown[] }>,
@@ -161,7 +207,7 @@ describe("every workflow step's npm script resolves where it runs", () => {
           const s = step as Record<string, unknown>;
           if (
             typeof s["run"] === "string" &&
-            new RegExp(`npm run ${siteOnly}`).test(s["run"])
+            s["run"] === `npm run ${SITE_ONLY_PROBE}`
           ) {
             s["working-directory"] = ".";
           }

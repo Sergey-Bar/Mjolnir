@@ -59,7 +59,7 @@ the backlog is branch-based, so triage = rebase-and-merge, not PR review).
 ## Per-merge guardrails
 
 For every branch merged: `npm run docs:regen && git diff --exit-code` and
-`npm run changelog:check` must pass, otherwise the merge is reverted and
+`npm run check-version` must pass, otherwise the merge is reverted and
 the branch is re-triaged.
 
 ## Frozen contracts hold during the train

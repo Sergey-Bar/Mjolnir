@@ -111,7 +111,7 @@
       "reason": "CORE-141 per-rule measured precision. Ships as a generated table consumed by the terminal\u0027s evidence descriptor, so a measured false-positive rate reaches the reader instead of living in a doc.",
       "shipped_at": "4.0.0",
       "evidence": "src/rules/measured-fp.generated.ts",
-      "verification": "npm run fp-audit:generate"
+      "verification": "npm run generate-fp-audit-table"
     },
     "34": {
       "disposition": "CLOSED_SHIPPED",

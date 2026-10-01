@@ -21,7 +21,7 @@ every remaining gap, is
 | **README SVG assets**    | tokens via `readme-svg.ts` + the four generators              | rules 3 + 4, and four byte-identical reproducibility specs |      6 |    10 |
 | **Architecture diagram** | tokens + `symbols.ts`                                         | rules 4 + 6, `architecture-asset-reproducibility.spec.ts`  |      5 |    10 |
 | **Demo MP4 + poster**    | tokens via `video/terminal-page.ts`; timing from `pacing.ts`  | `video-media.spec.ts` + `video-pixels.spec.ts` (pure Node) |      7 |    10 |
-| **Website**              | generated `vars.css` + `symbols.ts`                           | rules 1 + 6, `site:doctor` 8 checks, axe, Lighthouse       |      8 |    10 |
+| **Website**              | generated `vars.css` + `symbols.ts`                           | rules 1 + 6, `doctor` 8 checks, axe, Lighthouse            |      8 |    10 |
 | **Badges (23 READMEs)**  | `BADGE` tokens                                                | rule 7, across every README file                           |      3 |    10 |
 | **Documentation**        | this directory; `docs/TERMINOLOGY.md` for meanings            | rule 5, `docs-consistency.spec.ts`, `link-integrity`       |      7 |     9 |
 | **Badge (generated)**    | `BADGE_BAND` tokens                                           | rule 7, plus a seeded revert to a shields named colour     |      2 |    10 |
@@ -90,7 +90,7 @@ known-open, zero stale.
 rejection: **12 of 12 observed failing**, transcript at
 [`gate-evidence/brand-doctor-selftest.txt`](gate-evidence/brand-doctor-selftest.txt).
 
-`site:doctor` Check 8 delegates to rule 5 rather than keeping a second
+`doctor` Check 8 delegates to rule 5 rather than keeping a second
 copy — the duplication it would otherwise be is the exact defect the
 gate exists to prevent.
 
@@ -106,11 +106,15 @@ Listed because they are real, not because they are comfortable.
 
 1. **`assets/video/script.tour.json` renders a tour video that ships
    nowhere.** It is captured, tested and rendered as a CI artifact only.
-2. **Motion is defined but only partly enforced.** `site:doctor` caps
+2. **Motion is defined but only partly enforced.** `doctor` caps
    infinite animations and requires reduced-motion coverage; nothing
    checks a duration against the `MOTION` tokens.
 3. **The prose design documents can drift.** Only `DESIGN-TOKENS.md` is
    generated and byte-locked.
-4. **Translated READMEs share only their badges.** Their prose is
-   community-maintained and advisory by design; structural drift is
-   reported by `npm run docs:translations`, never gated.
+4. **The prose design documents can drift.** Only `DESIGN-TOKENS.md` is
+   generated and byte-locked. The twenty-two translated READMEs this
+   inventory once covered were removed in the v6 carve: each was a dozen
+   sections behind, all twenty-two were permanently counted as not-fresh
+   by the ratchet meant to keep them honest, and the ratchet could
+   therefore only be met by deleting its own subject. `README.md` is now
+   the only prose surface, and it is in the census above.

@@ -43,7 +43,7 @@ vi.mock("web-tree-sitter", () => ({
   },
 }));
 
-import { runImpactCommand, runPrCommentCommand } from "../../src/cli.js";
+import { runPrCommentCommand } from "../../src/cli.js";
 import {
   computeRulesDigest,
   createScanCache,
@@ -78,27 +78,6 @@ afterEach(() => {
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
   state.grammarFails = true;
-});
-
-describe("impact: no git on PATH — both degrade arms fire", () => {
-  it("computeImpact completes honestly when git() and gitBuffer() return null", async () => {
-    const dir = tmpRepo("nogit-impact");
-    writeFileSync(
-      join(dir, "a.spec.ts"),
-      "import { test } from '@playwright/test';\n" + "test('t', () => {});\n",
-    );
-    const realPath = process.env["PATH"];
-    process.env["PATH"] = "";
-    try {
-      const cap = capture();
-      const code = await runImpactCommand([dir, "--since", "HEAD~1"], cap.io);
-      // Without git the comparison degrades; the command stays honest
-      // (never a crash, never a fabricated comparison).
-      expect([0, 1, 2]).toContain(code);
-    } finally {
-      process.env["PATH"] = realPath;
-    }
-  });
 });
 
 describe("W3 parser-retry degradation counter", () => {

@@ -18,11 +18,6 @@ if (!Number.isFinite(count) || count <= 0) {
 }
 
 // Deterministic PRNG so every nightly generates the SAME repo.
-let seed = 0x2f6e2b1;
-function rand(max) {
-  seed = (seed * 1103515245 + 12345) & 0x7fffffff;
-  return seed % max;
-}
 
 rmSync(target, { recursive: true, force: true });
 

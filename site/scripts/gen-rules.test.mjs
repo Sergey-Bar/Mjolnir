@@ -24,7 +24,7 @@ const RULES_DIR = join(HERE, "..", "..", "docs", "rules");
 
 const SAMPLE = `# QA-JV-103 — Test without assertions
 
-_Generated from the live rule registry and this rule's own committed fixtures by \`mjolnir\`'s doc generator — do not edit by hand. Regenerate with \`npm run docs:rules\`._
+_Generated from the live rule registry and this rule's own committed fixtures by \`mjolnir\`'s doc generator — do not edit by hand. Regenerate with \`npm run generate-rule-docs\`._
 
 | Field            | Value            |
 | ---------------- | ---------------- |
@@ -47,7 +47,7 @@ Real occurrence counts (see \`docs/FP-AUDIT.md\`):
 
 ---
 
-Full catalog: \`mjolnir rules --md\` · Live explanation: \`mjolnir explain QA-JV-103\`
+Full catalog: \`mjolnir explain --list --md\` · Live explanation: \`mjolnir explain QA-JV-103\`
 `;
 
 test("parseRule extracts title and metadata", () => {
@@ -75,7 +75,10 @@ test("siteBody strips the generator preamble and CLI footer", () => {
   const out = siteBody("QA-JV-103", SAMPLE);
   assert.ok(!out.includes("do not edit by hand"), "preamble removed");
   assert.ok(!out.includes("Regenerate with"), "regenerate note removed");
-  assert.ok(!/Full catalog: `mjolnir rules --md`/.test(out), "footer removed");
+  assert.ok(
+    !/Full catalog: `mjolnir explain --list --md`/.test(out),
+    "footer removed",
+  );
 });
 
 test("siteBody links repo paths instead of leaving dead text", () => {

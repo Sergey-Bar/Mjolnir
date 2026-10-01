@@ -115,11 +115,11 @@ function changedFiles() {
 }
 
 if (!existsSync(CHANGELOG)) {
-  console.error(`changelog:unreleased: missing ${CHANGELOG}`);
+  console.error(`check-version: missing ${CHANGELOG}`);
   process.exit(2);
 }
 if (!existsSync(PACKAGE)) {
-  console.error(`changelog:unreleased: missing ${PACKAGE}`);
+  console.error(`check-version: missing ${PACKAGE}`);
   process.exit(2);
 }
 
@@ -215,7 +215,7 @@ const hasEntry = unreleasedBody().length > 0;
 
 const report = {
   status: changed.length === 0 || hasEntry || bumped ? "PASS" : "FAIL",
-  gate: "changelog:unreleased",
+  gate: "check-version",
   changedFiles: changed,
   unreleasedEntryPresent: hasEntry,
   versionBumped: bumped,

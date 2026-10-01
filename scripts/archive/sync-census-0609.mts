@@ -43,5 +43,5 @@ console.log(`tone-blunt: removed ${bluntRemoved} dead keys`);
 // 3) Regenerate FP-AUDIT (heading census) + capability matrix are run
 // by the repo's npm scripts afterward — listed here for the operator.
 console.log(
-  "next: npm run fp-audit:generate && npm run docs:counts && npm run docs:capability",
+  "next: npm run generate-fp-audit-table && npm run docs:counts && npm run docs:capability",
 );

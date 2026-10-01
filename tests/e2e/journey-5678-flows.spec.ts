@@ -64,14 +64,18 @@ describe("E2E journey 5: forensics flow", () => {
       expect(forensics.stdout).toContain("TRUE-FLAKE");
       expect(existsSync(join(dir, "test-results", "FLAKY.md"))).toBe(true);
 
-      const triage = runCli(["triage", join(dir, "test-results")]);
+      const triage = runCli([
+        "explain",
+        "--evidence",
+        join(dir, "test-results"),
+      ]);
       // triage is informational: it always exits 0 when the report parses
       // (forensics carries the gate exit code).
       expect(triage.status).toBe(0);
       expect(triage.stdout).toContain("TRUE-FLAKE");
       expect(existsSync(join(dir, "test-results", "TRIAGE.md"))).toBe(true);
 
-      const pw = runCli(["pw-report", join(dir, "test-results")]);
+      const pw = runCli(["explain", "--playwright", join(dir, "test-results")]);
       expect(pw.status).toBe(1);
       expect(pw.stdout).toContain("TRUE-FLAKE");
     },
@@ -83,7 +87,7 @@ describe("E2E journey 5: forensics flow", () => {
     () => {
       const forensics = runCli(["forensics", join(dir, "nope")]);
       expect(forensics.status).toBe(2);
-      const triage = runCli(["triage", join(dir, "nope")]);
+      const triage = runCli(["explain", "--evidence", join(dir, "nope")]);
       expect(triage.status).toBe(2);
     },
   );
@@ -113,10 +117,10 @@ describe("E2E journey 6: explain and rules", () => {
     "rules --md renders the doc table; rules --json parses",
     { timeout: 60_000 },
     () => {
-      const md = runCli(["rules", "--md"]);
+      const md = runCli(["explain", "--list", "--md"]);
       expect(md.status).toBe(0);
       expect(md.stdout).toContain("QA-TEST-001");
-      const json = runCli(["rules", "--json"]);
+      const json = runCli(["explain", "--list", "--json"]);
       const catalog = JSON.parse(json.stdout) as Array<{ md: string }>;
       expect(catalog.length).toBeGreaterThan(20);
     },

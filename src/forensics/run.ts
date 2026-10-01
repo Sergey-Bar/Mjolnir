@@ -1,5 +1,7 @@
 /**
- * `mjolnir forensics <dir-or-file>` — runtime evidence entry point (R4).
+ * Runtime evidence entry point (R4) — the library behind `explain
+ * --evidence`. The `forensics` verb is retired in the v6 carve; this module
+ * is what reads the run data.
  *
  * Accepts either a single report file or a directory. In a directory it
  * looks for, in priority order:

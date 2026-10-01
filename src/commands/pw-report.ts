@@ -1,5 +1,5 @@
 /**
- * `mjolnir pw-report` — Playwright run summary (Tier 2 #9 wedge).
+ * `mjolnir explain --playwright` — Playwright run summary (Tier 2 #9 wedge).
  *
  * Consumes a Playwright JSON report (the same ingestion as forensics)
  * and prints the QA-Doctor view of a real run: retries, true flakes,

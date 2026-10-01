@@ -133,7 +133,7 @@ jobs:
           if ! git diff --quiet "$BASE_REF" HEAD -- src/rules; then
             EXTRA+=(--rules-touched)
           fi
-          npm run changelog:check -- --expect-version "$VERSION" "${EXTRA[@]}"
+          npm run check-version -- --expect-version "$VERSION" "${EXTRA[@]}"
       - name: Candidate evidence
         id: evidence
         if: steps.context.outputs.dry_run == 'false'

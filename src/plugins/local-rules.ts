@@ -31,7 +31,7 @@
  *   - Load failures degrade honestly: warning entries, never a crash;
  *     exit codes stay frozen.
  *
- * Drift-check: the `mjolnir rules --md` catalog is generated from the
+ * Drift-check: the `mjolnir explain --list --md` catalog is generated from the
  * LOADED rules (core + external), so the catalog can never drift from
  * what actually ships — an edit to a local rule file changes the very
  * next catalog render (locked by tests/local-rules.spec.ts).

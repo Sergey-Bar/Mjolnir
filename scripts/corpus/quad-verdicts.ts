@@ -1,5 +1,5 @@
 /**
- * `npm run corpus:quad:verdicts` — build the per-rule verdict files by RUNNING
+ * `npm run check-fixture-quad --verdicts` — build the per-rule verdict files by RUNNING
  * the scanner, not by asserting what it ought to do.
  *
  * The four-leg quad (`src/v6/fixture-quad-probe.ts`) needs two legs from the
@@ -18,12 +18,12 @@
  * That is stronger evidence than a tick. A human classifying a fixture writes
  * "this should fire"; this writes "it fired, here, on this line, in this run".
  * A tick can be wrong and nothing notices; an executed verdict is checkable by
- * re-running, which is exactly what `rules:quad:check` then does.
+ * re-running, which is exactly what `check-fixture-quad` then does.
  *
  * WHAT IT DOES NOT DO. It does not classify anything it did not observe:
  *
  *   - a rule with a positive fixture that produces NO finding gets no `TP` row.
- *     That is a failing fixture, and `rules:quad:check` will report the rule as
+ *     That is a failing fixture, and `check-fixture-quad` will report the rule as
  *     missing its RECALL leg — the truth, not a pass.
  *   - a finding on a positive fixture that the fixture is not ABOUT is recorded
  *     as `FP`, because a must-fire fixture that also trips an unrelated rule

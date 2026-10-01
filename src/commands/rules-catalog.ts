@@ -1,5 +1,5 @@
 /**
- * `mjolnir rules` — machine-readable rule catalog with Trust Metadata.
+ * `mjolnir explain --list` — machine-readable rule catalog with Trust Metadata.
  *
  * Renders every registered rule as a docs table (markdown) or JSON.
  * This is the "Trust Metadata as product infrastructure" piece: the
@@ -99,7 +99,7 @@ export function renderCatalogMd(entries: RuleCatalogEntry[]): string {
   const lines: string[] = [
     "# Mjölnir — Rule Catalog",
     "",
-    "Generated from the rule registry by `mjolnir rules --md`. Do not edit by hand.",
+    "Generated from the rule registry by `mjolnir explain --list --md`. Do not edit by hand.",
     "",
     `| ID | Title | Severity | Tier | FP (measured) | Confidence | Evidence | FP Risk | Autofix | Since${provenanceCol} |`,
     `|---|---|---|---|---|---|---|---|---|---${provenanceSep}|`,

@@ -86,7 +86,7 @@ GitHub Trending formula ≈ stars/day velocity + unique stargazers:
 Stars follow contributors; contributors follow easy entry:
 
 - `good-first-issue` labels ALWAYS stocked (rule ideas = perfect first PRs)
-- `mjolnir create-rule` scaffold → adding a rule is a 30-min PR
+- a CONTRIBUTING walkthrough → adding a rule is a 30-min PR
 - CONTRIBUTING.md with a 5-minute quickstart for the dev environment
 - Publicly credit every contributor (all-contributors spec)
 - Monthly "Rule of the Month" — community votes, we implement together

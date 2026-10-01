@@ -4,7 +4,7 @@
  * Exit gate under test: an external rule LOADS from the workspace
  * (`mjolnir-rules/`, zero network), RUNS in a real scan, OBEYS tier
  * caps (quarantine cap + the core-clamp), and is DRIFT-CHECKED (the
- * `mjolnir rules` catalog is generated from the loaded rules, so an
+ * `mjolnir explain --list` catalog is generated from the loaded rules, so an
  * on-disk edit changes the next render — it can never drift from what
  * actually ships).
  */

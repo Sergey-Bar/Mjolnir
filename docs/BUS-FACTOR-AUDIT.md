@@ -11,15 +11,15 @@ v3.0.0 tag remains immutable; the next release is a separately assigned SemVer.
 
 ## Adjudication cycle (the P9 deliverable — second-human ready)
 
-| Operation                        | Executable by      | Pointer                                                |
-| -------------------------------- | ------------------ | ------------------------------------------------------ |
-| Corpus sample (new verdict rows) | any maintainer     | `npm run corpus:sample` (docs/ADJUDICATION-KIT.md)     |
-| Verdict classification           | trained classifier | docs/ADJUDICATION-KIT.md — kit + worked example        |
-| FP-audit regeneration            | any maintainer     | `npm run fp-audit:generate` (CI drift-gated)           |
-| Regression + ceiling ratchet     | any maintainer     | `npm run corpus:regression` (ratchet = 0 unclassified) |
-| Baseline `--update` after review | rule-owner         | `npm run corpus:regression:update` (reviewed diff)     |
-| Derived docs regeneration        | any maintainer     | docs:rules / docs:capability / docs:counts             |
-| Tier-boundary crossing decision  | rule-owner + owner | §11 loop (RULE-LIFECYCLE entry required)               |
+| Operation                        | Executable by      | Pointer                                            |
+| -------------------------------- | ------------------ | -------------------------------------------------- |
+| Corpus sample (new verdict rows) | any maintainer     | `npm run corpus:sample` (docs/ADJUDICATION-KIT.md) |
+| Verdict classification           | trained classifier | docs/ADJUDICATION-KIT.md — kit + worked example    |
+| FP-audit regeneration            | any maintainer     | `npm run generate-fp-audit-table` (CI drift-gated) |
+| Regression + ceiling ratchet     | any maintainer     | `npm run corpus:audit` (ratchet = 0 unclassified)  |
+| Baseline `--update` after review | rule-owner         | `npm run corpus:audit --update` (reviewed diff)    |
+| Derived docs regeneration        | any maintainer     | generate-rule-docs / docs:capability / docs:counts |
+| Tier-boundary crossing decision  | rule-owner + owner | §11 loop (RULE-LIFECYCLE entry required)           |
 
 ## Release cycle
 

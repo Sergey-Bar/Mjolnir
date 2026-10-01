@@ -102,11 +102,25 @@ describe("category consistency across verbs (F3/D6)", () => {
 
   it(
     "every RULE_CATEGORIES value is accepted by why (exit 0 or 1, never 10)",
-    // 13 serial LIVE scans of the demo repo. Observed: ~55s locally,
-    // 123s on a loaded windows-latest runner — budget 300s so the
-    // Windows CI multiplier (~2.3x local) cannot trip the timeout.
-    // Same flake class the journey specs document: spawn latency, not
+    // 13 live `why` invocations, one per category. Budget 300s.
+    //
+    // The cost used to be ~13.5s PER CATEGORY, because the invocation
+    // passed only `<file>:<line>` and `why`'s scan target then defaulted to
+    // `.` — the whole repository — thirteen times over. Measured 175s here
+    // against a 300s ceiling, i.e. 1.7x headroom, and the CI multiplier this
+    // file already documents for windows-latest is ~2.3x. That arithmetic says
+    // this test fails on a loaded runner for no reason in the code, which is
+    // the same flake class the journey specs document: spawn latency, not
     // assertion logic.
+    //
+    // The fix is the documented CLI surface, not a larger number:
+    // `mjolnir explain <file:line> <file>:<line> [path]` takes the scan target as an
+    // optional second positional. Passing the demo repo scopes each scan to
+    // the tree the cited line lives in, which is also what the test meant to
+    // assert — before, the explanation was rendered for a file the scan had
+    // not necessarily covered, and `exit 0 or 1` was the only honest
+    // assertion available because 0 could not be distinguished from "the
+    // file was never scanned".
     { timeout: 300_000 },
     async () => {
       // One live why invocation per category against a REAL demo-repo
@@ -115,7 +129,7 @@ describe("category consistency across verbs (F3/D6)", () => {
       for (const cat of RULE_CATEGORIES) {
         const { io } = sink();
         const code = await runWhyCommand(
-          [join(DEMO, "e2e", "login.spec.ts") + ":1", "--category", cat],
+          [join(DEMO, "e2e", "login.spec.ts") + ":1", "--category", cat, DEMO],
           io,
         );
         expect(code, `category ${cat}`).toBeLessThan(10);

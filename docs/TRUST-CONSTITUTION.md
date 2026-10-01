@@ -114,7 +114,7 @@ A release MUST NOT be Trust-PASS when any of these holds (owner list, verbatim):
 
 Each condition maps to a dimension determination via the release-trust
 contract (`docs/RELEASE-TRUST-CONTRACT.md`) — machine-enforced, no separate
-hand-run artifact exists. Verify: `mjolnir release-trust` + the release gate
+hand-run artifact exists. Verify: `mjolnir ci release-trust` + the release gate
 (`.github/workflows/release.yml`).
 
 ## §5. Per-dimension applicability

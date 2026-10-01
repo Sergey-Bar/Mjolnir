@@ -22,13 +22,25 @@
   ],
 
   "gates": [
+    {
+      "id": "certification-surface",
+      "command": "npm run check-certification-surface"
+    },
+    {
+      "id": "certification-matrix",
+      "command": "npm run docs:certification-matrix:check"
+    },
+    {
+      "id": "certification-gaps",
+      "command": "npm run docs:certification-gaps:check"
+    },
     { "id": "build", "command": "npm run build" },
 
     { "id": "typecheck", "command": "npm run typecheck" },
 
     { "id": "lint", "command": "npm run lint" },
 
-    { "id": "version-check", "command": "npm run version:check" },
+    { "id": "version-check", "command": "npm run check-version" },
 
     { "id": "brand-doctor", "command": "npm run brand:doctor" },
 
@@ -48,7 +60,7 @@
 
     { "id": "audit", "command": "npm run audit:ci" },
 
-    { "id": "site-doctor", "command": "npm run site:doctor" },
+    { "id": "site-doctor", "command": "npm run doctor" },
 
     { "id": "ci-standard", "command": "npm run ci:standard" },
 
@@ -64,17 +76,17 @@
 
     { "id": "candidate-readiness", "command": "npm run candidate:readiness" },
 
-    { "id": "changelog", "command": "npm run changelog:check" },
+    { "id": "changelog", "command": "npm run check-version" },
 
-    { "id": "corpus-regression", "command": "npm run corpus:regression" },
+    { "id": "corpus-regression", "command": "npm run corpus:audit" },
 
     {
       "id": "build-determinism",
 
-      "command": "npm run build:determinism"
+      "command": "npm run verify-build-determinism"
     },
 
-    { "id": "corpus-resample", "command": "npm run corpus:resample" },
+    { "id": "corpus-resample", "command": "npm run corpus:audit --resample" },
 
     { "id": "gate:registry", "command": "npm run registry:check" },
 
@@ -108,7 +120,10 @@
 
     { "id": "gate:verbs-budget", "command": "npm run verbs:budget" },
 
-    { "id": "gate:unimported-modules", "command": "npm run unimported:check" },
+    {
+      "id": "gate:unimported-modules",
+      "command": "npm run check-unimported-modules"
+    },
 
     { "id": "gate:tiers", "command": "node scripts/check-gate-tiers.mjs" },
 
@@ -119,7 +134,12 @@
       "command": "node tests/stress/concurrent.mjs"
     },
 
-    { "id": "scripts-unimported", "command": "npm run unimported:check" },
+    {
+      "id": "scripts-unimported",
+      "command": "npm run check-unimported-modules"
+    },
+    { "id": "cli-contract", "command": "npm run check-cli-contract" },
+    { "id": "detector-hashes", "command": "npm run check-detector-hashes" },
 
     { "id": "qa-ir-parity", "command": "npm run qa-ir:parity" },
 
@@ -129,13 +149,12 @@
 
     { "id": "script-reachability", "command": "npm run scripts:reachable" },
 
-    { "id": "quad-verified", "command": "npm run rules:quad:check" },
+    { "id": "quad-verified", "command": "npm run check-fixture-quad" },
 
     { "id": "promotion-ratchet", "command": "npm run rules:promotion:check" },
 
     { "id": "provenance-drift", "command": "npm run docs:provenance-drift" },
 
-    { "id": "translation-ratchet", "command": "npm run translations:ratchet" },
     { "id": "claim-integrity", "command": "npm run gates:claim-integrity" }
   ]
 }

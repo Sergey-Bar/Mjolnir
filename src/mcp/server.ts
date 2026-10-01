@@ -137,7 +137,7 @@ export const MCP_TOOLS = [
   {
     name: "verify",
     description:
-      "Agent-loop digest (1:1 with `mjolnir verify`): scan the target and diff against the committed baseline. Returns resolved (per §15 lifecycle), new, unchanged (grouped by ruleId + location), and the score delta. Read-only; the same transport guardrails as every other tool.",
+      "Agent-loop digest (1:1 with `mjolnir ci verify`): scan the target and diff against the committed baseline. Returns resolved (per §15 lifecycle), new, unchanged (grouped by ruleId + location), and the score delta. Read-only; the same transport guardrails as every other tool.",
     inputSchema: {
       type: "object",
       properties: {
@@ -149,7 +149,7 @@ export const MCP_TOOLS = [
   {
     name: "forensics",
     description:
-      "Runtime-evidence report (1:1 with the forensics engine behind `mjolnir pw-report`): ingest a run report (Playwright JSON, JUnit XML, Jest/Vitest JSON, or a Playwright trace artifact) and return the ForensicsReport — per-test verdicts, retries, TRUE-FLAKE, durations. Hostile reports degrade to zero records (never a fabricated clean run). Read-only.",
+      "Runtime-evidence report (1:1 with the forensics engine behind `mjolnir explain --playwright`): ingest a run report (Playwright JSON, JUnit XML, Jest/Vitest JSON, or a Playwright trace artifact) and return the ForensicsReport — per-test verdicts, retries, TRUE-FLAKE, durations. Hostile reports degrade to zero records (never a fabricated clean run). Read-only.",
     inputSchema: {
       type: "object",
       properties: {
@@ -177,7 +177,7 @@ export const MCP_TOOLS = [
   {
     name: "pw-report",
     description:
-      "Playwright run summary (1:1 with `mjolnir pw-report`): ingest a run report and return both the ForensicsReport and the rendered run summary. Read-only.",
+      "Playwright run summary (1:1 with `mjolnir explain --playwright`): ingest a run report and return both the ForensicsReport and the rendered run summary. Read-only.",
     inputSchema: {
       type: "object",
       properties: {
@@ -435,7 +435,7 @@ export async function handleToolCall(call: McpToolCall): Promise<McpResponse> {
           id: call.id,
           result: {
             hasBaseline: false,
-            note: "no committed baseline at .mjolnir/baseline.json — establish the before-state with `mjolnir baseline` first",
+            note: "no committed baseline at .mjolnir/baseline.json — establish the before-state with `mjolnir scan --json` first",
           },
         };
       }

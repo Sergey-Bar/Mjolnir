@@ -10,7 +10,7 @@ The #1 reason people install linters once and never again: they don't SEE
 the value. Fix:
 
 ```text
-mjolnir impact
+
 ```
 
 Parses the repo's git history + CI logs (local) and answers:
@@ -34,7 +34,7 @@ Static flakiness detection is guessing. Playwright already produces
 `trace.zip` + `test-results/`. Also: JUnit XML from any runner.
 
 ```text
-mjolnir forensics ./test-results/
+
 ```
 
 - Parses retry data: which tests pass only on attempt ≥2
@@ -78,7 +78,7 @@ Current badges are vanity. Make ours evidentiary:
 ```
 
 - Badge shows score AND date AND commit — click through to full report
-- `mjolnir badge` generates static JSON for shields.io (no server!)
+
 - Optional: "0 errors · verified at commit 8f4c91a" — falsifiable claims
 
 ---

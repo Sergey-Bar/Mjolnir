@@ -75,7 +75,7 @@ function probe(bin: string, file: string, args: string[]): string {
 }
 
 const bin = ffprobe();
-const ids: Array<VideoScript["id"]> = ["demo", "tour"];
+const ids: Array<VideoScript["id"]> = ["demo"];
 const rendered = ids.filter((id) => existsSync(videoPath(id)));
 
 const reason =

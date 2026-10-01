@@ -1,12 +1,21 @@
-import { existsSync, readFileSync, readdirSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { join } from "node:path";
+import { tmpdir } from "node:os";
 
-import { describe, expect, it } from "vitest";
+import { afterAll, describe, expect, it } from "vitest";
 
 import {
   REQUIREMENT_CLASSIFICATION,
   WAVE0_GAPS,
   collectRepoFacts,
+  countFiles,
   reconcileArchive,
   verifyRequirements,
 } from "../../scripts/v6/inventory.js";
@@ -438,5 +447,41 @@ describe("Wave 0 — a wave id is a closed set", () => {
   it("accepts only the waves the program defines", () => {
     const waves: WaveId[] = ["0", "1", "13", "14"];
     for (const wave of waves) expect(wave).toMatch(/^\d{1,2}$/);
+  });
+});
+
+describe("Wave 0 - a derived count must not depend on local clone state", () => {
+  const root = join(tmpdir(), "mjolnir-inventory-cache-probe");
+  const spec = (rel: string): void => {
+    const full = join(root, rel);
+    mkdirSync(join(full, ".."), { recursive: true });
+    writeFileSync(full, "test.describe('x', () => {});\n");
+  };
+
+  afterAll(() => rmSync(root, { recursive: true, force: true }));
+
+  it("counts the repository's own specs and ignores cloned corpus repos", () => {
+    rmSync(root, { recursive: true, force: true });
+    spec("tests/own.spec.ts");
+    spec("tests/nested/own.spec.ts");
+    const owned = countFiles(join(root, "tests"), true);
+    expect(owned).toBe(2);
+
+    // What `npm run corpus:sample` leaves behind: a gitignored tree of
+    // third-party repositories, each carrying its own spec files. Before the
+    // exclusion these moved `docs/v6-inventory.json`'s published
+    // `counts.testSpecs` between ~699 and ~1,024 depending on whether anyone
+    // had run a corpus job on the machine, which is what turned the
+    // provenance-drift contract red for a reason no code change explains.
+    spec("tests/corpus/.cache/some-oss-repo/tests/their.spec.ts");
+    spec("tests/corpus/.cache/another-repo/a/b/c/d.spec.ts");
+    expect(countFiles(join(root, "tests"), true)).toBe(owned);
+  });
+
+  it("still counts the committed fixture corpora, which ARE this repository's data", () => {
+    rmSync(root, { recursive: true, force: true });
+    spec("tests/corpus/positive-fixtures/QA-PW-140/screenshots.spec.ts");
+    spec("tests/corpus/negative-fixtures/QA-PW-140/tolerant.spec.ts");
+    expect(countFiles(join(root, "tests"), true)).toBe(2);
   });
 });

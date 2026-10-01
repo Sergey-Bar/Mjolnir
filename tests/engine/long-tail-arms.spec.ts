@@ -45,13 +45,9 @@ import {
 import { runForensics } from "../../src/forensics/run.js";
 import { computeTotal } from "../../src/scorer/scorer.js";
 import { prioritize } from "../../src/scorer/prioritize.js";
-import { renderBadgeSnippet } from "../../src/commands/badge.js";
-import { renderDebt } from "../../src/commands/debt.js";
 import { renderStats } from "../../src/commands/stats.js";
 import { buildHandover } from "../../src/commands/handover.js";
 import { renderPrComment } from "../../src/commands/pr-comment.js";
-import { renderPwRunSummary } from "../../src/commands/pw-report.js";
-import { renderInit } from "../../src/commands/init.js";
 import { sharedWalk } from "../../src/discovery/shared-walk.js";
 import { discoverAllTestFiles } from "../../src/discovery/scan-adapters.js";
 import { parseJunitXml } from "../../src/forensics/parse-junit.js";
@@ -588,60 +584,6 @@ describe("scorer caps and prioritize tiebreak", () => {
 });
 
 describe("renderers: honest empty and plural states", () => {
-  it("badge reports the no-tests state for a null score", () => {
-    const badge = renderBadgeSnippet({
-      schemaVersion: 1,
-      partial: false,
-      score: null,
-      frameworks: [],
-      frameworkDetectionUnknown: false,
-      dimensions: [],
-      findings: [],
-      testFileCount: 0,
-      testDeclarationCount: 0,
-      rawDeductions: 0,
-      suppressionCount: 0,
-      analysisStatus: {
-        discovery: "complete",
-        rules: "complete",
-        skippedFiles: 0,
-        durationMs: 0,
-        rulesCrashed: 0,
-      },
-    } as unknown as ScanResult);
-    expect(badge).toContain("no tests found");
-  });
-
-  it("debt renders multi-rule findings sorted by rule id", () => {
-    const finding = (ruleId: string, line: number): Finding => ({
-      ruleId,
-      category: "QA-TEST",
-      severity: "warning",
-      confidence: "high",
-      findingType: "deterministic-defect",
-      qaImpact: "FALSE-GREEN",
-      file: "a.spec.ts",
-      line,
-      column: 1,
-      message: "m",
-      why: "w",
-      fix: "f",
-    });
-    const md = renderDebt({
-      ...baseScan,
-      score: 60,
-      findings: [
-        finding("QA-TEST-002", 1),
-        finding("QA-TEST-001", 2),
-        finding("QA-TEST-001", 3),
-      ],
-    });
-    // The register groups by tracked debt class; QA-TEST-002 (skipped
-    // tests) carries a cost entry, so the class row must render.
-    expect(md).toContain("Skipped tests");
-    expect(md).toContain("TOTAL ESTIMATED DRAG");
-  });
-
   it("stats sorts resolved counters by count", () => {
     const out = renderStats({
       milestones: {},
@@ -733,42 +675,6 @@ describe("renderers: honest empty and plural states", () => {
     expect(out).toContain("🟡");
     expect(out).toContain("🔵");
     expect(out).toContain("unknown");
-  });
-
-  it("pw-report pluralizes TRUE-FLAKES and skips the slowest table when all durations are zero", () => {
-    const out = renderPwRunSummary({
-      totalTests: 2,
-      passed: 1,
-      failed: 0,
-      flakyTests: 2,
-      retried: 3,
-      trueFlakes: 1,
-      slowest: [{ title: "t", file: "a.spec.ts", ms: 0 }],
-    } as never);
-    expect(out).toContain("1 TRUE-FLAKE (passed only on attempt ≥2)");
-    const out2 = renderPwRunSummary({
-      totalTests: 2,
-      passed: 1,
-      failed: 0,
-      flakyTests: 2,
-      retried: 3,
-      trueFlakes: 2,
-      slowest: [],
-    } as never);
-    expect(out2).toContain("2 TRUE-FLAKES");
-  });
-
-  it("init renders advice steps and omits next commands when nothing remains", () => {
-    const out = renderInit({
-      steps: [
-        { name: "Config", status: "advice", detail: "consider a config" },
-      ],
-      nextCommands: [],
-      detectedFrameworks: [],
-      detectionUnknown: false,
-    } as never);
-    expect(out).toContain("[·] Config");
-    expect(out).not.toContain("Next commands:");
   });
 });
 

@@ -22,10 +22,8 @@
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { readFileSync } from "node:fs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { runExecReportCommand } from "../../src/commands/exec-report.js";
 import { decideClaim, unmeasuredClaim } from "../../src/claim-evidence.js";
 import {
   EXIT_CLEAN,
@@ -45,8 +43,6 @@ beforeEach(() => {
 afterEach(() => {
   rmSync(dir, { recursive: true, force: true });
 });
-
-const stdout = () => out.mock.calls.map((call) => String(call[0])).join("\n");
 
 describe("decideClaim is the only determination", () => {
   it("a complete clean analysis is READY", () => {
@@ -110,63 +106,5 @@ describe("decideClaim is the only determination", () => {
     expect(decision.state).toBe("INCONCLUSIVE");
     expect(decision.exitCode).toBe(EXIT_PARTIAL);
     expect(decision.reason).toContain("UNMEASURED");
-  });
-});
-
-describe("exec-report renders only measured values", () => {
-  it("never invents a risk level, a delta, or a quality assurance", async () => {
-    await runExecReportCommand([dir], { out, err });
-    const text = stdout();
-    expect(text).not.toMatch(/Risk Level/i);
-    expect(text).not.toMatch(/↑|↓/);
-    expect(text).not.toMatch(/excellent/i);
-    expect(text).not.toMatch(/maintain current quality/i);
-    expect(text).toContain("Not reported here: business risk");
-  });
-
-  it("a target with no tests reports an unmeasured score rather than a number", async () => {
-    // Law 1: unknown is not Pass, and a null score must never be printed as 0
-    // or as 100.
-    const code = await runExecReportCommand([dir], { out, err });
-    const text = stdout();
-    expect(text).toContain("Worthiness score: not measured");
-    expect(text).not.toMatch(/Worthiness score: \d+\/100/);
-    // A complete scan of an empty surface is legitimately clean (law 11 allows
-    // it); what is not allowed is inventing a measurement to justify it.
-    expect([EXIT_CLEAN, EXIT_PARTIAL]).toContain(code);
-  });
-
-  it("names the source of every number it prints", async () => {
-    await runExecReportCommand([dir], { out, err });
-    const kpiLines = stdout()
-      .split("\n")
-      .filter((line) => line.includes("(source:"));
-    expect(kpiLines.length).toBeGreaterThanOrEqual(4);
-    for (const line of kpiLines) {
-      expect(line).toMatch(/\(source: .+\)/);
-    }
-  });
-
-  it("states that an empty analysis is incomplete when it is partial", async () => {
-    await runExecReportCommand([dir], { out, err });
-    const text = stdout();
-    // The old string was an unconditional "No findings — clean scan."
-    expect(text).not.toMatch(/No findings — clean scan/);
-  });
-
-  it("uses a finite scan duration", () => {
-    // A frozen law: no command may request an unbounded scan.
-    const source = readFileSync(
-      join(
-        import.meta.dirname,
-        "..",
-        "..",
-        "src",
-        "commands",
-        "exec-report.ts",
-      ),
-      "utf8",
-    );
-    expect(source).not.toContain("Number.POSITIVE_INFINITY");
   });
 });

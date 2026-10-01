@@ -28,7 +28,7 @@
       ],
       "corpus": ["tests/e2e/journey-2-ci-flow.spec.ts"],
       "benchmark": "N/A",
-      "candidateProof": "npm run version:surface:check",
+      "candidateProof": "npm run check-version",
       "proof": {
         "status": "BLOCKED",
         "artifact": null,

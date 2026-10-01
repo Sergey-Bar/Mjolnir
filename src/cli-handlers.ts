@@ -6,9 +6,9 @@
  * (Task 6: renderScanOutput helper).
  */
 
-import { existsSync, readFileSync, statSync } from "node:fs";
+import { existsSync } from "node:fs";
 
-import { join, dirname, resolve } from "node:path";
+import { join, resolve } from "node:path";
 import process from "node:process";
 import { pathToFileURL } from "node:url";
 
@@ -33,55 +33,40 @@ import { renderCodeQuality } from "./reporter/codequality.js";
 import { renderMermaid } from "./reporter/mermaid.js";
 import { ProgressRenderer, shouldRenderProgress } from "./reporter/progress.js";
 import { runWhyCommand } from "./commands/why.js";
+// Re-exported because `explain <file:line>` IS the `why` arm: the command did
+// not move, only the verb that used to name it. Several specs import it from
+// the entry point, and a command that survives as a flag is still a command.
+export { runWhyCommand };
 import { explainVerdict, renderVerdictExplain } from "./commands/explain.js";
 import { runForensics } from "./forensics/run.js";
-import {
-  renderTriage,
-  renderTriageMd,
-  renderTriageWorkflow,
-  renderTriageWorkflowJson,
-  renderInteractiveProposals,
-} from "./forensics/triage.js";
-import {
-  parseStrykerJson,
-  looksLikeStrykerJson,
-} from "./mutation/parse-stryker.js";
-import { looksLikeMutmutXml, parseMutmutXml } from "./mutation/parse-mutmut.js";
-import {
-  renderMutationSummary,
-  stampMutationEvidence,
-} from "./mutation/derive.js";
-import type { MutationReport } from "./mutation/types.js";
-import { renderBadgeSnippet, writeBadge } from "./commands/badge.js";
-import { renderDebt } from "./commands/debt.js";
-import {
-  createRuleScaffold,
-  renderScaffoldReport,
-} from "./commands/create-rule.js";
+import { renderTriage, renderTriageMd } from "./forensics/triage.js";
 import { buildHandover, renderHandover } from "./commands/handover.js";
-import { computeImpact, renderImpact } from "./commands/impact.js";
 import {
   DEFAULT_BASELINE_PATH,
   diffAgainstBaseline,
   loadBaseline,
-  renderBaselineDiff,
-  renderBaselineSaved,
-  saveBaseline,
 } from "./commands/baseline.js";
 import { buildVerifyDigest, renderVerifyDigest } from "./commands/verify.js";
 import {
   DEFAULT_STATS_PATH,
   loadStats,
   recordMilestones,
-  recordResolved,
   renderStats,
   saveStats,
   MILESTONE_MESSAGES,
 } from "./commands/stats.js";
 import { renderPrComment } from "./commands/pr-comment.js";
+import { renderStepSummary } from "./commands/summary.js";
+// The `explain` arms' implementations. `cross-file` and `triage` live in
+// `commands/milestone.ts` alongside the other milestone commands; they are
+// imported here because the plan relocates them onto `explain` as flags, and
+// the import is the record that the relocation happened.
+import { runCrossFileCommand } from "./commands/milestone.js";
+import { renderScoringPolicy, scoringPolicy } from "./scorer/scoring-policy.js";
+import { runSuppressionGateCommand } from "./commands/milestone.js";
+import { loadSuppressions, renderSuppressions } from "./config/suppressions.js";
 import { loadSavedReport } from "./commands/report-io.js";
 import { errorMessage } from "./cli-io.js";
-import { runInit, renderInit, tryReadPackageJson } from "./commands/init.js";
 import { renderPwRunSummary, summarizePwRun } from "./commands/pw-report.js";
 import { planAndApplyFixes, renderFixReport } from "./commands/fix.js";
 import { buildCatalog, renderCatalogMd } from "./commands/rules-catalog.js";
@@ -96,8 +81,6 @@ import { loadConfig, ConfigValidationError } from "./config/config.js";
 import { createIgnoreMatcher } from "./discovery/ignores.js";
 import { loadLocalRules } from "./plugins/local-rules.js";
 import { pluginsGateOpen, renderGateNotice } from "./plugins/trust-gate.js";
-import { writeFileAtomic } from "./lib/fs-atomic.js";
-import { currentCommit } from "./lib/git-utils.js";
 import {
   computeSelectorHealth,
   renderSelectorHealth,
@@ -106,7 +89,7 @@ import { ENGINE_VERSION as CLI_VERSION } from "./engine/version.js";
 import { internalErrorMessage, out, err } from "./cli-io.js";
 import type { Output } from "./cli-io.js";
 
-import { parseArgs, parseArgsOrUsage, validateScanTarget } from "./cli.js";
+import { parseArgsOrUsage, validateScanTarget } from "./cli.js";
 
 /**
  * Render scan output in the requested format.
@@ -114,6 +97,15 @@ import { parseArgs, parseArgsOrUsage, validateScanTarget } from "./cli.js";
  * Extracted from runScanCommand (Task 6) to reduce cyclomatic complexity.
  * Handles sarif, mermaid, codequality, json, and terminal (trust-report)
  * rendering. The caller handles first-run hint + milestones separately.
+ *
+ * The v6 collapse's REPLACE arm (plan §3) lands here: `trust-report`,
+ * `pr-comment` and `summary` were three verbs whose whole body was this
+ * function with one branch each. The renderers already existed; what was
+ * missing was a way to name them from the one verb a reader already knows.
+ *
+ * `--format trust-report` is the terminal render, which is why the `else`
+ * below is spelled `terminal` and not `trust-report`: naming a default after
+ * a flag that is also its value is a way to make the default untypeable.
  */
 export function renderScanOutput(
   result: Awaited<ReturnType<typeof runScan>>,
@@ -127,6 +119,21 @@ export function renderScanOutput(
     io.out(renderMermaid(result));
   } else if (args.format === "codequality") {
     io.out(renderCodeQuality(result));
+  } else if (args.format === "pr-comment") {
+    // The verb also diffed against the stored baseline, so a PR comment can
+    // say RESOLVED as well as NEW. The flag does the same: a comment that
+    // cannot distinguish a fixed finding from a fresh one is a comment that
+    // reports the same churn forever.
+    const baseline = loadBaseline(join(target, DEFAULT_BASELINE_PATH));
+    const diff = baseline ? diffAgainstBaseline(result, baseline) : undefined;
+    io.out(
+      renderPrComment(result, {
+        ...(diff ? { diff } : {}),
+        version: CLI_VERSION,
+      }),
+    );
+  } else if (args.format === "github-summary") {
+    io.out(renderStepSummary(result));
   } else if (args.json) {
     io.out(
       JSON.stringify(
@@ -157,6 +164,88 @@ export function renderScanOutput(
   }
 }
 
+/**
+ * The three REPLACE modes, each of which used to be a verb.
+ *
+ * They are functions rather than inline branches so each is testable on its
+ * own — the retired verbs each had a spec file, and a capability that loses
+ * its test the moment it becomes a flag has lost something the collapse was
+ * not supposed to cost.
+ */
+
+/**
+ * `--suppressions`: the ledger, and nothing else.
+ *
+ * Reads the TARGET's config, not the CWD, so `mjolnir scan --suppressions
+ * <path>` inspects the repository it was pointed at. The retired verb read
+ * the CWD; reading the target is the one behaviour change, and it is the
+ * right one — a flag that ignored its own positional argument would be a flag
+ * that could inspect the wrong repository while appearing to inspect the
+ * right one.
+ */
+export function printSuppressionLedger(
+  target: string,
+  io: { out: Output; err: Output },
+): number {
+  try {
+    io.out(renderSuppressions(loadSuppressions(target)));
+    return EXIT_CLEAN;
+  } catch (err) {
+    if (err instanceof ConfigValidationError) {
+      io.err(err.message);
+      return EXIT_USAGE;
+    }
+    internalErrorMessage(err, io.err, true);
+    return EXIT_INTERNAL;
+  }
+}
+
+/** `--policy`: the scoring policy in force, so it can be checked. */
+export function printScoringPolicy(
+  target: string,
+  io: { out: Output; err: Output },
+  args?: CliArgs,
+): number {
+  void target;
+  if (args?.json === true) {
+    io.out(JSON.stringify(scoringPolicy(), null, 2));
+    return EXIT_CLEAN;
+  }
+  io.out(renderScoringPolicy());
+  return EXIT_CLEAN;
+}
+
+/**
+ * `--suppression-gate`: the governance judgement, after a real scan.
+ *
+ * It DELEGATES to the command that already implements it, by synthesising the
+ * argv it would have received. Two reasons, and the second is the one that
+ * decides it:
+ *
+ *   1. A governance rule that exists twice can disagree with itself. The
+ *      retired verb's implementation reads the suppression ledger, the
+ *      policy, the known-rule set and the pre-suppression findings — four
+ *      inputs, any of which a copy could get subtly wrong.
+ *   2. The flag and the command are the same judgement, so there must be one
+ *      place that makes it. If they ever diverge, the flag is the one a reader
+ *      is holding, and the verb is the one a CI job runs.
+ *
+ * Synthesised argv is the adapter: `scan --suppression-gate <target> --json`
+ * becomes the command with the same tokens, so `--json` and `--debug` keep
+ * meaning exactly what they meant.
+ */
+export async function runSuppressionGate(
+  args: CliArgs,
+  target: string,
+  io: { out: Output; err: Output },
+): Promise<number> {
+  const argv = [target];
+  if (args.json) argv.push("--json");
+  if (args.debug) argv.push("--debug");
+  if (args.base !== undefined) argv.push("--base", args.base);
+  return runSuppressionGateCommand(argv, io);
+}
+
 export async function runScanCommand(
   argv: string[],
   io: { out: Output; err: Output } = { out, err },
@@ -168,6 +257,26 @@ export async function runScanCommand(
   const target = resolve(args.target);
   const invalid = validateScanTarget(target, io.err);
   if (invalid !== null) return invalid;
+  // ── The v6 collapse's REPLACE arm (plan §3) ────────────────────────────
+  //
+  // Three verbs that were "scan, then do one more thing" become modes of the
+  // one verb. They are handled HERE, before the scan, because two of the three
+  // are "read a file and print it" — running the scan first would make a
+  // ledger view depend on the code compiling, which is the dependency the
+  // retired verb never had.
+  //
+  // `--suppression-gate` is the exception: a governance judgement about a
+  // suppression needs the findings the suppression would have hidden, so it
+  // falls through to the scan and is decided after it.
+  if (args.suppressions) {
+    return printSuppressionLedger(target, io);
+  }
+  if (args.policy) {
+    return printScoringPolicy(target, io, args);
+  }
+  if (args.suppressionGate) {
+    return runSuppressionGate(args, target, io);
+  }
   try {
     const crashLog: string[] = [];
     const progress = new ProgressRenderer({
@@ -312,201 +421,6 @@ export async function runScanCommand(
   }
 }
 
-export function runTriageCommand(
-  argv: string[],
-  io: { out: Output; err: Output } = { out, err },
-): number {
-  const targetArg = argv.find((a) => !a.startsWith("-"));
-  if (!targetArg) {
-    io.err(
-      "Usage: mjolnir triage <test-results-dir-or-report-file> [--no-md] [--json] [--classic] [--interactive]",
-    );
-    return EXIT_USAGE;
-  }
-  const jsonMode = argv.includes("--json");
-  const classic = argv.includes("--classic");
-  const interactive = argv.includes("--interactive");
-  try {
-    const { report } = runForensics(resolve(targetArg), {
-      writeFlakyMd: false,
-    });
-    if (interactive) {
-      io.out(renderInteractiveProposals(report));
-      return EXIT_CLEAN;
-    }
-    if (jsonMode) {
-      io.out(renderTriageWorkflowJson(report));
-    } else if (classic) {
-      io.out(renderTriage(report));
-    } else {
-      io.out(renderTriageWorkflow(report));
-    }
-    if (!argv.includes("--no-md") && !jsonMode && report.totalTests > 0) {
-      const absTarget = resolve(targetArg);
-      const mdPath = statSync(absTarget).isDirectory()
-        ? join(absTarget, "TRIAGE.md")
-        : join(dirname(absTarget), "TRIAGE.md");
-      writeFileAtomic(mdPath, renderTriageMd(report));
-      io.out(`\nWrote ${mdPath}`);
-    }
-    if (report.totalTests === 0) {
-      io.err(
-        "No test results recognized. Expected a Playwright JSON report (report.json) or JUnit XML files.",
-      );
-      return EXIT_PARTIAL;
-    }
-    return EXIT_CLEAN;
-  } catch (err) {
-    internalErrorMessage(err, io.err, argv.includes("--debug"));
-    return EXIT_INTERNAL;
-  }
-}
-
-function ingestMutationReport(text: string): MutationReport {
-  const trimmed = text.trimStart();
-  if (trimmed.startsWith("<?xml") || trimmed.startsWith("<testsuite")) {
-    return parseMutmutXml(text);
-  }
-  try {
-    const json: unknown = JSON.parse(text);
-    if (looksLikeStrykerJson(json)) return parseStrykerJson(json);
-  } catch {
-    /* not JSON — fall through */
-  }
-  if (looksLikeMutmutXml(text)) return parseMutmutXml(text);
-  return { tool: "stryker", survived: [], noCoverage: 0, killed: 0 };
-}
-
-export async function runMutationCommand(
-  argv: string[],
-  io: { out: Output; err: Output } = { out, err },
-): Promise<number> {
-  const targetArg = argv.find((a) => !a.startsWith("-"));
-  if (!targetArg) {
-    io.err("Usage: mjolnir mutation <mutation-report> [--scan <path>]");
-    return EXIT_USAGE;
-  }
-  const scanIdx = argv.indexOf("--scan");
-  const scanArg = scanIdx !== -1 ? argv[scanIdx + 1] : undefined;
-  if (scanIdx !== -1 && (!scanArg || scanArg.startsWith("-"))) {
-    io.err("--scan requires a path argument");
-    return EXIT_USAGE;
-  }
-  let report: MutationReport;
-  try {
-    const path = resolve(targetArg);
-    if (!existsSync(path)) {
-      io.err(`No such file: ${path}`);
-      return EXIT_PARTIAL;
-    }
-    const text = readFileSync(path, "utf8");
-    report = ingestMutationReport(text);
-    if (
-      report.survived.length === 0 &&
-      report.killed === 0 &&
-      report.noCoverage === 0
-    ) {
-      io.err(
-        "No mutants recognized. Expected a Stryker JSON report (mutation-report.json) or a mutmut junitxml report.",
-      );
-      return EXIT_PARTIAL;
-    }
-  } catch (err) {
-    internalErrorMessage(err, io.err, argv.includes("--debug"));
-    return EXIT_INTERNAL;
-  }
-  io.out(renderMutationSummary(report));
-
-  if (scanArg === undefined) return EXIT_CLEAN;
-  try {
-    const scanPath = resolve(scanArg);
-    const invalid = validateScanTarget(scanPath, io.err);
-    if (invalid !== null) return invalid;
-    const result = await runScan({
-      target: scanPath,
-      json: true,
-      verbose: true,
-      maxDurationMs: 120_000,
-      scopeChanged: false,
-      format: "json",
-    });
-    const stats = stampMutationEvidence(result.findings, report);
-    io.out("");
-    if (stats.stamped === 0) {
-      io.out(
-        "No findings intersect the survived-mutant surface — nothing to derive.",
-      );
-    } else {
-      io.out(
-        `${stats.stamped} finding(s) carry mutationEvidence (${stats.derived} consolidated E1→E2 by derivation — docs/RULE-LIFECYCLE.md):`,
-      );
-      for (const f of result.findings) {
-        if (!f.mutationEvidence) continue;
-        io.out(
-          `  ${f.ruleId} ${f.file}:${f.line} — ${f.evidenceLevel} · ` +
-            `${f.mutationEvidence.matchedMutants} mutant(s) @ ${f.mutationEvidence.granularity} granularity`,
-        );
-      }
-      io.out("");
-      io.out(
-        "Machine form: re-run with --json — mutationEvidence rides the findings additively.",
-      );
-    }
-    return EXIT_CLEAN;
-  } catch (err) {
-    internalErrorMessage(err, io.err, argv.includes("--debug"));
-    return EXIT_INTERNAL;
-  }
-}
-
-export async function runBadgeCommand(
-  argv: string[],
-  io: { out: Output; err: Output } = { out, err },
-): Promise<number> {
-  const args = parseArgsOrUsage(argv, io);
-  if (!args) {
-    return EXIT_USAGE;
-  }
-  try {
-    const target = resolve(args.target);
-    const invalid = validateScanTarget(target, io.err);
-    if (invalid !== null) return invalid;
-    const result = await runScan({ ...args, target });
-    const outPath = writeBadge(result, {
-      outDir: target,
-      commit: currentCommit(target) ?? "unknown",
-    });
-    io.out(`Wrote ${outPath}`);
-    io.out("");
-    io.out(renderBadgeSnippet(result));
-    return EXIT_CLEAN;
-  } catch (err) {
-    internalErrorMessage(err, io.err, args?.debug === true);
-    return EXIT_INTERNAL;
-  }
-}
-
-export async function runDebtCommand(
-  argv: string[],
-  io: { out: Output; err: Output } = { out, err },
-): Promise<number> {
-  const args = parseArgsOrUsage(argv, io);
-  if (!args) {
-    return EXIT_USAGE;
-  }
-  try {
-    const target = resolve(args.target);
-    const invalid = validateScanTarget(target, io.err);
-    if (invalid !== null) return invalid;
-    const result = await runScan({ ...args, target });
-    io.out(renderDebt(result));
-    return EXIT_CLEAN;
-  } catch (err) {
-    internalErrorMessage(err, io.err, args?.debug === true);
-    return EXIT_INTERNAL;
-  }
-}
-
 export async function runFixCommand(
   argv: string[],
   io: { out: Output; err: Output } = { out, err },
@@ -534,106 +448,6 @@ export async function runFixCommand(
     return EXIT_INTERNAL;
   }
 }
-
-export function runCreateRuleCommand(
-  argv: string[],
-  io: { out: Output; err: Output } = { out, err },
-): number {
-  const id = argv.find((a) => /^QA-[A-Z]+-\d{3}$/.test(a));
-  const titleIdx = argv.indexOf("--title");
-  const title = titleIdx !== -1 ? argv[titleIdx + 1] : undefined;
-  if (!id || !title) {
-    io.err('Usage: mjolnir create-rule <QA-XXX-nnn> --title "Rule title"');
-    io.err("Families: QA-TEST · QA-TQUAL · QA-PW · QA-CI · QA-PY");
-    return EXIT_USAGE;
-  }
-  try {
-    const result = createRuleScaffold({ id, title }, process.cwd());
-    io.out(renderScaffoldReport(result));
-    return result.ok ? EXIT_CLEAN : EXIT_FINDINGS;
-  } catch (err) {
-    internalErrorMessage(err, io.err, argv.includes("--debug"));
-    return EXIT_INTERNAL;
-  }
-}
-
-export async function runImpactCommand(
-  argv: string[],
-  io: { out: Output; err: Output } = { out, err },
-): Promise<number> {
-  const sinceIdx = argv.indexOf("--since");
-  if (
-    sinceIdx !== -1 &&
-    (sinceIdx + 1 >= argv.length || argv[sinceIdx + 1]?.startsWith("--"))
-  ) {
-    io.err("--since requires a value: mjolnir impact [--since <ref>]");
-    return EXIT_USAGE;
-  }
-  const since = sinceIdx !== -1 ? argv[sinceIdx + 1] : undefined;
-  const args = parseArgs(
-    sinceIdx === -1
-      ? argv
-      : argv.filter((_a, i) => i !== sinceIdx && i !== sinceIdx + 1),
-  );
-  if (!args) {
-    return EXIT_USAGE;
-  }
-  try {
-    const target = resolve(args.target);
-    const invalid = validateScanTarget(target, io.err);
-    if (invalid !== null) return invalid;
-    const report = await computeImpact(target, {
-      ...(since ? { since } : {}),
-      runScan: (dir) => runScan({ ...args, target: dir }),
-    });
-    io.out(renderImpact(report));
-    return report.hasComparison ? EXIT_CLEAN : EXIT_PARTIAL;
-  } catch (err) {
-    internalErrorMessage(err, io.err, args?.debug === true);
-    return EXIT_INTERNAL;
-  }
-}
-
-export async function runBaselineCommand(
-  argv: string[],
-  io: { out: Output; err: Output } = { out, err },
-): Promise<number> {
-  const args = parseArgsOrUsage(argv, io);
-  if (!args) {
-    return EXIT_USAGE;
-  }
-  try {
-    const target = resolve(args.target);
-    const invalid = validateScanTarget(target, io.err);
-    if (invalid !== null) return invalid;
-    const result = await runScan({ ...args, target });
-    const outPath = join(target, DEFAULT_BASELINE_PATH);
-    let saved: ReturnType<typeof saveBaseline>;
-    try {
-      saved = saveBaseline(result, currentCommit(target) ?? "unknown", outPath);
-    } catch (saveErr) {
-      io.err(
-        `baseline save FAILED — ${saveErr instanceof Error ? saveErr.message : String(saveErr)}`,
-      );
-      io.err(
-        "The scan completed; the snapshot was not written. Fix the path permissions and re-run `mjolnir baseline`.",
-      );
-      return EXIT_FINDINGS;
-    }
-    io.out(
-      renderBaselineSaved(DEFAULT_BASELINE_PATH, result.findings.length, {
-        ...(saved.backupPath !== undefined
-          ? { backupPath: saved.backupPath }
-          : {}),
-      }),
-    );
-    return EXIT_CLEAN;
-  } catch (err) {
-    internalErrorMessage(err, io.err, args?.debug === true);
-    return EXIT_INTERNAL;
-  }
-}
-
 export async function runVerifyCommand(
   argv: string[],
   io: { out: Output; err: Output } = { out, err },
@@ -661,65 +475,6 @@ export async function runVerifyCommand(
     return EXIT_INTERNAL;
   }
 }
-
-export async function runDiffCommand(
-  argv: string[],
-  io: { out: Output; err: Output } = { out, err },
-): Promise<number> {
-  const args = parseArgsOrUsage(argv, io);
-  if (!args) {
-    return EXIT_USAGE;
-  }
-  try {
-    const target = resolve(args.target);
-    const invalid = validateScanTarget(target, io.err);
-    if (invalid !== null) return invalid;
-    const result = await runScan({ ...args, target });
-    const baselinePath = join(target, DEFAULT_BASELINE_PATH);
-    const baseline = loadBaseline(baselinePath, (w) => io.err(w));
-    const diff = diffAgainstBaseline(result, baseline);
-    io.out(renderBaselineDiff(diff));
-
-    if (result.partial) return EXIT_PARTIAL;
-
-    if (diff.hasBaseline) {
-      const statsPath = join(target, DEFAULT_STATS_PATH);
-      const stats = recordResolved(loadStats(statsPath), diff);
-      if (!saveStats(stats, statsPath)) {
-        io.err(
-          "  (warning: stats could not be written — read-only filesystem? counters not recorded)",
-        );
-      }
-
-      if (
-        diff.resolvedFindings.some(
-          (f) => f.resolution.status === "VERIFIED-RESOLVED",
-        )
-      ) {
-        const milestone = recordMilestones(stats, ["first-debt-reduction"]);
-        if (milestone.newlyAnnounced.length > 0) {
-          if (saveStats(milestone.stats, statsPath)) {
-            for (const id of milestone.newlyAnnounced)
-              io.out(MILESTONE_MESSAGES[id]);
-          } else {
-            io.err(
-              "  (warning: stats could not be written — read-only filesystem? milestone not recorded)",
-            );
-          }
-        }
-      }
-    }
-
-    if (!diff.hasBaseline) return EXIT_PARTIAL;
-    return diff.newFindings.some((f) => f.severity === "error")
-      ? EXIT_FINDINGS
-      : EXIT_CLEAN;
-  } catch (err) {
-    internalErrorMessage(err, io.err, args?.debug === true);
-    return EXIT_INTERNAL;
-  }
-}
-
 export async function runPrCommentCommand(
   argv: string[],
   io: { out: Output; err: Output } = { out, err },
@@ -826,33 +581,6 @@ export async function runHandoverCommand(
     return EXIT_INTERNAL;
   }
 }
-
-export function runInitCommand(
-  argv: string[],
-  io: { out: Output; err: Output } = { out, err },
-): number {
-  try {
-    const rootDir = process.cwd();
-    const pkg = tryReadPackageJson(rootDir);
-    const workspace = pkg
-      ? {
-          root: rootDir,
-          name: typeof pkg["name"] === "string" ? pkg["name"] : "repo",
-          packageJson: pkg,
-          workspaceGlobs: [],
-        }
-      : null;
-    const result = runInit(rootDir, workspace, {
-      interactive: argv.includes("--interactive"),
-    });
-    io.out(renderInit(result));
-    return EXIT_CLEAN;
-  } catch (err) {
-    internalErrorMessage(err, io.err, argv.includes("--debug"));
-    return EXIT_INTERNAL;
-  }
-}
-
 export function runPwReportCommand(
   argv: string[],
   io: { out: Output; err: Output } = { out, err },
@@ -860,7 +588,7 @@ export function runPwReportCommand(
   const targetArg = argv.find((a) => !a.startsWith("-"));
   if (!targetArg) {
     io.err(
-      "Usage: mjolnir pw-report <playwright-report.json | test-results-dir>",
+      "Usage: mjolnir explain --playwright <playwright-report.json | test-results-dir>",
     );
     return EXIT_USAGE;
   }
@@ -883,54 +611,6 @@ export function runPwReportCommand(
     return EXIT_INTERNAL;
   }
 }
-
-export function runForensicsCommand(
-  argv: string[],
-  io: { out: Output; err: Output } = { out, err },
-): number {
-  const noMd = argv.includes("--no-flaky-md");
-  const targetArg = argv.find((a) => !a.startsWith("-"));
-  if (!targetArg) {
-    io.err(
-      "Usage: mjolnir forensics <test-results-dir-or-report-file> [--no-flaky-md]",
-    );
-    return EXIT_USAGE;
-  }
-  try {
-    const { report, output, flakyMdPath } = runForensics(resolve(targetArg), {
-      writeFlakyMd: !noMd,
-    });
-    io.out(output);
-    if (flakyMdPath) io.out(`\nWrote ${flakyMdPath}`);
-    if (!report.analysisComplete) {
-      const skipped =
-        report.skippedReports > 0
-          ? `${report.skippedReports} report(s) skipped; `
-          : "";
-      io.err(
-        `forensics: ${skipped}${report.incompleteReasons.join(", ")} — analysis is partial`,
-      );
-    }
-    if (report.totalTests === 0) {
-      io.err(
-        (report.totalNetworkObservations ?? 0) > 0
-          ? "Network observations recognized, but HAR does not establish test outcomes. Test verification is unavailable."
-          : "No test results recognized. Expected a Playwright JSON report (report.json) or JUnit XML files.",
-      );
-      return EXIT_PARTIAL;
-    }
-    if (!report.analysisComplete) return EXIT_PARTIAL;
-    return report.flakyTests > 0 ||
-      report.failed > 0 ||
-      (report.failedNetworkObservations ?? 0) > 0
-      ? EXIT_FINDINGS
-      : EXIT_CLEAN;
-  } catch (err) {
-    internalErrorMessage(err, io.err, argv.includes("--debug"));
-    return EXIT_INTERNAL;
-  }
-}
-
 export async function runRulesCommand(
   argv: string[],
   io: { out: Output; err: Output } = { out, err },
@@ -956,7 +636,9 @@ export async function runRulesCommand(
       const rawLimit = limitArg.slice("--limit=".length);
       const parsed = /^\d+$/.test(rawLimit) ? Number(rawLimit) : Number.NaN;
       if (!Number.isSafeInteger(parsed) || parsed <= 0) {
-        io.err("Usage: mjolnir rules --health [--limit=<positive-integer>]");
+        io.err(
+          "Usage: mjolnir explain --list --health [--limit=<positive-integer>]",
+        );
         return EXIT_USAGE;
       }
       io.out(renderRuleHealth(buildRuleHealth(), parsed));
@@ -998,15 +680,169 @@ export async function runRulesCommand(
   return EXIT_CLEAN;
 }
 
+/**
+ * `explain` ARMS — the v6 collapse's MOVE arm, group 2 (plan §3).
+ *
+ * `explain` is the question verb: what does this finding mean, and what else
+ * does it touch. Five capabilities were top-level verbs that all answer a
+ * variation of that question, and each is a flag here:
+ *
+ *   --list       the rule catalogue        (was `mjolnir explain --list`)
+ *   <file:line>  why this finding          (was `mjolnir explain <file:line>` — already
+ *                                           delegated by the subject form)
+ *   --callers    who calls this symbol     (was `mjolnir explain --callers`)
+ *   --plan       what to do next           (was `mjolnir explain --plan`)
+ *   --evidence   what really ran           (was the `triage` verb)
+ *   --playwright a Playwright run summary  (was `mjolnir explain --playwright`)
+ *
+ * The table is the same shape as `CI_SUBCOMMANDS`, and for the same reason: it
+ * is the single source the dispatcher reads AND the help renders from, so an
+ * arm that exists is documented and one that is documented exists.
+ *
+ * `--playwright` is INTERNAL in the plan and marked here as such. `pw-report`
+ * summarised a Playwright JSON run for a person reading CI output; the same
+ * information arrives through `--evidence` once it reads a report rather than
+ * a specific runner's format, and one flag that means "the run summary"
+ * whichever runner produced it beats two that mean it for one of them.
+ */
+/**
+ * `explain --evidence` — the runtime-evidence arm.
+ *
+ * The `triage` verb's body, verbatim in behaviour: read a real run, classify
+ * every test's verdict, and render the table plus the meeting artifact. The
+ * arm does not add anything, which is the point — the capability is the same
+ * one `src/forensics/triage.ts` and the MCP server already expose, and the
+ * reason the verb is retired is the reason the flag exists.
+ *
+ * `--json` and `--md` are the verb's own output selectors, preserved so a
+ * script written against them keeps working with one word changed.
+ *
+ * The one behaviour note: the report is written to `--flaky-md`'s path, which
+ * the verb also did, and the arm does not silently write a file into a
+ * directory a reader did not name. `--no-md` is still how you decline it.
+ */
+export function runEvidenceArm(
+  argv: string[],
+  io: { out: Output; err: Output },
+): number {
+  const target = argv.find((a) => !a.startsWith("-"));
+  if (target === undefined) {
+    io.err("explain --evidence requires a run report: <dir-or-report.json>");
+    return EXIT_USAGE;
+  }
+  const asJson = argv.includes("--json");
+  const asMd = argv.includes("--md");
+  const writeFlakyMd =
+    !argv.includes("--no-flaky-md") && !argv.includes("--no-md");
+  try {
+    // `runForensics` is SYNCHRONOUS and returns the rendered output plus the
+    // report it built. The triage renderers take the report, so the wrapper is
+    // unwrapped here; the rendered half is not what the triage table is, and
+    // this arm has no `--no-render` mode because the flag would be saying
+    // "render the run, and also do not render the run".
+    const { report } = runForensics(resolve(target), { writeFlakyMd });
+    if (asJson) io.out(JSON.stringify(report, null, 2));
+    else io.out(asMd ? renderTriageMd(report) : renderTriage(report));
+    return report.analysisComplete === false ? EXIT_FINDINGS : EXIT_CLEAN;
+  } catch (err) {
+    internalErrorMessage(err, io.err, argv.includes("--debug"));
+    return EXIT_INTERNAL;
+  }
+}
+
+export const EXPLAIN_ARMS: Record<
+  string,
+  {
+    summary: string;
+    status: "public" | "internal";
+    run: (
+      argv: string[],
+      io: { out: Output; err: Output },
+    ) => Promise<number> | number;
+  }
+> = {
+  "--list": {
+    summary: "the rule catalogue, with each rule's measured FP rate",
+    status: "public",
+    run: (argv, io) => runRulesCommand(argv, io),
+  },
+  "--callers": {
+    summary: "callers and callees of the symbol at <file:line>",
+    status: "public",
+    run: (argv, io) => runCrossFileCommand(argv, io),
+  },
+  "--plan": {
+    summary: "the handoff: who owns what, and what to do next",
+    status: "public",
+    run: (argv, io) => runHandoverCommand(argv, io),
+  },
+  "--evidence": {
+    summary: "runtime evidence from a real run: retries, flakes, durations",
+    status: "public",
+    run: (argv, io) => runEvidenceArm(argv, io),
+  },
+  "--playwright": {
+    summary: "summarise a Playwright JSON run (folded into --evidence soon)",
+    status: "internal",
+    run: (argv, io) => runPwReportCommand(argv, io),
+  },
+};
+
+/** `mjolnir explain --help`, rendered from the arm table. */
+/**
+ * `mjolnir explain --help`. Reached from the dispatcher, which knows which
+ * verb was asked about; the arm table supplies the content.
+ */
+export function runExplainHelp(io: { out: Output; err: Output }): number {
+  io.out(renderExplainArmsHelp());
+  return EXIT_CLEAN;
+}
+
+export function renderExplainArmsHelp(): string {
+  const names = Object.keys(EXPLAIN_ARMS).sort();
+  const width = Math.max(...names.map((n) => n.length));
+  return [
+    "mjolnir explain <RULE-ID | file:line | verdict> [arms]",
+    "",
+    "Arms — each was a top-level verb before the v6 collapse:",
+    ...names.map((n) => {
+      const arm = EXPLAIN_ARMS[n];
+      const mark = arm?.status === "internal" ? "  (internal)" : "";
+      return `  ${n.padEnd(width)}  ${arm?.summary ?? ""}${mark}`;
+    }),
+    "",
+    "An arm changes WHAT is asked; it never changes WHERE the answer comes",
+    "from. That is why they are flags and not subcommands: `explain` is one",
+    "question with five shapes, and a verb per shape was a surface to remember.",
+  ].join("\n");
+}
 export async function runExplainCommand(
   argv: string[],
   io: { out: Output; err: Output } = { out, err },
 ): Promise<number> {
+  // The arms first: `--list` and `--plan` take no subject, and the
+  // subject check below is what `mjolnir explain --plan` used to hit.
+  const armFlag = argv.find((a) => EXPLAIN_ARMS[a] !== undefined);
+  if (armFlag !== undefined) {
+    const rest = argv.filter(
+      (a, i) => i !== argv.indexOf(armFlag) && a !== armFlag,
+    );
+    // `--evidence <dir>` is the one arm with a required value, and it is
+    // checked here rather than inside the command so the error names the
+    // flag the reader typed.
+    if (armFlag === "--evidence" && rest.length === 0) {
+      io.err("explain --evidence requires a run report: <dir-or-report.json>");
+      return EXIT_USAGE;
+    }
+    const arm = EXPLAIN_ARMS[armFlag];
+    if (arm !== undefined) return arm.run(rest, io);
+  }
   const subject = argv.find((a) => !a.startsWith("-"));
   if (!subject) {
     io.err(
       "Usage: mjolnir explain <RULE-ID | file:line | verdict> [--json <mjolnir.json>]",
     );
+    io.err(renderExplainArmsHelp());
     return EXIT_USAGE;
   }
   if (subject === "verdict") {

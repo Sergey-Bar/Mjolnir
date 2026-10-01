@@ -397,15 +397,14 @@ function appendNextActions(
     if (first === undefined) return;
     const loc = `${sanitizeData(first.file)}:${first.line}`;
     lines.push(nextStep(`mjolnir explain ${sanitizeData(first.ruleId)}`, ui));
-    lines.push(nextStep(`mjolnir why ${loc}`, ui));
+    lines.push(nextStep(`mjolnir explain <file:line> ${loc}`, ui));
     pushWrapped(
       lines,
       ui.p,
       "Existing debt path: capture the current state once, then review only new or worse findings on future changes.",
       ui.width,
     );
-    lines.push(nextStep("mjolnir baseline", ui));
-    lines.push(nextStep("mjolnir diff", ui));
+    lines.push(nextStep("mjolnir scan --scope changed", ui));
   } else if (fullResult.score === 100) {
     pushWrapped(
       lines,
@@ -816,7 +815,7 @@ function appendFooter(
       p,
       `False-positive evidence: ${measuredHere}/${firedRuleIds.size} of the rules that fired here have a` +
         ` measured false-positive rate; the rest are heuristics.` +
-        ` \`mjolnir rules --unmeasured\` lists them.`,
+        ` \`mjolnir explain --list --unmeasured\` lists them.`,
       width,
     );
     // R4c Scope Integrity: "repository verified" is FORBIDDEN output

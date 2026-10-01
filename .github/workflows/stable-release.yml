@@ -112,7 +112,7 @@ jobs:
           if [[ -n "$BASE_REF" ]] && ! git diff --quiet "$BASE_REF" HEAD -- src/rules; then
             EXTRA+=(--rules-touched)
           fi
-          npm run changelog:check -- --expect-version "$VERSION" "${EXTRA[@]}"
+          npm run check-version -- --expect-version "$VERSION" "${EXTRA[@]}"
       - name: Require authorized candidate evidence
         run: |
           npm run m26:audit

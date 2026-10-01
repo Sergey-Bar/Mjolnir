@@ -13,25 +13,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { renderTerminal } from "../../src/reporter/terminal.js";
-import { renderTriage } from "../../src/forensics/triage.js";
-import {
-  runForensicsCommand,
-  runTriageCommand,
-  runPwReportCommand,
-} from "../../src/cli.js";
-import {
-  createRuleScaffold,
-  renderScaffoldReport,
-} from "../../src/commands/create-rule.js";
-import {
-  diffAgainstBaseline,
-  renderBaselineDiff,
-  renderBaselineSaved,
-} from "../../src/commands/baseline.js";
-import { renderInit, runInit } from "../../src/commands/init.js";
 import { renderStats } from "../../src/commands/stats.js";
 import type { ScanResult } from "../../src/types.js";
-import type { ForensicsReport } from "../../src/forensics/types.js";
 
 let dir: string;
 beforeEach(() => {
@@ -61,23 +44,6 @@ function scanResult(over: Partial<ScanResult> = {}): ScanResult {
   const merged: ScanResult = { ...base, ...over };
   if (merged.score !== null) delete (merged as { reason?: string }).reason;
   return merged;
-}
-
-function emptyForensicsReport(): ForensicsReport {
-  return {
-    forensicsSchemaVersion: 1,
-    source: "junit-xml",
-    totalTests: 0,
-    failed: 0,
-    skipped: 0,
-    retriedTests: 0,
-    flakyTests: 0,
-    totalDurationMs: 0,
-    verdicts: [],
-    analysisComplete: true,
-    skippedReports: 0,
-    incompleteReasons: [],
-  };
 }
 
 describe("dead end: no tests found", () => {
@@ -121,73 +87,12 @@ describe("dead end: framework detection unknown", () => {
   });
 });
 
-describe("dead end: no test-results/ for forensics", () => {
-  it("explains what was expected, exits the documented code 2", () => {
-    let errText = "";
-    const code = runForensicsCommand([join(dir, "does-not-exist")], {
-      out: () => {},
-      err: (...parts) => (errText += parts.join(" ")),
-    });
-    expect(code).toBe(2);
-    expect(errText).toContain("No test results recognized");
-    // "what to do next":
-    expect(errText).toMatch(/Playwright JSON report|JUnit XML/);
-  });
-});
-
-describe("dead end: no test-results/ for triage", () => {
-  it("explains what was expected, exits the documented code 2", () => {
-    let errText = "";
-    const code = runTriageCommand([join(dir, "does-not-exist")], {
-      out: () => {},
-      err: (...parts) => (errText += parts.join(" ")),
-    });
-    expect(code).toBe(2);
-    expect(errText).toContain("No test results recognized");
-  });
-
-  it("celebrates rather than shames when there really is nothing to triage", () => {
-    const text = renderTriage(emptyForensicsReport());
-    expect(text).toContain("Nothing to triage");
-    // Factual ("no failures") is fine; accusatory language is not.
-    expect(text).not.toMatch(/you (broke|failed)|blame|bad job/i);
-  });
-});
-
-describe("dead end: no report for pw-report", () => {
-  it("explains what was expected, exits the documented code 2", () => {
-    let errText = "";
-    const code = runPwReportCommand([join(dir, "does-not-exist")], {
-      out: () => {},
-      err: (...parts) => (errText += parts.join(" ")),
-    });
-    expect(code).toBe(2);
-    expect(errText).toContain("No Playwright JSON report");
-    // "what to do next" — the exact config line to add:
-    expect(errText).toContain("reporter:");
-  });
-});
-
 describe("dead end: zero findings (flawless victory)", () => {
   it("renders a positive, explanatory state rather than silence", () => {
     const out = renderTerminal(scanResult({ score: 100, findings: [] }), {
       isTTY: false,
     });
     expect(out).toMatch(/ZERO FINDINGS \(STATIC\)|zero findings/i);
-  });
-});
-
-describe("dead end: create-rule's deliberately-failing stub", () => {
-  it("explains why the fixtures fail immediately, not just that they do", () => {
-    const result = createRuleScaffold(
-      { id: "QA-TEST-901", title: "Empty-states test rule" },
-      dir,
-    );
-    expect(result.ok).toBe(true);
-    const text = renderScaffoldReport(result);
-    expect(text).toContain("intentional");
-    expect(text).toMatch(/FAILING|fail/i);
-    expect(text).toContain("fixture-firewall");
   });
 });
 
@@ -198,47 +103,10 @@ describe("dead end: create-rule's deliberately-failing stub", () => {
  * system's next-step token — a command the user can copy verbatim.
  */
 describe("subcommand dead ends carry a $ next-step command", () => {
-  it("diff without a baseline says what to capture", () => {
-    const diff = diffAgainstBaseline(
-      {
-        schemaVersion: 1,
-        partial: false,
-        score: 50,
-        frameworks: [],
-        frameworkDetectionUnknown: false,
-        dimensions: [],
-        findings: [],
-        analysisStatus: {
-          discovery: "complete",
-          rules: "complete",
-          skippedFiles: 0,
-          durationMs: 1,
-        },
-      },
-      null,
-    );
-    const text = renderBaselineDiff(diff);
-    expect(text).toContain("UNKNOWN — no baseline found.");
-    expect(text).toMatch(/^\s*\$ mjolnir baseline\b/m);
-  });
-
-  it("baseline saved points at diff", () => {
-    const text = renderBaselineSaved(".mjolnir/baseline.json", 2);
-    expect(text).toMatch(/^\s*\$ mjolnir diff\b/m);
-  });
-
   it("stats with no recorded fixes points at the baseline→diff loop", () => {
     const text = renderStats(null);
     expect(text).toContain("No fixes recorded yet");
     expect(text).toMatch(/^\s*\$ mjolnir baseline$/m);
     expect(text).toMatch(/^\s*\$ mjolnir diff$/m);
-  });
-
-  it("init prints next commands as $ lines", () => {
-    const result = runInit(dir, null);
-    const text = renderInit(result);
-    for (const cmd of result.nextCommands) {
-      expect(text).toContain(`$ ${cmd}`);
-    }
   });
 });

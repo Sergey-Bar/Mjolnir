@@ -55,8 +55,6 @@ import {
 } from "../../src/playwright/selector-health.js";
 import { runForensics } from "../../src/forensics/run.js";
 import { parsePlaywrightJson } from "../../src/forensics/parse-playwright-json.js";
-import { renderDebt } from "../../src/commands/debt.js";
-import { renderInit } from "../../src/commands/init.js";
 import { runScanCommand } from "../../src/cli.js";
 import { createIgnoreMatcher } from "../../src/discovery/ignores.js";
 import type { ScanResult } from "../../src/types.js";
@@ -288,50 +286,5 @@ describe("forensics listing edge", () => {
       ],
     });
     expect(records[0]?.attempts[0]?.durationMs).toBe(0);
-  });
-});
-
-describe("debt register multi-rule sort", () => {
-  it("sorts rule ids inside a tracked debt class", () => {
-    const finding = (ruleId: string, line: number) => ({
-      ruleId,
-      category: "QA-TEST" as const,
-      severity: "warning" as const,
-      confidence: "high" as const,
-      findingType: "deterministic-defect" as const,
-      qaImpact: "FALSE-GREEN" as const,
-      file: "a.spec.ts",
-      line,
-      column: 1,
-      message: "m",
-      why: "w",
-      fix: "f",
-    });
-    // QA-TEST-004 and QA-PY-005 share the "Hard sleeps" class — the
-    // register must normalize their rule ids deterministically.
-    const md = renderDebt({
-      ...baseScan,
-      score: 40,
-      findings: [
-        finding("QA-PY-005", 1),
-        finding("QA-TEST-004", 2),
-        finding("QA-TEST-004", 3),
-      ],
-    });
-    expect(md).toContain("Hard sleeps");
-  });
-});
-
-describe("init icon for existing files", () => {
-  it("marks pre-existing files with the equals glyph", () => {
-    const out = renderInit({
-      steps: [
-        { name: "ci-workflow", status: "exists", detail: "already present." },
-      ],
-      nextCommands: [],
-      detectedFrameworks: ["vitest"],
-      detectionUnknown: false,
-    });
-    expect(out).toContain("[=] ci-workflow");
   });
 });

@@ -1,6 +1,6 @@
 # Mjölnir — Rule Reference
 
-_Generated from the live rule registry — do not edit by hand. Regenerate with `npm run docs:rules`._
+_Generated from the live rule registry — do not edit by hand. Regenerate with `npm run generate-rule-docs`._
 
 One page per rule, each showing a real detected example, the fix, confirmation of what it correctly leaves alone, and (when measured) real corpus occurrence counts.
 

@@ -669,16 +669,17 @@ export function buildCapabilityRegistry(
   // 3. Domains, read from the **support matrix** rather than from
   //    `src/qa/domain-model.ts`.
   //
-  //    Two reasons, and the second is the decisive one. First, the matrix
-  //    is the ledger of record and `m26:integrity` gates it, so a domain
-  //    claim sourced from it is already checked. Second — and this is the
-  //    one that matters — `src/qa/domain-model.ts` is classified
-  //    `CONTRACT_ONLY` in `docs/COVERAGE-EXEMPTIONS.json` with a removal
-  //    plan to retire it. Importing it here would give a file declared to
-  //    have no production importer a production importer, and would couple
-  //    the registry to a module scheduled for deletion. The matrix also
-  //    carries the disposition, the blocked reason and the revisit trigger,
-  //    so the entry is richer than an id ever was.
+  //    Two reasons, and the second was decisive even while that file
+  //    existed. First, the matrix is the ledger of record and
+  //    `m26:integrity` gates it, so a domain claim sourced from it is
+  //    already checked. Second — and this is the one that mattered —
+  //    `src/qa/domain-model.ts` was classified `CONTRACT_ONLY` in
+  //    `docs/COVERAGE-EXEMPTIONS.json` with a removal plan to retire it,
+  //    and the v6 carve deleted it. Importing it would have given a file
+  //    declared to have no production importer a production importer, and
+  //    coupled the registry to a module scheduled for deletion. The matrix
+  //    also carries the disposition, the blocked reason and the revisit
+  //    trigger, so the entry is richer than an id ever was.
   for (const domain of readDomainCells(root)) {
     const id = domainCapabilityId(domain.id);
     if (byId.has(id)) continue;

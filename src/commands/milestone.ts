@@ -1,13 +1,5 @@
-import {
-  existsSync,
-  mkdtempSync,
-  readFileSync,
-  renameSync,
-  rmSync,
-  statSync,
-} from "node:fs";
-import { tmpdir } from "node:os";
-import { basename, isAbsolute, join, relative, resolve } from "node:path";
+import { readFileSync } from "node:fs";
+import { isAbsolute, relative, resolve } from "node:path";
 
 import {
   EXIT_CLEAN,
@@ -19,11 +11,30 @@ import {
 import type { Output } from "../cli-io.js";
 import { err, internalErrorMessage, out } from "../cli-io.js";
 import { ConfigValidationError } from "../config/config.js";
+
+// The scan and the error shape are shared with the commands that moved out in
+// carve 1.6.1, and `milestone-args` owns the argument layer. Both are exported
+// rather than copied: a governance rule that exists twice can disagree with
+// itself, and the copy a pipeline runs is the one that has to be right.
+export { milestoneError, runMilestoneScan };
+export {
+  isWorkflowFile,
+  parseMilestoneArgs,
+  rejectUnexpectedOptions,
+  validateTarget,
+  type MilestoneArgs,
+} from "./milestone-args.js";
+import {
+  isWorkflowFile,
+  parseMilestoneArgs,
+  rejectUnexpectedOptions,
+  validateTarget,
+  type MilestoneArgs,
+} from "./milestone-args.js";
 import { loadSuppressions } from "../config/suppressions.js";
 import { parseJsonFile, isRecord } from "../lib/safe-json.js";
-import { writeFileAtomic } from "../lib/fs-atomic.js";
 import { compareCodePoints } from "../lib/compare.js";
-import { TRUST_ORDER, type Finding, type ScanResult } from "../types.js";
+import { type Finding, type ScanResult } from "../types.js";
 import {
   renderCrossFileAnalysis,
   analyzeCrossFileSignals,
@@ -40,25 +51,9 @@ import {
   getPlaywrightMaturityReport,
   renderPlaywrightMaturityReport,
 } from "../engine/framework-maturity.js";
-import {
-  analyzeTrustTrends,
-  computeTrustSnapshot,
-  renderTrustTrend,
-  type TrustSnapshot,
-} from "../engine/historical-trust.js";
-import {
-  ANNOTATIONS_LIMIT,
-  buildMachineContract,
-  type MachineAnnotation,
-  type MachineCompleteness,
-  type MachineSummary,
-} from "../engine/machine-contract.js";
-import {
-  renderContractVerification,
-  verifyMachineContract,
-  type ContractIntegrityCheck,
-  type VerifiableMachineContract,
-} from "../engine/machine-contract-verification.js";
+import {} from "../engine/historical-trust.js";
+import {} from "../engine/machine-contract.js";
+import {} from "../engine/machine-contract-verification.js";
 import {
   KNOWN_RULE_IDS,
   runScan,
@@ -76,192 +71,11 @@ import {
   renderCIIntegrityReport,
 } from "../engine/verification-intelligence.js";
 
-interface MilestoneArgs {
-  target: string;
-  json: boolean;
-  maxDurationMs: number;
-  framework?: string;
-  policy?: string;
-  history?: string;
-  recordedAt?: string;
-  contract?: string;
-  file?: string;
-  rule?: string;
-}
-
 interface MilestoneScan {
   result: ScanResult;
   preSuppressionFindings: Finding[];
   files: Array<{ path: string; text: string }>;
   readSkipped: number;
-}
-
-const STRICT_SUPPRESSION_POLICY: SuppressionPolicyConfig = {
-  ...DEFAULT_SUPPRESSION_POLICY,
-  requireExpiration: true,
-  maxExpiredSuppressions: 0,
-};
-
-function startsWithFlag(value: string): boolean {
-  return value.charCodeAt(0) === 45;
-}
-
-function parseMilestoneArgs(
-  argv: string[],
-  io: { err: Output },
-): MilestoneArgs | null {
-  const args: MilestoneArgs = {
-    target: ".",
-    json: false,
-    maxDurationMs: Number.POSITIVE_INFINITY,
-  };
-  let targetSeen = false;
-
-  const value = (index: number, flag: string): string | null => {
-    const candidate = argv[index];
-    if (candidate === undefined || startsWithFlag(candidate)) {
-      io.err(`mjolnir: ${flag} requires a value`);
-      return null;
-    }
-    return candidate;
-  };
-
-  for (let index = 0; index < argv.length; index++) {
-    const token = argv[index] ?? "";
-    switch (token) {
-      case "--json":
-        args.json = true;
-        break;
-      case "--format": {
-        const format = value(++index, "--format");
-        if (format === null) return null;
-        if (format === "json") args.json = true;
-        else if (format !== "terminal") {
-          io.err("mjolnir: milestone commands support --format terminal|json");
-          return null;
-        }
-        break;
-      }
-      case "--no-progress":
-        break;
-      case "--max-duration": {
-        const raw = value(++index, "--max-duration");
-        if (raw === null) return null;
-        const seconds = Number(raw);
-        if (!Number.isFinite(seconds) || seconds <= 0) {
-          io.err("mjolnir: --max-duration requires positive seconds");
-          return null;
-        }
-        args.maxDurationMs = seconds * 1000;
-        break;
-      }
-      case "--framework": {
-        const framework = value(++index, "--framework");
-        if (framework === null) return null;
-        args.framework = framework;
-        break;
-      }
-      case "--policy": {
-        const policy = value(++index, "--policy");
-        if (policy === null) return null;
-        args.policy = policy;
-        break;
-      }
-      case "--history": {
-        const history = value(++index, "--history");
-        if (history === null) return null;
-        args.history = history;
-        break;
-      }
-      case "--recorded-at": {
-        const recordedAt = value(++index, "--recorded-at");
-        if (recordedAt === null || Number.isNaN(Date.parse(recordedAt))) {
-          io.err("mjolnir: --recorded-at requires an ISO-8601 timestamp");
-          return null;
-        }
-        args.recordedAt = recordedAt;
-        break;
-      }
-      case "--contract": {
-        const contract = value(++index, "--contract");
-        if (contract === null) return null;
-        args.contract = contract;
-        break;
-      }
-      case "--file": {
-        const file = value(++index, "--file");
-        if (file === null) return null;
-        args.file = file;
-        break;
-      }
-      case "--rule": {
-        const rule = value(++index, "--rule");
-        if (rule === null) return null;
-        args.rule = rule;
-        break;
-      }
-      default: {
-        if (startsWithFlag(token)) {
-          io.err(`mjolnir: unknown milestone command flag "${token}"`);
-          return null;
-        }
-        if (targetSeen) {
-          io.err("mjolnir: milestone commands accept one target path");
-          return null;
-        }
-        args.target = token;
-        targetSeen = true;
-      }
-    }
-  }
-
-  return args;
-}
-
-function rejectUnexpectedOptions(
-  args: MilestoneArgs,
-  allowed: ReadonlySet<keyof MilestoneArgs>,
-  io: { err: Output },
-): boolean {
-  const unexpected = (
-    [
-      "framework",
-      "policy",
-      "history",
-      "recordedAt",
-      "contract",
-      "file",
-      "rule",
-    ] as const
-  ).find((key) => args[key] !== undefined && !allowed.has(key));
-  if (!unexpected) return false;
-  io.err(`mjolnir: option --${unexpected} is not valid for this command`);
-  return true;
-}
-
-function validateTarget(
-  target: string,
-  io: { err: Output },
-): { target: string } | { code: number } {
-  if (!existsSync(target)) {
-    io.err(`mjolnir: scan target does not exist: ${target}`);
-    return { code: EXIT_USAGE };
-  }
-  if (!statSync(target).isDirectory()) {
-    io.err(`mjolnir: scan target is not a directory: ${target}`);
-    return { code: EXIT_USAGE };
-  }
-  return { target };
-}
-
-function isWorkflowFile(path: string): boolean {
-  const normalized = path.replaceAll("\\", "/");
-  return (
-    normalized.startsWith(".github/workflows/") ||
-    normalized === ".gitlab-ci.yml" ||
-    normalized === ".gitlab-ci.yaml" ||
-    basename(normalized) === "Jenkinsfile"
-  );
 }
 
 async function runMilestoneScan(
@@ -380,6 +194,12 @@ function numericPolicyValue(
   return value;
 }
 
+const STRICT_SUPPRESSION_POLICY: SuppressionPolicyConfig = {
+  ...DEFAULT_SUPPRESSION_POLICY,
+  requireExpiration: true,
+  maxExpiredSuppressions: 0,
+};
+
 function loadPolicy(path: string | undefined): SuppressionPolicyConfig {
   if (!path) return STRICT_SUPPRESSION_POLICY;
   let text: string;
@@ -446,331 +266,6 @@ function loadPolicy(path: string | undefined): SuppressionPolicyConfig {
       true,
     ),
     maxMassSuppressionRatio,
-  };
-}
-
-function isTrustSnapshot(value: unknown): value is TrustSnapshot {
-  return (
-    isRecord(value) &&
-    typeof value.scanId === "string" &&
-    typeof value.timestamp === "string" &&
-    (typeof value.score === "number" || value.score === null) &&
-    typeof value.findings === "number" &&
-    typeof value.errors === "number" &&
-    typeof value.warnings === "number" &&
-    typeof value.infos === "number" &&
-    typeof value.advisory === "number" &&
-    typeof value.trustLevel === "string" &&
-    typeof value.confidence === "number" &&
-    typeof value.evidenceCoverage === "number" &&
-    typeof value.inconclusiveRate === "number" &&
-    typeof value.partial === "boolean" &&
-    typeof value.frameworkCount === "number" &&
-    typeof value.ruleCount === "number"
-  );
-}
-
-function loadTrustHistory(path: string): TrustSnapshot[] {
-  if (!existsSync(path)) return [];
-  try {
-    const text = readFileSync(path, "utf8");
-    return parseJsonFile<TrustSnapshot[]>(text, path, (candidate) => {
-      return (
-        Array.isArray(candidate) &&
-        candidate.every((entry) => isTrustSnapshot(entry))
-      );
-    });
-  } catch (error) {
-    throw new ConfigValidationError(`invalid trust history: ${path}`, {
-      cause: error,
-    });
-  }
-}
-
-type ContractDocument = ScanResult & {
-  contract: VerifiableMachineContract;
-};
-
-function isFiniteNumber(value: unknown): value is number {
-  return typeof value === "number" && Number.isFinite(value);
-}
-
-function isNonNegativeInteger(value: unknown): value is number {
-  return Number.isSafeInteger(value) && (value as number) >= 0;
-}
-
-function isPositiveInteger(value: unknown): value is number {
-  return Number.isSafeInteger(value) && (value as number) > 0;
-}
-
-function isStringArray(value: unknown): value is string[] {
-  return (
-    Array.isArray(value) && value.every((entry) => typeof entry === "string")
-  );
-}
-
-function isValidAnalysisStatus(value: unknown): boolean {
-  if (!isRecord(value)) return false;
-  return (
-    (value.discovery === "complete" || value.discovery === "partial") &&
-    (value.rules === "complete" || value.rules === "partial") &&
-    isNonNegativeInteger(value.skippedFiles) &&
-    isFiniteNumber(value.durationMs) &&
-    value.durationMs >= 0 &&
-    (value.truncationReasons === undefined ||
-      isStringArray(value.truncationReasons)) &&
-    (value.rulesCrashed === undefined ||
-      isNonNegativeInteger(value.rulesCrashed))
-  );
-}
-
-function isValidDimension(value: unknown): boolean {
-  return (
-    isRecord(value) &&
-    typeof value.category === "string" &&
-    isFiniteNumber(value.score) &&
-    value.score >= 0 &&
-    value.score <= 100 &&
-    isNonNegativeInteger(value.errors) &&
-    isNonNegativeInteger(value.warnings) &&
-    isNonNegativeInteger(value.infos)
-  );
-}
-
-function isValidFinding(value: unknown): boolean {
-  if (!isRecord(value)) return false;
-  return (
-    typeof value.ruleId === "string" &&
-    value.ruleId.length > 0 &&
-    typeof value.category === "string" &&
-    typeof value.file === "string" &&
-    value.file.length > 0 &&
-    isPositiveInteger(value.line) &&
-    isPositiveInteger(value.column) &&
-    typeof value.message === "string" &&
-    value.message.length > 0 &&
-    typeof value.severity === "string" &&
-    typeof value.confidence === "string" &&
-    typeof value.findingType === "string" &&
-    typeof value.qaImpact === "string" &&
-    typeof value.why === "string" &&
-    typeof value.fix === "string"
-  );
-}
-
-function isValidTrustSummary(value: unknown): boolean {
-  if (!isRecord(value)) return false;
-  return (
-    // Derived from the ladder: a validator that hard-codes the levels starts
-    // rejecting history the moment a rung is added.
-    (TRUST_ORDER as readonly string[]).includes(String(value.level)) &&
-    isFiniteNumber(value.confidence) &&
-    value.confidence >= 0 &&
-    value.confidence <= 1 &&
-    isFiniteNumber(value.evidenceCoverage) &&
-    value.evidenceCoverage >= 0 &&
-    value.evidenceCoverage <= 1 &&
-    isFiniteNumber(value.inconclusiveRate) &&
-    value.inconclusiveRate >= 0 &&
-    value.inconclusiveRate <= 1 &&
-    (value.measuredFpOfFiredRules === undefined ||
-      (isFiniteNumber(value.measuredFpOfFiredRules) &&
-        value.measuredFpOfFiredRules >= 0 &&
-        value.measuredFpOfFiredRules <= 1)) &&
-    isStringArray(value.provisionalRuleIds) &&
-    (value.confidenceCeiling === undefined ||
-      (isFiniteNumber(value.confidenceCeiling) &&
-        value.confidenceCeiling >= 0 &&
-        value.confidenceCeiling <= 1)) &&
-    isStringArray(value.ceilingReasons)
-  );
-}
-
-function isValidProvenance(value: unknown): boolean {
-  if (!isRecord(value)) return false;
-  return (
-    isNonNegativeInteger(value.testFiles) &&
-    isNonNegativeInteger(value.generatedMarkedFiles) &&
-    isNonNegativeInteger(value.codegenLikeFiles) &&
-    isFiniteNumber(value.shareMarkedGenerated) &&
-    value.shareMarkedGenerated >= 0 &&
-    value.shareMarkedGenerated <= 1 &&
-    isNonNegativeInteger(value.findingsInGeneratedFiles) &&
-    isNonNegativeInteger(value.findingsInUnmarkedFiles) &&
-    typeof value.note === "string"
-  );
-}
-
-function isValidForensicVerdicts(value: unknown): boolean {
-  if (!isRecord(value) || !isRecord(value.byVerdict)) return false;
-  return (
-    isNonNegativeInteger(value.classifications) &&
-    isNonNegativeInteger(value.inconclusive) &&
-    Object.values(value.byVerdict).every((count) => isNonNegativeInteger(count))
-  );
-}
-
-function isValidSummary(value: unknown): value is MachineSummary {
-  if (!isRecord(value)) return false;
-  return (
-    typeof value.digest === "string" &&
-    value.digest.length > 0 &&
-    isNonNegativeInteger(value.findings) &&
-    (value.score === null ||
-      (isFiniteNumber(value.score) &&
-        value.score >= 0 &&
-        value.score <= 100)) &&
-    isNonNegativeInteger(value.errors) &&
-    isNonNegativeInteger(value.warnings) &&
-    isNonNegativeInteger(value.infos) &&
-    isNonNegativeInteger(value.advisory)
-  );
-}
-
-function isValidAnnotation(value: unknown): value is MachineAnnotation {
-  if (!isRecord(value)) return false;
-  return (
-    typeof value.path === "string" &&
-    value.path.length > 0 &&
-    isPositiveInteger(value.start_line) &&
-    (value.annotation_level === "failure" ||
-      value.annotation_level === "warning" ||
-      value.annotation_level === "notice") &&
-    typeof value.message === "string" &&
-    typeof value.ruleId === "string" &&
-    value.ruleId.length > 0 &&
-    (value.detectorRevision === undefined ||
-      isPositiveInteger(value.detectorRevision)) &&
-    typeof value.advisory === "boolean"
-  );
-}
-
-function isValidCompleteness(value: unknown): value is MachineCompleteness {
-  if (!isRecord(value)) return false;
-  return (
-    typeof value.partial === "boolean" &&
-    (value.discovery === "complete" || value.discovery === "partial") &&
-    (value.rules === "complete" || value.rules === "partial") &&
-    isNonNegativeInteger(value.skippedFiles) &&
-    isNonNegativeInteger(value.rulesCrashed) &&
-    isStringArray(value.truncationReasons) &&
-    typeof value.frameworkDetectionUnknown === "boolean" &&
-    isFiniteNumber(value.durationMs) &&
-    value.durationMs >= 0
-  );
-}
-
-function isValidContract(value: unknown): value is VerifiableMachineContract {
-  if (!isRecord(value)) return false;
-  return (
-    Number.isSafeInteger(value.contractVersion) &&
-    isValidSummary(value.summary) &&
-    Array.isArray(value.annotations) &&
-    value.annotations.length <= ANNOTATIONS_LIMIT &&
-    value.annotations.every((annotation) => isValidAnnotation(annotation)) &&
-    typeof value.annotationsTruncated === "boolean" &&
-    isValidCompleteness(value.completeness) &&
-    (value.trustSummary === undefined ||
-      isValidTrustSummary(value.trustSummary)) &&
-    (value.provenance === undefined || isValidProvenance(value.provenance)) &&
-    (value.forensicVerdicts === undefined ||
-      isValidForensicVerdicts(value.forensicVerdicts))
-  );
-}
-
-function isScanResultDocument(value: unknown): value is ContractDocument {
-  if (!isRecord(value) || value.schemaVersion !== 1) return false;
-  return (
-    (value.score === null ||
-      (isFiniteNumber(value.score) &&
-        value.score >= 0 &&
-        value.score <= 100)) &&
-    typeof value.partial === "boolean" &&
-    isStringArray(value.frameworks) &&
-    Array.isArray(value.dimensions) &&
-    value.dimensions.every((dimension) => isValidDimension(dimension)) &&
-    Array.isArray(value.findings) &&
-    value.findings.every((finding) => isValidFinding(finding)) &&
-    isValidAnalysisStatus(value.analysisStatus) &&
-    (value.agenticProfile === undefined ||
-      isValidProvenance(value.agenticProfile)) &&
-    (value.trustSummary === undefined ||
-      isValidTrustSummary(value.trustSummary)) &&
-    (value.forensicVerdicts === undefined ||
-      isValidForensicVerdicts(value.forensicVerdicts)) &&
-    isValidContract(value.contract)
-  );
-}
-
-function emitVerification(
-  verification: ReturnType<typeof verifyMachineContract>,
-  json: boolean,
-  io: { out: Output },
-): void {
-  if (json) {
-    io.out(JSON.stringify(verification, null, 2));
-  } else {
-    io.out(renderContractVerification(verification));
-  }
-}
-
-function cloneContract(
-  contract: VerifiableMachineContract,
-): VerifiableMachineContract {
-  return JSON.parse(JSON.stringify(contract)) as VerifiableMachineContract;
-}
-
-export function verifyPersistedContract(
-  document: ContractDocument,
-  freshResult: ScanResult,
-): ReturnType<typeof verifyMachineContract> & {
-  freshScanMatch: boolean;
-  artifactResultMatch: boolean;
-} {
-  const artifactVerification = verifyMachineContract(
-    document,
-    document.contract,
-  );
-  const freshComparable = cloneContract(document.contract);
-  const expected = buildMachineContract(freshResult);
-  freshComparable.completeness.durationMs = expected.completeness.durationMs;
-  const freshVerification = verifyMachineContract(freshResult, freshComparable);
-  const violations = [
-    ...artifactVerification.violations,
-    ...freshVerification.violations,
-  ].filter((value, index, all) => all.indexOf(value) === index);
-  if (!freshVerification.passed) {
-    violations.push("Persisted contract is not bound to a fresh scan");
-  }
-  if (!artifactVerification.passed) {
-    violations.push(
-      "Persisted scan result is not consistent with its contract",
-    );
-  }
-  const checks: ContractIntegrityCheck[] = [
-    ...artifactVerification.checks,
-    ...freshVerification.checks,
-    {
-      name: "fresh-scan-binding",
-      status:
-        freshVerification.passed && artifactVerification.passed
-          ? "pass"
-          : "fail",
-      detail:
-        freshVerification.passed && artifactVerification.passed
-          ? "Contract matches an independent fresh scan"
-          : "Contract is not bound to the current scan",
-    },
-  ];
-  return {
-    ...freshVerification,
-    passed: violations.length === 0,
-    violations: violations.filter(
-      (value, index, all) => all.indexOf(value) === index,
-    ),
-    checks,
-    freshScanMatch: freshVerification.passed,
-    artifactResultMatch: artifactVerification.passed,
   };
 }
 
@@ -872,132 +367,6 @@ export async function runCrossFileCommand(
       return EXIT_PARTIAL;
     }
     return analysis.signals.length > 0 ? EXIT_FINDINGS : EXIT_CLEAN;
-  } catch (error) {
-    return milestoneError(error, io, argv.includes("--debug"));
-  }
-}
-
-export async function runContractVerifyCommand(
-  argv: string[],
-  io: { out: Output; err: Output } = { out, err },
-): Promise<number> {
-  const args = parseMilestoneArgs(argv, io);
-  if (!args) return EXIT_USAGE;
-  if (rejectUnexpectedOptions(args, new Set(["contract"]), io)) {
-    return EXIT_USAGE;
-  }
-  try {
-    if (args.contract) {
-      const target = resolve(args.target);
-      const valid = validateTarget(target, io);
-      if ("code" in valid) return valid.code;
-      const path = resolve(target, args.contract);
-      let document: ContractDocument;
-      try {
-        document = parseJsonFile<ContractDocument>(
-          readFileSync(path, "utf8"),
-          path,
-          isScanResultDocument,
-        );
-      } catch (error) {
-        throw new ConfigValidationError(`invalid contract document: ${path}`, {
-          cause: error,
-        });
-      }
-      const relativePath = relative(target, path).replaceAll("\\", "/");
-      const canHide =
-        relativePath !== "" &&
-        !relativePath.startsWith("../") &&
-        !isAbsolute(relativePath) &&
-        existsSync(path);
-      const hiddenDirectory = canHide
-        ? mkdtempSync(join(tmpdir(), "mjolnir-contract-"))
-        : undefined;
-      const hiddenPath = hiddenDirectory
-        ? join(hiddenDirectory, basename(path))
-        : undefined;
-      if (hiddenPath) renameSync(path, hiddenPath);
-      let fresh: Awaited<ReturnType<typeof runMilestoneScan>>;
-      try {
-        fresh = await runMilestoneScan(args, io, false);
-      } finally {
-        if (hiddenPath && existsSync(hiddenPath)) {
-          renameSync(hiddenPath, path);
-        }
-        if (hiddenDirectory)
-          rmSync(hiddenDirectory, { recursive: true, force: true });
-      }
-      if ("code" in fresh) return fresh.code;
-      const verification = verifyPersistedContract(document, fresh.result);
-      emitVerification(verification, args.json, io);
-      if (!verification.passed) return EXIT_FINDINGS;
-      if (document.partial || fresh.result.partial) return EXIT_PARTIAL;
-      return EXIT_CLEAN;
-    }
-
-    const scan = await runMilestoneScan(args, io, false);
-    if ("code" in scan) return scan.code;
-    const verification = verifyMachineContract(
-      scan.result,
-      buildMachineContract(scan.result),
-    );
-    emitVerification(verification, args.json, io);
-    if (scan.result.partial) return EXIT_PARTIAL;
-    return verification.passed ? EXIT_CLEAN : EXIT_FINDINGS;
-  } catch (error) {
-    return milestoneError(error, io, argv.includes("--debug"));
-  }
-}
-
-export async function runTrustTrendCommand(
-  argv: string[],
-  io: { out: Output; err: Output } = { out, err },
-): Promise<number> {
-  const args = parseMilestoneArgs(argv, io);
-  if (!args) return EXIT_USAGE;
-  if (rejectUnexpectedOptions(args, new Set(["history", "recordedAt"]), io)) {
-    return EXIT_USAGE;
-  }
-  try {
-    const scan = await runMilestoneScan(args, io, false);
-    if ("code" in scan) return scan.code;
-    if (!scan.result.runIdentity || !scan.result.trustSummary) {
-      if (args.json) {
-        io.out(JSON.stringify({ error: "trust_inputs_unavailable" }, null, 2));
-      } else {
-        io.err("mjolnir: scan did not produce run identity and trust summary");
-      }
-      return EXIT_PARTIAL;
-    }
-    const target = resolve(args.target);
-    const historyPath = resolve(
-      target,
-      args.history ?? join(".mjolnir", "trust-history.json"),
-    );
-    const history = loadTrustHistory(historyPath);
-    const snapshot = computeTrustSnapshot(
-      scan.result,
-      scan.result.runIdentity,
-      scan.result.trustSummary,
-      args.recordedAt ?? new Date().toISOString(),
-    );
-    const merged = new Map(
-      history.map((entry) => [
-        `${entry.scanId}\u0000${entry.timestamp}`,
-        entry,
-      ]),
-    );
-    merged.set(`${snapshot.scanId}\u0000${snapshot.timestamp}`, snapshot);
-    const snapshots = [...merged.values()].sort(
-      (left, right) =>
-        compareCodePoints(left.timestamp, right.timestamp) ||
-        compareCodePoints(left.scanId, right.scanId),
-    );
-    writeFileAtomic(historyPath, `${JSON.stringify(snapshots, null, 2)}\n`);
-    const trend = analyzeTrustTrends(snapshots);
-    if (args.json) io.out(JSON.stringify(trend, null, 2));
-    else io.out(renderTrustTrend(trend));
-    return scan.result.partial ? EXIT_PARTIAL : EXIT_CLEAN;
   } catch (error) {
     return milestoneError(error, io, argv.includes("--debug"));
   }

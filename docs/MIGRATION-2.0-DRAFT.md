@@ -15,20 +15,20 @@ creation. To keep a suppression forever, opt out explicitly with
 
 **What does NOT change.** Hand-written entries that predate 2.0.0 and carry
 neither `expires` nor `expires: false` keep their current (non-expiring)
-behavior until you edit them — no silent retroactive expiry. `mjolnir init`'s
+behavior until you edit them — no silent retroactive expiry. The config
 config check will surface each such entry with a migration suggestion.
 
 **Migration steps.**
 
-1. Run `mjolnir init` (post-2.0.0) — the config check lists every
+1. Run the config check (post-2.0.0) — it lists every
    suppression entry missing both `expires` and `expires: false`.
 2. For each listed entry, choose deliberately:
    - `expires: "<ISO date>"` — keep the suppression for a bounded period
      (recommended: this is the 90-day default behavior, made explicit).
    - `expires: false` — the explicit never-expire opt-out.
-3. Re-run `mjolnir scan` / `mjolnir verify`. Expired entries suppress
+3. Re-run `mjolnir scan` / `mjolnir ci verify`. Expired entries suppress
    nothing and are listed (with `expired` status) by
-   `mjolnir suppressions` and verbose scan output; `suppressionCount`
+   `mjolnir scan --suppressions` and verbose scan output; `suppressionCount`
    counts active entries only.
 4. Renewal = editing the entry (authorship + reason are already required
    by the config schema). CI and local behave identically.
@@ -50,7 +50,7 @@ release. Retired rule IDs never fire again and are never reused.
    name retired rules — suppressing a rule that can no longer fire is dead
    config, and the config check flags it.
 3. Re-run `mjolnir scan` and compare against your baseline:
-   `mjolnir verify` resolves disappeared findings with an explicit cause —
+   `mjolnir ci verify` resolves disappeared findings with an explicit cause —
    a finding disappearing because its rule was retired is visible as such,
    never as a verified fix (§15 lifecycle honesty).
 4. If a finding the retired rule covered still matters, track it through

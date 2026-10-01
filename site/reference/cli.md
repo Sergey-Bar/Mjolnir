@@ -31,13 +31,13 @@ mjolnir: unknown flag "--jso"
 A crash (exit 20) prints a plain-language note and the stack trace only
 under `--debug`.
 
-## `mjolnir summary [mjolnir.json]`
+## `mjolnir scan --format github-summary [mjolnir.json]`
 
 Turns a saved `--json` report into GitHub CI output. One emitter, one
 code path — the scan itself never prints annotations.
 
 ```bash
-mjolnir --json > mjolnir.json && mjolnir summary mjolnir.json
+mjolnir --json > mjolnir.json && mjolnir scan --format github-summary mjolnir.json
 ```
 
 - **Annotations** (one per finding) go to stdout only when
@@ -82,7 +82,7 @@ responsible for every change.
 SCAN → DETECT → EVIDENCE → EXPLAIN → HANDOFF → FIX → RE-SCAN → VERIFY
 ```
 
-### `mjolnir why <file>:<line>`
+### `mjolnir explain <file:line> <file>:<line>`
 
 Occurrence-level evidence query — informational, NOT a gate. Exact
 file+line match over the report; renders the finding's severity,

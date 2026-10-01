@@ -78,6 +78,14 @@ function rootScriptRefs(text) {
     .filter((name) => name in SCRIPTS);
 }
 
+function safeRead(path) {
+  try {
+    return readFileSync(path, "utf8");
+  } catch {
+    return null;
+  }
+}
+
 const pkg = JSON.parse(readFileSync(join(ROOT, "package.json"), "utf8"));
 const SCRIPTS = pkg.scripts ?? {};
 
@@ -130,14 +138,37 @@ for (const root of roots) {
   for (const name of closureOf(root)) reachable.add(name);
 }
 
-/** `| `script` | why |` rows in the manual registry. */
+/**
+ * `| `script` | why |` and `| `script` | `--mode` | why |` rows in the manual
+ * registry.
+ *
+ * The three-cell form exists because a WRITE MODE of a script a gate already
+ * reaches is a real category that this gate could not express. `npm run
+ * check-fixture-quad` is reachable; `npm run check-fixture-quad --write`
+ * rewrites a tracked file, which is precisely what a CI step must not do. A
+ * two-cell row naming the mode would be read as a script named
+ * `check-fixture-quad --write`, and a script with that name does not exist —
+ * so the row was silently unread, and the write arm became unaccounted for
+ * without anything going red. A mode row is keyed by its BASE script and is
+ * validated against it, but is not added to the manual set: a reachable
+ * script with a manual mode is the normal case, not a contradiction.
+ */
 function declaredManual(text) {
   const out = new Map();
+  const modes = new Map();
   for (const line of text.split("\n")) {
-    const m = /^\|\s*`([\w:.-]+)`\s*\|\s*([^|]+?)\s*\|/.exec(line);
-    if (m) out.set(m[1], m[2]);
+    const m =
+      /^\|\s*`([\w:.-]+)`\s*\|\s*`(--?[\w-]+)`\s*\|\s*([^|]+?)\s*\|/.exec(line);
+    if (m) {
+      const list = modes.get(m[1]) ?? [];
+      list.push({ mode: m[2], why: m[3] });
+      modes.set(m[1], list);
+      continue;
+    }
+    const two = /^\|\s*`([\w:.-]+)`\s*\|\s*([^|]+?)\s*\|/.exec(line);
+    if (two) out.set(two[1], two[2]);
   }
-  return out;
+  return { manual: out, modes };
 }
 
 const failures = [];
@@ -150,11 +181,11 @@ if (!existsSync(MANUAL)) {
   );
   process.exit(1);
 }
-const manual = declaredManual(readFileSync(MANUAL, "utf8"));
+const { manual, modes } = declaredManual(readFileSync(MANUAL, "utf8"));
 if (manual.size === 0) {
   console.error(
     `script reachability: ${MANUAL} declares no rows. Expected a table of ` +
-      "`| \\`script\\` | why |`.",
+      "`| \\`script\\` | why |` or `| \\`script\\` | \\`--mode\\` | why |`.",
   );
   process.exit(1);
 }
@@ -200,6 +231,57 @@ for (const [name, why] of manual) {
   }
 }
 
+const declaredModes = [];
+/** The interpreter entry a script body invokes, for reading a mode back. */
+const ENTRY =
+  /(?:^|\s|\|\|\s)(?:node|npx\s+tsx|tsx)\s+(?:--?[\w-]+(?:=[^\s]+)?\s+)*((?:[\w.@/-]+)\.(?:mjs|cjs|js|ts|mts|tsx))/;
+
+for (const [name, list] of modes) {
+  if (!(name in SCRIPTS)) {
+    failures.push(
+      `docs/MANUAL-SCRIPTS.md declares a mode of ${name}, which package.json does ` +
+        "not define. An exemption for a deleted script is a hole with a comment " +
+        "on it.",
+    );
+    continue;
+  }
+  // A mode is an ARGUMENT the script parses, not a token in the npm body, so
+  // the check reads the script file. `npm run corpus:audit --update` carries
+  // no `--update` in package.json; `tests/corpus/audit.ts` does.
+  const entry = ENTRY.exec(SCRIPTS[name])?.[1];
+  const source =
+    entry === undefined
+      ? SCRIPTS[name]
+      : (safeRead(join(ROOT, entry)) ?? SCRIPTS[name]);
+  // A mode is an ARGUMENT the script parses, not a token in the npm body, so
+  // the check reads the script file: `npm run corpus:audit --update` carries
+  // no `--update` in package.json, and `tests/corpus/audit.ts` does.
+  //
+  // A fixture tree that ships only the manifest and the registry has no script
+  // file to read. That is not a mode that does not exist — it is a tree where
+  // the question cannot be asked — so the check is skipped rather than failed.
+  // The base script still has to exist in package.json and the reason still has
+  // to be a sentence, so a fixture run is not vacuous.
+  const readable = entry !== undefined && safeRead(join(ROOT, entry)) !== null;
+  for (const { mode, why } of list) {
+    if (readable && !source.includes(mode)) {
+      failures.push(
+        `docs/MANUAL-SCRIPTS.md declares ${name} ${mode} as a manual mode, but ` +
+          `${entry} never mentions ${mode}. A mode that does not exist cannot ` +
+          "be the reason a write arm is not in CI.",
+      );
+      continue;
+    }
+    if (why.length < 15) {
+      failures.push(
+        `docs/MANUAL-SCRIPTS.md declares ${name} ${mode} with a one-word reason ` +
+          `("${why}").`,
+      );
+    }
+    declaredModes.push(`${name} ${mode}`);
+  }
+}
+
 if (failures.length > 0) {
   console.error("Script reachability check failed:");
   for (const failure of failures) console.error(`  - ${failure}`);
@@ -213,6 +295,7 @@ console.log(
       scripts: Object.keys(SCRIPTS).length,
       reachableFromWorkflows: [...reachable].filter((n) => n in SCRIPTS).length,
       declaredManual: manualScripts.sort(),
+      declaredModes: declaredModes.sort(),
     },
     null,
     2,

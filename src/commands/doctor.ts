@@ -530,7 +530,7 @@ export function checkTierEnforcement(
   // Classified-verdict count per rule. The shipped src/rules/
   // measured-fp.generated.ts is the HISTORICAL ARTIFACT base (baked in
   // because tests/corpus/verdicts/ is not packed). When running from a
-  // checkout whose verdicts have grown since the last `fp-audit:generate`,
+  // checkout whose verdicts have grown since the last `generate-fp-audit-table`,
   // the live directory is authoritative wherever it has rows.
   const classifiedPerRule = new Map<string, number>();
   const byId = new Map(rules.map((r) => [r.id, r] as const));
@@ -1306,7 +1306,7 @@ export function checkMeasurementConsistency(
     const live = liveCounts.get(id);
     if (live !== undefined && live !== m.n) {
       failures.push(
-        `${id}: MEASURED_FP.n=${m.n} but the live corpus has ${live} classified verdict(s) — regenerate (npm run fp-audit:generate)`,
+        `${id}: MEASURED_FP.n=${m.n} but the live corpus has ${live} classified verdict(s) — regenerate (npm run generate-fp-audit-table)`,
       );
     }
     if (live === undefined && m.n > 0) {

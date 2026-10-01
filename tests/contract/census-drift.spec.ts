@@ -297,3 +297,68 @@ describe("measurement census is the single source for the measured count", () =>
     ).toEqual([]);
   });
 });
+
+/**
+ * The second version-shaped claim: a git REF a reader will copy.
+ *
+ * The census sweep above covers counts. This covers the other number a
+ * surface can state that a reader acts on — `uses: Sergey-Bar/Mjolnir@vN`.
+ * It existed as a defect for a long time and nothing caught it, for three
+ * reasons that are each worth naming:
+ *
+ *   1. `check-version-surface.ts` binds the surfaces to the package VERSION.
+ *      The Action's major TAG is a different artifact, moved by
+ *      `.github/workflows/action-tags.yml` only after a stable release.
+ *   2. The translation sync (`scripts/readme-release-status.mjs`, since
+ *      deleted with the twenty-two READMEs it fed) propagated a HARDCODED `@v3`
+ *      into all of them on every run, so the wrong number was not a typo that
+ *      would decay — it was being re-written on purpose.
+ *   3. A syntactically valid ref that does not resolve fails silently for the
+ *      reader and loudly nowhere in this repository.
+ *
+ * The major a surface may name is `major(publishedStable)`, because the tag
+ * workflow derives the major from the release it follows.
+ */
+const ACTION_TAG = /Sergey-Bar\/Mjolnir@v(\d+)/gu;
+
+/** The published stable, read once and typed — an `any` here would make the
+ *  comparison below tautological, which is the defect this sweep exists for. */
+const PUBLISHED_STABLE: string = (
+  JSON.parse(readFileSync(join(ROOT, "package.json"), "utf8")) as {
+    publishedStable: string;
+  }
+).publishedStable;
+
+describe("Action tag claims name the published major", () => {
+  it("reads the published stable major, and it is a positive integer", () => {
+    expect(PUBLISHED_STABLE).toMatch(/^\d+\.\d+\.\d+$/u);
+  });
+
+  it("every live surface pinning a major tag pins the published one", () => {
+    const major = PUBLISHED_STABLE.split(".")[0];
+    const surfaces = liveSurfaces();
+    let seen = 0;
+    for (const { name, text } of surfaces) {
+      for (const m of text.matchAll(ACTION_TAG)) {
+        seen++;
+        expect(
+          m[1],
+          `${name} pins \`${m[0]}\`, but the published stable is ${PUBLISHED_STABLE} and ` +
+            `the action major tag follows the release, so only ` +
+            `\`Sergey-Bar/Mjolnir@v${major}\` resolves. A pin to a tag the ` +
+            "repository no longer moves is a 404 the reader finds and no gate " +
+            "here would have found for them",
+        ).toBe(major);
+      }
+    }
+    // Same discipline as the census floor above: a sweep that matches nothing
+    // is indistinguishable from a sweep that has stopped working. The floor
+    // is deliberately low — the point is that the shape is live, not that
+    // every language repeats the snippet.
+    expect(
+      seen,
+      "no surface pins a Sergey-Bar/Mjolnir@vN tag — the shape has rotted and " +
+        "this sweep is checking nothing",
+    ).toBeGreaterThanOrEqual(3);
+  });
+});

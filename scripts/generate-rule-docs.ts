@@ -1,5 +1,5 @@
 /**
- * `npm run docs:rules` — writes docs/rules/<RULE-ID>.md for every
+ * `npm run generate-rule-docs` — writes docs/rules/<RULE-ID>.md for every
  * registered rule plus docs/rules/README.md as an index (Sprint 7
  * Task 27, Master-Stabilization-Plan.md).
  *

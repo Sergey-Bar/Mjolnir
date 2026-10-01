@@ -118,6 +118,199 @@ export const LANGUAGE_MANIFEST: readonly LanguageCapability[] = [
   },
 ] as const;
 
+/**
+ * §5.1's seven missing manifest rows, and the `ECOSYSTEM_MANIFEST` alias.
+ *
+ * The table lists eleven ecosystems with an "11 ecosystems, ALL RETAINED, none
+ * deleted" heading, and seven of them had NO row — so the matrix generator had
+ * nothing to print for GitHub Actions, Playwright, Cypress, Selenium, GitLab
+ * CI, Jenkins or Azure Pipelines, and the README's language table silently
+ * covered four.
+ *
+ * Every new row is `DISCOVERED`, which is the honest state for an ecosystem
+ * with an adapter and no corpus: §5.1's own definition — "we have seen it
+ * exist. Says nothing about whether it works."
+ *
+ * They are `DISCOVERED` rather than `UNMEASURED` on purpose. `UNMEASURED` means
+ * evidence was collected and is not yet strong enough; these have NO evidence,
+ * and `DISCOVERED` is the state that says so. A row claiming a measurement
+ * nobody ran is the defect this whole module exists to catch.
+ *
+ * The alias exists because "language manifest" stopped being the right name
+ * once the table gained rows that are not languages — a YAML workflow and a
+ * CI system are ecosystems, not languages. `LANGUAGE_MANIFEST` is kept as the
+ * historical export because four specs and the README generator import it, and
+ * renaming an export to fix a noun is a breaking change dressed as tidying.
+ */
+
+/** The eleven §5.1 ecosystems, in the table's own order (wave A first). */
+export const ECOSYSTEM_ORDER = [
+  "github-actions",
+  "playwright",
+  "typescript",
+  "python",
+  "java",
+  "csharp",
+  "cypress",
+  "selenium",
+  "gitlab-ci",
+  "jenkins",
+  "azure-pipelines",
+] as const;
+
+export type EcosystemId = (typeof ECOSYSTEM_ORDER)[number];
+
+export const ECOSYSTEM_MANIFEST: readonly LanguageCapability[] = [
+  {
+    id: "github-actions",
+    displayName: "GitHub Actions",
+    state: "DISCOVERED",
+    capabilities: ["parse", "symbols", "test-discovery", "config-discovery"],
+    notCertified: [
+      "an adapter exists; no rule has been measured against a workflow corpus",
+      "the 30-repository corpus the plan budgets is not built",
+    ],
+    evidence: {
+      corpus: "none yet",
+      sampleSize: 0,
+      runner: "mjolnir-scan",
+      verifiedBy: "adapter parses real workflows; no measurement cohort",
+    },
+    nextLevelGap: "workflow corpus, then a detector measurement on it",
+  },
+  {
+    id: "playwright",
+    displayName: "Playwright",
+    state: "DISCOVERED",
+    capabilities: [
+      "parse",
+      "symbols",
+      "test-discovery",
+      "framework-discovery",
+      "config-discovery",
+    ],
+    notCertified: [
+      "26 concepts have rules; the plan counts 156 cells across the four adapters",
+      "no runner evidence, so the state ladder stops at DISCOVERED",
+    ],
+    evidence: {
+      corpus: "none yet",
+      sampleSize: 0,
+      runner: "mjolnir-scan",
+      verifiedBy: "6 repositories parsed; no measurement cohort",
+    },
+    nextLevelGap: "Playwright runner evidence, then the 156-cell surface",
+  },
+  {
+    id: "cypress",
+    displayName: "Cypress",
+    state: "DISCOVERED",
+    capabilities: ["parse", "test-discovery", "config-discovery"],
+    notCertified: [
+      "2 repositories only; §6.F's diversity gate cannot be met on that",
+      "three rules, none measured",
+    ],
+    evidence: {
+      corpus: "none yet",
+      sampleSize: 0,
+      runner: "mjolnir-scan",
+      verifiedBy: "adapter parses cypress.config.ts; no measurement cohort",
+    },
+    nextLevelGap: "cypress runner evidence on a wider corpus",
+  },
+  {
+    id: "selenium",
+    displayName: "Selenium",
+    state: "DISCOVERED",
+    capabilities: ["parse", "test-discovery"],
+    notCertified: [
+      "one repository; §6.F's diversity floor of three is unreachable",
+      "per-language bindings share one adapter, so no binding is proven",
+    ],
+    evidence: {
+      corpus: "none yet",
+      sampleSize: 0,
+      runner: "mjolnir-scan",
+      verifiedBy: "adapter parses page-object shapes; no measurement cohort",
+    },
+    nextLevelGap: "two more repositories, then per-language binding evidence",
+  },
+  {
+    id: "gitlab-ci",
+    displayName: "GitLab CI",
+    state: "DISCOVERED",
+    capabilities: ["parse", "config-discovery"],
+    notCertified: [
+      "no corpus repository at all",
+      "wave C by the plan's own ranking",
+    ],
+    evidence: {
+      corpus: "none yet",
+      sampleSize: 0,
+      runner: "mjolnir-scan",
+      verifiedBy: "adapter parses .gitlab-ci.yml; no measurement cohort",
+    },
+    nextLevelGap: "one real .gitlab-ci.yml, then a measurement",
+  },
+  {
+    id: "jenkins",
+    displayName: "Jenkins",
+    state: "DISCOVERED",
+    capabilities: ["parse", "config-discovery"],
+    notCertified: [
+      "no corpus repository at all",
+      "wave C by the plan's own ranking",
+    ],
+    evidence: {
+      corpus: "none yet",
+      sampleSize: 0,
+      runner: "mjolnir-scan",
+      verifiedBy: "adapter parses Jenkinsfile; no measurement cohort",
+    },
+    nextLevelGap: "one real Jenkinsfile, then a measurement",
+  },
+  {
+    id: "azure-pipelines",
+    displayName: "Azure Pipelines",
+    state: "DISCOVERED",
+    capabilities: ["parse", "config-discovery"],
+    notCertified: [
+      "no corpus repository at all",
+      "wave C by the plan's own ranking",
+    ],
+    evidence: {
+      corpus: "none yet",
+      sampleSize: 0,
+      runner: "mjolnir-scan",
+      verifiedBy: "adapter parses azure-pipelines.yml; no measurement cohort",
+    },
+    nextLevelGap: "one real pipeline file, then a measurement",
+  },
+];
+
+/**
+ * All eleven ecosystems, wave-A first.
+ *
+ * `LANGUAGE_MANIFEST` is the four rows that have measurements; these seven do
+ * not. The union is what §5.1's table describes, and it is what the matrix
+ * generator reads — so a README row cannot exist for an ecosystem the
+ * certification matrix does not mention, or vice versa.
+ */
+export const ALL_ECOSYSTEMS: readonly LanguageCapability[] = [
+  ...LANGUAGE_MANIFEST,
+  ...ECOSYSTEM_MANIFEST,
+];
+
+/**
+ * Historical alias.
+ *
+ * The name was accurate when the table held only languages. It stopped being
+ * accurate when it gained a YAML workflow and three CI systems, and the fix
+ * is a new export name plus this one — not renaming the old export, which four
+ * specs and the README generator import.
+ */
+export const ECOSYSTEM_MANIFEST_WITH_LANGUAGES: readonly LanguageCapability[] =
+  ALL_ECOSYSTEMS;
 export interface ManifestFinding {
   id: string;
   kind: "UNSUPPORTED_CLAIM" | "PROJECTION_DRIFT" | "MISSING_EVIDENCE_FIELD";

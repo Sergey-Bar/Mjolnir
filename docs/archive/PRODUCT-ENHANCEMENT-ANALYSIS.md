@@ -330,7 +330,7 @@ Mjölnir is a sophisticated, locally-first verification trust engine that scores
 
 **Impact**: High · **Effort**: Low (3–5 days)
 
-- `mjolnir handover --team` — generates a team-specific onboarding document including:
+- `mjolnir explain --plan --team` — generates a team-specific onboarding document including:
   - Module ownership map (who owns which test suite)
   - Known hotspots (repositories with worst scores)
   - Recommended learning path (which rules to understand first)
@@ -596,17 +596,17 @@ mjolnir.policy.json (team-level, version-controlled)
 
 ## VIII. SUCCESS METRICS
 
-| Metric                       | Current        | Target (6 months)         | Measurement              |
-| ---------------------------- | -------------- | ------------------------- | ------------------------ |
-| Rule count                   | 79             | 150+                      | `mjolnir rules --count`  |
-| Plugin count                 | 0              | 25+                       | Marketplace page         |
-| Community contributors       | Unknown        | 50+                       | GitHub contributors      |
-| Framework coverage           | 5 languages    | 8 languages               | `mjolnir init` detection |
-| Scan performance (10k files) | Unknown        | <10s                      | `mjolnir bench:scale`    |
-| CI integrations              | GitHub         | GitHub + GitLab + Jenkins | Marketplace listings     |
-| Editor integrations          | None           | VS Code + Cursor          | Extension marketplace    |
-| Documentation pages          | ~80 rule pages | 200+                      | docs site                |
-| Star count                   | Unknown        | 5k+                       | GitHub                   |
+| Metric                       | Current        | Target (6 months)         | Measurement                      |
+| ---------------------------- | -------------- | ------------------------- | -------------------------------- |
+| Rule count                   | 79             | 150+                      | `mjolnir explain --list --count` |
+| Plugin count                 | 0              | 25+                       | Marketplace page                 |
+| Community contributors       | Unknown        | 50+                       | GitHub contributors              |
+| Framework coverage           | 5 languages    | 8 languages               | `mjolnir init` detection         |
+| Scan performance (10k files) | Unknown        | <10s                      | `mjolnir bench:scale`            |
+| CI integrations              | GitHub         | GitHub + GitLab + Jenkins | Marketplace listings             |
+| Editor integrations          | None           | VS Code + Cursor          | Extension marketplace            |
+| Documentation pages          | ~80 rule pages | 200+                      | docs site                        |
+| Star count                   | Unknown        | 5k+                       | GitHub                           |
 
 ---
 

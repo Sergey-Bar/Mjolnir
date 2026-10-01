@@ -86,7 +86,7 @@ describe("handover arms", () => {
       "import { test } from '@playwright/test';\n" + "test('t', () => {});\n",
     );
     const cap = capture();
-    const code = await main(["handover", dir], cap.io);
+    const code = await main(["explain", "--plan", dir], cap.io);
     expect(code).toBe(0);
   });
 
@@ -119,7 +119,7 @@ describe("runDoctorPlaywright usage arm", () => {
   it("a dangling verb --help target resolves as usage (exit 10)", async () => {
     const cap = capture();
     const code = await runDoctorPlaywright(
-      ["doctor:playwright", "definitely/not/here"],
+      ["doctor", "--frameworks", "definitely/not/here"],
       cap.io,
     );
     expect(code).toBe(10);

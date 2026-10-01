@@ -11,7 +11,7 @@ const localRequired = [
   "npm run build",
   "npm run typecheck",
   "npm run lint",
-  "npm run version:check",
+  "npm run check-version",
   "npm run test:property",
   "npm run test:fuzz",
   "npm run coverage:ratchet",
@@ -19,7 +19,7 @@ const localRequired = [
   "npm run brand:doctor",
   "npm run brand:doctor:selftest",
   "npm run brand:fonts:check",
-  "npm run site:doctor",
+  "npm run doctor",
   "npm run ci-local:parity",
 ];
 
@@ -36,7 +36,7 @@ const remoteRequired = [
   "npm run build",
   "npm run typecheck",
   "npm run lint",
-  "npm run version:check",
+  "npm run check-version",
   "npm run brand:doctor",
   "npm run brand:doctor:selftest",
   "npm run brand:fonts:check",
@@ -44,16 +44,25 @@ const remoteRequired = [
   "npm run test:coverage:ci",
   "npm run coverage:ratchet",
   "npm run test:property",
-  "npm run site:doctor",
+  "npm run doctor",
 ];
 
+/**
+ * What `certify` has to run.
+ *
+ * The coverage run, not the bare suite. `npm run test` is a subset of
+ * `npm run test:coverage` — the same vitest invocation with an instrumenter
+ * attached — so requiring coverage is the stronger claim, and the plan asks for
+ * coverage on the pre-push path precisely because a gate that cannot see
+ * uncovered lines cannot tell a shrinking floor from a shrinking test.
+ */
 const certifyRequired = [
-  "npm run version:check",
-  "npm run test",
+  "npm run check-version",
+  "npm run test:coverage",
   "npx vitest run tests/contract/",
 ];
 const certifyCiRequired = [
-  "npm run version:check",
+  "npm run check-version",
   "npm run test:coverage:ci",
   "npx vitest run tests/contract/",
 ];

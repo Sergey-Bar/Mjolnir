@@ -1,5 +1,5 @@
 /**
- * `mjolnir rules` catalog — registry-derived docs can never drift.
+ * `mjolnir explain --list` catalog — registry-derived docs can never drift.
  */
 
 import { describe, expect, it } from "vitest";
@@ -154,7 +154,7 @@ describe("rules catalog", () => {
       ).toBe(10);
       expect(output).toEqual([]);
       expect(errors).toEqual([
-        "Usage: mjolnir rules --health [--limit=<positive-integer>]",
+        "Usage: mjolnir explain --list --health [--limit=<positive-integer>]",
       ]);
     },
   );

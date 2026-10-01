@@ -1,8 +1,8 @@
 # Corpus Count Lock (Regression Guard)
 
 **Generated from `tests/corpus/baseline/*.json` — do not edit by hand.**
-Regenerate with `npm run fp-audit:generate` after a reviewed
-`npm run corpus:regression:update` run.
+Regenerate with `npm run generate-fp-audit-table` after a reviewed
+`npm run corpus:audit --update` run.
 
 This is a **count lock**, not a false-positive audit. It records how many
 times each rule fires on real-world repos and fails CI if that number
@@ -11,7 +11,7 @@ increases. Classification of findings as TP/FP lives in `docs/FP-AUDIT.md`.
 Reproduce:
 
 ```bash
-npm run corpus:regression
+npm run corpus:audit
 ```
 
 This clones the real repos below over the network, runs the same

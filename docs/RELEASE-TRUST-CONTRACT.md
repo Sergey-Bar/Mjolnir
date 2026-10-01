@@ -1,6 +1,6 @@
 # Release Trust Contract
 
-The machine contract for `mjolnir release-trust` — the Release Trust Verdict
+The machine contract for `mjolnir ci release-trust` — the Release Trust Verdict
 (product-gap master plan §5, plan 1789009691197 R4a). Law lives in
 `docs/TRUST-CONSTITUTION.md`; this document fixes the **canonical dimension
 set, order, and bindings** the verb evaluates, plus the exit contract and

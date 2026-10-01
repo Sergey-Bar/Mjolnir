@@ -39,11 +39,11 @@ two is the exact error class this repository exists to detect.
 **What it forecloses.** Nothing ships under a major number until the quad
 backfill earns a core rule. The cost is real: a 5.0.0 that keeps accumulating
 6.0-shaped work without a version line to mark it. The `## [Unreleased]`
-section and `changelog:unreleased` now carry that instead, which is the
+section and `check-version` now carry that instead, which is the
 mechanism the plan was reaching for when it proposed 7.3a.
 
 **What would change it.** One rule with a complete four-leg fixture quad and
-a Wilson interval under 0.1. That is Wave 3.4, and `npm run rules:quad:check`
+a Wilson interval under 0.1. That is Wave 3.4, and `npm run check-fixture-quad`
 prints exactly what is missing.
 
 ---
@@ -271,3 +271,35 @@ air-gapped loses those evaluations before it can demonstrate anything.
 Validating a tool that behaves differently under test validates the wrong
 artefact — the same `ADAPTER` / `adapter` split generalised from capabilities to
 modes.
+
+---
+
+## D-11 — One command, one name, and the decision is a committed file.
+
+**The decision.** A CLI verb's disposition lives in `docs/cli-contract.json` —
+one row per verb in `src/engine/cli-command-names.ts`, with the target for a
+REPLACE or a MOVE — and `npm run check-cli-contract` fails when a verb has no
+row, when a row names a verb that does not exist, when a live surface names a
+removed verb, and when two npm scripts resolve to the same command. The same
+gate fails any `npm run <name>` in a `.md`, a workflow, the Action or the
+reviewer config that `package.json` does not define.
+
+**Why not "just be tidy".** Two names for one command is not a style problem.
+`unimported:check` and `check-unimported-modules` both ran the same file;
+`build:determinism` and `verify-build-determinism` did too. A reader who typed
+the wrong one got the right answer and **no signal that the name was wrong** —
+which is worse than having no name, because the wrong one looks right until the
+day the two diverge. The same shape hid a live defect: `ci.yml` runs
+`check-version -- --base=origin/<base>`, and npm appends a flag to the LAST
+command of a chain. The chain was correct by ordering accident. Reordering one
+line would have routed `--base` to an arm that ignores it, and the step would
+have kept reporting PASS while comparing against an empty `git status` on a
+fresh CI checkout.
+
+**What it forecloses.** The rule is about the **command**, not the entry file.
+A check arm and a write arm of one generator — `ledger:check` / `ledger:write`,
+`claims:prose` / `claims:prose:strict`, and nine more — is a declared convention,
+each accounted for in `docs/MANUAL-SCRIPTS.md` (which learned a third column for
+a mode, because a two-cell row naming `script --flag` is a row about a script
+name that does not exist and is therefore silently unread). Collapsing those
+eleven pairs is not required and would not have caught any of the defects above.

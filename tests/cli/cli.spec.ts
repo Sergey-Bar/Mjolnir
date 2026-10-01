@@ -10,16 +10,15 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+
 import {
   main,
   parseArgs,
   runCiInstall,
   runDoctorPlaywright,
-  runForensicsCommand,
   runScanCommand,
   runSuppressions,
 } from "../../src/cli.js";
-
 describe("parseArgs", () => {
   it("applies defaults", () => {
     expect(parseArgs([])).toMatchObject({
@@ -218,83 +217,14 @@ describe("runSuppressions", () => {
   });
 });
 
-const PW_JSON = JSON.stringify({
-  suites: [
-    {
-      specs: [
-        {
-          ok: true,
-          file: "a.spec.ts",
-          line: 1,
-          column: 1,
-          title: "t",
-          tests: [
-            {
-              timeout: 1,
-              annotations: [],
-              expectedStatus: "passed",
-              projectName: "p",
-              results: [
-                {
-                  status: "passed",
-                  startTime: "2026-08-24T00:00:00Z",
-                  duration: 1,
-                  errors: [],
-                },
-              ],
-            },
-          ],
-        },
-      ],
-    },
-  ],
-});
-
-describe("runForensicsCommand", () => {
-  it("returns usage error without target", () => {
-    const cap = capture();
-    expect(runForensicsCommand([], cap.io)).toBe(10);
-    expect(cap.errText()).toContain("Usage:");
-  });
-
-  it("returns 2 when no results recognized", () => {
-    const cap = capture();
-    expect(runForensicsCommand([dir], cap.io)).toBe(2);
-    expect(cap.errText()).toContain("No test results recognized");
-  });
-
-  it("returns 0 for clean report and prints output", () => {
-    writeFileSync(join(dir, "report.json"), PW_JSON);
-    const cap = capture();
-    expect(runForensicsCommand([dir], cap.io)).toBe(0);
-    expect(cap.text()).toContain("FLAKY.md");
-  });
-
-  it("honors --no-flaky-md", () => {
-    writeFileSync(join(dir, "report.json"), PW_JSON);
-    const cap = capture();
-    expect(runForensicsCommand([dir, "--no-flaky-md"], cap.io)).toBe(0);
-    expect(existsSync(join(dir, "FLAKY.md"))).toBe(false);
-  });
-
-  it("returns 2 (not a crash) for missing target — nothing recognized", () => {
-    const cap = capture();
-    // A missing dir is "no results recognized" (exit 2), not an internal
-    // error (20): the README doctest asserts forensics on an absent
-    // ./test-results/ degrades honestly instead of crashing.
-    expect(runForensicsCommand([join(dir, "missing")], cap.io)).toBe(2);
-    expect(cap.errText()).toContain("No test results recognized");
-  });
-});
-
 describe("runDoctorPlaywright", () => {
   it("renders PW findings + selector health and exits 0", async () => {
     mkdirSync(join(dir, ".github"), { recursive: true });
     writeFileSync(join(dir, "sample.spec.ts"), "page.getByRole('button');\n");
     const cap = capture();
-    expect(await runDoctorPlaywright(["doctor:playwright", dir], cap.io)).toBe(
-      0,
-    );
+    expect(
+      await runDoctorPlaywright(["doctor", "--frameworks", dir], cap.io),
+    ).toBe(0);
     expect(cap.text()).toContain("SELECTOR HEALTH");
   });
 });

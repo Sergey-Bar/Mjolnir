@@ -38,7 +38,7 @@ hide it.
 | --------------------------------------- | --------------------------------------- | ---------------------------------------------------------------------------------------- |
 | Corpus repo additions (clone cache)     | runbooked                               | scripts/corpus-sample.ts selects; the clone step is mechanical                           |
 | Verdict classification                  | **delegable — the core P9 deliverable** | ADJUDICATION-KIT.md; a trained classifier adjudicates to the same standard               |
-| Baseline `--update` after adjudication  | runbooked                               | corpus:regression:update; reviewed by rule-owner                                         |
+| Baseline `--update` after adjudication  | runbooked                               | corpus:audit --update; reviewed by rule-owner                                            |
 | Lawbook amendments (A1–A4, Laws, L1–L6) | identity-bound                          | Owner-ratified by construction (CERTIFICATION-POLICY); propose via issue, owner ratifies |
 
 ## Security & trust
@@ -55,23 +55,32 @@ hide it.
 differs only in the coverage invocation. Both exit non-zero on any failure.
 
 **The claim-integrity group** (`npm run gates:claim-integrity`) is the one to
-run first when a gate disagrees with the tree — each of its nine steps names
-its own gate in the failure, so you never have to bisect a 24-step chain.
+run first when a gate disagrees with the tree — each of its eleven steps names
+its own gate in the failure, so you never have to bisect a long chain.
 `npm run script:paths` runs immediately before it and is listed here because
 it is the gate that most often explains the next failure:
 
-| Command                         | What it refuses                                                                                   |
-| ------------------------------- | ------------------------------------------------------------------------------------------------- |
-| `npm run script:paths`          | A doc or comment pointing at a script file that does not exist, or one nothing has committed      |
-| `npm run workflow:scripts`      | A workflow step running an `npm run <script>` the manifest at that step's cwd does not define     |
-| `npm run config:consumers`      | Root-level configuration no command and no declared external consumer reads                       |
-| `npm run scripts:reachable`     | An npm script no workflow reaches and `docs/MANUAL-SCRIPTS.md` does not declare manual            |
-| `npm run unimported:check`      | A module in `src/` that nothing imports and is not on the disclosed orphan list                   |
-| `npm run qa-ir:parity`          | Two adapters normalising the same test to different IR terms                                      |
-| `npm run rules:quad:check`      | A capability advertising `M3_FIXTURE_VERIFIED` with no complete fixture quad behind it            |
-| `npm run rules:promotion:check` | The launch set growing, or the unmeasured backlog growing, past `docs/RULE-PROMOTION-LEDGER.json` |
-| `npm run docs:provenance-drift` | A provenance-stamped artifact whose CONTENT no longer matches its generator                       |
-| `npm run translations:ratchet`  | The README-translation gap widening past `docs/TRANSLATION-RATCHET.json`                          |
+| Command                            | What it refuses                                                                                                                         |
+| ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run script:paths`             | A doc or comment pointing at a script file that does not exist, or one nothing has committed                                            |
+| `npm run workflow:scripts`         | A workflow step running an `npm run <script>` the manifest at that step's cwd does not define                                           |
+| `npm run config:consumers`         | Root-level configuration no command and no declared external consumer reads                                                             |
+| `npm run scripts:reachable`        | An npm script no workflow reaches and `docs/MANUAL-SCRIPTS.md` does not declare manual                                                  |
+| `npm run check-unimported-modules` | A module in `src/` that nothing imports and is not on the disclosed orphan list                                                         |
+| `npm run check-cli-contract`       | A verb with no disposition, a doc naming a removed verb, two npm names for one command, or an `npm run <name>` that resolves to nothing |
+| `npm run check-detector-hashes`    | A committed `tests/corpus/detector-hashes.json` that no longer matches the rule sources                                                 |
+| `npm run qa-ir:parity`             | Two adapters normalising the same test to different IR terms                                                                            |
+| `npm run check-fixture-quad`       | A capability advertising `M3_FIXTURE_VERIFIED` with no complete fixture quad behind it                                                  |
+| `npm run rules:promotion:check`    | The launch set growing, or the unmeasured backlog growing, past `docs/RULE-PROMOTION-LEDGER.json`                                       |
+| `npm run docs:provenance-drift`    | A provenance-stamped artifact whose CONTENT no longer matches its generator                                                             |
+
+**Naming is a contract, not a habit.** `docs/cli-contract.json` carries one
+disposition per CLI verb, and `npm run check-cli-contract` enforces it. The
+npm side has the same rule with one deliberate exception: a check arm and a
+write arm of the same generator (`ledger:check` / `ledger:write`) is a declared
+convention in eleven places, each accounted for in `docs/MANUAL-SCRIPTS.md`, so
+the gate fails on **two names for the same command** and not on two names for
+the same file.
 
 **The ratchets that must be lowered by hand**, and what a failure means:
 
@@ -79,17 +88,25 @@ it is the gate that most often explains the next failure:
 | --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
 | `docs/ANTI-CREEP-BASELINE.json`   | Down on a demotion. Up needs an `ANTI-CREEP-EXCEPTION` line in the UNRELEASED `CHANGELOG.md` entry **and** the lower value in the same commit. |
 | `docs/RULE-PROMOTION-LEDGER.json` | Down on progress. The baseline also holds `unmeasuredIds`, so a regression names the rules that joined the backlog rather than the whole list. |
-| `docs/TRANSLATION-RATCHET.json`   | Down as translations are synced. Never up.                                                                                                     |
 
-**Two release gates that are NOT in that chain**, because they answer a
-different question — and one of them predates all of it. Do not confuse
-`changelog:check` with `changelog:unreleased`: they share a file prefix and
-nothing else.
+**One release gate that answers a different question**, so it is not in the
+claim-integrity chain: `npm run check-version`. It used to be five npm names —
+`version:check` over `version:surface:check`, `reporter:version-check`,
+`changelog:check` and `changelog:unreleased` — and the collapse is worth knowing
+about because the two changelog arms answer different questions and take
+different flags. `scripts/check-version.mjs` dispatches them explicitly, in
+this order, stopping at the first failure:
 
-| Command                        | What it refuses                                                                                                                                                                                                         |
-| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `npm run changelog:check`      | The released version's heading, descending semver order, dates, and empty sections. Runs before publish and before GitHub Release creation — never a post-release audit. Takes `--expect-version` and `--rules-touched` |
-| `npm run changelog:unreleased` | A user-visible change with no `## [Unreleased]` entry. In CI it runs with `--base=origin/<base>`, because its default reads `git status` and a CI checkout is CLEAN — without the base it would pass on every run       |
+| Arm              | What it refuses                                                                                                                                                                                                                  |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| version surface  | An executable surface naming the working candidate instead of the published stable — `v5.0.0-rc.1` is not on the registry, and an Action that fetches it 404s                                                                    |
+| reporter version | The published Playwright reporter package disagreeing with the root version                                                                                                                                                      |
+| changelog        | The CHANGELOG's own consistency: released-version heading, descending semver order, dates, empty sections. Takes `--expect-version` and `--rules-touched`                                                                        |
+| unreleased entry | A user-visible change with no `## [Unreleased]` entry. Takes `--base=<ref>`, and CI **must** pass it: the default reads `git status`, and a CI checkout is CLEAN, so without the base it passes on every run and catches nothing |
+
+`--base` is the only flag the gate accepts, and it reaches the only arm that
+reads it. Any other argument is a usage error (exit 10) rather than a flag
+appended to the last command of a chain, which is the routing this replaced.
 
 **When a gate is right and the tree is wrong**, fix the tree. When a gate is
 wrong, fix the gate AND the sentence that described it — the three defects this

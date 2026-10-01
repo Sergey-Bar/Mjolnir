@@ -1,0 +1,258 @@
+{
+  "schemaVersion": 1,
+  "contractId": "mjolnir-cli-contract-001",
+  "sourceOfTruth": "src/engine/cli-command-names.ts",
+  "enforcedBy": "scripts/check-cli-contract.mjs",
+  "note": "One disposition per verb, enforced. `action` is what the tree DOES today and is the only field the gate fails on, so this file is always true of the code it sits next to. `plannedAction`/`plannedTarget` are the v6 collapse from .kilo/plans/1790774061183-mjolnir-final-version.md §3 — informational until the move that carries it out lands, at which point `action` is rewritten to match and the diff IS the review.\n\nTHIRTY VERBS ARE RETIRED. Three of the plan's arrows are recorded as NOT YET rather than done, with the reason on the row: `contract-verify → ci verify`, `analyze → explain`, and `handoff → install agent-rules` are not renames, and a contract that claims a capability has moved when it has not is the same defect this file exists to catch.",
+  "publicVerbs": ["scan", "explain", "fix", "doctor", "install", "ci", "mcp"],
+  "dispositions": {
+    "scan": {
+      "action": "KEEP"
+    },
+    "policy": {
+      "action": "KEEP",
+      "plannedAction": "MOVE",
+      "plannedTarget": "scan --policy",
+      "note": "NOT YET — the flag is not the capability yet. `scan --policy` prints the SCORING table, which is what the plan names. The verb's `init` and `validate` subcommands manage `mjolnir.policy.json` — a file that gates CI — and folding them into a flag would lose both. The verb stays until the policy FILE has a home in the seven-verb surface."
+    },
+    "analyze": {
+      "action": "KEEP",
+      "plannedAction": "MOVE",
+      "plannedTarget": "explain --list",
+      "note": "NOT YET — the plan's arrow does not connect. The plan's arrow does not connect. `analyze` is CROSS-FILE analysis — shared imports, duplicated blocks, circular dependencies, shared mutable state — and its findings reference multiple files. `explain` answers 'what does this finding mean', and folding cross-file analysis into it would make a verb claim a capability it does not have. It is closer to `explain --callers` than to `explain --list`, and the decision of WHERE it lands is a design question, not a rename."
+    },
+    "stats": {
+      "action": "KEEP",
+      "plannedAction": "REPLACE",
+      "plannedTarget": "scan --stats",
+      "note": "NOT YET — the flag is not the capability yet. `scan --json` is a DIFFERENT document — a fresh scan result, not the milestone ledger in `.mjolnir/stats.json`. Folding the verb into the flag would replace a view with a different view and call the capability preserved. `scan --stats` lands with the remaining MOVE arms."
+    },
+    "fix": {
+      "action": "KEEP"
+    },
+    "doctor": {
+      "action": "KEEP"
+    },
+    "explain": {
+      "action": "KEEP"
+    },
+    "handoff": {
+      "action": "KEEP",
+      "plannedAction": "MOVE",
+      "plannedTarget": "install agent-rules",
+      "note": "NOT YET — the plan's arrow does not connect. The plan's arrow does not connect either. `install` writes agent INSTRUCTION surfaces — `.claude/`, `.kilo/`, `.cursor/`, `AGENTS.md`. `handoff` renders a deterministic, offline remediation plan from a saved report: what was detected, what should change, what justifies it, what to re-run. One writes configuration into an environment; the other renders a document an agent can execute. Folding them makes `install` either do two unrelated things behind one verb or grow a subcommand tree, and both are worse than saying so."
+    },
+    "install": {
+      "action": "KEEP"
+    },
+    "suppression-gate": {
+      "action": "KEEP",
+      "plannedAction": "REPLACE",
+      "plannedTarget": "scan --suppression-gate",
+      "note": "NOT YET — the flag is not the capability yet. The flag LANDS FIRST and DELEGATES to this command, because the governance judgement needs the pre-suppression findings a scan produces. Retiring the command now would delete the flag's only implementation. Its own retirement is a later step, recorded PENDING rather than assumed."
+    },
+    "evidence-graph": {
+      "action": "KEEP",
+      "note": "The plan's §3 table covers 42 of the 44 verbs and says nothing about this one, so the contract states the decision rather than leaving the row out. §10 then lists `src/engine/evidence-graph.ts` among the TRUE ORPHANS, and that is wrong for this tree: the import graph gives it two importers (`src/commands/milestone.ts`, `src/engine/runtime-evidence-graph.ts`) and it is shipped-reachable, so deleting it would break the very verb this row keeps. Verified with the same `importGraphSnapshot` the orphan gate and the carve manifest use, not with a grep. The other nine files in that group had zero importers and were deleted in carve 1.5.",
+      "legacyModule": "src/engine/evidence-graph.ts"
+    },
+    "ci": {
+      "action": "KEEP"
+    },
+    "mcp": {
+      "action": "KEEP"
+    },
+    "help": {
+      "action": "KEEP",
+      "note": "Not a product verb: it is the CLI's own affordance and the seven public verbs are about what Mjolnir DOES. The plan's §3 table omits it for the same reason it omits evidence-graph, and omitting it from this contract would be a hole rather than a decision."
+    },
+    "contract-verify": {
+      "action": "KEEP",
+      "plannedAction": "REPLACE",
+      "plannedTarget": "ci verify",
+      "note": "NOT YET — the plan folds this into `ci verify`, and `ci verify` is the BLOCKING CHECK: it does not run the machine-contract or exit-code validators. Merging it is a behaviour change to a live command, not a rename, and recording the merge as done while `ci verify` does not do the merging would be a claim the CLI does not honour. The verb, the implementation and the eleven tests that cover it stay until they do."
+    }
+  },
+  "retiredVerbs": [
+    {
+      "verb": "badge",
+      "removedIn": "1.6",
+      "why": "a badge is what the product replaces; rendering one is the thing being removed"
+    },
+    {
+      "verb": "debt",
+      "removedIn": "1.6",
+      "why": "'debt' is the word the product exists to argue with — a score is not debt"
+    },
+    {
+      "verb": "impact",
+      "removedIn": "1.6",
+      "why": "impact analysis is a reason to look, not an answer, and it was a fifth opinion"
+    },
+    {
+      "verb": "trend",
+      "removedIn": "1.6",
+      "why": "a trend over time needs a history the corpus does not have yet"
+    },
+    {
+      "verb": "exec-report",
+      "removedIn": "1.6",
+      "why": "an executive report is the audience the plan removes first"
+    },
+    {
+      "verb": "dashboard",
+      "removedIn": "1.6",
+      "why": "a dashboard is a permanent surface to maintain, for a tool that should be one command"
+    },
+    {
+      "verb": "baseline",
+      "removedIn": "1.6",
+      "why": "the MODULE survives (stats, verify, the MCP server and the PR reporter read the snapshot); the verb does not, because a stored 'yesterday was fine' is the same trust-the-green-check failure as any other"
+    },
+    {
+      "verb": "diff",
+      "removedIn": "1.6",
+      "why": "diff is what `scan --scope changed` does, and naming it separately was a second way to say the same thing"
+    },
+    {
+      "verb": "create-rule",
+      "removedIn": "1.6",
+      "why": "creating a rule is a contribution with a review, not a command"
+    },
+    {
+      "verb": "init",
+      "removedIn": "1.6",
+      "why": "the config is auto-detected; init was a step that could be skipped, and a step that can be skipped is not a step"
+    },
+    {
+      "verb": "mutation",
+      "removedIn": "1.6",
+      "why": "Reading Stryker and Mutmut reports is reading another tool's opinion of the code rather than the code. `src/mutation/` had no importer but the verb's own runner, so it went with the verb; its two fuzz harnesses are narrowed and the loss of mutation-format fuzz coverage is recorded rather than papered over."
+    },
+    {
+      "verb": "forensics",
+      "removedIn": "1.6",
+      "why": "The VERB is retired. `src/forensics/` is NOT: `evidence-hygiene.ts` is imported by `commands/trust-report.ts` and `integrations/github/evidence-sanitization.ts` — the path the Action's PR comment goes through — and `triage.ts` is imported by `mcp/server.ts` under a parity contract. The parser and analysis capability stays because two shipped features depend on it; only the way a person typed it goes."
+    },
+    {
+      "verb": "triage",
+      "removedIn": "1.6",
+      "target": "explain --evidence",
+      "targetStatus": "PENDING — the flag lands with the next slice of 1.6",
+      "why": "A MOVE, not a deletion. The verb goes now so nothing can depend on it; `triage.ts` stays for the MCP server. Recording `targetStatus: PENDING` is the difference between a staged migration and a capability that quietly vanished: the gate can tell the difference, and so can the next reader."
+    },
+    {
+      "verb": "trust-report",
+      "removedIn": "1.6",
+      "target": "scan --format trust-report",
+      "why": "The verb's whole body was the terminal render. The flag is the same renderer with the same options, and `--format trust-report` is the terminal default spelled out — a verb per output shape is a command surface to remember rather than a capability to use."
+    },
+    {
+      "verb": "pr-comment",
+      "removedIn": "1.6",
+      "target": "scan --format pr-comment",
+      "why": "Same renderer, same baseline diff, so a comment can still say RESOLVED as well as NEW. The flag is verified by `tests/contract/scan-modes.spec.ts`."
+    },
+    {
+      "verb": "summary",
+      "removedIn": "1.6",
+      "target": "scan --format github-summary",
+      "why": "Named after its CONSUMER rather than its shape, because `summary` was ambiguous with the terminal's own summary band and a flag that means two things is a flag whose output nobody can predict."
+    },
+    {
+      "verb": "suppressions",
+      "removedIn": "1.6",
+      "target": "scan --suppressions",
+      "why": "The ledger is a view of mjolnir.config.json and nothing else, so it is a mode of the verb that ENFORCES the file rather than a verb of its own. One behaviour change: it reads the TARGET rather than the cwd, because a flag that ignored its own positional argument could inspect the wrong repository while appearing to inspect the right one."
+    },
+    {
+      "verb": "ci-adapter",
+      "removedIn": "1.6",
+      "target": "ci adapters",
+      "why": "Which ecosystems can be analysed is a question a pipeline asks, and `ci` is already the verb whose meaning is 'the thing a pipeline does'. The subcommand table in src/cli.ts is the single source: `mjolnir ci --help` renders from it, so a subcommand that exists is documented and one that is documented exists."
+    },
+    {
+      "verb": "ci-integrity",
+      "removedIn": "1.6",
+      "target": "ci integrity",
+      "why": "The same shape as `ci-adapter`, and the sharpest case in the whole collapse: as top-level verbs, `mjolnir integrity` and `mjolnir verify` read as two products that happened to share a surface nobody could see from the command list."
+    },
+    {
+      "verb": "verify",
+      "removedIn": "1.6",
+      "target": "ci verify",
+      "why": "Runs the blocking check and the suppression policy — a pipeline gate by any other reading. It was the one verb whose name collided with what every other QA tool already calls something else, which is a name that invites the wrong expectation."
+    },
+    {
+      "verb": "release-trust",
+      "removedIn": "1.6",
+      "target": "ci release-trust",
+      "why": "The signed measurement release's own trust record. Release-scoped, like `ci release-trend`, and the two read as a pair only under `ci`."
+    },
+    {
+      "verb": "trust-trend",
+      "removedIn": "1.6",
+      "target": "ci release-trend",
+      "why": "How the trust record has moved across releases. Renamed at the same time: `trust-trend` said what it measured, `release-trend` says who it is about — the same distinction `release-trust` already draws."
+    },
+    {
+      "verb": "rules",
+      "removedIn": "1.6",
+      "target": "explain --list",
+      "why": "The rule catalogue is the answer to 'what does this tool check', which is the question `explain` exists for. Verified by hand before the verb went: `explain --list` prints the same catalogue the verb did, with the same `--measured` / `--unmeasured` / `--md` selectors."
+    },
+    {
+      "verb": "why",
+      "removedIn": "1.6",
+      "target": "explain <file:line>",
+      "why": "ALREADY AN ARM. `explain` has delegated the `file:line` subject form to this command since before the collapse, so retiring the verb removed a second name for a capability the verb already had. The cheapest MOVE in the set and the one most likely to be got wrong: `mjolnir why file.ts:12` is now a usage error, and the fix is a different word in the same position."
+    },
+    {
+      "verb": "cross-file",
+      "removedIn": "1.6",
+      "target": "explain --callers",
+      "why": "Callers and callees of a symbol is what a finding is FOR — the question `why` answers and `cross-file` followed. Two verbs for one investigation, split across two positions in the command list."
+    },
+    {
+      "verb": "handover",
+      "removedIn": "1.6",
+      "target": "explain --plan",
+      "why": "The output is a WELCOME document — who owns what and what to do next — so the plan's target name is the honest one: `--plan`, not `--handover`. A flag that keeps the old word keeps the old implication that the reader needs to hand something to someone."
+    },
+    {
+      "verb": "pw-report",
+      "removedIn": "1.6",
+      "target": "explain --playwright",
+      "why": "Marked INTERNAL by the plan. It summarised a Playwright JSON run for a person reading CI output; the same information arrives through `explain --evidence` once that arm reads a report rather than one runner's format, and one flag that means 'the run summary' beats two that mean it for one of them. The arm exists and is the implementation today, not a promise."
+    },
+    {
+      "verb": "framework-maturity",
+      "removedIn": "1.6",
+      "target": "doctor --frameworks",
+      "why": "INTERNAL by the plan. One audit asked two ways — which frameworks, and how far — so it is a FLAG and not a second `argv[0] === \"doctor\"` branch. `tests/contract/readme-commands.spec.ts` reads those literals as the known subcommand set, and one verb with two entries in it is a set that no longer means what it says."
+    },
+    {
+      "verb": "doctor:playwright",
+      "removedIn": "1.6",
+      "target": "doctor --frameworks",
+      "why": "INTERNAL by the plan, and the same audit from the other side: a scan's QA-PW findings, which is the evidence for the calibration numbers `doctor --frameworks` prints. The verb was a two-word name for one flag on another verb, and a colon-verb is not a thing a reader can guess."
+    }
+  ],
+  "modulesRetained": {
+    "note": "Carve 1.6.1 frees the two modules the plan lists for deletion, and finds they are still reachable. Recording the importer is the point: 'on a delete list' and 'reachable from three places' are both true, and only one of them is a reason to delete.",
+    "modules": [
+      {
+        "path": "src/engine/historical-trust.ts",
+        "planDisposition": "DELETE",
+        "retainedBecause": "`ci release-trend` is a live subcommand and `src/commands/release-trend.ts` is its only implementation. The plan's delete list predates the MOVE — it was written when `trust-trend` was going away as a top-level verb. The capability moved; it did not vanish.",
+        "importers": ["src/commands/release-trend.ts"]
+      },
+      {
+        "path": "src/engine/machine-contract-verification.ts",
+        "planDisposition": "DELETE",
+        "retainedBecause": "`contract-verify` is a live verb and `src/commands/contract-verify.ts` is its only implementation. The plan folds it into `ci verify`, which is the BLOCKING CHECK and does not run the contract validators — that is a behaviour change to a live command, not a rename, so the row says `plannedTarget` rather than `action`.",
+        "importers": ["src/commands/contract-verify.ts"]
+      }
+    ]
+  }
+}

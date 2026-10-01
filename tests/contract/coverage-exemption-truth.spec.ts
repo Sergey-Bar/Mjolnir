@@ -59,11 +59,6 @@ function gate(ledger: Ledger): string[] {
 }
 
 /** Block and line comments carry no code (see privacy-network-isolation). */
-function stripComments(text: string): string {
-  return text
-    .replace(/\/\*[\s\S]*?\*\//g, "")
-    .replace(/(^|[^:])\/\/.*$/gm, "$1");
-}
 
 describe("T3: every non-structural exemption carries a machine-checkable truth claim", () => {
   it("the committed ledger passes its own gate", () => {
@@ -112,22 +107,60 @@ describe("T3: every non-structural exemption carries a machine-checkable truth c
     // "hardcoded 75/70/65/30 scores and a ruleCount = 79 fallback invented
     // from file existence" — none of which was in the source any more, and
     // the module header said so. A signature here would have been theatre:
-    // pinning a shape nobody defends. (That row was `maturity.ts`, removed
-    // with the verb in 5.0; `dashboard.ts` is the same shape of closure.)
-    const entry = entryFor(readLedger(ROOT), "src/commands/dashboard.ts");
-    expect(entry.closureState).toMatch(/CLOSED/);
-    expect(entry.defectSignatures).toBeUndefined();
-    // The closure is a fact, not an assertion. Comments are stripped: a
-    // comment documenting a corrected claim must not read as the claim
-    // still standing. The score renders as "N/A" when it was never
-    // measured — never a fabricated 0 or a fabricated band.
-    const source = stripComments(
-      readFileSync(join(ROOT, "src/commands/dashboard.ts"), "utf8"),
+    // pinning a shape nobody defends.
+    //
+    // Every CLOSED row this test used as a live fixture has been removed by
+    // the v6 carve, because the file each one exempted is gone: `maturity.ts`
+    // (5.0), then `dashboard.ts`, `exec-report.ts` and `trend.ts` (1.6). An
+    // exemption whose subject no longer exists is not an exemption, so there
+    // is no live row left to demonstrate the rule.
+    //
+    // The rule is therefore exercised on a SYNTHETIC ledger, which is what
+    // the negative-path arms below already do. That is a weaker test than
+    // pointing at a real file — and the test says so rather than quietly
+    // passing on a fixture nobody reads. When a real defect is fixed again,
+    // point this at that row and the weakness goes with it.
+    const live = readLedger(ROOT).entries.filter(
+      (entry) =>
+        typeof entry.closureState === "string" && entry.closureState !== "",
     );
-    expect(source).toMatch(
-      /data\.score !== null \? data\.score \+ "\/100" : "N\/A"/,
+    expect(
+      live,
+      "a live CLOSED row has come back — point this test at it again so the " +
+        "closure rule is proved against real source rather than a mutation",
+    ).toEqual([]);
+
+    // The rule, on a mutation of a real row: a signed row whose defect is
+    // declared fixed becomes a closure row — the signature goes, the prose
+    // comes — and the ledger must accept it. Putting the signature back must
+    // make it reject, which is the half with teeth: closure XOR signature.
+    const signed = clone().entries.find(
+      (entry) =>
+        Array.isArray(entry.defectSignatures) &&
+        entry.defectSignatures.length > 0,
     );
-    expect(source).not.toMatch(/score: 0[,}]/);
+    if (signed === undefined) throw new Error("no live signed row to mutate");
+
+    const asClosure = clone();
+    const target = entryFor(asClosure, signed.path);
+    delete target.defectSignatures;
+    target.closureState =
+      "CLOSED on the asserted defect (carve 1.6). The shapes the signatures " +
+      "described are no longer in this source.";
+    expect(
+      gate(asClosure),
+      "a row whose defect is declared fixed, with no signature left pinning a " +
+        "shape nobody defends, is the shape the ledger is supposed to accept",
+    ).toEqual([]);
+
+    const both = clone();
+    entryFor(both, signed.path).closureState = target.closureState;
+    expect(
+      gate(both).join("\n"),
+      "a row carrying BOTH a closure and a signature must be rejected — one " +
+        "is a fact about a fixed defect, the other is a promise to keep " +
+        "watching, and a fixed defect needs neither",
+    ).toMatch(/both|CLOSED/);
   });
 
   it("the PERMANENT_STRUCTURAL rows are unaffected by the signature rule", () => {
@@ -176,13 +209,13 @@ describe("T3: the gate fails when the truth claim is absent, invalid, or drifted
 
   it("a signature that no longer matches is reported as closed-or-drifted", () => {
     const ledger = clone();
-    const entry = entryFor(ledger, "src/commands/trend.ts");
+    const entry = entryFor(ledger, "src/commands/analyze.ts");
     entry.defectSignatures = ["export interface ThisSymbolDoesNotExist \\{"];
     const problems = gate(ledger);
     expect(
       problems.some(
         (problem) =>
-          problem.includes("src/commands/trend.ts") &&
+          problem.includes("src/commands/analyze.ts") &&
           problem.includes("defect closed or drifted"),
       ),
       problems.join("\n"),
@@ -192,13 +225,13 @@ describe("T3: the gate fails when the truth claim is absent, invalid, or drifted
   it("a malformed signature is reported rather than thrown", () => {
     // A guard that crashes on malformed input is a guard that gets deleted.
     const ledger = clone();
-    const entry = entryFor(ledger, "src/commands/trend.ts");
+    const entry = entryFor(ledger, "src/commands/analyze.ts");
     entry.defectSignatures = ["([unclosed"];
     const problems = gate(ledger);
     expect(
       problems.some(
         (problem) =>
-          problem.includes("src/commands/trend.ts") &&
+          problem.includes("src/commands/analyze.ts") &&
           problem.includes("not a valid regex"),
       ),
       problems.join("\n"),
@@ -221,15 +254,27 @@ describe("T3: the gate fails when the truth claim is absent, invalid, or drifted
   });
 
   it("a closure state is required to be prose, not an empty string", () => {
+    // Same mutation as the arm above, same reason: no live row carries a
+    // closure any more, because the file every closed row exempted is gone.
+    // A row that claims a closure and gives no reason for it is the shape
+    // this rejects, and it is worth one assertion on a real file.
     const ledger = clone();
-    const entry = entryFor(ledger, "src/commands/dashboard.ts");
+    const signed = ledger.entries.find(
+      (entry) =>
+        Array.isArray(entry.defectSignatures) &&
+        entry.defectSignatures.length > 0,
+    );
+    if (signed === undefined) throw new Error("no live signed row to mutate");
+    const entry = entryFor(ledger, signed.path);
+    const signatures = entry.defectSignatures;
+    delete entry.defectSignatures;
     entry.closureState = "";
     const problems = gate(ledger);
+    if (signatures !== undefined) entry.defectSignatures = signatures;
     expect(
       problems.some(
         (problem) =>
-          problem.includes("src/commands/dashboard.ts") &&
-          problem.includes("prose-only"),
+          problem.includes(signed.path) && problem.includes("prose-only"),
       ),
       problems.join("\n"),
     ).toBe(true);

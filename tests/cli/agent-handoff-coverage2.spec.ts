@@ -83,10 +83,10 @@ function capture() {
 }
 
 describe("main() dispatch to the new verbs (plan §9 wiring)", () => {
-  it("`mjolnir why` dispatches with the caller's io (exit 10 no args)", async () => {
+  it("`mjolnir explain <file:line>` dispatches with the caller's io (exit 10 no args)", async () => {
     const cap = capture();
-    await expect(main(["why"], cap.io)).resolves.toBe(10);
-    expect(cap.errText()).toContain("Usage: mjolnir why");
+    await expect(main(["explain"], cap.io)).resolves.toBe(10);
+    expect(cap.errText()).toContain("Usage: mjolnir explain <file:line>");
   });
 
   it("`mjolnir handoff` dispatches with the caller's io", async () => {

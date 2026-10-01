@@ -166,7 +166,7 @@ pre_merge_checks:
         generated file fails CI.
     - id: no-unimported
       instructions: >
-        npm run unimported:check — a module with no production importer must
+        npm run check-unimported-modules — a module with no production importer must
         be wired, deleted, or listed with a reason. The list is
         scripts/check-unimported-modules.mjs and it fails in both directions.
     - id: comment-paths

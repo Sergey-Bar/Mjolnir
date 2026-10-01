@@ -234,11 +234,11 @@ The following is repository evidence, not external certification:
 | `npm run test:mcp:parity`                | PASS                                                                                                     |
 | `npm run test:stress`                    | PASS when run with the stress config and no competing workers; pathological runs no longer mask failures |
 | Corpus crash telemetry                   | QA-PY-004 crash root fixed; remaining corpus failures are provenance/scope/measurement blockers          |
-| `npm run brand:doctor` / `site:doctor`   | PASS                                                                                                     |
+| `npm run brand:doctor` / `doctor`        | PASS                                                                                                     |
 | `npm run candidate:manifest:check`       | PASS for the current working tree                                                                        |
-| `npm run claims:check` / `version:check` | PASS                                                                                                     |
+| `npm run claims:check` / `check-version` | PASS                                                                                                     |
 | `npm run m26:audit`                      | BLOCKED only for unresolved support-matrix and external evidence                                         |
-| `npm run corpus:regression`              | HELD for human review; baseline/provenance and crash diagnostics remain                                  |
+| `npm run corpus:audit`                   | HELD for human review; baseline/provenance and crash diagnostics remain                                  |
 
 The coverage numbers are a ratchet, not a performance guarantee. Performance
 release budgets still require clean-room runs on the supported platform matrix.

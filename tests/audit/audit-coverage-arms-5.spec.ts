@@ -5,26 +5,13 @@
  * environment-collection fallback.
  */
 
-import {
-  mkdtempSync,
-  mkdirSync,
-  readFileSync,
-  rmSync,
-  writeFileSync,
-  chmodSync,
-} from "node:fs";
+import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import {
-  runBaselineCommand,
-  runDiffCommand,
-  runPrCommentCommand,
-  runSuppressions,
-} from "../../src/cli.js";
-import { createRuleScaffold } from "../../src/commands/create-rule.js";
+import { runPrCommentCommand, runSuppressions } from "../../src/cli.js";
 import { collectEnvironment } from "../../src/bench/schema.js";
 
 const createdDirs: string[] = [];
@@ -64,19 +51,6 @@ function specWithTest(dir: string): void {
   );
 }
 
-describe("create-rule unknown-family guard", () => {
-  it("a structurally-valid but unregistered family ID is rejected", () => {
-    // QA-ZZ-001 passes the CLI's loose /^QA-[A-Z]+-\d{3}$/ gate but has
-    // no registered family — parseId's `!family` null-guard fires.
-    const result = createRuleScaffold(
-      { id: "QA-ZZ-001", title: "t" },
-      tmpRepo("fam"),
-    );
-    expect(result.ok).toBe(false);
-    expect(result.error).toContain("Invalid rule ID");
-  });
-});
-
 describe("CLI catch-to-20 containment arms (S8)", () => {
   it("runSuppressions reports a ConfigValidationError as exit 10 with the message", () => {
     const root = tmpRepo("cfgerr");
@@ -109,23 +83,6 @@ describe("CLI catch-to-20 containment arms (S8)", () => {
 });
 
 describe("baseline-aware command arms", () => {
-  it("baseline diff with a schemaVersion-2 baseline degrades to no-baseline", async () => {
-    const dir = tmpRepo("v2baseline");
-    specWithTest(dir);
-    mkdirSync(join(dir, ".mjolnir"), { recursive: true });
-    writeFileSync(
-      join(dir, ".mjolnir", "baseline.json"),
-      JSON.stringify({ schemaVersion: 2, findings: [] }),
-    );
-    const cap = capture();
-    const code = await runDiffCommand([dir], cap.io);
-    // Exit 2 = partial/unusable-diff verdict: the v2 baseline degraded
-    // to "no baseline", and a diff without a comparison point must not
-    // report a clean bill (the honest-degrade contract, not a crash).
-    expect(code).toBe(2);
-    expect(cap.text() + cap.errText()).toContain("no baseline");
-  });
-
   it("pr-comment renders without a baseline (diff omitted)", async () => {
     const dir = tmpRepo("prcomment");
     specWithTest(dir);
@@ -149,57 +106,11 @@ describe("baseline-aware command arms", () => {
   });
 });
 
-describe("currentCommit degrade arm (S1 lineage)", () => {
-  it("a baseline save outside a git repo still completes (commit degrades)", async () => {
-    const dir = tmpRepo("nogit");
-    specWithTest(dir);
-    const cap = capture();
-    const code = await runBaselineCommand([dir], cap.io);
-    expect(code).toBe(0);
-    // The saved file records commit "unknown" — git was unavailable.
-    const saved = JSON.parse(
-      readFileSync(join(dir, ".mjolnir", "baseline.json"), "utf8"),
-    ) as { commit?: string };
-    expect(saved.commit).toBe("unknown");
-  });
-});
-
 describe("bench collectEnvironment fallback arm", () => {
   it("returns environment facts without crashing (cpu may be empty)", () => {
     const env = collectEnvironment();
     expect(env.nodeVersion).toMatch(/^v\d+/);
     expect(typeof env.os).toBe("string");
     expect(typeof env.cpu).toBe("string");
-  });
-
-  it("read-only target: baseline save reports failure honestly, not silently", async () => {
-    if (process.platform === "win32") return; // POSIX-only arm; skip here
-    const dir = tmpRepo("ro-save");
-    specWithTest(dir);
-    mkdirSync(join(dir, ".mjolnir"), { recursive: true });
-    chmodSync(join(dir, ".mjolnir"), 0o555);
-    const cap = capture();
-    const code = await runBaselineCommand([dir], cap.io);
-    chmodSync(join(dir, ".mjolnir"), 0o755);
-    expect(code).toBe(1);
-    expect(cap.errText() + cap.text()).toContain("FAILED");
-  });
-
-  it("a scan-target crash OUTSIDE the save (before saveBaseline) still exits 20", async () => {
-    // The remaining catch-to-20 arm of runBaselineCommand: a crash in
-    // runScan itself (a Mjölnir-scope failure) is the friendly exit 20.
-    const dir = tmpRepo("scan20");
-    specWithTest(dir);
-    const cap = capture();
-    const code = await runBaselineCommand([dir, "--max-duration", "0.001"], {
-      out: () => {
-        throw new Error("sink poisoned mid-render");
-      },
-      err: cap.io.err,
-    });
-    // Poisoned stdout means either the render path or the save path
-    // blew up; the command must contain itself to 20 (crash) — the arm
-    // under test — or 1 (honest save failure). It must never reject.
-    expect([1, 20]).toContain(code);
   });
 });

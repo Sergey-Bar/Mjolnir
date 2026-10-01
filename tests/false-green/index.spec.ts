@@ -68,15 +68,6 @@ describe("tests/false-green/index.generated.ts matches the case registry", () =>
     }
   });
 
-  it("every wired case carries mutation coverage (unexecuted assertions count as no protection)", () => {
-    for (const c of FALSE_GREEN_CASES.filter((x) => x.wired)) {
-      expect(
-        c.mutations.length,
-        `${c.id} has no mutation fixture — the plan requires the mutation/assertion-strength protocol per wired case`,
-      ).toBeGreaterThanOrEqual(1);
-    }
-  });
-
   it("all seven hostile classes of the plan's minimum matrix are present", () => {
     const present = new Set(FALSE_GREEN_CASES.map((c) => c.className));
     for (const cls of PLAN_CLASSES) {

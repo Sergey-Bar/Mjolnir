@@ -55,10 +55,6 @@ function runTsx(args: string[]) {
   return runScript(process.execPath, [TSX_CLI, ...args]);
 }
 
-function runNode(args: string[]) {
-  return runScript(process.execPath, args);
-}
-
 describe("TI-021 — the ecosystem census gate exits non-zero when it did not run", () => {
   const censusRun = runTsx(["scripts/v6/check-ecosystem.ts", "census"]);
   const gapsRun = runTsx(["scripts/v6/check-ecosystem.ts", "gaps"]);
@@ -229,38 +225,54 @@ describe("TI-023 — an unverifiable gap never reports as a cleared blocker", ()
   });
 });
 
-describe("TI-024 — the translation staleness gate can actually fail", () => {
-  it("is advisory without the flag and enforcing with it", () => {
-    const advisory = runNode(["scripts/check-readme-translations.mjs"]);
-    expect(advisory.status).toBe(0);
-    const strict = runNode([
-      "scripts/check-readme-translations.mjs",
-      "--strict",
-    ]);
-    // The strict run agrees with what the report itself says: non-zero
-    // exactly when a language is not fresh. Which of the two that is on a
-    // given checkout is data; the coupling is the invariant.
-    const stale = /\bnot fresh\b|\b1 language\(s\) not fresh\b/.test(
-      strict.stdout,
-    );
-    if (stale) expect(strict.status).toBe(1);
-    else expect(strict.status).toBe(0);
-  });
-
-  it("the header no longer claims the script has no --strict mode", () => {
-    const source = readFileSync(
-      join(ROOT, "scripts", "check-readme-translations.mjs"),
-      "utf8",
-    );
-    expect(source).not.toMatch(/has no --strict mode/);
-    expect(source).not.toMatch(/NEVER blocks \(exit 0 always\)/);
-  });
-
-  it("docs:translations:check passes the flag the report requires", () => {
+describe("TI-024 — retired: the translation staleness gate had nothing left to gate", () => {
+  // This block used to assert that `check-readme-translations.mjs` is advisory
+  // without `--strict` and enforcing with it, and that the npm script passes
+  // the flag. Both the script and the twenty-two translations it measured are
+  // gone: a gate that reports "22 of 22 not fresh" forever is the empty
+  // exclusion this carve exists to remove, and a baseline that can only be met
+  // by deleting the thing it measures is a baseline that measures nothing.
+  //
+  // The assertion that replaced it is the one that can fail: the machinery is
+  // absent, so it cannot drift back in under a name nobody greps for.
+  it("the translation machinery is absent, not merely unreferenced", () => {
     const pkg = JSON.parse(
       readFileSync(join(ROOT, "package.json"), "utf8"),
     ) as { scripts: Record<string, string> };
-    expect(pkg.scripts["docs:translations:check"]).toContain("--strict");
+    const names = Object.keys(pkg.scripts).filter((n) => /translat/i.test(n));
+    expect(
+      names,
+      "a translation script came back — with no translations to measure, its " +
+        "only reachable outcome is a permanently-red or permanently-green " +
+        "report nobody reads",
+    ).toEqual([]);
+
+    for (const file of [
+      "scripts/check-readme-translations.mjs",
+      "scripts/check-translation-ratchet.mjs",
+      "scripts/readme-release-status.mjs",
+      "scripts/sync-readme-release-status.mjs",
+      "scripts/lib/readme-translation-status.mjs",
+      "docs/TRANSLATION-RATCHET.json",
+    ]) {
+      expect(
+        existsSync(join(ROOT, file)),
+        `${file} exists. Twenty-two machine-assisted READMEs were the only ` +
+          "consumer, and the hardcoded `@v3` they carried is gone with them",
+      ).toBe(false);
+    }
+  });
+
+  it("no gate tier still declares a translation ratchet", () => {
+    for (const tier of ["pr", "release", "nightly"]) {
+      const text = readFileSync(join(ROOT, "gates", `${tier}.json`), "utf8");
+      expect(
+        text,
+        `gates/${tier}.json declares a translation ratchet whose command no ` +
+          "longer exists — a declared gate with no command is a gate that can " +
+          "only ever be skipped",
+      ).not.toMatch(/translation-ratchet|translations:ratchet/);
+    }
   });
 });
 

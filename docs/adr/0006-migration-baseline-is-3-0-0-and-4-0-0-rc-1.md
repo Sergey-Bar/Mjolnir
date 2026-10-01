@@ -79,7 +79,7 @@ REMOVED` (D2).
 | Mechanism         | Location                                                                                                                     |
 | ----------------- | ---------------------------------------------------------------------------------------------------------------------------- |
 | Migration matrix  | `docs/COMMAND-MIGRATION.md` — every renamed/removed/aliased command, with the alias lifecycle state                          |
-| Version authority | `package.json` `version` / `publishedStable`; `docs/VERSIONING.md` publishes them; `npm run version:check` gates the surface |
+| Version authority | `package.json` `version` / `publishedStable`; `docs/VERSIONING.md` publishes them; `npm run check-version` gates the surface |
 | Single future     | `docs/RELEASE-TRAINS.md` — the v6 entry carries `supersedes:`; a doc test fails on two live futures                          |
 | Rehearsal         | Wave 13 DoD: migration on a clean checkout, no hand edits                                                                    |
 | Machine contract  | `mjolnir.release-trust@1` → `@2` (see ADR 0002)                                                                              |

@@ -8,6 +8,9 @@
  * `help`/`<verb> --help` answer a question → exit 0.
  */
 
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+
 import { describe, expect, it, vi } from "vitest";
 import {
   main,
@@ -26,6 +29,7 @@ import {
   renderVerbHelp,
 } from "../../src/commands/help.js";
 import { CLI_COMMAND_NAMES } from "../../src/engine/cli-command-names.js";
+import { renderCiSubcommandHelp } from "../../src/cli.js";
 
 function capture() {
   let out = "";
@@ -52,14 +56,12 @@ describe("root help", () => {
   it("groups every registered verb under its section", () => {
     const text = renderRootHelp();
     const normalized = text.replace(/\s+/g, " ");
-    for (const group of [
-      "Scan",
-      "CI & PRs",
-      "Forensics",
-      "Maintenance",
-      "Meta",
-    ]) {
-      expect(text).toContain(group);
+    // The groups that HAVE verbs. The collapse emptied two of them
+    // and the renderer omits an empty group rather than printing a heading
+    // over nothing — so asserting all five would be asserting a table of
+    // contents that promises sections the page does not have.
+    for (const group of ["CI & PRs", "Maintenance", "Meta"]) {
+      expect(text).toContain(`Subcommands — ${group}:`);
     }
     for (const e of HELP_ENTRIES) {
       expect(text).toContain(e.verb);
@@ -71,7 +73,7 @@ describe("root help", () => {
     const text = renderRootHelp();
     expect(text).toMatch(/\$ mjolnir --scope changed/);
     expect(text).toMatch(/\$ mjolnir ci install/);
-    expect(text).toMatch(/\$ mjolnir forensics test-results/);
+    expect(text).toMatch(/\$ explain --evidence test-results/);
     for (const [code] of EXIT_CODE_TABLE) {
       expect(text).toContain(`  ${code} `);
     }
@@ -111,7 +113,7 @@ describe("root help", () => {
   it("skips a GROUPS verb missing from the registry (defensive, no crash)", () => {
     // HELP_ENTRIES is a mutable exported array; simulating a drifted
     // GROUPS entry exercises the render guard without crashing.
-    const idx = HELP_ENTRIES.findIndex((e) => e.verb === "badge");
+    const idx = HELP_ENTRIES.findIndex((e) => e.verb === "evidence-graph");
     const removed = HELP_ENTRIES.splice(idx, 1)[0];
     try {
       const text = renderRootHelp();
@@ -130,10 +132,45 @@ describe("per-verb help", () => {
     expect(text).toMatch(/\$ mjolnir fix --dry-run/);
   });
 
-  it("renders the Next step block when an entry declares one", () => {
-    const text = renderVerbHelp("baseline");
-    expect(text).toContain("Next step:");
-    expect(text).toContain("$ mjolnir diff");
+  it("no rendered help page suggests a retired command", () => {
+    // Every verb the Next step blocks used to name — baseline, diff — is
+    // gone, so the blocks are gone with them. The assertion is the NEGATIVE
+    // one, and it is the one that survives the next collapse: whatever the
+    // catalogue declares, no page a reader can reach may suggest a command
+    // the CLI contract has retired.
+    //
+    // It reads the retirements out of `docs/cli-contract.json` rather than
+    // listing them, because a hand-kept list here would be a second source
+    // that passes on the command it was written against and fails on the
+    // next one — which is the same defect as the hardcoded `@v3` the
+    // translation sync propagated into twenty-two READMEs.
+    const retired =
+      (
+        JSON.parse(
+          readFileSync(
+            join(import.meta.dirname, "..", "..", "docs", "cli-contract.json"),
+            "utf8",
+          ),
+        ) as { retiredVerbs?: Array<{ verb: string }> }
+      ).retiredVerbs ?? [];
+    expect(
+      retired.length,
+      "the contract records no retirements at all — the sweep below would pass on nothing",
+    ).toBeGreaterThan(0);
+    const names = retired.map((r) => r.verb);
+    const pattern = new RegExp(`\\bmjolnir\\s+(?:${names.join("|")})\\b`);
+    for (const entry of HELP_ENTRIES) {
+      const text = renderVerbHelp(entry.verb);
+      expect(text, `${entry.verb}'s help names a retired command`).not.toMatch(
+        pattern,
+      );
+    }
+    // And the same rule for the two composite pages.
+    for (const page of [renderRootHelp(), renderCiSubcommandHelp()]) {
+      expect(page, "a composite help page names a retired command").not.toMatch(
+        pattern,
+      );
+    }
   });
 
   it("never fabricates a page for an unknown verb", () => {
@@ -315,9 +352,12 @@ describe("main() dispatch to help (plan M2)", () => {
   });
 
   it("`mjolnir <verb> -h` routes through main() too", async () => {
+    // The assertion is that `-h` reaches the page for whatever was asked
+    // about — not that a particular verb exists. `explain` owns the arms now,
+    // so `-h` on it renders the arm table rather than a rule catalogue.
     const cap = capture();
-    await expect(main(["rules", "-h"], cap.io)).resolves.toBe(0);
-    expect(cap.text()).toContain("rules — ");
+    await expect(main(["explain", "-h"], cap.io)).resolves.toBe(0);
+    expect(cap.text()).toContain("--list");
   });
 
   it("`mjolnir ci install --help` reaches the two-word page (exit 0)", async () => {
@@ -375,8 +415,11 @@ describe("main() dispatch to help (plan M2)", () => {
 
   it("`mjolnir summary` dispatches to the summary command", async () => {
     // Not-found path: exit 10, nothing written to stdout (no scan ran).
+    // `summary` retired onto `scan --format github-summary`, so typing the
+    // old verb is a usage error — and the error has to SAY the verb does not
+    // exist rather than falling through to a scan.
     const cap = capture();
     await expect(main(["summary"], cap.io)).resolves.toBe(10);
-    expect(cap.errText()).toContain("not found");
+    expect(cap.errText()).toContain("unknown subcommand");
   });
 });

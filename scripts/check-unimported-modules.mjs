@@ -103,18 +103,6 @@ const COMMITTED = {
     "ENTRY — the MCP stdio server is exec'd as a child process by tests/mcp-transport.spec.ts and by any MCP client. An import edge is not what makes it shipped.",
 
   // ── Named evidence for an open v6 gap ───────────────────────────────────
-  "src/qa/domain-model.ts":
-    "GAP — cited by the v6 gap matrix as the missing domain model. Unwired, and it is the record of a known gap.",
-  "src/plugins/sdk-contract.ts":
-    "GAP — the plugin SDK contract. Named by the capability surface; unwired, and the record of what a plugin author would target.",
-  "src/governance/m33-m34-contract.ts":
-    "GAP — the control-plane contract for the M33/M34 governance work. Unwired by design until that wave lands.",
-  "src/engine/m38-challenge-contract.ts":
-    "GAP — the challenge contract for milestone 38. Unwired; the record of the interface that work will implement.",
-  "src/engine/m49-experience-parity-contract.ts":
-    "GAP — the experience-parity contract for milestone 49. Unwired; the record of the interface that work will implement.",
-
-  // ── ORPHANS: behaviour, no caller. The C2 class. ────────────────────────
   "src/change-intelligence.ts":
     "GAP — the diff-scoped affected-path computation (M37). It is NOT a small wiring job: `calculateAffectedPaths` takes `ChangeRecord[]`, and nothing in the tree builds those. They need a git diff turned into SEMANTIC and DEPENDENCY records, which means a dependency graph the scanner does not have. `src/scope/changed.ts` computes which files a PR touched, which is coarser and is what the diff-scoped comment uses today.\n\n" +
     'An earlier commit here said "6.0 wires it" and that was not done. The reason is the size of the work, and the honest description of an unwired module is the one above rather than a promise.',
@@ -130,8 +118,6 @@ const COMMITTED = {
     "ORPHAN — the marker registry for the family framework. Nothing consults it, so the framework's markers resolve to nothing.",
   "src/rules/families/no-assertions.ts":
     "ORPHAN — a rule family with no registrar, like flaky-patterns.",
-  "src/reporter/sarif-compliance.ts":
-    "ORPHAN — SARIF conformance checks. The reporter does not consult them, so nothing verifies the SARIF it emits.",
   "src/release/pack-audit.ts":
     "ORPHAN — the packaged-tarball audit. Nothing in the release flow calls it, which is how the AST-grammar packaging defect survived.",
   "src/release/provenance.ts":
@@ -140,46 +126,16 @@ const COMMITTED = {
     "ORPHAN — release reproducibility. Not called by the release flow.",
   "src/release/sbom.ts":
     "ORPHAN — the SBOM generator. The release workflow checksums and attaches an SBOM it does not produce from this module, so a second, unwired SBOM implementation exists.",
-  "src/frameworks/universal-pack-contract.ts":
-    "ORPHAN — the universal pack contract. Nothing consumes the interface it declares.",
   "src/integrations/github/github-permissions.ts":
     "ORPHAN — the GitHub permissions model. The workflow emitter (ci-adapter) does not consult it, which is the D5 defect: the generated workflow inherited the default token scope.",
   "src/integrations/github/stale-guard.ts":
     "ORPHAN — the stale-artifact guard. The PR publisher does not consult it, so a stale scan can overwrite a newer comment.",
-  "src/mutation/failure-sensitivity.ts":
-    "ORPHAN — the failure-sensitivity analysis. Nothing runs it.",
-  "src/mutation/mutation-resilience.ts":
-    "ORPHAN — the mutation-resilience harness. Nothing runs it.",
   "src/engine/command-registry.ts":
     "ORPHAN — a command registry. The CLI derives its verbs from src/cli.ts, so this second source of truth is not consulted.",
-  "src/engine/coverage-ingestion.ts":
-    "ORPHAN — ingests coverage for the evidence model. Nothing ingests it.",
-  "src/engine/evidence-artifacts.ts":
-    "ORPHAN — writes evidence artifacts. Nothing writes one.",
-  "src/engine/evidence-enforcement.ts":
-    "ORPHAN — enforces evidence. Nothing enforces it, so the enforcement is aspirational.",
-  "src/engine/finalize-scan-result.ts":
-    "ORPHAN — a finalize step outside the pipeline that uses it. The scan pipeline finalizes in place.",
-  "src/engine/m43-system-of-systems.ts":
-    "ORPHAN — the M43 system-of-systems model. Unwired; the record of that work's shape.",
-  "src/engine/m44-historical-intelligence.ts":
-    "ORPHAN — the M44 historical-intelligence model. Unwired; the record of that work's shape.",
-  "src/engine/pipeline-stages.ts":
-    "ORPHAN — a stage inventory for the scan pipeline. The pipeline does not read it, so it cannot drift-proof anything.",
-  "src/engine/runtime-evidence-graph.ts":
-    "ORPHAN — the runtime evidence graph. Nothing builds one.",
-  "src/engine/runtime-static-correlation.ts":
-    "ORPHAN — runtime/static correlation. Nothing correlates.",
-  "src/engine/semantic-model-api.ts":
-    "ORPHAN — a semantic-model API surface. No consumer.",
   "src/discovery/ecosystem-detection.ts":
     "ORPHAN — ecosystem detection. The adapters detect their own ecosystems, so this is a second implementation with no caller.",
   "src/commands/registry.ts":
     "ORPHAN — a command registry beside src/engine/command-registry.ts. Two registries, neither used by the CLI, which is a third source of truth for the verb list.",
-  "src/certification/language-manifest.ts":
-    "ORPHAN — the language certification manifest. The certification state machine does not read it.",
-  "src/bench/m48-scale-operating-model.ts":
-    "ORPHAN — the M48 scale operating model. Unwired; the record of that work's shape.",
   "src/bench/memory-profiling.ts":
     "ORPHAN — memory profiling. No benchmark runs it.",
   "src/bench/regression-gates.ts":
@@ -237,8 +193,22 @@ const committed = new Set(Object.keys(COMMITTED));
  * `scripts/archive/` sees the record of how they were made.
  */
 const ORPHAN_SCRIPTS = {
+  "scripts/certification-surface-cells.ts":
+    "BRIDGE — `check-certification-surface.mjs` invokes it by an absolute path resolved from its own location, the same arrangement as `check-detector-hashes.ts` and `carve-manifest.mjs`. It prints the declared surface as JSON and does nothing else: useful for reading the manifest, not a command. The gate it serves cannot import it directly because that gate is `.mjs` and this is TypeScript.",
   "scripts/complete-lockfile.mjs":
     "TOOL — a manual maintenance command with an explicit usage line (`node scripts/complete-lockfile.mjs <known-good-ref>`). It is run by a human, deliberately, when a lockfile needs the optional platform entries a single-platform generation cannot produce. Not a gate and not a fixture author.",
+  "scripts/check-version-surface.ts":
+    "MODE — the first arm of `npm run check-version`, spawned by `scripts/check-version.mjs`. One npm name for one subject means the manifest names the ORCHESTRATOR, and this file is the implementation behind one of its arms. Same for the three arms below.",
+  "scripts/check-reporter-version.ts":
+    "MODE — the second arm of `npm run check-version`; see the note on `scripts/check-version-surface.ts`.",
+  "scripts/check-changelog.ts":
+    "MODE — the third arm of `npm run check-version`; see the note on `scripts/check-version-surface.ts`.",
+  "scripts/check-unreleased-entry.mjs":
+    "MODE — the fourth arm of `npm run check-version`, and the only one that reads `--base`. See the note on `scripts/check-version-surface.ts`.",
+  "scripts/corpus/quad-verdicts.ts":
+    "MODE — the verdict-building arm of `npm run check-fixture-quad --verdicts`, spawned by `scripts/v6/check-fixture-quad.ts` with a resolved absolute path. It stays a separate file because it is 250 lines of top-level side effect; wrapping it in a module boundary would be a refactor of working code to satisfy a naming rule.",
+  "scripts/resample-unmeasured.ts":
+    "MODE — the re-measurement arm of `npm run corpus:audit --resample`, imported and called by `tests/corpus/audit.ts` under the same `import.meta.url` guard that keeps an import from firing a networked re-measure. Listed here because the manifest names the audit, not the arm.",
   "scripts/compute-release.mjs":
     "TOOL — pure release-bump decision logic kept for planning and reporting. The header states it does not publish, version, tag or update any branch, and that a release-publishing CLI wrapper was the intended caller. That wrapper was never written, so the logic is currently reachable by nobody — the honest description of an unwired tool, and a candidate for either a wrapper or deletion.",
   "scripts/corpus-pairs.ts":

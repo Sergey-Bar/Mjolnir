@@ -246,7 +246,7 @@ controls: (a) §19 human adjudication (21 rules — the CONDITIONAL cap),
   this policy's own tooling.
 - Every verdict must be evidenced by the `doctor --json` artifact and
   the evidence-run commands (typecheck, lint, test, coverage, build,
-  self-scan, corpus regression, bench, translations) — asserted
+  self-scan, corpus audit) — asserted
   statuses are not evidence (A1).
 
 ---

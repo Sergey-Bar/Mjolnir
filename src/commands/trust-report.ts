@@ -1,5 +1,5 @@
 /**
- * `mjolnir trust-report` — the Trust Artifact (Mega MVP Master Plan
+ * the terminal render — the Trust Artifact (Mega MVP Master Plan
  * v3.1 §26 WI-6, §18; integrity binding + HTML completion R9/WI-23).
  *
  * Emits deterministic, self-contained

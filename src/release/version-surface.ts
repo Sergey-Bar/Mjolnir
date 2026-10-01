@@ -30,7 +30,6 @@ export const INSTALL_SURFACE_PATHS = [
   "smithery.yaml",
   "site/.vitepress/theme/Home.vue",
   "README.md",
-  "README.br.md",
   "site/guide/getting-started.md",
   "site/guide/ci.md",
   "site/guide/forensics.md",
@@ -48,7 +47,6 @@ export const INSTALL_SURFACE_PATHS = [
  */
 export const READER_FACING_SURFACES: ReadonlySet<string> = new Set<string>([
   "README.md",
-  "README.br.md",
   "docs/DISTRIBUTION-KIT.md",
   "site/guide/getting-started.md",
   "site/guide/ci.md",
@@ -161,7 +159,6 @@ export function checkVersionSurfaceEnvelope(
       ],
     ],
     ["README.md", [`mjolnir-qa@${installVersion}`]],
-    ["README.br.md", [`mjolnir-qa@${installVersion}`]],
     ["site/guide/getting-started.md", [`npx mjolnir-qa@${installVersion}`]],
     ["site/guide/ci.md", [`mjolnir-qa@${installVersion}`]],
     ["site/guide/forensics.md", [`npx mjolnir-qa@${installVersion} forensics`]],

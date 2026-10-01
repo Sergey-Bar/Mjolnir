@@ -1,6 +1,6 @@
 /**
  * Suppression governance (Sprint-Plan W7, Product-MVP §12).
- * `mjolnir suppressions` — every suppression stays visible.
+ * `mjolnir scan --suppressions` — every suppression stays visible.
  */
 
 import {
@@ -27,7 +27,7 @@ export function loadSuppressions(
   // source for BOTH config names. Suppressions written to `.mjolnir.json`
   // used to be silently unenforced here (only mjolnir.config.json was
   // read), and a corrupted config was swallowed into an empty report so
-  // `mjolnir suppressions` printed "Full transparency maintained." while
+  // the ledger view printed "Full transparency maintained." while
   // the scan path failed loudly. Parse/validation errors now propagate
   // (ConfigValidationError → usage-error path in the CLI).
   const { config } = loadConfig(root);

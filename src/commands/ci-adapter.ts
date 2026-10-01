@@ -1,5 +1,5 @@
 /**
- * `mjolnir ci-adapter` — CI Adapters (SDET-4).
+ * `mjolnir ci adapters` — CI Adapters (SDET-4).
  *
  * Generates CI configuration for GitHub Actions, GitLab CI,
  * and Jenkins from a single source of truth: the Mjölnir scan.
@@ -83,11 +83,11 @@ export function runCiAdapterCommand(
 ): number {
   const adapter = argv[0] ?? "";
   if (!["github", "gitlab", "jenkins"].includes(adapter)) {
-    io.err("Usage: mjolnir ci-adapter <github|gitlab|jenkins> [target]");
+    io.err("Usage: mjolnir ci adapters <github|gitlab|jenkins> [target]");
     return EXIT_USAGE;
   }
   if (argv.length > 2 || argv.slice(1).some((arg) => arg.startsWith("-"))) {
-    io.err("Usage: mjolnir ci-adapter <github|gitlab|jenkins> [target]");
+    io.err("Usage: mjolnir ci adapters <github|gitlab|jenkins> [target]");
     return EXIT_USAGE;
   }
   const target = resolve(argv[1] ?? ".");

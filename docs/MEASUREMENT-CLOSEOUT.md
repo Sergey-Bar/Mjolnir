@@ -40,7 +40,7 @@ reconciled against `docs/FP-AUDIT.md` and the active registry.
    `npx tsx scripts/corpus-sample.ts --unmeasured-only --repo <name>`.
 2. Classify each row into `tests/corpus/verdicts/*.jsonl` with TP/FP/UNSURE
    and a review note.
-3. Regenerate `npm run fp-audit:generate` and the rule documentation.
+3. Regenerate `npm run generate-fp-audit-table` and the rule documentation.
 4. Run the registry ratchet, census drift, and focused rule fixtures.
 5. Review the diff with the rule owner before changing tier or trust state.
 6. Record the candidate SHA and evidence in the gap ledger before promotion.

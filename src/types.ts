@@ -331,14 +331,16 @@ export const DEDUCTIONS: Record<Severity, number> = {
 /**
  * Mutation evidence (master plan P5, plan 1788853205786 — flag 6,
  * decision 8): provenance from a mutation-testing report
- * (`mjolnir mutation <report>`), stamped on matching findings.
+ * (a Stryker or Mutmut report — the `mutation` verb is retired in the
+ * v6 carve), stamped on matching findings.
  *
  * PROVENANCE IS NOT TRUTH: a survived mutant is code the suite would
  * not notice changing — evidence FOR a nearby finding, never a claim
- * the finding is "proven real". The E1→E2 consolidation is BY
- * DERIVATION and lives in src/mutation/derive.ts (documented in
- * docs/RULE-LIFECYCLE.md + the machine-contract docs). trustLevel never
- * rises from mutation evidence alone: nothing ran.
+ * the finding is "proven real". The E1→E2 consolidation was BY
+ * DERIVATION, and lived with the `mutation` verb the v6 carve removed;
+ * the rule is documented in docs/RULE-LIFECYCLE.md and the
+ * machine-contract docs. trustLevel never rises from mutation evidence
+ * alone: nothing ran.
  */
 export interface MutationEvidence {
   /** Which mutation tool produced the report. */

@@ -108,7 +108,7 @@ describe("verification intelligence", () => {
       "mjolnir . &",
       "mjolnir --version",
       "mjolnir --help",
-      "mjolnir rules",
+      "mjolnir explain --list",
       "echo mjolnir .",
       "1INVALID=value mjolnir .",
       "=value mjolnir .",

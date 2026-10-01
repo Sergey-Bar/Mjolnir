@@ -25,30 +25,10 @@ vi.mock("../../src/commands/explain.js", async (importOriginal) => {
     await importOriginal<typeof import("../../src/commands/explain.js")>();
   return { ...actual, explainRule: vi.fn() };
 });
-vi.mock("../../src/commands/badge.js", async (importOriginal) => {
-  const actual =
-    await importOriginal<typeof import("../../src/commands/badge.js")>();
-  return { ...actual, writeBadge: vi.fn() };
-});
-vi.mock("../../src/commands/debt.js", async (importOriginal) => {
-  const actual =
-    await importOriginal<typeof import("../../src/commands/debt.js")>();
-  return { ...actual, renderDebt: vi.fn() };
-});
 vi.mock("../../src/commands/fix.js", async (importOriginal) => {
   const actual =
     await importOriginal<typeof import("../../src/commands/fix.js")>();
   return { ...actual, planAndApplyFixes: vi.fn() };
-});
-vi.mock("../../src/commands/create-rule.js", async (importOriginal) => {
-  const actual =
-    await importOriginal<typeof import("../../src/commands/create-rule.js")>();
-  return { ...actual, createRuleScaffold: vi.fn() };
-});
-vi.mock("../../src/commands/impact.js", async (importOriginal) => {
-  const actual =
-    await importOriginal<typeof import("../../src/commands/impact.js")>();
-  return { ...actual, computeImpact: vi.fn() };
 });
 vi.mock("../../src/commands/baseline.js", async (importOriginal) => {
   const actual =
@@ -64,11 +44,6 @@ vi.mock("../../src/commands/stats.js", async (importOriginal) => {
   const actual =
     await importOriginal<typeof import("../../src/commands/stats.js")>();
   return { ...actual, renderStats: vi.fn() };
-});
-vi.mock("../../src/commands/init.js", async (importOriginal) => {
-  const actual =
-    await importOriginal<typeof import("../../src/commands/init.js")>();
-  return { ...actual, runInit: vi.fn() };
 });
 vi.mock("../../src/commands/handover.js", async (importOriginal) => {
   const actual =
@@ -86,45 +61,25 @@ vi.mock("../../src/config/config.js", async (importOriginal) => {
   };
 });
 
-import {
-  saveBaseline,
-  renderBaselineDiff,
-} from "../../src/commands/baseline.js";
-import { computeImpact } from "../../src/commands/impact.js";
-import { createRuleScaffold } from "../../src/commands/create-rule.js";
+import {} from "../../src/commands/baseline.js";
 import { explainRule } from "../../src/commands/explain.js";
 import { loadConfig } from "../../src/config/config.js";
 import { planAndApplyFixes } from "../../src/commands/fix.js";
-import { renderDebt } from "../../src/commands/debt.js";
 import { renderHandover } from "../../src/commands/handover.js";
 import { renderPrComment } from "../../src/commands/pr-comment.js";
 import { renderStats } from "../../src/commands/stats.js";
 import { runDoctorSelfAudit } from "../../src/commands/doctor.js";
-import { runForensics } from "../../src/forensics/run.js";
-import { runInit } from "../../src/commands/init.js";
-import { writeBadge } from "../../src/commands/badge.js";
 
 import {
-  runBadgeCommand,
-  runBaselineCommand,
-  runCreateRuleCommand,
-  runDebtCommand,
-  runDiffCommand,
   runDoctorCommand,
   runExplainCommand,
   runFixCommand,
-  runForensicsCommand,
   runHandoverCommand,
-  runImpactCommand,
-  runInitCommand,
   runPrCommentCommand,
-  runPwReportCommand,
   runScanCommand,
   runStatsCommand,
   runSuppressions,
-  runTriageCommand,
 } from "../../src/cli.js";
-
 const ERR = new Error("boom-err");
 const STR = "boom-str";
 
@@ -170,27 +125,6 @@ function capture() {
 }
 
 describe("exit-20 mapping: Error payload carries the message", () => {
-  it("forensics", () => {
-    throwOnce(runForensics, ERR);
-    const cap = capture();
-    expect(runForensicsCommand([dir], cap.io)).toBe(20);
-    expect(cap.errText()).toContain("boom-err");
-  });
-
-  it("triage", () => {
-    throwOnce(runForensics, ERR);
-    const cap = capture();
-    expect(runTriageCommand([dir], cap.io)).toBe(20);
-    expect(cap.errText()).toContain("boom-err");
-  });
-
-  it("pw-report", () => {
-    throwOnce(runForensics, ERR);
-    const cap = capture();
-    expect(runPwReportCommand([dir], cap.io)).toBe(20);
-    expect(cap.errText()).toContain("boom-err");
-  });
-
   it("doctor", () => {
     throwOnce(runDoctorSelfAudit, ERR);
     const cap = capture();
@@ -205,58 +139,10 @@ describe("exit-20 mapping: Error payload carries the message", () => {
     expect(cap.errText()).toContain("boom-err");
   });
 
-  it("badge", async () => {
-    throwOnce(writeBadge, ERR);
-    const cap = capture();
-    expect(await runBadgeCommand([dir], cap.io)).toBe(20);
-    expect(cap.errText()).toContain("boom-err");
-  });
-
-  it("debt", async () => {
-    throwOnce(renderDebt, ERR);
-    const cap = capture();
-    expect(await runDebtCommand([dir], cap.io)).toBe(20);
-    expect(cap.errText()).toContain("boom-err");
-  });
-
   it("fix", async () => {
     throwOnce(planAndApplyFixes, ERR);
     const cap = capture();
     expect(await runFixCommand([dir], cap.io)).toBe(20);
-    expect(cap.errText()).toContain("boom-err");
-  });
-
-  it("create-rule", () => {
-    throwOnce(createRuleScaffold, ERR);
-    const cap = capture();
-    expect(runCreateRuleCommand(["QA-PW-151", "--title", "T"], cap.io)).toBe(
-      20,
-    );
-    expect(cap.errText()).toContain("boom-err");
-  });
-
-  it("impact", async () => {
-    throwOnce(computeImpact, ERR);
-    const cap = capture();
-    expect(await runImpactCommand([dir], cap.io)).toBe(20);
-    expect(cap.errText()).toContain("boom-err");
-  });
-
-  it("baseline: a saveBaseline throw is the honest-degrade exit 1, not exit 20", async () => {
-    // An unwritable baseline path is the environment's fault — the
-    // friendly "this is a bug in Mjölnir" exit-20 message would lie. The
-    // command degrades to exit 1 with the actionable reason instead.
-    throwOnce(saveBaseline, ERR);
-    const cap = capture();
-    expect(await runBaselineCommand([dir], cap.io)).toBe(1);
-    expect(cap.errText()).toContain("baseline save FAILED");
-    expect(cap.errText()).toContain("boom-err");
-  });
-
-  it("diff", async () => {
-    throwOnce(renderBaselineDiff, ERR);
-    const cap = capture();
-    expect(await runDiffCommand([dir], cap.io)).toBe(20);
     expect(cap.errText()).toContain("boom-err");
   });
 
@@ -280,37 +166,9 @@ describe("exit-20 mapping: Error payload carries the message", () => {
     expect(await runHandoverCommand([dir], cap.io)).toBe(20);
     expect(cap.errText()).toContain("boom-err");
   });
-
-  it("init", () => {
-    throwOnce(runInit, ERR);
-    const cap = capture();
-    expect(runInitCommand([], cap.io)).toBe(20);
-    expect(cap.errText()).toContain("boom-err");
-  });
 });
 
 describe("exit-20 mapping: non-Error throwables render via String()", () => {
-  it("forensics", () => {
-    throwOnce(runForensics, STR);
-    const cap = capture();
-    expect(runForensicsCommand([dir], cap.io)).toBe(20);
-    expect(cap.errText()).toContain("boom-str");
-  });
-
-  it("triage", () => {
-    throwOnce(runForensics, STR);
-    const cap = capture();
-    expect(runTriageCommand([dir], cap.io)).toBe(20);
-    expect(cap.errText()).toContain("boom-str");
-  });
-
-  it("pw-report", () => {
-    throwOnce(runForensics, STR);
-    const cap = capture();
-    expect(runPwReportCommand([dir], cap.io)).toBe(20);
-    expect(cap.errText()).toContain("boom-str");
-  });
-
   it("doctor", () => {
     throwOnce(runDoctorSelfAudit, STR);
     const cap = capture();
@@ -325,55 +183,10 @@ describe("exit-20 mapping: non-Error throwables render via String()", () => {
     expect(cap.errText()).toContain("boom-str");
   });
 
-  it("badge", async () => {
-    throwOnce(writeBadge, STR);
-    const cap = capture();
-    expect(await runBadgeCommand([dir], cap.io)).toBe(20);
-    expect(cap.errText()).toContain("boom-str");
-  });
-
-  it("debt", async () => {
-    throwOnce(renderDebt, STR);
-    const cap = capture();
-    expect(await runDebtCommand([dir], cap.io)).toBe(20);
-    expect(cap.errText()).toContain("boom-str");
-  });
-
   it("fix", async () => {
     throwOnce(planAndApplyFixes, STR);
     const cap = capture();
     expect(await runFixCommand([dir], cap.io)).toBe(20);
-    expect(cap.errText()).toContain("boom-str");
-  });
-
-  it("create-rule", () => {
-    throwOnce(createRuleScaffold, STR);
-    const cap = capture();
-    expect(runCreateRuleCommand(["QA-PW-151", "--title", "T"], cap.io)).toBe(
-      20,
-    );
-    expect(cap.errText()).toContain("boom-str");
-  });
-
-  it("impact", async () => {
-    throwOnce(computeImpact, STR);
-    const cap = capture();
-    expect(await runImpactCommand([dir], cap.io)).toBe(20);
-    expect(cap.errText()).toContain("boom-str");
-  });
-
-  it("baseline: a non-Error throw also degrades to exit 1 via String()", async () => {
-    throwOnce(saveBaseline, STR);
-    const cap = capture();
-    expect(await runBaselineCommand([dir], cap.io)).toBe(1);
-    expect(cap.errText()).toContain("baseline save FAILED");
-    expect(cap.errText()).toContain("boom-str");
-  });
-
-  it("diff", async () => {
-    throwOnce(renderBaselineDiff, STR);
-    const cap = capture();
-    expect(await runDiffCommand([dir], cap.io)).toBe(20);
     expect(cap.errText()).toContain("boom-str");
   });
 
@@ -395,13 +208,6 @@ describe("exit-20 mapping: non-Error throwables render via String()", () => {
     throwOnce(renderHandover, STR);
     const cap = capture();
     expect(await runHandoverCommand([dir], cap.io)).toBe(20);
-    expect(cap.errText()).toContain("boom-str");
-  });
-
-  it("init", () => {
-    throwOnce(runInit, STR);
-    const cap = capture();
-    expect(runInitCommand([], cap.io)).toBe(20);
     expect(cap.errText()).toContain("boom-str");
   });
 });

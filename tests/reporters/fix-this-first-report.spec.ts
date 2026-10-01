@@ -89,7 +89,7 @@ describe("MVP-005 default terminal report", () => {
         "= DIAGNOSTICS BY CATEGORY",
         "= FINDINGS",
         "$ mjolnir explain QA-TEST-001",
-        "$ mjolnir why tests/login.spec.ts:12",
+        "$ mjolnir explain <file:line> tests/login.spec.ts:12",
         "$ mjolnir baseline",
         "$ mjolnir diff",
       ]
@@ -152,7 +152,7 @@ describe("MVP-005 default terminal report", () => {
         "= DIAGNOSTICS BY CATEGORY",
         "= FINDINGS",
         "$ mjolnir explain QA-TEST-001",
-        "$ mjolnir why tests/login.spec.ts:12",
+        "$ mjolnir explain <file:line> tests/login.spec.ts:12",
         "$ mjolnir baseline",
         "$ mjolnir diff",
         "Analysis: PARTIAL — verdict may be incomplete · 9ms",

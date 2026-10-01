@@ -113,12 +113,33 @@ export function parseArgs(
       if (fmt === "sarif") args.format = "sarif";
       else if (fmt === "mermaid") args.format = "mermaid";
       else if (fmt === "codequality") args.format = "codequality";
+      // The v6 collapse's REPLACE arm (plan §3). `trust-report`,
+      // `pr-comment` and `summary` were three verbs whose whole body was
+      // "scan, then render" — a verb per output shape, which is a command
+      // surface to remember rather than a capability. The renderers already
+      // existed; what was missing was a way to name them.
+      //
+      // `github-summary` is named after its CONSUMER (GitHub Actions step
+      // summary) rather than its shape, because "summary" was ambiguous with
+      // the terminal's own summary band, and a flag that means two things is
+      // a flag whose output nobody can predict.
+      else if (fmt === "trust-report") args.format = "trust-report";
+      else if (fmt === "pr-comment") args.format = "pr-comment";
+      else if (fmt === "github-summary") args.format = "github-summary";
       else if (fmt === "json") {
         args.format = "json";
         args.json = true;
       } else if (fmt !== "terminal")
         return reject({ flag: "--format", token: fmt });
     } else if (a === "--verbose") args.verbose = true;
+    // The v6 collapse's REPLACE arm (plan §3). Each of these was a verb
+    // whose entire body is a mode of the scan, and a verb per mode is a
+    // command surface to remember rather than a capability to use. The flags
+    // are read here, in `parseArgs`, so the whole vocabulary of `mjolnir
+    // scan --help` is one list rather than four.
+    else if (a === "--suppressions") args.suppressions = true;
+    else if (a === "--suppression-gate") args.suppressionGate = true;
+    else if (a === "--policy") args.policy = true;
     else if (a === "--scope") {
       const mode = argv[++i];
       if (mode === "changed") args.scopeChanged = true;
@@ -360,6 +381,73 @@ export function exitForFindings(
   });
 }
 
+/**
+ * The `ci` subcommand table — the v6 collapse's MOVE arm (plan §3).
+ *
+ * Five top-level verbs become `ci <subcommand>`. They are grouped here rather
+ * than spread across the dispatcher because the table IS the claim: one place
+ * says what `ci` can do, and `mjolnir ci --help` renders from it, so a
+ * subcommand that exists is documented and one that is documented exists. A
+ * dispatcher with five inline `if` arms plus a separate help string is how the
+ * two drift apart.
+ *
+ * None of these reimplements a check. Each entry is the command that already
+ * existed, because a governance rule that exists twice can disagree with
+ * itself — and the copy a pipeline runs is the one that has to be right.
+ */
+const CI_SUBCOMMANDS: Record<
+  string,
+  {
+    summary: string;
+    run: (
+      argv: string[],
+      io: { out: Output; err: Output },
+    ) => Promise<number> | number;
+  }
+> = {
+  install: {
+    summary: "write the CI workflow for this repository",
+    run: (argv, io) => runCiInstall(argv, io),
+  },
+  adapters: {
+    summary: "which ecosystems can be analysed, and how well",
+    run: (argv, io) => runCiAdapterCommand(argv, io),
+  },
+  integrity: {
+    summary: "the workflow Mjölnir would generate is itself correct",
+    run: (argv, io) => runCIIntegrityCommand(argv, io),
+  },
+  verify: {
+    summary: "run the blocking check and the suppression policy",
+    run: (argv, io) => runVerifyCommand(argv, io),
+  },
+  "release-trust": {
+    summary: "the signed measurement release's own trust record",
+    run: (argv, io) => runReleaseTrustCommand(argv, io),
+  },
+  "release-trend": {
+    summary: "how that trust record has moved across releases",
+    run: (argv, io) => runTrustTrendCommand(argv, io),
+  },
+};
+
+/** `mjolnir ci --help`, rendered from the table so it cannot drift. */
+export function renderCiSubcommandHelp(): string {
+  const names = Object.keys(CI_SUBCOMMANDS).sort();
+  const width = Math.max(...names.map((n) => n.length));
+  return [
+    "mjolnir ci <subcommand> — the checks a pipeline runs",
+    "",
+    ...names.map(
+      (n) => `  ci ${n.padEnd(width)}  ${CI_SUBCOMMANDS[n]?.summary ?? ""}`,
+    ),
+    "",
+    "Each was a top-level verb before the v6 collapse, which is why",
+    "`mjolnir integrity` and `mjolnir ci verify` read as two products that",
+    "shared a surface nobody could see from the command list.",
+  ].join("\n");
+}
+
 /** Testable `ci install` handler. Returns the process exit code. */
 export function runCiInstall(
   argv: string[],
@@ -459,93 +547,62 @@ const SUBCOMMANDS: ReadonlySet<string> = new Set(CLI_COMMAND_NAMES);
 // to keep this entry-point module under 800 lines (Task 8).
 import {
   runScanCommand,
-  runForensicsCommand,
-  runTriageCommand,
-  runMutationCommand,
-  runBadgeCommand,
-  runDebtCommand,
   runFixCommand,
-  runCreateRuleCommand,
-  runImpactCommand,
-  runBaselineCommand,
-  runDiffCommand,
   runVerifyCommand,
-  runPrCommentCommand,
   runStatsCommand,
-  runHandoverCommand,
-  runInitCommand,
-  runPwReportCommand,
-  runRulesCommand,
   runExplainCommand,
-  runDoctorPlaywright,
+  runExplainHelp,
 } from "./cli-handlers.js";
 
 // Re-export handler functions so tests importing from "cli.js" still work.
 export {
   runScanCommand,
   renderScanOutput,
-  runForensicsCommand,
-  runTriageCommand,
-  runMutationCommand,
-  runBadgeCommand,
-  runDebtCommand,
   runFixCommand,
-  runCreateRuleCommand,
-  runImpactCommand,
-  runBaselineCommand,
-  runDiffCommand,
   runVerifyCommand,
   runPrCommentCommand,
   runStatsCommand,
-  runHandoverCommand,
-  runInitCommand,
   runPwReportCommand,
-  runRulesCommand,
   runExplainCommand,
   runDoctorPlaywright,
+  // The `explain` arms' implementations. No longer VERB runners — they are
+  // what the arms call — but still commands, and the specs that exercise
+  // their behaviour reach them through this entry point.
+  runRulesCommand,
+  runWhyCommand,
+  runHandoverCommand,
+  runEvidenceArm,
 } from "./cli-handlers.js";
 
+export { runCrossFileCommand } from "./commands/milestone.js";
+
 import { runDoctorCommand } from "./commands/doctor-run.js";
-import { runSummaryCommand } from "./commands/summary.js";
-import { runWhyCommand } from "./commands/why.js";
 import { runHandoffCommand } from "./commands/handoff.js";
 import { runInstallCommand } from "./commands/install-agents.js";
-import { runTrustReportCommand } from "./commands/trust-report.js";
 import { runReleaseTrustCommand } from "./commands/release-trust.js";
-import { runTrendCommand } from "./commands/trend.js";
-import { runExecReportCommand } from "./commands/exec-report.js";
 import { runPolicyCommand } from "./commands/policy.js";
 import { runAnalyzeCommand } from "./commands/analyze.js";
 import { runCiAdapterCommand } from "./commands/ci-adapter.js";
-import { runDashboardCommand } from "./commands/dashboard.js";
 import { CLI_COMMAND_NAMES } from "./engine/cli-command-names.js";
+import { runContractVerifyCommand } from "./commands/contract-verify.js";
+import { runTrustTrendCommand } from "./commands/release-trend.js";
 import {
   runCIIntegrityCommand,
-  runContractVerifyCommand,
-  runCrossFileCommand,
   runEvidenceGraphCommand,
   runFrameworkMaturityCommand,
   runSuppressionGateCommand,
-  runTrustTrendCommand,
 } from "./commands/milestone.js";
 
 export {
   runDoctorCommand,
-  runSummaryCommand,
-  runWhyCommand,
   runHandoffCommand,
   runInstallCommand,
-  runTrustReportCommand,
   runReleaseTrustCommand,
-  runTrendCommand,
-  runExecReportCommand,
   runPolicyCommand,
   runAnalyzeCommand,
   runCiAdapterCommand,
-  runDashboardCommand,
   runCIIntegrityCommand,
   runContractVerifyCommand,
-  runCrossFileCommand,
   runEvidenceGraphCommand,
   runFrameworkMaturityCommand,
   runSuppressionGateCommand,
@@ -577,107 +634,113 @@ export async function main(
   if (argv[0] === "--help" || argv[0] === "-h") {
     return runHelpCommand([], io);
   }
-  if (argv.length >= 2 && (argv[1] === "--help" || argv[1] === "-h")) {
-    return runHelpCommand([argv[0] as string], io);
+  // `--help` ANYWHERE in the invocation asks for help, and the rule is
+  // positional rather than a pair of special cases.
+  //
+  // It used to be `argv.length >= 2 && argv[1] === "--help"`, which handled
+  // `mjolnir fix --help` and, separately, `argv.length >= 3 && argv[2] ===
+  // "--help"`, which handled `mjolnir ci install --help`. The collapse
+  // deleted the second rule and generalised the first — and deleted the
+  // `ci install --help` path with it, so `mjolnar ci install --help` started
+  // running the installer and exiting 10. The scan is the rule that was
+  // always true: a reader who types `--help` anywhere wants the page for what
+  // they typed, not an error from the command they meant to read about.
+  const helpAt = argv.findIndex((a) => a === "--help" || a === "-h");
+  if (helpAt > 0) {
+    // `ci` is two tokens, so the subject is the verb plus its subcommand when
+    // one was given. That is the only reason this block knows about `ci`, and
+    // knowing about it here is why `ci verify --help` describes `ci verify`
+    // rather than `ci install`.
+    const subject =
+      argv[0] === "ci" && helpAt > 1 ? `ci ${argv[1]}` : (argv[0] as string);
+    if (subject === "ci") {
+      io.out(renderCiSubcommandHelp());
+      return EXIT_CLEAN;
+    }
+    if (subject === "explain") {
+      return runExplainHelp(io);
+    }
+    return runHelpCommand([subject], io);
   }
-  if (
-    argv[0] === "ci" &&
-    argv.length >= 3 &&
-    (argv[2] === "--help" || argv[2] === "-h")
-  ) {
-    return runHelpCommand(["ci", "install"], io);
+  if (argv[0] === "ci" && argv[1] === undefined) {
+    io.out(renderCiSubcommandHelp());
+    return EXIT_USAGE;
   }
   if (argv[0] === "ci" && argv[1] === "install")
     return runCiInstall(argv.slice(2), io);
+  // The v6 collapse's MOVE arm (plan §3): five top-level verbs become
+  // `ci <subcommand>`.
+  //
+  // `ci` is the right home for all five and the word is not incidental — each
+  // one is a check a CI pipeline runs, and `ci` is already the verb whose
+  // meaning is "the thing a pipeline does". `ci integrity` and `ci verify`
+  // are the sharpest case: they were separate top-level verbs, so `mjolnir
+  // integrity` and `mjolnir ci verify` read as two products, and the surface
+  // they belonged to was invisible from the command list.
+  if (argv[0] === "ci") {
+    const sub = argv[1];
+    if (sub === undefined || sub === "--help" || sub === "-h") {
+      io.out(renderCiSubcommandHelp());
+      return sub === undefined ? EXIT_USAGE : EXIT_CLEAN;
+    }
+    const entry = CI_SUBCOMMANDS[sub];
+    if (entry === undefined) {
+      io.err(`mjolnir ci: unknown subcommand "${sub}".`);
+      io.err(
+        `Known: ${Object.keys(CI_SUBCOMMANDS).sort().join(", ")}. Run \`mjolnir ci --help\`.`,
+      );
+      return EXIT_USAGE;
+    }
+    return entry.run(argv.slice(2), io);
+  }
   type VerbHandler = (
     argv: string[],
     io: { out: Output; err: Output },
   ) => Promise<number> | number;
   const VERBS: Record<string, VerbHandler | undefined> = {
     scan: (a, o) => runScanCommand(a, o),
-    suppressions: (_a, o) => runSuppressions(o),
-    forensics: (a, o) => runForensicsCommand(a, o),
-    triage: (a, o) => runTriageCommand(a, o),
-    mutation: (a, o) => runMutationCommand(a, o),
-    badge: (a, o) => runBadgeCommand(a, o),
-    "trust-report": (a, o) => runTrustReportCommand(a, o),
     // Wave 1: the registry is inspectable, and deliberately not editable.
     // There is no --set and no --promote, because maturity is derived from
     // evidence (ADR 0001) — a verb that could raise a level would be a verb
     // that could lie about one.
-    debt: (a, o) => runDebtCommand(a, o),
-    impact: (a, o) => runImpactCommand(a, o),
-    trend: (a, o) => runTrendCommand(a, o),
-    "exec-report": (a, o) => runExecReportCommand(a, o),
     policy: (a, o) => runPolicyCommand(a, o),
     analyze: (a, o) => runAnalyzeCommand(a, o),
-    "ci-adapter": (a, o) => runCiAdapterCommand(a, o),
-    dashboard: (a, o) => runDashboardCommand(a, o),
-    baseline: (a, o) => runBaselineCommand(a, o),
-    diff: (a, o) => runDiffCommand(a, o),
-    verify: (a, o) => runVerifyCommand(a, o),
-    "pr-comment": (a, o) => runPrCommentCommand(a, o),
-    summary: (a, o) => runSummaryCommand(a, o),
     stats: (a, o) => runStatsCommand(a, o),
     fix: (a, o) => runFixCommand(a, o),
-    "create-rule": (a, o) => runCreateRuleCommand(a, o),
-    handover: (a, o) => runHandoverCommand(a, o),
-    init: (a, o) => runInitCommand(a, o),
-    "pw-report": (a, o) => runPwReportCommand(a, o),
     doctor: (a, o) => runDoctorCommand(a, o),
-    "release-trust": (a, o) => runReleaseTrustCommand(a, o),
-    rules: (a, o) => runRulesCommand(a, o),
     explain: (a, o) => runExplainCommand(a, o),
-    "doctor:playwright": (a, o) => runDoctorPlaywright(a, o),
-    why: (a, o) => runWhyCommand(a, o),
     handoff: (a, o) => runHandoffCommand(a, o),
     install: (a, o) => runInstallCommand(a, o),
-    "ci-integrity": (a, o) => runCIIntegrityCommand(a, o),
-    "framework-maturity": (a, o) => runFrameworkMaturityCommand(a, o),
-    "suppression-gate": (a, o) => runSuppressionGateCommand(a, o),
-    "cross-file": (a, o) => runCrossFileCommand(a, o),
+    // PENDING MERGE: the plan folds this into `ci verify`, which does not
+    // yet run the contract validators. Kept as its own verb until it does.
     "contract-verify": (a, o) => runContractVerifyCommand(a, o),
-    "trust-trend": (a, o) => runTrustTrendCommand(a, o),
+    "suppression-gate": (a, o) => runSuppressionGateCommand(a, o),
     "evidence-graph": (a, o) => runEvidenceGraphCommand(a, o),
   };
   // Contract: tests/contract/readme-commands.spec.ts reads known subcommands
   // from argv[0] === "..." literals in this source file. Keep in sync with VERBS:
   // argv[0] === "scan"
-  // argv[0] === "suppressions"
-  // argv[0] === "forensics"
-  // argv[0] === "triage"
-  // argv[0] === "mutation"
-  // argv[0] === "badge"
-  // argv[0] === "trust-report"
-  // argv[0] === "debt"
-  // argv[0] === "impact"
-  // argv[0] === "baseline"
-  // argv[0] === "diff"
-  // argv[0] === "verify"
-  // argv[0] === "pr-comment"
-  // argv[0] === "summary"
   // argv[0] === "stats"
   // argv[0] === "fix"
-  // argv[0] === "create-rule"
-  // argv[0] === "handover"
-  // argv[0] === "init"
-  // argv[0] === "pw-report"
   // argv[0] === "doctor"
-  // argv[0] === "release-trust"
-  // argv[0] === "rules"
   // argv[0] === "explain"
-  // argv[0] === "doctor:playwright"
-  // argv[0] === "why"
   // argv[0] === "handoff"
   // argv[0] === "install"
   // argv[0] === "mcp"
-  // argv[0] === "trend"
-  // argv[0] === "exec-report"
   // argv[0] === "policy"
   // argv[0] === "analyze"
-  // argv[0] === "ci-adapter"
-  // argv[0] === "dashboard"
   // argv[0] === "help"
+  // `doctor --frameworks`: the plan's MOVE for `framework-maturity` and
+  // `doctor:playwright` (both marked internal). One audit asked two ways, so
+  // it is a FLAG and not a second `argv[0] === "doctor"` branch — the known
+  // subcommand set is read from those literals, and one verb with two entries
+  // in it is a set that no longer means what it says.
+  if (argv[0] === "doctor" && argv.includes("--frameworks")) {
+    return runFrameworkMaturityCommand(
+      argv.filter((a) => a !== "--frameworks"),
+      io,
+    );
+  }
   const verb = argv[0] ?? "";
   const handler = Object.hasOwn(VERBS, verb) ? VERBS[verb] : undefined;
   if (handler) return await handler(argv.slice(1), io);

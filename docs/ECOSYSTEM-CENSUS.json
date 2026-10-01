@@ -301,7 +301,7 @@
       "nextLevelGap": {
         "target": "M3_FIXTURE_VERIFIED",
         "missing": [
-          "the fixture quad for azure-pipelines is not complete — MUST-FIRE, MUST-NOT-FIRE, RECALL and PRECISION are the M3 criteria (evidence: fixtureQuadVerified); `npm run rules:quad:check` prints the per-leg work list"
+          "the fixture quad for azure-pipelines is not complete — MUST-FIRE, MUST-NOT-FIRE, RECALL and PRECISION are the M3 criteria (evidence: fixtureQuadVerified); `npm run check-fixture-quad` prints the per-leg work list"
         ],
         "owner": "provider-capability-contract",
         "revisitTrigger": "CI-IR adapter no longer normalizes a azure-pipelines pipeline construct; census staleness trigger demotes SUPPORTED"
@@ -337,7 +337,7 @@
       "nextLevelGap": {
         "target": "M3_FIXTURE_VERIFIED",
         "missing": [
-          "the fixture quad for github-actions is not complete — MUST-FIRE, MUST-NOT-FIRE, RECALL and PRECISION are the M3 criteria (evidence: fixtureQuadVerified); `npm run rules:quad:check` prints the per-leg work list"
+          "the fixture quad for github-actions is not complete — MUST-FIRE, MUST-NOT-FIRE, RECALL and PRECISION are the M3 criteria (evidence: fixtureQuadVerified); `npm run check-fixture-quad` prints the per-leg work list"
         ],
         "owner": "provider-capability-contract",
         "revisitTrigger": "CI-IR adapter no longer normalizes a github-actions pipeline construct; census staleness trigger demotes SUPPORTED"
@@ -399,7 +399,7 @@
       "nextLevelGap": {
         "target": "M3_FIXTURE_VERIFIED",
         "missing": [
-          "the fixture quad for jenkins is not complete — MUST-FIRE, MUST-NOT-FIRE, RECALL and PRECISION are the M3 criteria (evidence: fixtureQuadVerified); `npm run rules:quad:check` prints the per-leg work list"
+          "the fixture quad for jenkins is not complete — MUST-FIRE, MUST-NOT-FIRE, RECALL and PRECISION are the M3 criteria (evidence: fixtureQuadVerified); `npm run check-fixture-quad` prints the per-leg work list"
         ],
         "owner": "provider-capability-contract",
         "revisitTrigger": "CI-IR adapter no longer normalizes a jenkins pipeline construct; census staleness trigger demotes SUPPORTED"
@@ -444,7 +444,7 @@
       "nextLevelGap": {
         "target": "M3_FIXTURE_VERIFIED",
         "missing": [
-          "the fixture quad for cypress is not complete — MUST-FIRE, MUST-NOT-FIRE, RECALL and PRECISION are the M3 criteria (evidence: fixtureQuadVerified); `npm run rules:quad:check` prints the per-leg work list"
+          "the fixture quad for cypress is not complete — MUST-FIRE, MUST-NOT-FIRE, RECALL and PRECISION are the M3 criteria (evidence: fixtureQuadVerified); `npm run check-fixture-quad` prints the per-leg work list"
         ],
         "owner": "framework-inventory",
         "revisitTrigger": "adapter no longer handles a major version in cypress; census staleness trigger demotes SUPPORTED"
@@ -516,7 +516,7 @@
       "nextLevelGap": {
         "target": "M3_FIXTURE_VERIFIED",
         "missing": [
-          "the fixture quad for playwright is not complete — MUST-FIRE, MUST-NOT-FIRE, RECALL and PRECISION are the M3 criteria (evidence: fixtureQuadVerified); `npm run rules:quad:check` prints the per-leg work list"
+          "the fixture quad for playwright is not complete — MUST-FIRE, MUST-NOT-FIRE, RECALL and PRECISION are the M3 criteria (evidence: fixtureQuadVerified); `npm run check-fixture-quad` prints the per-leg work list"
         ],
         "owner": "framework-inventory",
         "revisitTrigger": "adapter no longer handles a major version in playwright; census staleness trigger demotes SUPPORTED"
@@ -795,7 +795,7 @@
       "nextLevelGap": {
         "target": "M3_FIXTURE_VERIFIED",
         "missing": [
-          "the fixture quad for jest is not complete — MUST-FIRE, MUST-NOT-FIRE, RECALL and PRECISION are the M3 criteria (evidence: fixtureQuadVerified); `npm run rules:quad:check` prints the per-leg work list"
+          "the fixture quad for jest is not complete — MUST-FIRE, MUST-NOT-FIRE, RECALL and PRECISION are the M3 criteria (evidence: fixtureQuadVerified); `npm run check-fixture-quad` prints the per-leg work list"
         ],
         "owner": "framework-inventory",
         "revisitTrigger": "adapter no longer handles a major version in jest; census staleness trigger demotes SUPPORTED"
@@ -975,7 +975,7 @@
       "nextLevelGap": {
         "target": "M3_FIXTURE_VERIFIED",
         "missing": [
-          "the fixture quad for pytest is not complete — MUST-FIRE, MUST-NOT-FIRE, RECALL and PRECISION are the M3 criteria (evidence: fixtureQuadVerified); `npm run rules:quad:check` prints the per-leg work list"
+          "the fixture quad for pytest is not complete — MUST-FIRE, MUST-NOT-FIRE, RECALL and PRECISION are the M3 criteria (evidence: fixtureQuadVerified); `npm run check-fixture-quad` prints the per-leg work list"
         ],
         "owner": "framework-inventory",
         "revisitTrigger": "adapter no longer handles a major version in pytest; census staleness trigger demotes SUPPORTED"
@@ -1112,7 +1112,7 @@
       "nextLevelGap": {
         "target": "M3_FIXTURE_VERIFIED",
         "missing": [
-          "the fixture quad for vitest is not complete — MUST-FIRE, MUST-NOT-FIRE, RECALL and PRECISION are the M3 criteria (evidence: fixtureQuadVerified); `npm run rules:quad:check` prints the per-leg work list"
+          "the fixture quad for vitest is not complete — MUST-FIRE, MUST-NOT-FIRE, RECALL and PRECISION are the M3 criteria (evidence: fixtureQuadVerified); `npm run check-fixture-quad` prints the per-leg work list"
         ],
         "owner": "framework-inventory",
         "revisitTrigger": "adapter no longer handles a major version in vitest; census staleness trigger demotes SUPPORTED"
@@ -1733,7 +1733,7 @@
       "nextLevelGap": {
         "target": "M3_FIXTURE_VERIFIED",
         "missing": [
-          "the fixture quad for azure-pipelines is not complete — MUST-FIRE, MUST-NOT-FIRE, RECALL and PRECISION are the M3 criteria (evidence: fixtureQuadVerified); `npm run rules:quad:check` prints the per-leg work list"
+          "the fixture quad for azure-pipelines is not complete — MUST-FIRE, MUST-NOT-FIRE, RECALL and PRECISION are the M3 criteria (evidence: fixtureQuadVerified); `npm run check-fixture-quad` prints the per-leg work list"
         ],
         "owner": "provider-capability-contract",
         "revisitTrigger": "CI-IR adapter no longer normalizes a azure-pipelines pipeline construct; census staleness trigger demotes SUPPORTED"
@@ -1769,7 +1769,7 @@
       "nextLevelGap": {
         "target": "M3_FIXTURE_VERIFIED",
         "missing": [
-          "the fixture quad for github-actions is not complete — MUST-FIRE, MUST-NOT-FIRE, RECALL and PRECISION are the M3 criteria (evidence: fixtureQuadVerified); `npm run rules:quad:check` prints the per-leg work list"
+          "the fixture quad for github-actions is not complete — MUST-FIRE, MUST-NOT-FIRE, RECALL and PRECISION are the M3 criteria (evidence: fixtureQuadVerified); `npm run check-fixture-quad` prints the per-leg work list"
         ],
         "owner": "provider-capability-contract",
         "revisitTrigger": "CI-IR adapter no longer normalizes a github-actions pipeline construct; census staleness trigger demotes SUPPORTED"
@@ -1831,7 +1831,7 @@
       "nextLevelGap": {
         "target": "M3_FIXTURE_VERIFIED",
         "missing": [
-          "the fixture quad for jenkins is not complete — MUST-FIRE, MUST-NOT-FIRE, RECALL and PRECISION are the M3 criteria (evidence: fixtureQuadVerified); `npm run rules:quad:check` prints the per-leg work list"
+          "the fixture quad for jenkins is not complete — MUST-FIRE, MUST-NOT-FIRE, RECALL and PRECISION are the M3 criteria (evidence: fixtureQuadVerified); `npm run check-fixture-quad` prints the per-leg work list"
         ],
         "owner": "provider-capability-contract",
         "revisitTrigger": "CI-IR adapter no longer normalizes a jenkins pipeline construct; census staleness trigger demotes SUPPORTED"
@@ -1876,7 +1876,7 @@
       "nextLevelGap": {
         "target": "M3_FIXTURE_VERIFIED",
         "missing": [
-          "the fixture quad for cypress is not complete — MUST-FIRE, MUST-NOT-FIRE, RECALL and PRECISION are the M3 criteria (evidence: fixtureQuadVerified); `npm run rules:quad:check` prints the per-leg work list"
+          "the fixture quad for cypress is not complete — MUST-FIRE, MUST-NOT-FIRE, RECALL and PRECISION are the M3 criteria (evidence: fixtureQuadVerified); `npm run check-fixture-quad` prints the per-leg work list"
         ],
         "owner": "framework-inventory",
         "revisitTrigger": "adapter no longer handles a major version in cypress; census staleness trigger demotes SUPPORTED"
@@ -1948,7 +1948,7 @@
       "nextLevelGap": {
         "target": "M3_FIXTURE_VERIFIED",
         "missing": [
-          "the fixture quad for playwright is not complete — MUST-FIRE, MUST-NOT-FIRE, RECALL and PRECISION are the M3 criteria (evidence: fixtureQuadVerified); `npm run rules:quad:check` prints the per-leg work list"
+          "the fixture quad for playwright is not complete — MUST-FIRE, MUST-NOT-FIRE, RECALL and PRECISION are the M3 criteria (evidence: fixtureQuadVerified); `npm run check-fixture-quad` prints the per-leg work list"
         ],
         "owner": "framework-inventory",
         "revisitTrigger": "adapter no longer handles a major version in playwright; census staleness trigger demotes SUPPORTED"
@@ -2227,7 +2227,7 @@
       "nextLevelGap": {
         "target": "M3_FIXTURE_VERIFIED",
         "missing": [
-          "the fixture quad for jest is not complete — MUST-FIRE, MUST-NOT-FIRE, RECALL and PRECISION are the M3 criteria (evidence: fixtureQuadVerified); `npm run rules:quad:check` prints the per-leg work list"
+          "the fixture quad for jest is not complete — MUST-FIRE, MUST-NOT-FIRE, RECALL and PRECISION are the M3 criteria (evidence: fixtureQuadVerified); `npm run check-fixture-quad` prints the per-leg work list"
         ],
         "owner": "framework-inventory",
         "revisitTrigger": "adapter no longer handles a major version in jest; census staleness trigger demotes SUPPORTED"
@@ -2407,7 +2407,7 @@
       "nextLevelGap": {
         "target": "M3_FIXTURE_VERIFIED",
         "missing": [
-          "the fixture quad for pytest is not complete — MUST-FIRE, MUST-NOT-FIRE, RECALL and PRECISION are the M3 criteria (evidence: fixtureQuadVerified); `npm run rules:quad:check` prints the per-leg work list"
+          "the fixture quad for pytest is not complete — MUST-FIRE, MUST-NOT-FIRE, RECALL and PRECISION are the M3 criteria (evidence: fixtureQuadVerified); `npm run check-fixture-quad` prints the per-leg work list"
         ],
         "owner": "framework-inventory",
         "revisitTrigger": "adapter no longer handles a major version in pytest; census staleness trigger demotes SUPPORTED"
@@ -2544,7 +2544,7 @@
       "nextLevelGap": {
         "target": "M3_FIXTURE_VERIFIED",
         "missing": [
-          "the fixture quad for vitest is not complete — MUST-FIRE, MUST-NOT-FIRE, RECALL and PRECISION are the M3 criteria (evidence: fixtureQuadVerified); `npm run rules:quad:check` prints the per-leg work list"
+          "the fixture quad for vitest is not complete — MUST-FIRE, MUST-NOT-FIRE, RECALL and PRECISION are the M3 criteria (evidence: fixtureQuadVerified); `npm run check-fixture-quad` prints the per-leg work list"
         ],
         "owner": "framework-inventory",
         "revisitTrigger": "adapter no longer handles a major version in vitest; census staleness trigger demotes SUPPORTED"

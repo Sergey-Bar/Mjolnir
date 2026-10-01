@@ -35,7 +35,7 @@ const TESTS = join(ROOT, "tests");
  * nothing in it can ever be reviewed or committed, and it is thousands of
  * files of other people's code that happen to use `process.cwd()`. Scanning it
  * produced eight violations, none of them this repository's, and it made the
- * gate fail on any machine that has run `npm run corpus:regression` while
+ * gate fail on any machine that has run `npm run corpus:audit` while
  * passing on one that has not — the exact "green here, red in CI" split this
  * guard exists to prevent, pointed the other way.
  *

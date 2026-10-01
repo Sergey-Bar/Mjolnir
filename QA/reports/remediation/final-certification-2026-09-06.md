@@ -108,7 +108,7 @@ mismatch was surfaced before any mutation).
 
 1. Hand-adjudicate ~176 verdict rows across 22 rules (review sheets
    ready; effort is the plan's designed human bottleneck).
-2. Re-run `npm run corpus:regression --update` on a quiet Linux runner
+2. Re-run `npm run corpus:audit --update` on a quiet Linux runner
    (nightly lane) to re-baseline the count lock over the merged
    detector changes.
 3. Cut 1.0.0 through the label-driven release pipeline (`release:major`).
