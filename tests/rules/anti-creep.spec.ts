@@ -39,6 +39,7 @@ import {
 import { hasValidMeasurement } from "../../src/rules/measurement.js";
 import type { CorePromotion, QADoctorRule } from "../../src/rules/rule.js";
 import { RULES } from "../../src/rules/index.js";
+import { effectiveTier } from "../../src/rules/measurement.js";
 
 const SOUND_PROMOTION: CorePromotion = {
   rationale:
@@ -75,10 +76,17 @@ function coreRule(id: string): QADoctorRule {
   } as unknown as QADoctorRule;
 }
 
+/**
+ * The baseline as the committed file now records it: the 45 rules that ship,
+ * with the PREVIOUS value left at 0 so the redefinition reads as growth.
+ *
+ * The `recordedAtSha` here is a fixture, not the file's — the assertions that
+ * care about the real one read `docs/ANTI-CREEP-BASELINE.json` directly.
+ */
 const BASELINE: AntiCreepBaseline = {
-  baselineCore: 0,
+  baselineCore: 45,
   previousBaselineCore: 0,
-  recordedAt: "2026-09-28",
+  recordedAt: "2026-10-01",
   recordedAtSha: "a806496160aeefe64c1795823f90b64cce582835",
 };
 
@@ -104,15 +112,35 @@ function asCore(id: string, extra: Partial<QADoctorRule> = {}): QADoctorRule {
   if (rule === undefined) throw new Error(`no rule ${id} in RULES`);
   return { ...rule, ...extra, tier: "core" };
 }
-describe("the launch set is the core tier, and the baseline is zero", () => {
-  it("the shipped tree is at the recorded baseline", () => {
-    const verdict = evaluateAntiCreep(RULES, BASELINE, NO_CHANGELOG);
-    expect(verdict.core).toBe(0);
-    expect(verdict.baseline).toBe(0);
-    expect(verdict.ok).toBe(true);
+describe("the launch set is the shipped set, and the baseline is 45", () => {
+  it("the shipped tree is the recorded count, and the growth is declared", () => {
+    // The launch set is every rule that ships by default — effective tier
+    // other than `quarantine` — which is 45 of 79. The core tier has been empty
+    // since 6.0, so the old predicate counted 0 rules while 45 shipped.
+    const shipped = RULES.filter(
+      (r) => effectiveTier(r) !== "quarantine",
+    ).length;
+    expect(shipped).toBe(45);
+
+    // With previousBaselineCore at 0, the move from 0 to 45 is growth — and it
+    // is legal only because the unreleased changelog entry declares it. So the
+    // no-changelog case is the one that must fail.
+    const undeclared = evaluateAntiCreep(RULES, BASELINE, NO_CHANGELOG);
+    expect(undeclared.core).toBe(shipped);
+    expect(undeclared.ok).toBe(false);
+    expect(undeclared.summary).toContain("net growth of 45");
+
+    const declared = evaluateAntiCreep(
+      RULES,
+      BASELINE,
+      `## Unreleased\n\n${ANTI_CREEP_EXCEPTION_MARKER}: the launch set was\n` +
+        "redefined from an empty core tier to the 45 rules that ship.\n",
+    );
+    expect(declared.ok).toBe(true);
+    expect(declared.core).toBe(shipped);
   });
 
-  it("the committed baseline file parses and says zero", () => {
+  it("the committed baseline file parses and records the shipped count", () => {
     // The baseline is a data file precisely so it cannot be edited as a side
     // effect of editing the check. Reading it here means a malformed edit is
     // a failing test rather than an INCONCLUSIVE doctor line nobody reads.
@@ -128,18 +156,25 @@ describe("the launch set is the core tier, and the baseline is zero", () => {
         "utf8",
       ),
     ) as AntiCreepBaseline;
-    expect(baseline.baselineCore).toBe(0);
+    expect(baseline.baselineCore).toBe(
+      RULES.filter((r) => effectiveTier(r) !== "quarantine").length,
+    );
+    // `previousBaselineCore` stays 0 so the redefinition shows as growth
+    // rather than as a legal no-op. The law compares against the PREVIOUS
+    // value precisely so that lowering the current one in the same edit cannot
+    // hide the change to what is governed.
+    expect(baseline.previousBaselineCore).toBe(0);
     expect(baseline.recordedAtSha).toMatch(/^[0-9a-f]{40}$/);
   });
 
   it("the absolute cap is a guard, not the law", () => {
-    // 65 with an empty tier is 65 free slots. This assertion exists to make
-    // the distinction explicit: if CORE_CAP is ever raised to "make room",
-    // the net-growth ratchet is the thing that still says no.
+    // 65 against a shipped set of 45 is 20 free slots. This assertion exists
+    // to make the distinction explicit: if CORE_CAP is ever raised to "make
+    // room", the net-growth ratchet is the thing that still says no.
     expect(CORE_CAP).toBe(65);
-    expect(evaluateAntiCreep(RULES, BASELINE, NO_CHANGELOG).core).toBeLessThan(
-      CORE_CAP,
-    );
+    expect(
+      evaluateAntiCreep(RULES, BASELINE, EXCEPTION_CHANGELOG).core,
+    ).toBeLessThan(CORE_CAP);
   });
 });
 
@@ -159,15 +194,28 @@ describe("net growth without a demotion is a failure", () => {
   it("a demotion of rules that were never in the tier is still growth", () => {
     // The law's actual shape: net growth ≤ 0. Two promotions and two
     // demotions is a legal rewrite of the launch set; the point is the NET.
+    //
+    // "In the tier" now means "ships by default", so a demotion is a move to
+    // `quarantine` — `extended` is IN the set, not outside it. Under the old
+    // predicate a rule re-typed `extended` left the count; under this one it
+    // does not, which is the whole point of the change.
     const rules = [
       coreRule("QA-PW-117"),
       coreRule("QA-PY-002"),
-      { ...coreRule("QA-JV-105"), id: "QA-JV-105", tier: "extended" as const },
-      { ...coreRule("QA-CS-102"), id: "QA-CS-102", tier: "extended" as const },
+      {
+        ...coreRule("QA-JV-105"),
+        id: "QA-JV-105",
+        tier: "quarantine" as const,
+      },
+      {
+        ...coreRule("QA-CS-102"),
+        id: "QA-CS-102",
+        tier: "quarantine" as const,
+      },
     ];
     const verdict = evaluateAntiCreep(
       rules,
-      { ...BASELINE, baselineCore: 0 },
+      { ...BASELINE, baselineCore: 0, previousBaselineCore: 0 },
       NO_CHANGELOG,
     );
     expect(verdict.core).toBe(2);
@@ -176,6 +224,30 @@ describe("net growth without a demotion is a failure", () => {
     // tier does not offset it. Asserted because it is the case that looks
     // legal and is not.
     expect(verdict.ok).toBe(false);
+  });
+
+  it("quarantine is the only demotion — extended is still in the launch set", () => {
+    // Pinned explicitly because it is the property the predicate change rests
+    // on, and because it is invisible in a test that only counts.
+    const asExtended = { ...coreRule("QA-PW-117"), tier: "extended" as const };
+    expect(
+      evaluateAntiCreep(
+        [asExtended],
+        { ...BASELINE, baselineCore: 1 },
+        NO_CHANGELOG,
+      ).core,
+    ).toBe(1);
+    const asQuarantine = {
+      ...coreRule("QA-PW-117"),
+      tier: "quarantine" as const,
+    };
+    expect(
+      evaluateAntiCreep(
+        [asQuarantine],
+        { ...BASELINE, baselineCore: 1 },
+        NO_CHANGELOG,
+      ).core,
+    ).toBe(0);
   });
 
   it("an exception marker in CHANGELOG.md makes growth legal", () => {
