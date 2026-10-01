@@ -71,6 +71,35 @@ export type RuleStatus =
  * The false-positive rate a rule must be able to defend at 95% confidence to
  * count as core. Applied to the Wilson UPPER bound, so a rule earns core by
  * proving its ceiling, not by reporting a point estimate under it.
+ *
+ * !! UNREACHABLE AT THE CURRENT CORPUS CAP — read this before trying to earn it.
+ *
+ * 10% on the upper bound needs **n >= 35 with ZERO false positives**, using
+ * this file's own `wilsonInterval`: 0/20 reads 16.1%, 0/30 reads 11.3%, 0/35
+ * reads 9.9%. The corpus samples at most 20 per rule
+ * (`MAX_SAMPLES_PER_RULE`, scripts/corpus-sample.ts:87), so the best a rule can
+ * look at that cap is 0/20 — and 16.1% is above this ceiling. Not "hard to
+ * reach": unreachable, for every rule, at every sample size the sampler can
+ * produce.
+ *
+ * The cap is bounded by the ADJUDICATION budget, not by statistics. Raising it
+ * to 40 previously produced 1,121 unadjudicated rows across 42 rules, which
+ * the committed ceiling refused outright — correctly, because blank verdict
+ * rows are dropped rather than counted, so a mostly-blank corpus reports a
+ * rate measured on whatever subset happened to be adjudicated. Raising the cap
+ * without the adjudication budget to fill it makes the gate stop complaining
+ * without adding evidence.
+ *
+ * So `MEASURED-CORE` in `RuleStatus` above, and `"core"` in `Rule.tier`, are
+ * states this corpus cannot produce. `tests/rules/core-tier-reachability.spec.ts`
+ * pins this with the arithmetic and fails LOUDLY the day it stops being true,
+ * so that opening the core tier becomes a deliberate event with a diff rather
+ * than something a future reader infers from a tier nobody holds.
+ *
+ * The two constants here were chosen independently and their product is
+ * unreachable. That is a product call, not an oversight to be tidied away: it
+ * is stated here so the next person does not spend a day earning a tier that
+ * cannot be earned.
  */
 export const CORE_FP_CEILING = 0.1;
 
@@ -78,6 +107,21 @@ export const CORE_FP_CEILING = 0.1;
  * The rate a rule must be able to defend at 95% confidence to be quarantined
  * on measurement alone. Applied to the Wilson LOWER bound: a rule is not
  * quarantined for looking bad on four samples.
+ *
+ * Also nearly inert at the corpus cap, in the other direction. At n=20 a rule
+ * needs **15 of 20 false positives (75% observed)** before the lower bound
+ * clears 50%: 14/20 reads 48.1%, 16/20 reads 58.4%. Exactly one rule in the
+ * registry clears it — `QA-ENV-001`, which was wrong 20 times out of 20. The
+ * worst of the rest is `QA-TEST-002` at 62%, which clears neither bound.
+ *
+ * Consequence, measured across all 79 live rules: `measurementTier` returns
+ * `core` for none of them, and `quarantine` for exactly one. The interval rule
+ * is not inert — it is all but unreachable, and the one rule it reaches is the
+ * one that was wrong every single time. That is why `rule.tier` is a THIRD
+ * floor rather than a duplicate of this: 33 of the 34 declared quarantines are
+ * held down by the declaration alone. See the `tier` doc in src/rules/rule.ts,
+ * `defensibleTier` below, and the arithmetic in
+ * `tests/rules/core-tier-reachability.spec.ts`.
  */
 export const QUARANTINE_FP_FLOOR = 0.5;
 

@@ -92,14 +92,36 @@ for these four is in this entry instead.
 ### The declared tier is a third floor, and now it has teeth
 
 B0 measured all 79 live rules against both existing derivations before anything
-was refactored. The result changed the shape of the work: the interval floor
-(`ciLow >= 50%` quarantines, `ciHigh <= 10%` promotes to core) quarantines
-**zero** rules and derives core for **none** of them, because neither threshold
-is reached at n = 10..80. **33 rules declare `quarantine` and would be promoted
-into the default scan if the declared `tier` field were deleted** — every one in
-the promoting direction, none the other way. Deleting the declared tiers is not
-a refactor; it ships 33 quarantined detectors, including the six CI rules the
+was refactored. The result changed the shape of the work.
+
+The interval floor is all but unreachable at the corpus sample cap, in both
+directions, and `tests/rules/core-tier-reachability.spec.ts` now pins the
+arithmetic with the product's own `wilsonInterval`:
+
+- **core is unreachable.** `ciHigh <= 10%` needs n >= 35 with ZERO false
+  positives — 0/20 reads 16.1%, 0/30 reads 11.3%, 0/35 reads 9.9%. The sampler
+  caps at 20 per rule, so the best a rule can look at that cap is 0/20, and
+  16.1% is above the ceiling. `MEASURED-CORE` in `RuleStatus` is a state this
+  corpus cannot produce. The cap is bounded by the adjudication budget, not by
+  statistics: raising it to 40 previously produced 1,121 unadjudicated rows
+  across 42 rules, which the committed ceiling refused outright — correctly,
+  because blank verdict rows are dropped rather than counted.
+- **quarantine needs a 75% error rate.** `ciLow >= 50%` first fires at 15 of 20
+  false positives; 14/20 reads 48.1%. Exactly one rule clears it:
+  `QA-ENV-001`, wrong 20 times out of 20. The worst of the rest,
+  `QA-TEST-002`, sits at 62% and clears neither bound.
+
+So **34 rules declare `quarantine`, and 33 of them would be promoted into the
+default scan if the declared `tier` field were deleted** — every one in the
+promoting direction, none the other way. Deleting the declared tiers is not a
+refactor; it ships 33 quarantined detectors, including the six CI rules the
 README's caught-by-default table marks advisory.
+
+The arithmetic corrects a summary I wrote first, and the spec caught it: I said
+the interval floor "quarantines zero rules". It quarantines one — `QA-ENV-001` —
+and B0's own table had said so throughout, under a declared column that
+happened to agree with it. The declared count is 34, not 33; 33 is the number of
+rules held down by the declaration alone.
 
 So the declared tier stays, stated for what it is: a floor stricter than both
 derivations, and currently the only thing holding those 33 rules out of a

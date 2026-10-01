@@ -196,22 +196,28 @@ export interface RuleMeta {
    * B0 measured what the first two do to this registry, and the result is the
    * reason this field exists rather than being deleted:
    *
-   *   - The INTERVAL floor quarantines **zero** of the 79 rules. `ciLow >= 50%`
-   *     almost never holds at n = 10..80, so on this corpus it is an empty
-   *     rule, not a decision.
-   *   - No rule derives CORE. `ciHigh <= 10%` is not reached at these sample
-   *     sizes either.
-   *   - **33 rules declare `quarantine` and would be PROMOTED into the default
-   *     scan if this field were deleted.** Every one of the 33 moves in the
-   *     promoting direction and none moves the other way.
+   *   - The INTERVAL floor quarantines **exactly one** of the 79 rules:
+   *     `QA-ENV-001`, which was wrong 20 times out of 20. `ciLow >= 50%`
+   *     needs 15 of 20 false positives to fire, so the worst of the rest
+   *     (`QA-TEST-002`, 62%) clears neither bound.
+   *   - No rule derives CORE. `ciHigh <= 10%` needs n >= 35 with zero false
+   *     positives and the sampler caps at 20, where even 0/20 reads 16.1%.
+   *     The arithmetic is in `tests/rules/core-tier-reachability.spec.ts`.
+   *   - **34 rules declare `quarantine`, and 33 of them would be PROMOTED into
+   *     the default scan if this field were deleted** — every one of the 33
+   *     moves in the promoting direction and none moves the other way.
    *
-   * So this field is a THIRD floor, stricter than both derivations, and it is
-   * currently the only thing holding those 33 rules out of a default scan.
-   * That is why deleting the declared tiers is not a refactor: it ships 33
-   * quarantined detectors — including the six CI rules the README's
+   * So this field is a THIRD floor, stricter than both derivations, and for 33
+   * of the 34 quarantined rules it is the ONLY thing holding them out of a
+   * default scan. That is why deleting the declared tiers is not a refactor: it
+   * ships 33 quarantined detectors — including the six CI rules the README's
    * caught-by-default table marks advisory — as ordinary findings.
    *
-   * THE INVARIANT, enforced by `checkDeclaredTierMayOnlyTighten`: a declared
+   * THE INVARIANT, enforced by the tightening law in
+   * `tests/rules/registry-ratchet.spec.ts` (not by
+   * `checkDeclaredTierMayOnlyTighten`, which does not exist — the first
+   * version of this comment named a function that was never written, which is
+   * the same defect as a spec pointing at a deleted file): a declared
    * tier may only ever hold a rule DOWN. Quarantining a well-measured rule is
    * permitted (conservative, costs a reader a `--strict` flag); shipping a
    * badly-measured rule is not (it hands a user a finding the corpus says is
