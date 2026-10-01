@@ -25,7 +25,9 @@
       "importedBy": [],
       "imported": false,
       "shipped": false,
-      "testedBy": [],
+      "testedBy": [
+        "tests/contract/carve-manifest.spec.ts"
+      ],
       "disposition": {
         "action": "KEEP",
         "reason": "Not yet adjudicated. The facts beside it are the evidence; the decision is a reviewable edit to this file."
@@ -114,7 +116,7 @@
       }
     },
     "src/ledger/m26-validators.ts": {
-      "lines": 2926,
+      "lines": 2923,
       "exports": 43,
       "importedBy": [
         "scripts/check-m26-ledgers.ts",
@@ -353,8 +355,7 @@
         "scripts/v6/check-ecosystem.ts",
         "scripts/v6/ecosystem-census.ts",
         "scripts/v6/inventory.ts",
-        "src/v6/ecosystem-probe.ts",
-        "src/v6/tool-coverage.ts"
+        "src/v6/ecosystem-probe.ts"
       ],
       "imported": true,
       "shipped": true,
@@ -364,8 +365,7 @@
         "tests/v6/ecosystem-census.spec.ts",
         "tests/v6/ecosystem-probe.spec.ts",
         "tests/v6/schemas.spec.ts",
-        "tests/v6/test-doubles.spec.ts",
-        "tests/v6/tool-coverage.spec.ts"
+        "tests/v6/test-doubles.spec.ts"
       ],
       "disposition": {
         "action": "KEEP",
@@ -470,15 +470,13 @@
       "importedBy": [
         "scripts/v6/check-qa-ir-parity.ts",
         "src/v6/qa-ir-parity.ts",
-        "src/v6/test-doubles.ts",
-        "src/v6/tool-coverage.ts"
+        "src/v6/test-doubles.ts"
       ],
       "imported": true,
       "shipped": false,
       "testedBy": [
         "tests/v6/qa-ir.spec.ts",
-        "tests/v6/test-doubles.spec.ts",
-        "tests/v6/tool-coverage.spec.ts"
+        "tests/v6/test-doubles.spec.ts"
       ],
       "disposition": {
         "action": "KEEP",
@@ -488,28 +486,11 @@
     "src/v6/test-doubles.ts": {
       "lines": 221,
       "exports": 9,
-      "importedBy": [
-        "src/v6/tool-coverage.ts"
-      ],
-      "imported": true,
-      "shipped": false,
-      "testedBy": [
-        "tests/v6/test-doubles.spec.ts"
-      ],
-      "disposition": {
-        "action": "KEEP",
-        "reason": "Not yet adjudicated. The facts beside it are the evidence; the decision is a reviewable edit to this file."
-      }
-    },
-    "src/v6/tool-coverage.ts": {
-      "lines": 252,
-      "exports": 8,
       "importedBy": [],
       "imported": false,
       "shipped": false,
       "testedBy": [
-        "tests/contract/carve-manifest.spec.ts",
-        "tests/v6/tool-coverage.spec.ts"
+        "tests/v6/test-doubles.spec.ts"
       ],
       "disposition": {
         "action": "KEEP",

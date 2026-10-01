@@ -106,12 +106,12 @@ const COMMITTED = {
   "src/change-intelligence.ts":
     "GAP — the diff-scoped affected-path computation (M37). It is NOT a small wiring job: `calculateAffectedPaths` takes `ChangeRecord[]`, and nothing in the tree builds those. They need a git diff turned into SEMANTIC and DEPENDENCY records, which means a dependency graph the scanner does not have. `src/scope/changed.ts` computes which files a PR touched, which is coarser and is what the diff-scoped comment uses today.\n\n" +
     'An earlier commit here said "6.0 wires it" and that was not done. The reason is the size of the work, and the honest description of an unwired module is the one above rather than a promise.',
-  "src/v6/tool-coverage.ts":
-    "ORPHAN — the tool-coverage v6 check. Its only would-be caller (test-doubles) is itself an orphan, so the pair is dead as a unit.",
   "src/store/legacy-import.ts":
     "ORPHAN — imports a legacy evidence store. The store it imports is reachable only from here, so neither has a caller.",
-  "src/scorer/scoring-validation.ts":
-    "ORPHAN — scoring self-validation. Nothing runs it, so the scoring model has no runtime check.",
+  "src/v6/test-doubles.ts":
+    "ORPHAN — the false-proof detector, and the module this product is named after. Its only importer was `src/v6/tool-coverage.ts`, deleted as dead: so nothing in `src/` or `scripts/` has called this since. Only tests do.\n\n" +
+    "It is listed rather than deleted deliberately. The defect it detects — a test whose every assertion is about its own mock — is the product's thesis, and a thesis module that is unwired is a product gap, not a cleanup candidate. Deleting it would make the gap invisible rather than gone, and re-deriving it would be more code than keeping it. The 2026-10 fix that made `DOUBLE_ONLY` require a double landed here, on a module no scan reaches: the logic is now right, and the wiring is still owed.\n\n" +
+    'Wire it to a surface that renders `assessDoubleRisk` per test. Until then the honest state is "this detector does not run".',
   "src/rules/families/flaky-patterns.ts":
     "ORPHAN — a rule family with no registrar. Its siblings (assertion-quality, test-independence) are reachable; this one is not.",
   "src/rules/families/marker-registry.ts":

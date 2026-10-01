@@ -11,6 +11,43 @@ once shipped, so this file is the record of what changed between versions.
 
 ## [Unreleased]
 
+### Deletions, and one that was hiding another
+
+- **`src/v6/tool-coverage.ts` deleted.** `ScanResult.toolCoverage` was declared
+  and never assigned by anything — no assignment exists in `src/` or `scripts/`
+  — so the block it assembled reached no surface, no report and no contract.
+  Its header claimed "the census gap list shrinks by 15 real entries"; that
+  reduction comes from `NOT_QA_TOOLING` in `ecosystem-census.ts`, which
+  classifies names regardless of who calls it. The module contributed nothing to
+  it. Recorded as a `DELETE` disposition in `docs/CARVE-MANIFEST.json` with that
+  evidence, rather than dropped from the record.
+- **Deleting it exposed a second gap.** Its only importer was
+  `src/v6/test-doubles.ts` — the false-proof detector, the module this product
+  is named after. Nothing in `src/` or `scripts/` has called it since. That is
+  now an explicit entry on the committed orphan list with the reason, rather
+  than a fact hidden by a dead import edge. The `DOUBLE_ONLY`/`TRUTHY` fix
+  landed on it in this release, so the logic is right and the wiring is still
+  owed. It is listed, not deleted: a thesis module that is unwired is a
+  product gap, and deleting it would make the gap invisible rather than gone.
+- **`src/scorer/scoring-validation.ts` deleted.** An orphan that documents four
+  scoring invariants and implements two, one of them vacuous. It also carried a
+  duplicate `SCORING_MODEL_VERSION` — `contract-versions.ts` owns that
+  constant and `scan-pipeline.ts` reads it from there. Fixing and wiring it
+  would have been strictly more code than deleting a module nothing runs.
+- **`--policy` no longer prints a scoring formula.** It read
+  `score = 100 · (1 − deductions / (findings + NORMALIZATION_K))`, which
+  contradicts `scorer.ts` on four counts: the denominator is test
+  _declarations_, not findings; `SMOOTHING_C` is missing from it;
+  `NORMALIZATION_K` multiplies the rate rather than sitting in the denominator;
+  and the `min(100, …)` cap is absent, so the line described a score that can go
+  negative. A table whose header says "every number here is imported, never
+  written down" was carrying a formula written by hand, and it was wrong. It now
+  names `docs/SCORING.md` and `scorer.ts` instead — a restated formula is the
+  same defect one layer over, and it drifts the first time the scorer changes.
+- **Three empty imports removed from `src/commands/milestone.ts`** —
+  `import {} from …` on three modules, which asserted a dependency the file
+  does not have.
+
 ### One path check, three callers: a claim that names a deleted file is now a failed check
 
 Every artifact claim in this repository is a path inside a file — a

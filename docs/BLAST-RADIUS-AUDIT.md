@@ -7,19 +7,19 @@ contract enforces: **every external import in src/ must belong to the
 allowlist**, and the shipped surface (adapters, rules, flags, formats, exit
 codes) must match this document exactly.
 
-## Inventory: 310 files, 75952 LOC
+## Inventory: 308 files, 75553 LOC
 
 | Area              | Files | LOC   |
 | ----------------- | ----- | ----- |
 | src/rules         | 89    | 12997 |
 | src/engine        | 44    | 12061 |
-| src/commands      | 33    | 11513 |
-| src/v6            | 11    | 6450  |
-| src/(root)        | 8     | 3824  |
+| src/commands      | 33    | 11510 |
+| src/v6            | 10    | 6199  |
+| src/(root)        | 8     | 3812  |
 | src/reporter      | 13    | 3641  |
 | src/forensics     | 17    | 3067  |
-| src/ledger        | 1     | 2925  |
-| src/certification | 6     | 2629  |
+| src/ledger        | 1     | 2922  |
+| src/certification | 6     | 2630  |
 | src/frameworks    | 5     | 2015  |
 | src/discovery     | 10    | 1817  |
 | src/adapters      | 11    | 1778  |
@@ -30,10 +30,10 @@ codes) must match this document exactly.
 | src/brand         | 3     | 817   |
 | src/plugins       | 4     | 715   |
 | src/store         | 2     | 665   |
-| src/scorer        | 4     | 634   |
 | src/lib           | 8     | 600   |
 | src/bench         | 4     | 592   |
 | src/config        | 3     | 559   |
+| src/scorer        | 3     | 503   |
 | src/traceability  | 2     | 441   |
 | src/scope         | 2     | 427   |
 | src/trust         | 2     | 362   |
@@ -46,12 +46,12 @@ codes) must match this document exactly.
 
 | Module                          | Importers |
 | ------------------------------- | --------- |
-| src/types                       | 125       |
+| src/types                       | 124       |
 | src/rules/rule                  | 82        |
 | src/rules/shared/positions      | 62        |
 | src/cli-io                      | 20        |
 | src/lib/safe-json               | 19        |
-| src/lib/compare                 | 19        |
+| src/lib/compare                 | 18        |
 | src/forensics/types             | 18        |
 | src/rules/index                 | 16        |
 | src/reporter/ui                 | 15        |
