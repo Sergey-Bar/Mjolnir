@@ -12,9 +12,9 @@ Mjölnir is a verification trust engine (TypeScript, ESM, Node >= 22.18). `npx m
 
 ## Laws
 
-1. **Anti-creep law:** every addition to the launch set requires an equal-size removal.
+1. **Anti-creep law:** every addition to the launch set requires an equal-size removal. The launch set is every rule that ships by default — effective tier other than `quarantine` (45 of 79 today), not the empty core tier.
 2. **Fixture firewall:** every rule MUST have fixtures that must-fire AND must-not-fire (`tests/fixtures/<RULE-ID>/`). A rule without both fixture classes is not done.
-3. **North-star metric:** false-proof rate ≈ 0. Never weaken a must-not-fire fixture to make tests pass.
+3. **North-star metric:** false-proof rate ≈ 0. Never weaken a must-not-fire fixture to make tests pass. Rules without a measured FP rate (n ≥ 10) cannot ship in the core tier.
 
 ## Conventions
 

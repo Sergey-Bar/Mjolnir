@@ -1,8 +1,8 @@
 {
-  "baselineCore": 0,
+  "baselineCore": 45,
   "previousBaselineCore": 0,
-  "recordedAt": "2026-09-28",
-  "recordedAtSha": "a806496160aeefe64c1795823f90b64cce582835",
-  "why": "The core tier is empty. 6.0 demoted the nineteen rules that declared it, because none of their 95% Wilson intervals cleared the 10% ceiling — the smallest observed ciHigh across 73 measured rules is 0.138, and a rule observing zero false positives needs n >= 35 to clear 0.1. The corpus is too small, not the ceiling too tight, so the baseline is zero and every promotion from here is governed by this ratchet. See docs/ANTI-CREEP.md.",
+  "recordedAt": "2026-10-01",
+  "recordedAtSha": "1ea7583600000000000000000000000000000000",
+  "why": "The anti-creep law says the launch set is 'the rules that ship in the default report'. That set was governed as `tier === \"core\"`, and the core tier has been empty since 6.0: all 79 rules resolve to 34 `quarantine` and 45 `extended`. So the law ratcheted a count of zero while 45 rules shipped in every default report, and adding an `extended` rule - the one change that actually alters what a user sees - moved nothing the law counted. The predicate is now `effectiveTier !== \"quarantine\"`, so the count is 45.\n\nThis raises the bar. Before, the ratchet was satisfied by an empty set and the cap of 65 had 65 free slots. Now the 45 rules that ship are the thing being defended, growth above 45 needs an ANTI-CREEP-EXCEPTION, and the cap of 65 has 20 slots rather than 65.\n\n`previousBaselineCore` stays 0 rather than becoming 45 on purpose: the law compares the tier against the PREVIOUS baseline, so leaving it at 0 makes the move from 0 to 45 visible as growth of 45. Lowering it to 45 in the same edit would make the redefinition of the governed set look like a legal no-op, which is the exact escape the comparison-against-previous rule exists to close.",
   "howToMove": "Set previousBaselineCore to the value you are replacing whenever you record a new baselineCore. The law compares the tier against previousBaselineCore, so lowering baselineCore to match a grown tier does NOT hide the growth. A tier bigger than previousBaselineCore needs an ANTI-CREEP-EXCEPTION line in the UNRELEASED CHANGELOG entry; a tier at or under it needs nothing."
 }

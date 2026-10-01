@@ -114,4 +114,7 @@ happen to have been sampled.
 ## Coverage: 73/79 rules measured (92%) at n ≥ 10
 
 **6 rules carry no measured FP rate.** Any of them in the
-core tier is shipping on an unverified assumption.
+core tier is shipping on an unverified assumption. The anti-creep
+law governs the launch set — every rule that ships by default, which
+is 45 of the 79, effective tier other than `quarantine` — while this
+requirement stays scoped to the core tier, which is currently empty.

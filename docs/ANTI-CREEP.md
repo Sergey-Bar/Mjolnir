@@ -4,19 +4,36 @@
 removal.** This file records what the launch set is, how the law is executed,
 and the one number a change has to move to make a promotion legal.
 
-## The launch set is the core tier
+## The launch set is the shipped set, not the core tier
 
 The law said "the launch set" and named nothing. Three candidates existed:
 
-| Candidate          | Count | Why it is not the answer                                                                                                                   |
-| ------------------ | ----: | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| All live rules     |    79 | Counting every rule makes the law unfalsifiable — nothing is ever removed                                                                  |
-| Rules that gate CI |     0 | Quarantine findings are capped to `info`/`E0` by `src/engine/tier-policy.ts`, so they never gate. A set of zero cannot be grown by removal |
-| **The core tier**  | **0** | **The rules that ship in the default report**                                                                                              |
+| Candidate          | Count | Verdict                                                                                                                                             |
+| ------------------ | ----: | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| All live rules     |    79 | Counting every rule makes the law unfalsifiable — nothing is ever removed                                                                           |
+| Rules that gate CI |     0 | Quarantine findings are capped to `info`/`E0` by `src/engine/tier-policy.ts`, so they never gate. A set of zero cannot be grown by removal          |
+| The core tier      |     0 | **Was the answer, and was wrong.** The core tier has been empty since 6.0, so "the rules that ship in the default report" resolved to a set of zero |
 
-The core tier is the launch set. "Ships by default" is what makes the law
-mean something: adding a rule to the default report adds a claim to every
-user's first scan, and the law is the mechanism for noticing.
+The third row was chosen for the right reason and landed on the wrong set. The
+reasoning above it was correct — "ships by default" is what makes the law mean
+something, because adding a rule to the default report adds a claim to every
+user's first scan — and `tier === "core"` was the wrong _test_ for it. All 79
+rules resolve to 34 `quarantine` and 45 `extended`, so the law governed zero
+rules while 45 shipped in every default report, and adding an `extended` rule —
+the one change that alters what a user sees — moved nothing the law counted.
+
+The predicate is now `effectiveTier !== "quarantine"`, which is the question the
+law was always asking. The count is **45**, so the second cap has a real number
+to compare against and the first has 20 free slots instead of 65.
+
+Two consequences worth being explicit about:
+
+- This **raises** the bar. The ratchet now defends the 45 rules users actually
+  get, and growth above 45 needs an `ANTI-CREEP-EXCEPTION`.
+- Law 3 (north-star, `CLAUDE.md`) still governs the core tier for its ≥10
+  verdict requirement. Moving that to the shipped set would fail the check on
+  all 45 rules at once, which is a policy decision rather than a defect; it is
+  an open question for the law's owner, not something this change settled.
 
 ## Two caps, not one
 
@@ -30,9 +47,9 @@ A catastrophe guard, exactly like the 80% coverage floor in
 repository and does not need to be; it exists so a change that promotes a
 whole category at once cannot pass unnoticed.
 
-It is currently **vacuous in both directions**: the tier holds zero rules, so
-65 slots are free. That is the honest state, and the second cap exists because
-a guard that has never fired is not a policy.
+With the launch set at 45 it has 20 free slots. It was previously vacuous in
+both directions — a set of zero left all 65 free — and a guard that has never
+fired is not a policy.
 
 ### 2. The net-growth ratchet — `docs/ANTI-CREEP-BASELINE.json`
 
@@ -41,12 +58,16 @@ commit, plus **its own previous value**:
 
 ```json
 {
-  "baselineCore": 0,
+  "baselineCore": 45,
   "previousBaselineCore": 0,
-  "recordedAt": "2026-09-28",
-  "recordedAtSha": "a806496160aeefe64c1795823f90b64cce582835"
+  "recordedAt": "2026-10-01"
 }
 ```
+
+`previousBaselineCore` is 0 rather than 45 on purpose. The law compares against
+the _previous_ baseline, so leaving it at 0 keeps the move from 0 to 45 visible
+as growth of 45; setting it to 45 in the same edit would make a redefinition of
+the governed set read as a legal no-op.
 
 A pull request that leaves the tier bigger than the **previous** baseline
 fails. It passes when either of the following is true:
@@ -83,6 +104,13 @@ the top `## ` entry: a changelog is a sequence of releases and a growth claim
 is made in a release, so a marker has to survive exactly until its release is
 cut.
 
+That first promotion has now happened, and it was not a promotion: it was the
+redefinition of the governed set from an empty core tier to the 45 shipping
+rules. The ratchet reports growth of 45 against a previous baseline of 0, and
+the unreleased changelog entry carries the `ANTI-CREEP-EXCEPTION` that makes it
+legal — with the reason, which is that the 45 rules already shipped and the law
+simply was not counting them.
+
 ## What this does not do
 
 It does not decide which rules _ought_ to be in core. That is a measured
@@ -96,8 +124,15 @@ question, and it is answered by the corpus rather than by a cap:
 - The minimum `ciHigh` across all 73 measured rules is **0.138**. Zero rules
   earn core today.
 
-So the tier is empty, and the ratchet above is the mechanism that governs the
-_next_ promotion. The queue of candidates is
+So the core tier is empty, and the 45 rules that ship are `extended` — which is
+a _different_ fact from the one the law needs to do its job, and worth stating
+plainly because they used to be conflated. "Shipped by default" and "earned
+core" are not the same claim. The first is where the rules are; the second is
+whether the corpus clears them for a tier the product reserves for its
+strongest detectors. The law above now guards the first; the measurement
+question above still governs the second, and zero rules clear it.
+
+The queue of candidates is
 [`docs/CORE-READINESS.md`](CORE-READINESS.md), generated by
 `npm run docs:core-readiness`.
 
@@ -106,9 +141,14 @@ _next_ promotion. The queue of candidates is
 Down as a consequence of a demotion — set `baselineCore` to the new size and
 `previousBaselineCore` to the size you are replacing, in the same commit. Up
 only alongside an `ANTI-CREEP-EXCEPTION` line in the same unreleased
-`CHANGELOG.md` entry that explains the promotion, which for a core promotion
-means an unexpired `corePromotion` record on the rule (`src/rules/rule.ts`),
-naming a human who owns the claim and a date the claim expires.
+`CHANGELOG.md` entry that explains the promotion.
+
+Up is now a real possibility rather than a hypothetical. With the launch set at
+45, adding one more non-quarantine rule is growth of 1 against a previous
+baseline of 45, which needs a marker and a reason — and a rule moving out of
+`extended` into `quarantine` is how the set shrinks. That is the mechanism the
+law was written to provide, and it is finally pointed at a set large enough for
+it to do anything.
 
 The check reports the count and the ids currently in the tier, which together
 answer "what moved". It does not report a membership DIFF: the baseline is a

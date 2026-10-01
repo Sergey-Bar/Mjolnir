@@ -579,6 +579,19 @@ export function checkTierEnforcement(
     for (const [id, n] of live) classifiedPerRule.set(id, n);
   }
 
+  // DELIBERATELY still `=== "core"`, not `inLaunchSet`.
+  //
+  // This is law 3 (north-star) — "rules without a measured FP rate cannot ship
+  // in the core tier" — and law 1 now governs the shipped set, so the two
+  // check different sets on purpose. Applying `inLaunchSet` here would put all
+  // 45 shipping rules through the ≥10-verdict requirement and fail the check
+  // immediately; that is a policy decision about what the product may ship, not
+  // a defect in the check, and it is recorded as an open question rather than
+  // taken unilaterally.
+  //
+  // What is NOT acceptable is the state this was in silently: the check had a
+  // cap of 0 and an empty set, so it passed by having nothing to say, and the
+  // next promotion would have arrived with it already green.
   const coreRules = rules.filter((r) => effectiveTier(r) === "core");
   // `promotedBy` is the reason this check is not vacuous. The 6.0 demotion
   // emptied core, so "every core rule has ≥10 verdicts" had nothing to say:
@@ -641,16 +654,44 @@ export function checkTierEnforcement(
 }
 
 /**
- * The absolute core-tier cap (Phase 7 — Tempering Plan).
+ * The absolute cap on the launch set (Phase 7 — Tempering Plan).
  *
  * A catastrophe guard, and NOT the anti-creep law. `docs/ANTI-CREEP.md` records
- * why the distinction matters: an absolute cap alone leaves 65 free slots and
- * lets the launch set grow without limit, which is the opposite of "every
- * addition requires an equal-size removal". The net-growth ratchet in
- * `checkAntiCreep` is the law; this is the ceiling above it, exactly as the
- * 80% coverage floor sits below the coverage high-water ratchet.
+ * why the distinction matters: an absolute cap alone leaves free slots and lets
+ * the launch set grow without limit, which is the opposite of "every addition
+ * requires an equal-size removal". The net-growth ratchet in `checkAntiCreep`
+ * is the law; this is the ceiling above it, exactly as the 80% coverage floor
+ * sits below the coverage high-water ratchet.
  */
 export const CORE_CAP = 65;
+
+/**
+ * Is this rule in the launch set — the rules that ship in the DEFAULT report?
+ *
+ * NOT `effectiveTier(r) === "core"`. That predicate named a set the law's own
+ * prose does not describe. The anti-creep law says the launch set is "the rules
+ * that ship in the default report", and the answer to that is every rule the
+ * quarantine filter does not remove: `effectiveTier !== "quarantine"`.
+ *
+ * Those were the same question with two different answers, and only one of them
+ * described the product. The core tier has been empty since 6.0 — all 79 rules
+ * resolve to 34 `quarantine` and 45 `extended` — so the law governed zero rules
+ * while 45 shipped in every default report. Adding a new `extended` rule, the
+ * one move that actually changes what a user sees, moved nothing the law
+ * counted. A cap over a set that is not the shipped product cannot be creep.
+ *
+ * So the predicate is the shipped set, and the numbers move with it: 45 rules
+ * are now ratcheted, against a baseline recorded in
+ * `docs/ANTI-CREEP-BASELINE.json`. That is a HIGHER bar, not a lower one — the
+ * thing being defended is what users get.
+ *
+ * A rule that declares `core` but fails `checkCorePromotion` resolves to
+ * `extended` through `effectiveTier`, and is still in the launch set, which is
+ * correct: it ships.
+ */
+function inLaunchSet(rule: QADoctorRule): boolean {
+  return effectiveTier(rule) !== "quarantine";
+}
 
 /**
  * Net-growth ratchet for the anti-creep law.
@@ -689,6 +730,19 @@ export interface AntiCreepBaseline {
   previousBaselineCore?: number;
   recordedAt: string;
   recordedAtSha: string;
+  /**
+   * Why this number, in prose.
+   *
+   * Present in the committed file and absent from this interface, which is the
+   * wrong way round: a baseline is a RECORD — a count plus the reasoning that
+   * produced it — and a type that only knows the count lets a future edit
+   * replace the reasoning with a bare number without the compiler objecting.
+   * The number gets adjusted to make the check pass; the prose is what makes
+   * that reviewable.
+   */
+  why?: string;
+  /** How to move it without defeating the check. */
+  howToMove?: string;
 }
 
 export interface AntiCreepVerdict {
@@ -778,7 +832,7 @@ export function evaluateAntiCreep(
   baseline: AntiCreepBaseline | null,
   changelog: string,
 ): AntiCreepVerdict {
-  const core = rules.filter((r) => effectiveTier(r) === "core");
+  const core = rules.filter(inLaunchSet);
   const ids = core.map((r) => r.id).sort();
   const exceptionPresent = exceptionInUnreleasedChangelog(changelog);
 
@@ -849,14 +903,14 @@ export function checkAntiCreep(
   const details: string[] = [];
   let ok = true;
 
-  const coreRules = rules.filter((r) => effectiveTier(r) === "core");
+  const coreRules = rules.filter(inLaunchSet);
   const count = coreRules.length;
 
   if (count > CORE_CAP) {
     ok = false;
     details.push(
-      `Core tier has ${count} rules — exceeds cap of ${CORE_CAP}. ` +
-        `Promoting a rule to core requires demoting another first.`,
+      `Launch set has ${count} rules - exceeds cap of ${CORE_CAP}. ` +
+        `Adding a rule that ships by default requires quarantining one first.`,
     );
     // List the rules over the cap, so the reader can see which to demote.
     //
@@ -883,7 +937,7 @@ export function checkAntiCreep(
     }
   } else {
     details.push(
-      `Absolute cap: core tier ${count}/${CORE_CAP} (${CORE_CAP - count} slots available)`,
+      `Absolute cap: launch set ${count}/${CORE_CAP} (${CORE_CAP - count} slots available) - the rules that ship by default`,
     );
   }
 

@@ -11,6 +11,40 @@ once shipped, so this file is the record of what changed between versions.
 
 ## [Unreleased]
 
+### The anti-creep law now governs the rules that actually ship
+
+`ANTI-CREEP-EXCEPTION` — the law's own mechanism for a growth that is not a
+creep. The launch set is redefined from `tier === "core"` to
+`effectiveTier !== "quarantine"`, which is what the law has always said it
+covers ("the rules that ship in the default report"). That is **45 rules, not
+0**: the core tier has been empty since 6.0, with all 79 rules resolving to 34
+`quarantine` and 45 `extended`.
+
+The ratchet therefore reports growth of 45 against a previous baseline of 0,
+and this line is the reason. It is not new surface area — every one of those 45
+rules already shipped; the law simply was not counting them. What changes is the
+bar: growth above 45 now needs one of these markers, and `CORE_CAP`'s 65 leaves
+20 free slots rather than 65.
+
+- **`docs/ANTI-CREEP-BASELINE.json`** records `baselineCore: 45` with
+  `previousBaselineCore` left at **0** deliberately. The law compares the tier
+  against the _previous_ baseline, so leaving it at 0 keeps the move from 0 to
+  45 visible as growth; setting it to 45 in the same edit would make a
+  redefinition of the governed set look like a legal no-op, which is the exact
+  escape that rule exists to close.
+- **Law 3 (north-star) keeps governing the core tier, on purpose.** The ≥10
+  verdict requirement is enforced against `tier === "core"` and was not moved to
+  the shipped set: applying it to 45 rules would fail the check on day one. That
+  is a policy decision about what the product may ship, not a defect, so it is
+  recorded here rather than taken unilaterally. The open question — does the
+  ≥10 requirement apply to the shipped set or the core tier? — is unresolved and
+  belongs to the law's owner.
+- `CORE_CAP` stays at 65 and `MAX_SAMPLES_PER_RULE` stays at 20. Both are
+  deliberate; the corpus sampler's in-source rationale (`scripts/corpus-sample.ts`)
+  records why raising the cap produced 1,121 unadjudicated rows that the
+  committed ceiling refused. The defect was never the constants — it was that
+  the law measured a set of zero.
+
 ### Single-site corrections, and one key that matched nothing
 
 - **`FRAMEWORK_FAMILY.selenium` and `SLUG_TO_FAMILY.selenium` were `"QA-SEL"`.**
