@@ -11,6 +11,52 @@ once shipped, so this file is the record of what changed between versions.
 
 ## [Unreleased]
 
+### Four unwired modules deleted, two of them second implementations of live ones
+
+C1, the orphan list. Deleting an unwired module is only safe when the reason says
+_why it is dead now_ rather than _what defect it was written for_ — and four of
+the reasons were describing a world that no longer existed.
+
+- **`src/release/pack-audit.ts`** — `scripts/pack-audit.mjs` is what
+  `stable-release.yml` runs, and `tests/contract/pack-audit.spec.ts` proves
+  _that script_ can fire on every forbidden shape and stay silent on the
+  shipped one. An unused copy of the audit is a second answer to "what is a
+  forbidden tarball entry", and only the copy with a gate behind it would ever
+  have been exercised.
+- **`src/release/sbom.ts`** — same shape. `scripts/generate-sbom.mjs` produces
+  and checksums the SBOM the release attaches.
+- **`src/integrations/github/github-permissions.ts`** — validated a token
+  before publishing a PR comment. **There is no PR comment publisher in
+  `src/`**: the `pr-comment` verb went with the v6 carve. Its recorded reason
+  also cited D5 ("the generated workflow inherited the default token scope"),
+  which was fixed by emitting `permissions: contents: read` in both
+  `ci-adapter.ts` and `ci-install.ts` — without this module. The defect was
+  real, the fix did not go through here, and the reason outlived both.
+- **`src/integrations/github/stale-guard.ts`** — enforced TI-020, that an
+  artifact carries the head SHA it was produced for. Same missing publisher.
+
+Kept, with their reasons corrected to state what is actually true:
+`release/provenance.ts` and `release/reproducibility.ts` (the release gets
+provenance from `npm publish --provenance`, a different mechanism; a named
+release property nothing here verifies is a gap, and deleting the only code
+that would verify it converts a gap into an absence), `commands/registry.ts`
+and `engine/command-registry.ts` (three descriptions of one verb list, one
+authoritative — the clearest derived-fact-twice instance in the tree),
+`discovery/ecosystem-detection.ts`, the two `bench/` modules,
+`change-intelligence.ts`, `store/legacy-import.ts`, `v6/test-doubles.ts`, and
+the ten barrels. Orphan count 25 → 21.
+
+**A gap in the gate that authorises these deletions.**
+`docs/CARVE-MANIFEST.json` is exactly the right mechanism — facts generated,
+dispositions hand-written and preserved, and `--check` failing on any file that
+left the tree without a DELETE disposition. It caught these four on the first
+run and named them. But regeneration rebuilds the manifest from the files that
+_exist_, so a DELETE disposition disappears the moment the file it describes is
+gone: the gate reports "2 already removed" for exactly one run, and then the
+reason is no longer in the repository. A manifest whose purpose is to hold the
+human decision should keep a tombstone for it; this one does not. The reasoning
+for these four is in this entry instead.
+
 ### The declared tier is a third floor, and now it has teeth
 
 B0 measured all 79 live rules against both existing derivations before anything

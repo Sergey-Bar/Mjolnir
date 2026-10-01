@@ -2,7 +2,7 @@
 
 **Generated — do not edit by hand.** Regenerate: `npm run docs:v6-inventory`.
 
-Baseline commit `7459c1283e0fe59e074ca9bec43ba620de6b1b4d` · package version `5.1.0` · published stable `5.1.0`.
+Baseline commit `309d744d3be3d0515b0674a023c958ff15cf11cd` · package version `5.1.0` · published stable `5.1.0`.
 
 This is the truth baseline v6 is built on. It is deliberately blunt: the
 interesting part of a current-state inventory is what the product _cannot_
@@ -30,8 +30,8 @@ demonstrate, not what it contains.
 | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------- |
 | Package version                 | `5.1.0`                                                                                                                                 | `package.json`                          |
 | Published stable                | `5.1.0`                                                                                                                                 | `package.json`                          |
-| Source files (`src/**.ts`)      | 298                                                                                                                                     | derived                                 |
-| Test specs (`tests/**.spec.ts`) | 673                                                                                                                                     | derived                                 |
+| Source files (`src/**.ts`)      | 294                                                                                                                                     | derived                                 |
+| Test specs (`tests/**.spec.ts`) | 668                                                                                                                                     | derived                                 |
 | Live rules                      | 79                                                                                                                                      | `src/rules/index.ts`                    |
 | Retired rule ids (preserved)    | 22                                                                                                                                      | `RETIRED_RULE_IDS`                      |
 | Rules with a valid measurement  | 73                                                                                                                                      | `MEASURED_FP` + `detectorRev`           |
@@ -57,10 +57,10 @@ demonstrate, not what it contains.
 - `src/adapters/` — 11
 - `src/discovery/` — 10
 - `src/v6/` — 10
-- `src/integrations/` — 9
 - `src/lib/` — 9
-- `src/release/` — 7
+- `src/integrations/` — 7
 - `src/certification/` — 6
+- `src/frameworks/` — 5
 
 ### Ledgers
 

@@ -105,24 +105,29 @@ describe("coverage exclusion truth ledger (V5-000)", () => {
     expect(reachable.has("src/release/version-surface.ts")).toBe(true);
     // A contract nothing reaches is not.
     //
-    // Repointed 6.0. This named `src/engine/m50-release-proof-contract.ts`
-    // and `src/agent/decision-receipt.ts`, which asserted "not reachable"
-    // about files that were DELETED in the same release — a vacuous pass,
-    // because `reachable.has("…")` is false for a path that does not exist.
-    // The two below are live, unwired modules, so the assertion says what it
-    // looks like it says.
-    expect(reachable.has("src/integrations/github/stale-guard.ts")).toBe(false);
-    expect(reachable.has("src/integrations/github/github-permissions.ts")).toBe(
-      false,
-    );
+    // Repointed twice now. 6.0: this named
+    // `src/engine/m50-release-proof-contract.ts` and
+    // `src/agent/decision-receipt.ts`, which asserted "not reachable" about
+    // files that were DELETED in the same release — a vacuous pass, because
+    // `reachable.has("…")` is false for a path that does not exist.
+    // 2026-10: the second pair, `stale-guard.ts` and
+    // `github-permissions.ts`, were deleted for the same reason this file is
+    // being repointed — they guarded a PR comment publisher the v6 carve
+    // removed — so naming them made this assertion vacuous all over again.
+    //
+    // The two below are live, unwired, and not going anywhere on their own:
+    // three descriptions of one verb list, of which `src/cli.ts` is the only
+    // one the dispatcher reads.
+    expect(reachable.has("src/commands/registry.ts")).toBe(false);
+    expect(reachable.has("src/engine/command-registry.ts")).toBe(false);
     // And the property that makes those two meaningful: they are on disk.
+    // Without this arm, deleting either file would turn this into a pass that
+    // says nothing, which is the failure this file has now survived twice.
     expect(
-      existsSync(join(ROOT, "src/integrations/github/stale-guard.ts")),
+      existsSync(join(ROOT, "src/commands/registry.ts")),
       "the reachability assertion is vacuous if the file does not exist",
     ).toBe(true);
-    expect(
-      existsSync(join(ROOT, "src/integrations/github/github-permissions.ts")),
-    ).toBe(true);
+    expect(existsSync(join(ROOT, "src/engine/command-registry.ts"))).toBe(true);
   });
 
   it("the ledger is a record of reality, not a claim: a misclassified entry fails", () => {

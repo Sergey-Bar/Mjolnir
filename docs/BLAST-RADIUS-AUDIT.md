@@ -7,7 +7,7 @@ contract enforces: **every external import in src/ must belong to the
 allowlist**, and the shipped surface (adapters, rules, flags, formats, exit
 codes) must match this document exactly.
 
-## Inventory: 306 files, 75395 LOC
+## Inventory: 302 files, 74940 LOC
 
 | Area              | Files | LOC   |
 | ----------------- | ----- | ----- |
@@ -24,9 +24,9 @@ codes) must match this document exactly.
 | src/adapters      | 11    | 1809  |
 | src/discovery     | 10    | 1776  |
 | src/gaps          | 2     | 1390  |
-| src/integrations  | 9     | 1356  |
-| src/release       | 7     | 1087  |
+| src/integrations  | 7     | 1153  |
 | src/mcp           | 3     | 825   |
+| src/release       | 5     | 825   |
 | src/brand         | 3     | 817   |
 | src/lib           | 9     | 734   |
 | src/plugins       | 4     | 715   |
@@ -36,7 +36,7 @@ codes) must match this document exactly.
 | src/scorer        | 3     | 505   |
 | src/traceability  | 2     | 441   |
 | src/scope         | 2     | 427   |
-| src/trust         | 2     | 372   |
+| src/trust         | 2     | 382   |
 | src/playwright    | 2     | 332   |
 | src/benchmark     | 2     | 174   |
 | src/anti-gaming   | 2     | 169   |
@@ -66,9 +66,9 @@ codes) must match this document exactly.
 
 | Dependency         | Files importing it |
 | ------------------ | ------------------ |
-| node:fs            | 66                 |
-| node:path          | 64                 |
-| node:crypto        | 15                 |
+| node:fs            | 65                 |
+| node:path          | 63                 |
+| node:crypto        | 14                 |
 | ts-morph           | 7                  |
 | node:url           | 4                  |
 | node:child_process | 4                  |

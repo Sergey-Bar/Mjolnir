@@ -154,20 +154,6 @@
         "reason": "Not yet adjudicated. The facts beside it are the evidence; the decision is a reviewable edit to this file."
       }
     },
-    "src/release/pack-audit.ts": {
-      "lines": 111,
-      "exports": 7,
-      "importedBy": [],
-      "imported": false,
-      "shipped": false,
-      "testedBy": [
-        "tests/release/pack-audit.spec.ts"
-      ],
-      "disposition": {
-        "action": "KEEP",
-        "reason": "Not yet adjudicated. The facts beside it are the evidence; the decision is a reviewable edit to this file."
-      }
-    },
     "src/release/provenance.ts": {
       "lines": 125,
       "exports": 5,
@@ -191,20 +177,6 @@
       "testedBy": [
         "tests/release/reproducibility-edge.spec.ts",
         "tests/release/reproducibility.spec.ts"
-      ],
-      "disposition": {
-        "action": "KEEP",
-        "reason": "Not yet adjudicated. The facts beside it are the evidence; the decision is a reviewable edit to this file."
-      }
-    },
-    "src/release/sbom.ts": {
-      "lines": 153,
-      "exports": 6,
-      "importedBy": [],
-      "imported": false,
-      "shipped": false,
-      "testedBy": [
-        "tests/release/sbom.spec.ts"
       ],
       "disposition": {
         "action": "KEEP",

@@ -269,17 +269,27 @@ export const TRUST_INVARIANTS: readonly TrustInvariant[] = [
     description:
       "Stale scan artifacts cannot overwrite presentation for a newer PR head",
     scope: "PR Comments",
-    status: "CURRENT",
-    // MEDIUM, not CRITICAL, and the scope is why. The property is real — a
-    // stale artifact overwriting a newer head is a correctness bug — but it
-    // is about PRESENTATION, and a CRITICAL list with three rendering entries
-    // in it is a list whose CRITICAL has stopped meaning "the product can
-    // make a false claim". The first assignment made it CRITICAL on the
-    // strength of the word "cannot", and `tests/trust/invariants-severity.spec.ts`
-    // is what caught that.
+    // REQUIRED, not CURRENT, and the downgrade is the honest reading of the
+    // tree rather than a reassessment of the property. The property is real
+    // and MEDIUM is the right severity for it (presentation, not a false
+    // claim about the product) — but its ONLY enforcement was
+    // `src/integrations/github/stale-guard.ts` and its only proof was
+    // `tests/integrations/github/stale-guard-ti020.spec.ts`. Both were deleted
+    // on 2026-10-01, because there is no PR comment publisher in `src/` at
+    // all: the `pr-comment` verb went with the v6 carve, so the stale-guard
+    // guarded a path nothing reaches.
+    //
+    // Leaving it CURRENT would have been the exact defect this registry
+    // exists to prevent — a listed invariant whose verification points at a
+    // file that does not exist, which the registry spec catches as an ENOENT
+    // rather than as a claim. REQUIRED plus a gap is what it now is: the
+    // obligation survives, the enforcement does not, and the gap names the
+    // work.
+    status: "REQUIRED",
     severity: "MEDIUM",
-    verificationTest: "tests/integrations/github/stale-guard-ti020.spec.ts",
-    verificationCase: "does not overwrite for mismatched SHA",
+    verificationTest: "tests/contract/gate-exit-codes.spec.ts",
+    verificationGap:
+      "No publisher exists to enforce it: `src/integrations/github/stale-guard.ts` was deleted 2026-10-01 and the `pr-comment` verb was removed by the v6 carve, so nothing in `src/` writes a PR comment and nothing can overwrite one. When a publisher returns it must stamp the head SHA and refuse to publish a mismatch; the property becomes CURRENT with a real test at that point, not before.",
   },
   // TI-021..TI-024 are one failure mode recorded four times: a gate that
   // cannot fail is indistinguishable from a gate that passed. Each was a
