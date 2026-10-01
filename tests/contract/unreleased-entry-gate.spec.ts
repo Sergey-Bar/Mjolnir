@@ -62,6 +62,15 @@ interface CheckerResult {
  * `git status`, so a fixture without a commit history answers every question
  * with a "no" and the negative arms pass for the wrong reason.
  */
+/**
+ * Escape every regex metacharacter, not just the ones this file's own data
+ * happens to contain. Used where a value read from `package.json` is
+ * interpolated into a pattern.
+ */
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\/-]/g, "\\$&");
+}
+
 function fixture(changelog: string, version: string): string {
   const dir = mkdtempSync(join(tmpdir(), "mjolnir-changelog-"));
   scratch.push(dir);
@@ -310,8 +319,15 @@ describe("a user-visible change needs a release note", () => {
     const pkg = JSON.parse(
       readFileSync(join(ROOT, "package.json"), "utf8"),
     ) as { version: string };
+    // `pkg.version` is interpolated into a RegExp, so it is ESCAPED as a whole
+    // rather than having its dots replaced. Escaping only the dots is the kind
+    // of partial escape that looks right: a prerelease suffix like `5.2.0-rc.1`
+    // has no metacharacter and sails through, while anything carrying `+` or `(`
+    // changes what the pattern MATCHES. CodeQL flagged the dot-only version
+    // of this line ("does not escape backslash characters in the input"), which
+    // is the same defect wearing a narrower hat.
     const heading = new RegExp(
-      `^## \\[${pkg.version.replace(/\./g, "\\.")}\\]`,
+      `^## \\[${escapeRegExp(pkg.version)}\\]`,
       "m",
     ).exec(text);
     expect(

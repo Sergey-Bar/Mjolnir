@@ -130,7 +130,35 @@ function stripComment(line) {
   return line;
 }
 
+/**
+ * Commands that count as a required script even though they are spelled
+ * differently in ci.yml.
+ *
+ * The requirement is that CI performs the CHECK, not that CI types a
+ * particular string. `npm run doctor` is
+ * `node dist/cli.mjs doctor && npm --prefix site run doctor`, and ci.yml runs
+ * the self-audit half as `node dist/cli.mjs doctor . --json` in a job that has
+ * already built `dist/`. A literal match reported that as "missing active step
+ * for npm run doctor" — the gate was right that the string is absent and wrong
+ * about what follows from it.
+ *
+ * So: one entry per requirement, naming the spellings that satisfy it, and the
+ * reason. An allowance added without a reason is how a gate stops being a gate.
+ */
+const EQUIVALENT_SPELLINGS = {
+  // ci.yml:350 runs the self-audit directly so its JSON lands in a file for
+  // the determinism check below it. The site's own doctor is the
+  // `site-build` job's step, which cannot run `npm run doctor` because that
+  // job never builds `dist/`.
+  "npm run doctor": ["node dist/cli.mjs doctor"],
+};
+
 function containsExecutableCommand(run, command) {
+  const spellings = [command, ...(EQUIVALENT_SPELLINGS[command] ?? [])];
+  return spellings.some((spelling) => containsSpelling(run, spelling));
+}
+
+function containsSpelling(run, command) {
   const escaped = command.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const pattern = new RegExp(
     `(?:^|&&|\\|\\||;|\\n)\\s*(?:then\\s+|do\\s+)?${escaped}(?=\\s|$)`,

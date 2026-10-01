@@ -210,8 +210,12 @@ describe("the redefinition was declared, not slipped in", () => {
     // assertion silently stopped describing anything the moment a release was
     // cut.
     const changelog = readFileSync(join(ROOT, "CHANGELOG.md"), "utf8");
+    // Escaped as a whole rather than by replacing dots. A partial escape is
+    // the shape that survives review: a prerelease suffix carries no
+    // metacharacter and looks fine, and anything with `+` or `(` silently
+    // changes what the pattern matches. CodeQL flagged the dot-only form.
     const start = new RegExp(
-      `^## \\[${"5.1.0".replace(/\./g, "\\.")}\\]`,
+      `^## \\[${pkg.version.replace(/[.*+?^${}()|[\]\\/-]/g, "\\$&")}\\]`,
       "m",
     ).exec(changelog);
     expect(start, "the 5.1.0 entry is missing").not.toBeNull();

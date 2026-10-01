@@ -195,6 +195,24 @@ jobs:
       - name: Install site deps
         working-directory: site
         run: npm ci
+      # The ROOT dependencies too. `npm run doctor` below is
+      # `node dist/cli.mjs doctor && npm --prefix site run doctor` — the
+      # self-audit plus the site doctor — and this job previously installed only
+      # the site's, so the step died with `sh: 1: tsdown: not found` when it
+      # tried to build. Pre-existing on main.
+      #
+      # The alternative was splitting the command, and
+      # `gates/pr.json` says why that is not free: `site-doctor` is declared as
+      # `npm run doctor`, and `gate-tiers.spec.ts` reports a declared gate with
+      # no matching step as "declared and never run — the declaration reads as
+      # coverage". The declaration is right, so the job gets what it was
+      # missing. `--ignore-scripts` because this job needs the tree, not a
+      # postinstall side effect, and `cache-dependency-path` above points at
+      # the site's lockfile — hence no `cache: npm` benefit here.
+      - name: Install root deps (for the doctor)
+        run: npm ci --ignore-scripts
+      - name: Build mjolnir (for the doctor)
+        run: npm run build
       - name: Test the catalog generator
         working-directory: site
         run: npm test

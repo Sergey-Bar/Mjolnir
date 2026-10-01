@@ -28,25 +28,19 @@
   "generatedAt": "2026-10-01",
   "identity": {
     "state": "WORKING_CANDIDATE",
-    "baseSha": "1c6c0752b5060adde50357c01aed0966d695859a",
+    "baseSha": "f92f260e78e0b622e2bbf8de43bbc13606d52fcb",
     "candidateSha": null,
     "version": "5.1.0",
     "packageSha256": "e8bb7cdd2b08ce11936bc20574e6a89e4227b7e79e48b9676426a1015614adb5",
     "lockfileSha256": "f7589d1ba3118e6e7bc341de9129d038fe4be6b738687b4bce674109a0bc1c40",
-    "workingTreeSha256": "b0a21075aff537930bb0c64f4df5001c89e242f3dd40db243b5f3e943f1c69e2",
-    "changedPathCount": 2,
+    "workingTreeSha256": "adce7c60aa078f2a7017acacd775646d2726690ece1df0c3849a465563d14ac7",
+    "changedPathCount": 1,
     "supportEnvelope": "self-hosted; hosted services require explicit consent and separate proof",
     "worktreeInventory": {
-      "changedPaths": [
-        ".github/workflows/ci.yml",
-        "scripts/check-unreleased-entry.mjs"
-      ],
+      "changedPaths": [".github/workflows/ci.yml"],
       "untrackedPaths": []
     },
-    "dirtyFiles": [
-      ".github/workflows/ci.yml",
-      "scripts/check-unreleased-entry.mjs"
-    ]
+    "dirtyFiles": [".github/workflows/ci.yml"]
   },
   "claimRegistry": {
     "path": "docs/claim-registry.json",
