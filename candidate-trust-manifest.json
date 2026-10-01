@@ -28,48 +28,19 @@
   "generatedAt": "2026-10-01",
   "identity": {
     "state": "WORKING_CANDIDATE",
-    "baseSha": "d56bb6eee8303c42c78ec8f49e2456430479c59e",
+    "baseSha": "8b7efa9a26b9b471ab229d9aa44cf193e0fcaa4a",
     "candidateSha": null,
     "version": "5.1.0",
     "packageSha256": "e8bb7cdd2b08ce11936bc20574e6a89e4227b7e79e48b9676426a1015614adb5",
-    "lockfileSha256": "62f301d32684da57d8bfa6c7eae0dd9860e7bbd1c595e8b251efbc468adf7cb6",
-    "workingTreeSha256": "98a5767001e8107ce59a8bf1ba0c41e7dce7b04d10ac245f1092c29e59e673fa",
-    "changedPathCount": 14,
+    "lockfileSha256": "f7589d1ba3118e6e7bc341de9129d038fe4be6b738687b4bce674109a0bc1c40",
+    "workingTreeSha256": "44dcf3e03272107c4e48eb1190ea48125c69c106762b78a7290b49767da2c0ed",
+    "changedPathCount": 1,
     "supportEnvelope": "self-hosted; hosted services require explicit consent and separate proof",
     "worktreeInventory": {
-      "changedPaths": [
-        "CHANGELOG.md",
-        "docs/BLAST-RADIUS-AUDIT.md",
-        "docs/CI-MATRIX.json",
-        "docs/DOMAIN-COVERAGE.json",
-        "docs/FRAMEWORK-MATRIX.json",
-        "docs/LANGUAGE-MATRIX.json",
-        "docs/SURFACE-MATURITY.json",
-        "docs/V6-CURRENT-STATE.md",
-        "docs/V6-GAP-MATRIX.md",
-        "docs/capability-registry.json",
-        "docs/v6-inventory.json",
-        "src/rules/measurement.ts",
-        "src/rules/rule.ts"
-      ],
-      "untrackedPaths": ["tests/rules/core-tier-reachability.spec.ts"]
+      "changedPaths": ["package-lock.json"],
+      "untrackedPaths": []
     },
-    "dirtyFiles": [
-      "CHANGELOG.md",
-      "docs/BLAST-RADIUS-AUDIT.md",
-      "docs/CI-MATRIX.json",
-      "docs/DOMAIN-COVERAGE.json",
-      "docs/FRAMEWORK-MATRIX.json",
-      "docs/LANGUAGE-MATRIX.json",
-      "docs/SURFACE-MATURITY.json",
-      "docs/V6-CURRENT-STATE.md",
-      "docs/V6-GAP-MATRIX.md",
-      "docs/capability-registry.json",
-      "docs/v6-inventory.json",
-      "src/rules/measurement.ts",
-      "src/rules/rule.ts",
-      "tests/rules/core-tier-reachability.spec.ts"
-    ]
+    "dirtyFiles": ["package-lock.json"]
   },
   "claimRegistry": {
     "path": "docs/claim-registry.json",
