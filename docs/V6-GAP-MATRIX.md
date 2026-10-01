@@ -2,7 +2,7 @@
 
 **Generated — do not edit by hand.** Regenerate: `npm run docs:v6-inventory`.
 
-Baseline commit `1db886ca88627ff0a4bf4232b80ec4763aa5e2b0`.
+Baseline commit `0e0b39f2d32432fe006af68b270d35ed0254fbb9`.
 
 Two sources, one table. Rows marked **Wave 0** were found by this
 inventory and were carried by no ledger before; rows marked **M26
@@ -20,11 +20,11 @@ cannot be read as one number.
 
 ### Wave 0
 
-| Gap          | Severity   | Origin | Summary                                                                                                                                                                                                                                                          | Revalidation                                      |
-| ------------ | ---------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
-| `GAP-V6-005` | **medium** | Wave 0 | The ROADMAP.yaml archive block cannot honestly reconcile: 14 of the 108 historical design-record issues (539–646) are still open, so 7 of 8 records are only partially reconciled and the block status must stay UNRECONCILED.                                   | `npx tsx scripts/v6/reconcile-archive.ts --check` |
-| `GAP-V6-007` | **low**    | Wave 0 | PRODUCT-ENHANCEMENT-ANALYSIS.md (637 lines, repo root) self-reports all Wave 1/2/3 features as shipped and is referenced by no ledger, schema, script or CI gate, while the analysis that would verify it is itself deferred. A second, ungated source of truth. | `node scripts/v6/check-claims-prose.mjs`          |
-| `GAP-V6-008` | **low**    | Wave 0 | QA/FINAL-RELEASE/ is a 10-file Cycle-0 audit pinned to RC 151186b (tag v0.5.18, 2026-09-07) and gated by nothing. Its verdict is NOT RELEASE READY for a 1.0.0 cut that no longer exists, and its findings F1–F4 are still open.                                 | `npx tsx scripts/v6/reconcile-archive.ts --check` |
+| Gap          | Severity   | Origin | Summary                                                                                                                                                                                                                                                                                    | Revalidation                                      |
+| ------------ | ---------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------- |
+| `GAP-V6-005` | **medium** | Wave 0 | The ROADMAP.yaml archive block cannot honestly reconcile: design-record issues in the 539–646 range are still open, so 7 of 8 records are only partially reconciled and the block status must stay UNRECONCILED. See "Archive issues blocking reconciliation" above for the current count. | `npx tsx scripts/v6/reconcile-archive.ts --check` |
+| `GAP-V6-007` | **low**    | Wave 0 | PRODUCT-ENHANCEMENT-ANALYSIS.md (637 lines, repo root) self-reports all Wave 1/2/3 features as shipped and is referenced by no ledger, schema, script or CI gate, while the analysis that would verify it is itself deferred. A second, ungated source of truth.                           | `node scripts/v6/check-claims-prose.mjs`          |
+| `GAP-V6-008` | **low**    | Wave 0 | QA/FINAL-RELEASE/ is a 10-file Cycle-0 audit pinned to RC 151186b (tag v0.5.18, 2026-09-07) and gated by nothing. Its verdict is NOT RELEASE READY for a 1.0.0 cut that no longer exists, and its findings F1–F4 are still open.                                                           | `npx tsx scripts/v6/reconcile-archive.ts --check` |
 
 ### Wave 1
 
@@ -112,10 +112,11 @@ the actual scope of v6, and it is much larger than the wave list suggests.
 | §54    | AI challenger              | **MISSING**            | 7    |
 | §56    | VS Code / LSP              | **MISSING**            | 10   |
 | §58    | GitHub App                 | **MISSING**            | 10   |
-| §59    | Dashboard                  | **PARTIALLY_COMPLETE** | 10   |
+| §59    | Dashboard                  | **OBSOLETE**           | 10   |
 | §62    | Defect learning loop       | **MISSING**            | 12   |
 | §63    | Production feedback        | **MISSING**            | 12   |
 | §64    | Test economics             | **MISSING**            | 11   |
+| §66    | Quality debt               | **OBSOLETE**           | 9    |
 | §67    | Ownership                  | **PARTIALLY_COMPLETE** | 9    |
 | §70    | Cross-repo enterprise      | **BLOCKED**            | 10   |
 | §72    | Signed packs               | **MISSING**            | 11   |

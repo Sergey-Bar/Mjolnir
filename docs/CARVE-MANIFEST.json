@@ -114,7 +114,7 @@
       }
     },
     "src/ledger/m26-validators.ts": {
-      "lines": 2856,
+      "lines": 2926,
       "exports": 43,
       "importedBy": [
         "scripts/check-m26-ledgers.ts",
@@ -126,7 +126,8 @@
         "tests/config/coverage-exclusion-guard.spec.ts",
         "tests/contract/gate-exit-codes.spec.ts",
         "tests/ledger/m26-validator-reject-arms.spec.ts",
-        "tests/ledger/m26-validators.spec.ts"
+        "tests/ledger/m26-validators.spec.ts",
+        "tests/lib/path-existence.spec.ts"
       ],
       "disposition": {
         "action": "KEEP",

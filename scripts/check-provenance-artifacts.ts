@@ -36,6 +36,11 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 
+import {
+  assertPathsExist,
+  backtickedPaths,
+} from "../src/lib/path-existence.js";
+import { prettifyText } from "./lib/prettify.js";
 import { generateCapability } from "./v6/generate-capability.js";
 import { renderArtifacts } from "./v6/generate-inventory.js";
 import { ROOT as DEFAULT_ROOT } from "./v6/inventory.js";
@@ -137,15 +142,34 @@ const failures: string[] = [];
 const generated = generateCapability(DEFAULT_ROOT);
 const inventory = renderArtifacts(DEFAULT_ROOT);
 
-const ARTIFACTS: Array<{ file: string; fresh: string }> = [
+const ARTIFACTS: Array<{
+  file: string;
+  fresh: string;
+  /** `json` normalises provenance keys away; `md` compares verbatim. */
+  kind: "json" | "md";
+}> = [
   {
     file: "docs/capability-registry.json",
     fresh: generated.files["docs/capability-registry.json"] ?? "",
+    kind: "json",
   },
-  { file: "docs/v6-inventory.json", fresh: inventory.inventory },
+  { file: "docs/v6-inventory.json", fresh: inventory.inventory, kind: "json" },
+  // The rendered half. These were GENERATED and committed but never
+  // compared, so they were the one hand-editable surface in a set whose whole
+  // argument is that its claims are derived. That is how
+  // `docs/V6-CURRENT-STATE.md` came to contradict the `docs/v6-inventory.json`
+  // sitting beside it — two halves of one claim, one checked and one not.
+  // Locking them here is what makes "regenerate, do not edit" true rather
+  // than a convention nobody could enforce.
+  {
+    file: "docs/V6-CURRENT-STATE.md",
+    fresh: inventory.currentState,
+    kind: "md",
+  },
+  { file: "docs/V6-GAP-MATRIX.md", fresh: inventory.gapMatrix, kind: "md" },
 ];
 
-for (const { file, fresh } of ARTIFACTS) {
+for (const { file, fresh, kind } of ARTIFACTS) {
   const path = join(ARTIFACT_ROOT, file);
   if (!existsSync(path)) {
     failures.push(`${file} is missing — there is nothing to compare against`);
@@ -160,14 +184,51 @@ for (const { file, fresh } of ARTIFACTS) {
     continue;
   }
   const committed = readFileSync(path, "utf8");
-  if (normalise(committed) === normalise(fresh)) continue;
-  const changed = changedPaths(JSON.parse(committed), JSON.parse(fresh));
+  const same =
+    kind === "md"
+      ? // Both sides formatted, in memory. The generators run `prettify`
+        // after rendering, so the committed bytes are the FORMATTED ones —
+        // comparing them against a raw render reports drift on every table
+        // forever, which is a gate red for the wrong reason and so ignored.
+        // Same formatter both sides, nothing written.
+        (await prettifyText(committed, path)) ===
+        (await prettifyText(fresh, path))
+      : normalise(committed) === normalise(fresh);
+  if (same) continue;
+  const changed =
+    kind === "md"
+      ? ["(rendered markdown)"]
+      : changedPaths(JSON.parse(committed), JSON.parse(fresh));
   failures.push(
     `${file}: content drift at ${
       changed.length === 0 ? "(key order only)" : changed.join(", ")
     }. Regenerate with \`npm run docs:provenance-drift:fix\` and commit. ` +
       "Provenance keys are excluded by design: a baseSha that does not match " +
       "HEAD is an artifact's age, not a lie about its contents",
+  );
+}
+
+// Every repo-relative path the RENDERED markdown cites must resolve.
+//
+// The prose half of these artifacts names files — `src/engine/resolution.ts`,
+// a fixture path, a script — and a deleted module leaves the citation behind
+// pointing at nothing. JSON fields get this check structurally; prose does
+// not, and prose is what a reader trusts most. Rendered from the live tree
+// (never from ARTIFACT_ROOT) so the claim is about this repository.
+for (const [file, rendered] of [
+  ["docs/V6-CURRENT-STATE.md", inventory.currentState],
+  ["docs/V6-GAP-MATRIX.md", inventory.gapMatrix],
+] as const) {
+  assertPathsExist(
+    DEFAULT_ROOT,
+    backtickedPaths(rendered).map((path) => ({ path, citedBy: file })),
+    (missing) => {
+      failures.push(
+        `${missing.citedBy}: cites \`${missing.path}\`, which does not exist. ` +
+          "A generated artifact may not name a file that was deleted — fix the " +
+          "claim in scripts/v6/inventory.ts and regenerate, do not edit the .md",
+      );
+    },
   );
 }
 

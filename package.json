@@ -92,7 +92,7 @@
     "check-fixture-quad": "tsx scripts/v6/check-fixture-quad.ts",
     "rules:promotion:check": "tsx scripts/v6/check-promotion-throughput.mjs",
     "docs:provenance-drift:fix": "npm run docs:registry && npm run docs:v6-inventory",
-    "gates:claim-integrity": "npm run workflow:scripts && npm run config:consumers && npm run scripts:reachable && npm run check-unimported-modules && npm run check-cli-contract && npm run check-carve-manifest && npm run check-certification-surface && npm run docs:certification-matrix:check && npm run docs:certification-gaps:check && npm run check-concepts && npm run qa-ir:parity && npm run check-fixture-quad && npm run check-detector-hashes && npm run rules:promotion:check && npm run docs:provenance-drift",
+    "gates:claim-integrity": "npm run workflow:scripts && npm run config:consumers && npm run scripts:reachable && npm run check-unimported-modules && npm run check-cli-contract && npm run check-carve-manifest && npm run check-certification-surface && npm run docs:certification-matrix:check && npm run docs:certification-gaps:check && npm run check-concepts && npm run qa-ir:parity && npm run check-fixture-quad && npm run check-detector-hashes && npm run rules:promotion:check && npm run docs:provenance-drift && npm run docs:roadmap:backlinks",
     "ci-local": "npm run certify:ci && npm run test:property && npm run test:fuzz && npm run coverage:ratchet && npm run audit:ci && npm run brand:doctor && npm run brand:doctor:selftest && npm run brand:fonts:check && npm run doctor && npm run ci-local:parity",
     "verify:isolation": "node scripts/verify-remediation-isolation.mjs",
     "golden:update": "tsx tests/golden/gen.ts",

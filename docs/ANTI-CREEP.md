@@ -8,11 +8,11 @@ and the one number a change has to move to make a promotion legal.
 
 The law said "the launch set" and named nothing. Three candidates existed:
 
-| Candidate          | Count | Why it is not the answer                                                                                                                  |
-| ------------------ | ----: | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| All live rules     |    79 | Counting every rule makes the law unfalsifiable — nothing is ever removed                                                                 |
-| Rules that gate CI |     0 | Quarantine findings are capped to `info`/`E0` by `src/rules/tier-policy.ts`, so they never gate. A set of zero cannot be grown by removal |
-| **The core tier**  | **0** | **The rules that ship in the default report**                                                                                             |
+| Candidate          | Count | Why it is not the answer                                                                                                                   |
+| ------------------ | ----: | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| All live rules     |    79 | Counting every rule makes the law unfalsifiable — nothing is ever removed                                                                  |
+| Rules that gate CI |     0 | Quarantine findings are capped to `info`/`E0` by `src/engine/tier-policy.ts`, so they never gate. A set of zero cannot be grown by removal |
+| **The core tier**  | **0** | **The rules that ship in the default report**                                                                                              |
 
 The core tier is the launch set. "Ships by default" is what makes the law
 mean something: adding a rule to the default report adds a claim to every

@@ -221,7 +221,7 @@ export function renderCurrentStateMd(
     `| Commands | ${facts.commands} | \`src/commands\` |`,
     `| Frameworks in the inventory | ${facts.frameworks} | \`FRAMEWORK_INVENTORY\` |`,
     `| CI providers | ${facts.ciProviders} | \`CI_PROVIDER_IDS\` |`,
-    `| QA domain records | ${facts.qaDomains} | \`QA_DOMAIN_RECORDS\` |`,
+    `| QA domain records | ${facts.qaDomains} | cells of \`docs/M26-SUPPORT-MATRIX.json\` |`,
     `| Gap-ledger records | ${facts.gapLedger.total} | \`docs/M26-GAP-LEDGER.jsonl\` |`,
     `| Support-matrix cells | ${facts.supportMatrix.total} | \`docs/M26-SUPPORT-MATRIX.json\` |`,
     `| Issue dispositions | ${facts.issueDispositions.total} | \`docs/M26-ISSUE-DISPOSITIONS.jsonl\` |`,

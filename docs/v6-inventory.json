@@ -3,12 +3,12 @@
   "artifact": "v6-inventory",
   "generatedBy": "npm run docs:v6-inventory",
   "wave": "0",
-  "baseSha": "1db886ca88627ff0a4bf4232b80ec4763aa5e2b0",
+  "baseSha": "0e0b39f2d32432fe006af68b270d35ed0254fbb9",
   "version": "5.0.0",
   "publishedStable": "5.0.0",
   "counts": {
-    "srcFiles": 301,
-    "testSpecs": 671,
+    "srcFiles": 302,
+    "testSpecs": 672,
     "rulesLive": 79,
     "rulesRetired": 22,
     "rulesMeasured": 73,
@@ -219,8 +219,8 @@
         "area": "Evidence graph",
         "state": "ALREADY_COMPLETE",
         "wave": "5",
-        "evidence": ["src/engine/runtime-evidence-graph.ts"],
-        "unverifiedEvidence": ["src/engine/runtime-evidence-graph.ts"],
+        "evidence": ["src/engine/evidence-graph.ts"],
+        "unverifiedEvidence": [],
         "note": "Provisional but present."
       },
       {
@@ -228,8 +228,8 @@
         "area": "Evidence freshness",
         "state": "ALREADY_COMPLETE",
         "wave": "5",
-        "evidence": ["src/engine/runtime-evidence-graph.ts"],
-        "unverifiedEvidence": ["src/engine/runtime-evidence-graph.ts"],
+        "evidence": ["src/engine/evidence-core.ts"],
+        "unverifiedEvidence": [],
         "note": "Freshness binding exists."
       },
       {
@@ -246,18 +246,18 @@
         "area": "Mutation engine",
         "state": "MISSING",
         "wave": "6",
-        "evidence": ["src/mutation/failure-sensitivity.ts"],
-        "unverifiedEvidence": ["src/mutation/failure-sensitivity.ts"],
-        "note": "Contract only, non-gating."
+        "evidence": [],
+        "unverifiedEvidence": [],
+        "note": "Contract only, non-gating. The contract module was removed in the v6 carve."
       },
       {
         "specSection": "§13",
         "area": "Failure sensitivity",
         "state": "PARTIALLY_COMPLETE",
         "wave": "6",
-        "evidence": ["src/mutation/failure-sensitivity.ts"],
-        "unverifiedEvidence": ["src/mutation/failure-sensitivity.ts"],
-        "note": "False-green rules exist; no explicit 5-stage model."
+        "evidence": [],
+        "unverifiedEvidence": [],
+        "note": "False-green rules exist; no explicit 5-stage model. The model module was removed in the v6 carve."
       },
       {
         "specSection": "§14",
@@ -291,8 +291,8 @@
         "area": "Impact analysis",
         "state": "ALREADY_COMPLETE",
         "wave": "7",
-        "evidence": ["src/commands/impact.ts", "docs/BLAST-RADIUS-AUDIT.md"],
-        "unverifiedEvidence": ["src/commands/impact.ts"],
+        "evidence": ["docs/BLAST-RADIUS-AUDIT.md", "src/traceability/rtm.ts"],
+        "unverifiedEvidence": [],
         "note": "Blast radius is computed and audited; the residual gap is that it is per-rule, not per-capability."
       },
       {
@@ -482,7 +482,7 @@
         "wave": "9",
         "evidence": ["src/forensics"],
         "unverifiedEvidence": [],
-        "note": "17 modules incl. pw-report and trend."
+        "note": "Parsers per runner plus flaky-integration and triage."
       },
       {
         "specSection": "§39",
@@ -519,11 +519,8 @@
         "area": "Coverage integrity",
         "state": "ALREADY_COMPLETE",
         "wave": "9",
-        "evidence": [
-          "src/engine/coverage-ingestion.ts",
-          "src/rules/ci/qa-ci-005-report-never-generated.ts"
-        ],
-        "unverifiedEvidence": ["src/engine/coverage-ingestion.ts"],
+        "evidence": ["src/rules/ci/qa-ci-005-report-never-generated.ts"],
+        "unverifiedEvidence": [],
         "note": "Coverage is evidence, not truth."
       },
       {
@@ -549,8 +546,8 @@
         "area": "Risk-based model",
         "state": "PARTIALLY_COMPLETE",
         "wave": "7",
-        "evidence": ["src/commands/impact.ts", "src/traceability"],
-        "unverifiedEvidence": ["src/commands/impact.ts"],
+        "evidence": ["src/traceability/rtm.ts"],
+        "unverifiedEvidence": [],
         "note": "Impact-driven ordering exists; the risk model itself is not derived from corpus frequency."
       },
       {
@@ -606,8 +603,8 @@
         "area": "Packs",
         "state": "ALREADY_COMPLETE",
         "wave": "4",
-        "evidence": ["src/frameworks/universal-pack-contract.ts"],
-        "unverifiedEvidence": ["src/frameworks/universal-pack-contract.ts"],
+        "evidence": ["src/frameworks/provider-capability-contract.ts"],
+        "unverifiedEvidence": [],
         "note": "Contracts exist; packs are the Wave 8 work."
       },
       {
@@ -676,11 +673,11 @@
       {
         "specSection": "§59",
         "area": "Dashboard",
-        "state": "PARTIALLY_COMPLETE",
+        "state": "OBSOLETE",
         "wave": "10",
-        "evidence": ["src/commands/dashboard.ts"],
-        "unverifiedEvidence": ["src/commands/dashboard.ts"],
-        "note": "Local HTML only."
+        "evidence": [],
+        "unverifiedEvidence": [],
+        "note": "Local HTML only. The surface was removed in the v6 carve and is not claimed."
       },
       {
         "specSection": "§60",
@@ -734,16 +731,16 @@
         "wave": "11",
         "evidence": ["src/forensics"],
         "unverifiedEvidence": [],
-        "note": "17 modules, including pw-report and trend."
+        "note": "Trace and retry analysis over the parsed run history."
       },
       {
         "specSection": "§66",
         "area": "Quality debt",
-        "state": "ALREADY_COMPLETE",
+        "state": "OBSOLETE",
         "wave": "9",
-        "evidence": ["src/commands/debt.ts"],
-        "unverifiedEvidence": ["src/commands/debt.ts"],
-        "note": "The debt register ships as a command."
+        "evidence": [],
+        "unverifiedEvidence": [],
+        "note": "The debt register shipped as a command until the v6 carve removed it."
       },
       {
         "specSection": "§67",
@@ -789,8 +786,8 @@
         "area": "Custom rule SDK",
         "state": "ALREADY_COMPLETE",
         "wave": "11",
-        "evidence": ["src/plugins/sdk-contract.ts"],
-        "unverifiedEvidence": ["src/plugins/sdk-contract.ts"],
+        "evidence": ["src/plugins/local-rules.ts", "src/plugins/trust-gate.ts"],
+        "unverifiedEvidence": [],
         "note": "Custom rules start unproven."
       },
       {
@@ -1323,7 +1320,7 @@
       "severity": "medium",
       "status": "open",
       "category": "roadmap-reconciliation",
-      "summary": "The ROADMAP.yaml archive block cannot honestly reconcile: 14 of the 108 historical design-record issues (539–646) are still open, so 7 of 8 records are only partially reconciled and the block status must stay UNRECONCILED.",
+      "summary": "The ROADMAP.yaml archive block cannot honestly reconcile: design-record issues in the 539–646 range are still open, so 7 of 8 records are only partially reconciled and the block status must stay UNRECONCILED. See \"Archive issues blocking reconciliation\" above for the current count.",
       "owner": "roadmap",
       "targetWave": "0",
       "maturityImpact": [

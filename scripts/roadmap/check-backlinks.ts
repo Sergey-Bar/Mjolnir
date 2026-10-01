@@ -1,6 +1,10 @@
-import { existsSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { parse } from "yaml";
+import {
+  assertPathsExist,
+  type PathClaim,
+} from "../../src/lib/path-existence.js";
 import { validateRoadmap } from "./validate.js";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -54,14 +58,23 @@ if (
   errors.push("dependency resolution is not approved staged");
 }
 if (isRecord(document) && isRecord(document.provisionalArtifacts)) {
-  for (const paths of Object.values(document.provisionalArtifacts)) {
+  // Through the shared check, not a local `existsSync`. This check was
+  // already correct and already red — it was simply wired into no gate tier,
+  // so 19 dead artifact claims sat in the file for a release. The existence
+  // test itself is now shared with the ledger and the inventory so a third
+  // caller cannot come back weaker.
+  const claims: PathClaim[] = [];
+  for (const [train, paths] of Object.entries(document.provisionalArtifacts)) {
     if (!Array.isArray(paths)) continue;
     for (const path of paths) {
-      if (typeof path === "string" && !existsSync(join(root, path))) {
-        errors.push(`provisional artifact missing: ${path}`);
-      }
+      if (typeof path === "string") claims.push({ path, citedBy: train });
     }
   }
+  assertPathsExist(root, claims, (missing) => {
+    errors.push(
+      `provisional artifact missing: ${missing.path} (cited by ${missing.citedBy})`,
+    );
+  });
 }
 console.log(
   JSON.stringify(

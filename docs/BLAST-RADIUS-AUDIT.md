@@ -7,19 +7,19 @@ contract enforces: **every external import in src/ must belong to the
 allowlist**, and the shipped surface (adapters, rules, flags, formats, exit
 codes) must match this document exactly.
 
-## Inventory: 309 files, 75741 LOC
+## Inventory: 310 files, 75952 LOC
 
 | Area              | Files | LOC   |
 | ----------------- | ----- | ----- |
 | src/rules         | 89    | 12997 |
-| src/engine        | 44    | 12059 |
+| src/engine        | 44    | 12061 |
 | src/commands      | 33    | 11513 |
 | src/v6            | 11    | 6450  |
 | src/(root)        | 8     | 3824  |
 | src/reporter      | 13    | 3641  |
 | src/forensics     | 17    | 3067  |
-| src/ledger        | 1     | 2855  |
-| src/certification | 6     | 2622  |
+| src/ledger        | 1     | 2925  |
+| src/certification | 6     | 2629  |
 | src/frameworks    | 5     | 2015  |
 | src/discovery     | 10    | 1817  |
 | src/adapters      | 11    | 1778  |
@@ -31,9 +31,9 @@ codes) must match this document exactly.
 | src/plugins       | 4     | 715   |
 | src/store         | 2     | 665   |
 | src/scorer        | 4     | 634   |
+| src/lib           | 8     | 600   |
 | src/bench         | 4     | 592   |
 | src/config        | 3     | 559   |
-| src/lib           | 7     | 468   |
 | src/traceability  | 2     | 441   |
 | src/scope         | 2     | 427   |
 | src/trust         | 2     | 362   |
@@ -66,8 +66,8 @@ codes) must match this document exactly.
 
 | Dependency         | Files importing it |
 | ------------------ | ------------------ |
-| node:fs            | 65                 |
-| node:path          | 63                 |
+| node:fs            | 66                 |
+| node:path          | 64                 |
 | node:crypto        | 15                 |
 | ts-morph           | 7                  |
 | node:url           | 4                  |

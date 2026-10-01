@@ -11,6 +11,64 @@ once shipped, so this file is the record of what changed between versions.
 
 ## [Unreleased]
 
+### One path check, three callers: a claim that names a deleted file is now a failed check
+
+Every artifact claim in this repository is a path inside a file — a
+`provisionalArtifacts` entry in `ROADMAP.yaml`, an `evidence` citation in the
+v6 inventory, a `regression_test`/`evidence_artifact` on an M26 ledger row.
+Three validators read those claims and all three asked the same weak question,
+"is this field a non-empty string?", so a citation to a module the v6 carve
+deleted validated clean. One check now serves all three, so a fourth caller
+cannot come back weaker.
+
+- **`docs:roadmap:backlinks` is wired into the release and nightly tiers.**
+  It was correct and red the whole time — reporting 19 missing provisional
+  artifacts — and in no tier at all. It now runs through `gates:claim-integrity`,
+  which is where a roadmap's artifact claims belong.
+- **The 19 dead `provisionalArtifacts` rows are deleted, not repointed.** M29,
+  M31–M36, M38, M39, M41, M43–M50 each declared an artifact the carve
+  removed. A successor is a different module answering a different question,
+  so citing one would turn "this was never built" into a claim that something
+  was.
+- **`docs/V6-CURRENT-STATE.md` and `docs/V6-GAP-MATRIX.md` are drift-locked.**
+  Only the JSON halves of these generated artifacts were ever compared against
+  a fresh render. The `.md` halves were hand-editable, which is how a
+  hand-edited line came to contradict the `docs/v6-inventory.json` beside it.
+  Both are now compared, and both sides are formatted in memory so the check
+  still never writes to the tree it inspects.
+- **A generated artifact may no longer cite a file that does not exist.**
+  Every repo-relative path in the rendered `.md` is now checked, which is what
+  found the 11 dead citations the §100 classification was still carrying. The
+  claims were corrected at source rather than in the rendered output: §59
+  (dashboard) and §66 (quality debt) are now `OBSOLETE`, which is the state
+  the enum had declared and nothing had ever used.
+- **M26 ledger rows are BLOCKED when a cited evidence path does not resolve.**
+  `regression_test` and `evidence_artifact` are the only pointer a closure
+  claim has to the thing that proves it. A `warning`, not an `error`: a row may
+  legitimately cite a path this checkout does not carry, and "unverifiable
+  here" is the honest status. The root is a parameter rather than a default,
+  so a record's validity never depends on the working directory.
+- **Hand-written prose deleted from the generators.** GAP-V6-005's summary
+  carried "14 of the 108" while the matrix beside it reported 18 — two
+  representations of one number, one hand-maintained, where the renderer
+  already derives the authoritative figure. The §38/§65 notes named
+  `pw-report` and `trend`, which are commands, as modules of `src/forensics`.
+  The `QA_DOMAIN_RECORDS` provenance column named a symbol that exists
+  nowhere in `src/`.
+- **"156 cells" was never true.** The support matrix carries 136 cells and 6 on
+  the language-framework axis. The figure was hand-written in source, so
+  regenerating could not have fixed it; the language manifest now names the
+  surface and points at the matrix that carries the count.
+- **`docs/ANTI-CREEP.md` pointed at `src/rules/tier-policy.ts`;** the module is
+  at `src/engine/tier-policy.ts`.
+- **`docs/MANUAL-SCRIPTS.md` claimed `docs:roadmap:backlinks` was wired into
+  the nightly tier.** It was not. It is now, so the row is gone — and the
+  script-reachability gate enforces that a script cannot be both a gate and a
+  manual tool.
+
+A gate that has never fired is not a gate: the rendered-markdown comparison was
+verified to fail on a planted hand edit and pass after reverting it.
+
 ### False greens: three places a scan reported a stronger result than it had
 
 Every ordinary scan withheld 34 quarantined rules and reported nothing about

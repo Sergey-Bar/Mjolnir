@@ -190,7 +190,14 @@ export const ECOSYSTEM_MANIFEST: readonly LanguageCapability[] = [
       "config-discovery",
     ],
     notCertified: [
-      "26 concepts have rules; the plan counts 156 cells across the four adapters",
+      // Was "the plan counts 156 cells across the four adapters". 156 is a
+      // plan-era figure that no longer matches anything: the matrix carries
+      // 136 cells in total and 6 on the language-framework axis, so the
+      // number was both stale and measuring the wrong set. It also cannot be
+      // fixed by regenerating, because it is hand-written in source — the
+      // count now lives only in docs/M26-SUPPORT-MATRIX.json, which the
+      // certification matrix renders.
+      "the concept set has rules, but the language-framework certification surface is not certified — see docs/M26-SUPPORT-MATRIX.json for the current cell count",
       "no runner evidence, so the state ladder stops at DISCOVERED",
     ],
     evidence: {
@@ -199,7 +206,8 @@ export const ECOSYSTEM_MANIFEST: readonly LanguageCapability[] = [
       runner: "mjolnir-scan",
       verifiedBy: "6 repositories parsed; no measurement cohort",
     },
-    nextLevelGap: "Playwright runner evidence, then the 156-cell surface",
+    nextLevelGap:
+      "Playwright runner evidence, then the language-framework surface",
   },
   {
     id: "cypress",

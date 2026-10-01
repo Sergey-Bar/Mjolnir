@@ -30,6 +30,7 @@
 
 import { execFileSync } from "node:child_process";
 import {
+  appendFileSync,
   copyFileSync,
   existsSync,
   mkdirSync,
@@ -47,19 +48,33 @@ const ROOT = join(import.meta.dirname, "..", "..");
 const CHECK = join(ROOT, "scripts", "check-provenance-artifacts.ts");
 
 /**
- * The two artifacts, and a leaf path inside each that a test can perturb.
+ * The artifacts, and — for the JSON ones — a leaf path inside each that a test
+ * can perturb.
  *
  * A LEAF rather than the containing object. The first version replaced
  * `counts` wholesale, which made the diff name the container and left the test
  * asserting on a key the message never mentioned — the assertion passed for the
  * wrong reason until the checker was changed to report dotted paths.
+ *
+ * The two markdown files are listed with `nestedPath: null` because they are
+ * now drift-locked too: the checker compares the committed `.md` against a
+ * fresh render, which is the whole fix for a generated artifact whose prose
+ * half was hand-editable. They are COPIED into the fixture because the
+ * checker reports a missing artifact rather than skipping it — a fixture
+ * holding only the JSON pair would have failed for the wrong reason, which is
+ * the failure mode these tests exist to prevent.
  */
 const ARTIFACTS = [
   {
     file: "docs/capability-registry.json",
     nestedPath: ["counts", "entries"],
   },
-  { file: "docs/v6-inventory.json", nestedPath: ["counts", "srcFiles"] },
+  {
+    file: "docs/v6-inventory.json",
+    nestedPath: ["counts", "srcFiles"],
+  },
+  { file: "docs/V6-CURRENT-STATE.md", nestedPath: null },
+  { file: "docs/V6-GAP-MATRIX.md", nestedPath: null },
 ] as const;
 
 /**
@@ -189,13 +204,28 @@ describe("provenance-stamped artifacts are checked for content, not for age", ()
   );
 
   it(
-    "a changed claim in either artifact is caught, and the message names it",
+    "a changed claim in any artifact is caught, and the message names it",
     { timeout: SUITE_TIMEOUT },
     () => {
       for (const { file, nestedPath } of ARTIFACTS) {
         const dir = fixtureTree();
         fixtures.push(dir);
         const path = join(dir, file);
+        if (nestedPath === null) {
+          // The markdown arms: a hand edit to a GENERATED file is drift, and
+          // that is the defect class this whole change exists to close — the
+          // prose half of a generated artifact was editable while the JSON half
+          // beside it was locked.
+          appendFileSync(
+            path,
+            "\nA hand edit that the generator would never emit.\n",
+          );
+          const run = runCheckOn(dir);
+          expect(run.code, `${file}: ${run.output}`).toBe(1);
+          expect(run.output).toContain("content drift");
+          expect(run.output).toContain(file);
+          continue;
+        }
         const parsed = JSON.parse(readFileSync(path, "utf8")) as unknown;
         setNested(parsed, nestedPath, 999_999);
         writeFileSync(path, JSON.stringify(parsed, null, 2) + "\n", "utf8");
