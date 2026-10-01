@@ -43,4 +43,4 @@ UNKNOWN — this rule has not (yet) fired in any of the real OSS repos tracked b
 
 ---
 
-Full catalog: `mjolnir rules --md` · Live explanation: `mjolnir explain QA-PW-125`
+Full catalog: `mjolnir explain --list --md` · Live explanation: `mjolnir explain QA-PW-125`

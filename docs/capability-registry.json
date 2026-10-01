@@ -4,7 +4,7 @@
   "generatedBy": "npm run docs:capability",
   "registryId": "mjolnir-capability-registry",
   "observedAt": "2026-10-01",
-  "baseSha": "42c95c8b5d4286344d673163175da71260381d41",
+  "baseSha": "fe4df8f97712f0decc4b9b663fefc8134353ed6d",
   "counts": {
     "entries": 27,
     "kind:ci-cd-provider": 4,

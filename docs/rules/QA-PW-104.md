@@ -47,4 +47,4 @@ Real occurrence counts from `npm run corpus:audit` against actively-maintained O
 
 ---
 
-Full catalog: `mjolnir rules --md` · Live explanation: `mjolnir explain QA-PW-104`
+Full catalog: `mjolnir explain --list --md` · Live explanation: `mjolnir explain QA-PW-104`
