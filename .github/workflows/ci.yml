@@ -302,7 +302,19 @@ jobs:
       # via the same single emitter the generated workflow uses.
       - name: Self-scan annotations
         if: always()
-        run: node dist/cli.mjs summary self-scan.json
+        # Renders the SAVED report, which is what this step already has on disk.
+        # The verb it used to call was removed by the v6 positioning carve, so
+        # the step exited 10 with `unknown subcommand` on every run. It never
+        # showed up because the job is `needs: build-test`, which had been
+        # failing, so this job was `skipped`.
+        #
+        # `--format github-summary` is the other rendering surface and is NOT a
+        # substitute here: it needs a live scan, not the artifact written two
+        # steps above. The removed verb is not named in this comment either,
+        # because `check-cli-contract` reads any mention of it in this file as a
+        # live consumer — which is right, and is why a comment that quotes a
+        # dead command is a thing to avoid writing.
+        run: node dist/cli.mjs explain verdict --json self-scan.json
       # Bug-audit G8 (self-scan honesty gate): the old gate blocked only on
       # error-severity findings — a TRUNCATED self-scan (partial: true) or
       # one where rules crashed silently passed. A truncated self-scan of
@@ -316,7 +328,13 @@ jobs:
           node -e "const fs=require('fs');try{const r=JSON.parse(fs.readFileSync('self-scan.json','utf8'));const n=r.findings.filter(f=>f.severity==='warning').length;fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,'Self-scan warnings (non-blocking) - '+n+'\n')}catch(e){}"
       - name: Generate badge artifact (Master-Stabilization-Plan Sprint 2 Task 11)
         continue-on-error: true
-        run: node dist/cli.mjs badge .
+        # Removed with `src/commands/badge.ts` in the v6 carve: the product emits
+        # no shields.io badge, and the PR comment renders HTML cells instead.
+        # `continue-on-error: true` is why this never surfaced as a failure — it
+        # has been exiting 10 silently since the carve.
+        run: |
+          echo "::notice::No badge artifact: the badge command was removed with the v6 carve."
+          echo '{"note":"badge generation retired; see CHANGELOG 5.1.0"}' > mjolnir-badge.json
       - name: Upload self-scan result as a build artifact
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

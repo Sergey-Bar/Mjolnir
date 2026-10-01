@@ -58,16 +58,45 @@ function compareVersions(a: ParsedVersion, b: ParsedVersion): number {
 }
 
 // ── arguments ──────────────────────────────────────────────────────────
+//
+// `--expect-version=<X>` as well as `--expect-version <X>`.
+//
+// `check-version.mjs` is the orchestrator and it NORMALISES: whatever form it
+// is given, it forwards `--expect-version=<value>` (line 122 of that file), and
+// its own comment states that "`--flag=value`, `--flag value` and bare
+// `--flag` are all accepted". This parser honoured only the space form, so the
+// orchestrator's documented interface was a lie for one of its four arms —
+// and CI's `certification` job passes exactly that flag:
+//
+//   CHANGELOG GATE: unknown argument --expect-version=5.1.0
+//
+// The job is `needs: build-test`, so it had been `skipped` on every run since
+// the carve and the mismatch was never executed. An interface that only one
+// side honours is the defect; the orchestrator's contract is the one written
+// down, so this side moves.
 const args = process.argv.slice(2);
 let expectedVersion: string | undefined;
 let rulesTouched = false;
 for (let i = 0; i < args.length; i++) {
-  if (args[i] === "--expect-version") {
-    expectedVersion = args[++i];
-  } else if (args[i] === "--rules-touched") {
+  const arg = args[i] as string;
+  const eq = arg.startsWith("--") ? arg.indexOf("=") : -1;
+  const flag = eq === -1 ? arg : arg.slice(0, eq);
+  if (flag === "--expect-version") {
+    if (eq === -1) {
+      expectedVersion = args[++i];
+    } else {
+      expectedVersion = arg.slice(eq + 1);
+    }
+    if (expectedVersion === undefined) {
+      console.error(
+        "CHANGELOG GATE: --expect-version needs a value, as --expect-version=<X.Y.Z>.",
+      );
+      process.exit(2);
+    }
+  } else if (flag === "--rules-touched") {
     rulesTouched = true;
   } else {
-    console.error(`CHANGELOG GATE: unknown argument ${args[i] as string}`);
+    console.error(`CHANGELOG GATE: unknown argument ${arg}`);
     process.exit(2);
   }
 }
