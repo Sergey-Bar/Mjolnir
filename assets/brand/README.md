@@ -52,7 +52,7 @@ bevelled cut below 64px. It is not a new choice: it is already the "M" of MJÖLN
 the hero runefield's own Elder Futhark spelling of the product's name
 (ᛗ ᛃ ᛟ ᛚ ᚾ ᛁ ᚱ — see [`BRAND-SYSTEM.md`](../../docs/design/BRAND-SYSTEM.md)).
 It is deliberately not one of the five runes `RUNES` in
-[`score-state.ts`](../../src/reporter/score-state.ts) places beside an
+[`presentation.ts`](../../src/reporter/presentation.ts) places beside an
 actual verdict (ᚲ ᚦ ᛏ ᛟ ᛁ) — the permanent brand mark must never look
 like a standing verdict ("this product is always FORGED"). ᛗ appears
 elsewhere only as ambient four-rune flourish decoration in

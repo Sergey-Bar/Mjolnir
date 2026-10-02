@@ -223,6 +223,12 @@ function capFor(ruleId: string): number {
  * and would add the same rows again.
  */
 function rowsStillNeeded(ruleId: string): number {
+  // No budget outside `--core-candidates`, on purpose. The default mode's cap is
+  // "20 samples per rule", and `20 - n - pending` is a different question — for
+  // a rule already measured at n=20 it is zero, which would mean a plain
+  // `npm run corpus:sample` could never add new evidence to a rule that already
+  // has 20 verdicts. That was not a change this edit is for.
+  if (!CORE_CANDIDATES) return Number.POSITIVE_INFINITY;
   const n = MEASURED_FP[ruleId]?.n ?? 0;
   return Math.max(0, capFor(ruleId) - n - (pendingByRule.get(ruleId) ?? 0));
 }

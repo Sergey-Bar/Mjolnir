@@ -32,6 +32,15 @@
  *    resolves to a script that exists. `npm --prefix site run x` belongs to
  *    the workspace's own manifest and is not checked here.
  *
+ * 4. NO DANGLING LINK. Every relative `[text](path)` in every live markdown
+ *    surface resolves to a file that exists. A link is a name too, and it is the
+ *    only one of the four that no gate here could see: the removed-verb check
+ *    looks for verbs, the reference check looks for `npm run`, and a link to a
+ *    document deleted two releases ago looks like neither. Five were live at the
+ *    time this was added, and one of them pointed at
+ *    `docs/EXTERNAL-EVIDENCE-REQUEST.md` from the decision record that still
+ *    cited it as the authority for the number 39.
+ *
  * Usage: node scripts/check-cli-contract.mjs
  * Exit codes: 0 = contract holds, 1 = a violation, 10 = the contract file or
  * the verb list could not be read (an unreadable contract is not a pass).
@@ -317,8 +326,15 @@ const FROZEN_REPORTS = new Set(["docs/RELEASE-3.0.0-READINESS.md"]);
 
 /** Every markdown, workflow and Action file this repository publishes. */
 const surfaces = [];
-for (const dir of ["", "docs", "site", join(".github", "workflows")]) {
-  walk(join(ROOT, dir), (f) => surfaces.push(f));
+// `walk("")` is a walk of the repository root, so it already descends into
+// `docs/`, `site/` and `.github/`. The three extra roots below were re-walking
+// those same trees, which cost a second pass over every file and inflated the
+// reported `surfacesScanned` — a file under `docs/` was counted twice, so the
+// number this gate printed overstated the surface it actually checked. Set,
+// not array, so the count is a count.
+const seenSurfaces = new Set();
+for (const dir of ["", join(".github", "workflows")]) {
+  walk(join(ROOT, dir), (f) => seenSurfaces.add(f));
 }
 for (const f of [
   "action.yml",
@@ -327,8 +343,9 @@ for (const f of [
   "README.md",
 ]) {
   const full = join(ROOT, f);
-  if (existsSync(full)) surfaces.push(full);
+  if (existsSync(full)) seenSurfaces.add(full);
 }
+surfaces.push(...seenSurfaces);
 
 /**
  * `tests/` and `docs/adr/` are excluded. A regression spec for the gate that
@@ -535,6 +552,90 @@ for (const entry of existsSync(WORKFLOW_DIR) ? readdirSync(WORKFLOW_DIR) : []) {
   }
 }
 
+// ------------------------------------------------------------- relative links --
+
+/**
+ * (4) every relative `[text](path)` in a live markdown surface resolves.
+ *
+ * Same defect as (3), different surface. `docs/PRODUCT-DECISIONS.md` linked to
+ * `EXTERNAL-EVIDENCE-REQUEST.md`, `docs/RELEASE-PATH-RUNBOOK.md` linked to the
+ * same document, and an ADR linked to it one directory up — all naming a file
+ * the 6.0 M26-M50 retirement deleted. None of them was a verb or an npm script,
+ * so nothing here could see them, and a decision record that cites a deleted
+ * document as the authority for a number is worse than one that cites nothing:
+ * the number reads as verified.
+ *
+ * SCOPE, chosen by what is cheap to be certain about:
+ *
+ *   - `isLiveSurface` is reused verbatim. Archives, captured artefacts, frozen
+ *     reports, preserved rule docs, `docs/adr/`, `tests/` and
+ *     `docs/cli-contract.json` keep the exemptions the removed-verb check
+ *     already gives them. A second exemption set here would be a second thing to
+ *     keep in sync with the first, and the failure mode of that drift is a gate
+ *     that stops protecting something.
+ *   - markdown only. A link is markdown syntax; `docs/roadmap.yaml` and
+ *     `site/` data files are a different format with different rules.
+ *   - INLINE links and images only. Link-reference DEFINITIONS are not read, and
+ *     the reason is measured rather than guessed: a definition whose value is
+ *     itself a link (`[^pit]: PIT, [PIT](https://pitest.org)`) is a footnote, and
+ *     a `[…]: <bare token>` capture cannot tell that from a real destination
+ *     without parsing CommonMark. Guessing produced 30 false positives across
+ *     one research document on the first attempt.
+ *   - fenced blocks and inline code spans are blanked before matching, because
+ *     documentation about markdown contains markdown.
+ *   - the PATH is resolved; the anchor is not. Checking that `#governance` names
+ *     a heading is a different check with a different false-positive profile, and
+ *     this one is about a link that leads nowhere at all.
+ *   - an extensionless target also resolves as `<target>.md` and
+ *     `<target>/index.md`, which is the site's clean-URL convention: `site/`
+ *     links read `[report](./example-report)`.
+ */
+const LINK_TARGET = /!?\[[^\]\n]*\]\(\s*(<[^>\n]*>|[^()\s]+)/g;
+
+function blankNonProse(text) {
+  // Preserve offsets and line structure so a match still points at the right
+  // line, and replace only the characters that cannot be prose.
+  return text
+    .replace(/^```[\s\S]*?^```/gm, (block) => block.replace(/[^\n]/g, " "))
+    .replace(/`[^`\n]*`/g, (span) => " ".repeat(span.length));
+}
+
+function linkResolves(from, target) {
+  const withoutAnchor = target.split("#")[0].split("?")[0];
+  if (withoutAnchor === "") return true;
+  const base = resolve(dirname(from), withoutAnchor);
+  if (existsSync(base)) return true;
+  // VitePress clean URLs: `./example-report` is `example-report.md`.
+  if (extname(base) === "") {
+    return existsSync(`${base}.md`) || existsSync(join(base, "index.md"));
+  }
+  return false;
+}
+
+let linksChecked = 0;
+for (const file of surfaces) {
+  if (extname(file) !== ".md") continue;
+  if (!isLiveSurface(file)) continue;
+  const where = rel(file);
+  const prose = blankNonProse(readFileSync(file, "utf8"));
+  for (const m of prose.matchAll(LINK_TARGET)) {
+    const raw = (m[1] ?? "").replace(/^<|>$/g, "");
+    if (raw === "") continue;
+    // Absolute, scheme-qualified and same-document targets are not this check's
+    // business: nothing on this machine can tell you whether
+    // `https://kilo.ai` is reachable.
+    if (/^[a-z][a-z0-9+.-]*:/i.test(raw)) continue;
+    if (raw.startsWith("#") || raw.startsWith("/")) continue;
+    linksChecked++;
+    if (linkResolves(file, raw)) continue;
+    failures.push(
+      `${where}: \`[${raw}]\` — no such file. A relative link that resolves to ` +
+        "nothing is a name that resolves to nothing, and this one is in prose a " +
+        "reader is expected to follow.",
+    );
+  }
+}
+
 // ------------------------------------------------------------------ report --
 
 if (failures.length > 0) {
@@ -554,6 +655,7 @@ console.log(
       scripts: Object.keys(SCRIPTS).length,
       distinctCommands: byCommand.size,
       surfacesScanned: surfaces.length,
+      relativeLinksChecked: linksChecked,
       notes,
     },
     null,

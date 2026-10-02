@@ -11,6 +11,118 @@ once shipped, so this file is the record of what changed between versions.
 
 ## [Unreleased]
 
+### Changed: the unclassified-backlog assertion is a two-sided ratchet, not a zero
+
+`tests/contract/verdict-context.spec.ts` asserted **zero** unclassified verdict
+rows, and 23 pending rows make that false for as long as the work takes — so the
+assertion would have been red for the entire classification window.
+
+It now asserts the live backlog **equals the figure `unclassified-ceiling.json`
+records**: greater means the backlog grew without review, less-but-not-zero means
+classification is half done and the commit captures a state nobody agreed to.
+`generate-fp-audit-table` already enforces the same ceiling per FILE, so a second
+file's first row cannot hide inside a generous total — which is why the assertion
+here is on the total and the generator's is on the parts.
+
+The count this file asserted before that was 28, and it existed so the number
+could not go quietly stale. It has been replaced by an assertion that cannot go
+stale in either direction, which is what it was for.
+
+### Added: a fourth naming contract — a relative link that resolves to nothing
+
+`check-cli-contract` now fails when a live markdown document links to a file that
+does not exist. A link is a name, and it was the only kind of name none of the
+three existing contracts could see: the removed-verb pass looks for verbs, the
+reference pass looks for `npm run`, and a link to a document deleted two releases
+ago looks like neither.
+
+Its five live instances were all real:
+
+| Document                          | Target                         | Now                             |
+| --------------------------------- | ------------------------------ | ------------------------------- |
+| `docs/PRODUCT-DECISIONS.md` (D-9) | `EXTERNAL-EVIDENCE-REQUEST.md` | reworded; points at the runbook |
+| `docs/RELEASE-PATH-RUNBOOK.md`    | `EXTERNAL-EVIDENCE-REQUEST.md` | reworded; names the retirement  |
+| `assets/brand/README.md`          | `src/reporter/score-state.ts`  | `presentation.ts`               |
+| `docs/design/BRAND-SYSTEM.md`     | `src/reporter/score-state.ts`  | `presentation.ts`               |
+| `docs/MAINTAINERS.md`             | `CONTRIBUTING.md#governance`   | `../CONTRIBUTING.md#governance` |
+
+`isLiveSurface` is reused verbatim rather than reimplemented, so archives,
+captured artefacts, frozen reports, preserved rule docs, `docs/adr/` and `tests/`
+keep the exemptions they already had. A second exemption list would be a second
+thing to drift from the first, and the drift shows up as a file protected from
+one contract and not the other — exactly how
+`docs/RELEASE-3.0.0-READINESS.md` came to be exempt from one and not the other.
+
+Scope is markdown, inline links and images, path resolved and anchor not, on
+measurements rather than guesses: a link-reference definition whose value is
+itself a link (`[^pit]: PIT, [PIT](https://pitest.org)`) is a footnote, and
+guessing produced **30 false positives in one research document** on the first
+attempt. Fenced blocks and inline code spans are blanked because documentation
+about markdown contains markdown. An extensionless target also resolves as
+`<target>.md`, which is the site's clean-URL convention. 239 links are checked.
+
+15 arms in `tests/contract/cli-contract-dangling-links.spec.ts`, each inherited
+exemption asserted as an exemption. One of them was written backwards: I assumed
+the pass excluded `docs/adr/` and it does — which is why ADR 0012's dangling link
+had to be found by hand. The arm now records that.
+
+**Not fixed, and named:** `scripts/check-external-evidence.ts` still reads
+`docs/EXTERNAL-EVIDENCE-REQUEST.md`, which the 6.0 M26-M50 retirement deleted, so
+`npm run docs:external-evidence` exits 2 and `npm run certify:integrity` cannot
+complete. Its `EXTERNAL_BOX_CEILING = 39` is a number about a file that no longer
+exists, and lowering it to the 18 rows the runbook actually carries would be a
+recorded number lowered to make a gate pass. D-9 now says so in the document
+instead of continuing to cite a deleted file as the authority for it.
+
+### Added: every workflow step's file argument resolves
+
+`workflow:scripts` answers "does this NAME resolve". The other half of a step is
+"does this FILE resolve", and `.github/workflows/ci.yml` shipped a step naming
+`scripts/diff-detector-hashes.ts` — a file that has never existed. The capability
+was present throughout (`scripts/check-detector-hashes.ts` documents
+`--base <manifest>`) and the step has been corrected to name it, but a corrected
+line is not an invariant and nothing said so. **11 file arguments across 21
+workflows now resolve**, against the same `working-directory` resolution and the
+same `EXEMPT_FROM_SCRIPT_CHECK` list the name check uses.
+
+Verified on the real tree before it was codified: plant the typo in `ci.yml`, the
+gate reports the file and the job, revert, the gate passes. 8 arms in
+`tests/contract/workflow-scripts.spec.ts` keep that.
+
+Two scope decisions are load-bearing. A token counts as a file only when it is a
+bare relative path with a code extension after an interpreter — otherwise
+`./actionlint`, which the previous step downloads, would be reported missing on
+every run forever, and the fix would be an exemption. And `dist/` is a **build
+output**, not a repository file: `node dist/cli.mjs` is how six workflows invoke
+the CLI, so checking it would make this gate red on a clean checkout before
+`npm run build` — which is what `npm run certify:fast` and a bare
+`npm run workflow:scripts` see.
+
+### Fixed: the surface scan counted every document under `docs/` twice
+
+`check-cli-contract` walked `"", "docs", "site", ".github/workflows"`, and
+`walk("")` is a walk of the repository root that already descends into the other
+three. Every file under `docs/` and `site/` was read twice and reported twice, so
+the printed `surfacesScanned` overstated the surface the gate checks.
+
+### Added: ADR 0013, and a kill criterion that is not only a command count
+
+`docs/adr/0013-the-core-ceiling-is-decided.md` records what two independently
+chosen constants implied and nobody decided. `src/rules/measurement.ts` carried a
+docstring reading `!! UNREACHABLE AT THE CURRENT CORPUS CAP` — arithmetically
+correct, and a product decision written as a property of the code. It said _don't
+bother_ where it should have said _this is unresolved_.
+
+The ADR holds the ceiling at 10%, keeps `MAX_SAMPLES_PER_RULE` at 20, and gives
+funded candidates the cap the arithmetic requires. It also records what it does
+**not** decide: re-homing the 39 external-evidence boxes, and anything a core rule
+might need beyond the quad and the interval.
+
+`docs/ROADMAP.yaml`'s 6.0 kill criterion said `npm run check` must fit in 12
+commands. A command count is necessary and not sufficient — the tier system has
+to have a reachable top, or the cut only removed the words. It now says so, names
+the arithmetic, and points at the ADR.
+
 ### Added: `--core-candidates`, a sampling mode that spends the budget where it can be spent
 
 The core ceiling is 10% on the Wilson upper bound, so a rule earns core at

@@ -50,7 +50,13 @@ versions:
       frozen-clock contract test.
     killCriterion: >-
       If `npm run check` still needs more than 12 commands, 6.0 is not done —
-      finish the cut. Do not start 7.0 on top of it.
+      finish the cut. Do not start 7.0 on top of it. A command count is
+      necessary and not sufficient: the tier system must also have a reachable
+      top, or the cut only removed the words. Reaching it means one rule whose
+      Wilson interval clears the 10% core ceiling at n >= 35 with zero observed
+      false positives, adjudicated by a person, with its four-leg fixture quad
+      complete. See ADR 0013 — the ceiling is decided at 10%, and 23 pending
+      classifications stand between the corpus and the first core rule.
 
   - version: "7.0"
     status: "deferred"

@@ -216,13 +216,14 @@ why the gate exists.
 
 ## D-9 — An unobtainable criterion is not a criterion.
 
-**The decision.** The 39 boxes in
-[`EXTERNAL-EVIDENCE-REQUEST.md`](EXTERNAL-EVIDENCE-REQUEST.md) are
-`EXTERNAL_PENDING`, not `CLOSED` and not deleted. Each names the proof it
-needs and the actor who can produce it, in
-[`docs/RELEASE-PATH-RUNBOOK.md`](RELEASE-PATH-RUNBOOK.md). Seven gap-ledger
-rows move to a new `EXTERNAL_PENDING` status; one (`GAP-M26-014`, telemetry)
-closes, because its closure is a decision and the decision is D-7.
+**The decision.** Every external-evidence item is `EXTERNAL_PENDING`, not
+`CLOSED` and not deleted. Each names the proof it needs and the actor who can
+produce it, and that record lives in
+[`docs/RELEASE-PATH-RUNBOOK.md`](RELEASE-PATH-RUNBOOK.md): 18 numbered steps, 10
+of them `EXTERNAL_PENDING`, each with the gap ledger row it stands in for.
+Seven gap-ledger rows move to a new `EXTERNAL_PENDING` status; one
+(`GAP-M26-014`, telemetry) closes, because its closure is a decision and the
+decision is D-7.
 
 **Why.** A release gate that depends on a design partner's codebase, another
 person's classification, or an account bound to one maintainer has two
@@ -235,16 +236,27 @@ The third outcome is a named status with a named owner. `GAP-M26-002`'s lesson
 applies directly: a status that reads as progress while being a computation is
 how a 429-row ledger with zero judgement got certified against its own output.
 
-**What it forecloses.** Nothing about 1.0. The 39 boxes are the definition of
+**What it forecloses.** Nothing about 1.0. These items are the definition of
 _done for 1.0_, not for 5.x — which is where the market puts this. ESLint ran on
 the same footing for a decade. What ESLint did not do is put "no external
 validation exists" in its pre-release gate, which is where a naive reading of
 this ledger ends up.
 
-**Why it is falsifiable.** `npm run docs:external-evidence` fails if a box is
-ticked, if the count rises above 39, or if the runbook stops naming the gaps it
-is standing in for. A disposition that cannot be checked is a way to park
-work.
+**Why it is falsifiable — and the one part of this that is broken.**
+`docs/RELEASE-PATH-RUNBOOK.md` is the checkable surface: `check-cli-contract`
+now fails if any live document stops linking to a file that exists, which is the
+form this decision takes now that its request document is gone.
+
+The gate that used to back the count no longer runs at all.
+`scripts/check-external-evidence.ts` reads `docs/EXTERNAL-EVIDENCE-REQUEST.md`,
+which the 6.0 M26-M50 retirement deleted, so `npm run docs:external-evidence`
+exits 2 with a setup error and `npm run certify:integrity` cannot complete. Its
+`EXTERNAL_BOX_CEILING = 39` is a number about a file that no longer exists.
+Re-homing those 39 boxes is **open work, not something this edit decided**: the
+runbook has 18 rows, and moving the count to 18 by lowering a recorded ceiling is
+exactly the change D-7 and the corpus ceiling both exist to prevent. The honest
+state is that D-9's evidence mechanism is broken and the disposition it protects
+is intact.
 
 ---
 
