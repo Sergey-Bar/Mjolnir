@@ -115,6 +115,7 @@ jobs:
           npm run check-version -- --expect-version "$VERSION" "${EXTRA[@]}"
       - name: Candidate evidence
         id: evidence
+        if: steps.context.outputs.dry_run == 'false'
         env:
           STABLE_RELEASE_AUTHORIZED: ${{ vars.STABLE_RELEASE_AUTHORIZED }}
         run: |
