@@ -25,7 +25,9 @@
       "importedBy": [],
       "imported": false,
       "shipped": false,
-      "testedBy": [],
+      "testedBy": [
+        "tests/contract/carve-manifest.spec.ts"
+      ],
       "disposition": {
         "action": "KEEP",
         "reason": "Not yet adjudicated. The facts beside it are the evidence; the decision is a reviewable edit to this file."
@@ -114,7 +116,7 @@
       }
     },
     "src/ledger/m26-validators.ts": {
-      "lines": 2856,
+      "lines": 2923,
       "exports": 43,
       "importedBy": [
         "scripts/check-m26-ledgers.ts",
@@ -126,7 +128,8 @@
         "tests/config/coverage-exclusion-guard.spec.ts",
         "tests/contract/gate-exit-codes.spec.ts",
         "tests/ledger/m26-validator-reject-arms.spec.ts",
-        "tests/ledger/m26-validators.spec.ts"
+        "tests/ledger/m26-validators.spec.ts",
+        "tests/lib/path-existence.spec.ts"
       ],
       "disposition": {
         "action": "KEEP",
@@ -145,20 +148,6 @@
       "testedBy": [
         "tests/release/candidate-decision.spec.ts",
         "tests/release/decision.spec.ts"
-      ],
-      "disposition": {
-        "action": "KEEP",
-        "reason": "Not yet adjudicated. The facts beside it are the evidence; the decision is a reviewable edit to this file."
-      }
-    },
-    "src/release/pack-audit.ts": {
-      "lines": 111,
-      "exports": 7,
-      "importedBy": [],
-      "imported": false,
-      "shipped": false,
-      "testedBy": [
-        "tests/release/pack-audit.spec.ts"
       ],
       "disposition": {
         "action": "KEEP",
@@ -188,20 +177,6 @@
       "testedBy": [
         "tests/release/reproducibility-edge.spec.ts",
         "tests/release/reproducibility.spec.ts"
-      ],
-      "disposition": {
-        "action": "KEEP",
-        "reason": "Not yet adjudicated. The facts beside it are the evidence; the decision is a reviewable edit to this file."
-      }
-    },
-    "src/release/sbom.ts": {
-      "lines": 153,
-      "exports": 6,
-      "importedBy": [],
-      "imported": false,
-      "shipped": false,
-      "testedBy": [
-        "tests/release/sbom.spec.ts"
       ],
       "disposition": {
         "action": "KEEP",
@@ -288,7 +263,7 @@
       }
     },
     "src/v6/capability-registry.ts": {
-      "lines": 1020,
+      "lines": 1055,
       "exports": 29,
       "importedBy": [
         "scripts/v6/check-capability-registry.ts",
@@ -301,7 +276,8 @@
       "shipped": true,
       "testedBy": [
         "tests/v6/capability-command.spec.ts",
-        "tests/v6/capability-registry.spec.ts"
+        "tests/v6/capability-registry.spec.ts",
+        "tests/v6/maturity-and-keys.spec.ts"
       ],
       "disposition": {
         "action": "KEEP",
@@ -329,7 +305,7 @@
       }
     },
     "src/v6/claim-lint.ts": {
-      "lines": 404,
+      "lines": 426,
       "exports": 16,
       "importedBy": [
         "scripts/v6/check-claims-prose.ts"
@@ -352,8 +328,7 @@
         "scripts/v6/check-ecosystem.ts",
         "scripts/v6/ecosystem-census.ts",
         "scripts/v6/inventory.ts",
-        "src/v6/ecosystem-probe.ts",
-        "src/v6/tool-coverage.ts"
+        "src/v6/ecosystem-probe.ts"
       ],
       "imported": true,
       "shipped": true,
@@ -363,8 +338,7 @@
         "tests/v6/ecosystem-census.spec.ts",
         "tests/v6/ecosystem-probe.spec.ts",
         "tests/v6/schemas.spec.ts",
-        "tests/v6/test-doubles.spec.ts",
-        "tests/v6/tool-coverage.spec.ts"
+        "tests/v6/test-doubles.spec.ts"
       ],
       "disposition": {
         "action": "KEEP",
@@ -372,7 +346,7 @@
       }
     },
     "src/v6/ecosystem-probe.ts": {
-      "lines": 732,
+      "lines": 740,
       "exports": 18,
       "importedBy": [
         "scripts/v6/check-ecosystem.ts",
@@ -414,7 +388,7 @@
       }
     },
     "src/v6/maturity.ts": {
-      "lines": 506,
+      "lines": 529,
       "exports": 28,
       "importedBy": [
         "scripts/v6/check-claims-prose.ts",
@@ -438,6 +412,7 @@
         "tests/v6/ecosystem-census.spec.ts",
         "tests/v6/ecosystem-probe.spec.ts",
         "tests/v6/edge-cases.spec.ts",
+        "tests/v6/maturity-and-keys.spec.ts",
         "tests/v6/maturity-vocabulary.spec.ts",
         "tests/v6/maturity.spec.ts",
         "tests/v6/schemas.spec.ts"
@@ -464,35 +439,18 @@
       }
     },
     "src/v6/qa-ir.ts": {
-      "lines": 588,
+      "lines": 596,
       "exports": 19,
       "importedBy": [
         "scripts/v6/check-qa-ir-parity.ts",
         "src/v6/qa-ir-parity.ts",
-        "src/v6/test-doubles.ts",
-        "src/v6/tool-coverage.ts"
+        "src/v6/test-doubles.ts"
       ],
       "imported": true,
       "shipped": false,
       "testedBy": [
+        "tests/v6/maturity-and-keys.spec.ts",
         "tests/v6/qa-ir.spec.ts",
-        "tests/v6/test-doubles.spec.ts",
-        "tests/v6/tool-coverage.spec.ts"
-      ],
-      "disposition": {
-        "action": "KEEP",
-        "reason": "Not yet adjudicated. The facts beside it are the evidence; the decision is a reviewable edit to this file."
-      }
-    },
-    "src/v6/test-doubles.ts": {
-      "lines": 207,
-      "exports": 9,
-      "importedBy": [
-        "src/v6/tool-coverage.ts"
-      ],
-      "imported": true,
-      "shipped": false,
-      "testedBy": [
         "tests/v6/test-doubles.spec.ts"
       ],
       "disposition": {
@@ -500,15 +458,14 @@
         "reason": "Not yet adjudicated. The facts beside it are the evidence; the decision is a reviewable edit to this file."
       }
     },
-    "src/v6/tool-coverage.ts": {
-      "lines": 252,
-      "exports": 8,
+    "src/v6/test-doubles.ts": {
+      "lines": 221,
+      "exports": 9,
       "importedBy": [],
       "imported": false,
       "shipped": false,
       "testedBy": [
-        "tests/contract/carve-manifest.spec.ts",
-        "tests/v6/tool-coverage.spec.ts"
+        "tests/v6/test-doubles.spec.ts"
       ],
       "disposition": {
         "action": "KEEP",

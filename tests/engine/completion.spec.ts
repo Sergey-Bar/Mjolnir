@@ -36,8 +36,8 @@ describe("deriveCompletion", () => {
   it("reports the withheld set as PARTIAL coverage without touching partial", () => {
     // The governing constraint, as a test: `partial` gains no input from
     // coverage. A whole scan over 45 of 79 detectors is `partial: false`,
-    // `coverageState: "PARTIAL"`, and its `reasons` stay empty — a
-    // withheld rule is not an in-flight degradation.
+    // `coverageState: "PARTIAL"`, and its only reason is the coverage gap —
+    // not an in-flight degradation.
     const result = deriveCompletion({
       discoveryTruncated: false,
       rulesPartial: false,
@@ -55,7 +55,7 @@ describe("deriveCompletion", () => {
     expect(result.analysisStatus.rules).toBe("complete");
     expect(result.analysisStatus.rulesApplied).toBe(45);
     expect(result.analysisStatus.rulesWithheld).toBe(34);
-    expect(result.analysisStatus.reasons).toEqual([]);
+    expect(result.analysisStatus.reasons).toEqual(["coverage:quarantine:34"]);
   });
 
   it("derives partial rules and a reason when rules crash", () => {

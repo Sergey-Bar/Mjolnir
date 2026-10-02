@@ -10,7 +10,8 @@
  *    key — a reworded message at the same location is still debt);
  *  - score delta moves with the findings and states its direction;
  *  - the CLI verb honors the frozen exit contract: 0 clean, 1 new
- *    error findings, 2 partial scan or no baseline;
+ *    error findings, 2 partial scan or no baseline; (`mjolnir ci verify`
+ *    — the verb moved under `ci` in the v6 carve);
  *  - the MCP `verify` tool is 1:1 with the verb (same digest, same
  *    guardrails), and never masquerades a partial scan as clean.
  */
@@ -137,7 +138,12 @@ describe("buildVerifyDigest (P7)", () => {
     expect(d.hasBaseline).toBe(false);
     const out = renderVerifyDigest(d);
     expect(out).toContain("No committed baseline");
-    expect(out).toContain("mjolnir baseline");
+    // The render points at the surface that actually exists. It used to say
+    // `mjolnir baseline`, a verb the v6 carve removed — a message that
+    // sends the reader to `unknown subcommand`. Asserted on the flag that
+    // writes the baseline, so it cannot rot back into a dead verb.
+    expect(out).toContain("--save-baseline");
+    expect(out).toContain("mjolnir ci verify");
   });
 
   it("a scoreless scan (empty target) degrades the delta — never fabricates", () => {
@@ -154,7 +160,7 @@ describe("buildVerifyDigest (P7)", () => {
   });
 });
 
-describe("`mjolnir verify` verb (frozen exit contract)", () => {
+describe("`mjolnir ci verify` (frozen exit contract)", () => {
   let dir: string;
   let origCwd: string;
   const run = (args: string[]): { code: number; out: string } => {
@@ -163,6 +169,9 @@ describe("`mjolnir verify` verb (frozen exit contract)", () => {
         process.execPath,
         [
           join(import.meta.dirname, "..", "..", "dist", "cli.mjs"),
+          // `verify` moved under `ci` in the v6 carve: it is a check a
+          // pipeline runs, and `ci` is the verb that means that.
+          "ci",
           "verify",
           ...args,
         ],

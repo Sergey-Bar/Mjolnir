@@ -8,7 +8,12 @@
 
 export interface ExitCodeViolation {
   type:
-    "or-true" | "stderr-suppression" | "continue-on-error" | "allow-failure";
+    | "or-true"
+    | "or-colon"
+    | "stderr-suppression"
+    | "exit-zero"
+    | "continue-on-error"
+    | "allow-failure";
   description: string;
   script: string;
   fix: string;
@@ -33,7 +38,8 @@ interface WorkflowConfig {
   [key: string]: unknown;
 }
 
-const OR_TRUE_PATTERN = /\|\|\s*(?:true|:)\s*$/;
+const OR_TRUE_PATTERN = /\|\|\s*true\s*$/;
+const OR_COLON_PATTERN = /\|\|\s*:\s*$/;
 const STDERR_SUPPRESS_PATTERN = /2>\/dev\/null/;
 const EXIT_ZERO_PATTERN = /(?:^|\s)exit\s+0(?:\s|$)/;
 
@@ -41,6 +47,14 @@ function analyzeScriptLine(line: string, jobName: string): ExitCodeViolation[] {
   const violations: ExitCodeViolation[] = [];
   const trimmed = line.trim();
 
+  // Two patterns, because they are two different constructs that were reported
+  // as one. The single pattern was `/\|\|\s*(?:true|:)\s*$/`, so a line ending
+  // `|| :` was reported as `uses "|| true"` — a description naming a construct
+  // the script does not contain, on the exact finding a reader is about to go
+  // looking for.
+  //
+  // Separated so the report names what is actually there, and so a consumer
+  // grouping by `type` is not told that two distinct remediations are one.
   if (OR_TRUE_PATTERN.test(trimmed)) {
     violations.push({
       type: "or-true",
@@ -49,6 +63,19 @@ function analyzeScriptLine(line: string, jobName: string): ExitCodeViolation[] {
         `allowing failures to pass silently.`,
       script: trimmed,
       fix: 'Remove "|| true" and handle errors explicitly.',
+    });
+  }
+
+  if (OR_COLON_PATTERN.test(trimmed)) {
+    violations.push({
+      type: "or-colon",
+      description:
+        `Job "${jobName}" uses "|| :" to make a command that may fail ` +
+        `succeed unconditionally.`,
+      script: trimmed,
+      fix:
+        'Remove "|| :" — it is a no-op, not an error handler. If the failure is ' +
+        "genuinely acceptable, say which and why.",
     });
   }
 
@@ -65,7 +92,11 @@ function analyzeScriptLine(line: string, jobName: string): ExitCodeViolation[] {
 
   if (EXIT_ZERO_PATTERN.test(trimmed) && !trimmed.startsWith("#")) {
     violations.push({
-      type: "or-true",
+      // Was `"or-true"`, on a finding whose own description says it forces an
+      // exit code of 0. A consumer grouping by `type` got these two unrelated
+      // suppressions under one heading, and a reader grepping for the reported
+      // type would find nothing in the script.
+      type: "exit-zero",
       description:
         `Job "${jobName}" forces exit code 0, overriding the ` +
         `natural exit code of the preceding command.`,

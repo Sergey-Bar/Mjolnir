@@ -155,6 +155,8 @@
 
     { "id": "provenance-drift", "command": "npm run docs:provenance-drift" },
 
+    { "id": "roadmap-backlinks", "command": "npm run docs:roadmap:backlinks" },
+
     { "id": "claim-integrity", "command": "npm run gates:claim-integrity" }
   ]
 }

@@ -40,6 +40,8 @@ Options:
                           detector never gates; see docs/PRODUCT-DECISIONS.md D-2)
   --debug                 print swallowed rule crashes
   --cache                 reuse local per-file verdicts
+  --save-baseline         write this scan to .mjolnir/baseline.json so a later scan can
+                          say RESOLVED (what \`mjolnir ci verify\` reads)
   --no-progress           no live scan-progress line on stderr
   --score                 print only the numeric score (or \`unknown\`)
   --category <cat>        presentation filter (repeatable)
@@ -150,6 +152,10 @@ Options:
                           docs/PRODUCT-DECISIONS.md D-2)
   --debug                 print swallowed rule crashes
   --cache                 reuse local per-file verdicts
+  --save-baseline         write this scan to
+                          .mjolnir/baseline.json so a later
+                          scan can say RESOLVED (what
+                          \`mjolnir ci verify\` reads)
   --no-progress           no live scan-progress line on
                           stderr
   --score                 print only the numeric score (or

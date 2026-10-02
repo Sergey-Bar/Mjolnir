@@ -32,6 +32,7 @@ import {
   CORE_FP_CEILING,
   QUARANTINE_FP_FLOOR,
   declaredDetectorRevision,
+  defensibleTier,
   effectiveTier,
   hasStaleMeasurement,
   hasValidMeasurement,
@@ -40,6 +41,7 @@ import {
   isTierStraddling,
   measurementFor,
   measurementInterval,
+  measurementTier,
   ruleStatus,
   samplesForZeroFp,
   straddleDetail,
@@ -49,6 +51,7 @@ import {
   DEMOTED_FOR_UNSUBSTANTIATED_CORE,
   declaredCoreWithoutEvidence,
 } from "../../src/rules/tier-evidence.js";
+import type { Tier } from "../../src/rules/measurement.js";
 
 const ROOT = join(import.meta.dirname, "..", "..");
 const BASELINE_DIR = join(ROOT, "tests", "corpus", "baseline");
@@ -300,15 +303,59 @@ describe("the nineteen unsubstantiated core claims were demoted, not kept", () =
 
   it("every demotion records the interval that caused it", () => {
     for (const entry of DEMOTED_FOR_UNSUBSTANTIATED_CORE) {
+      // The interval must clear the ceiling — i.e. NOT be evidence for core.
       expect(
         entry.ciHigh,
-        `${entry.ruleId} has no recorded ciHigh`,
+        `${entry.ruleId} has no usable ciHigh. A row whose measurement has been ` +
+          `withdrawn is not evidence for a demotion; NaN > ${CORE_FP_CEILING} is ` +
+          `false, so this fails rather than passing vacuously`,
       ).toBeGreaterThan(CORE_FP_CEILING);
       expect(
         entry.justification.trim().length,
         `${entry.ruleId} has no justification — the reason a rule sits in extended rather than core is the only thing a reader of the matrix has to go on`,
       ).toBeGreaterThan(20);
     }
+  });
+
+  it("the recorded interval IS the live measurement, not a transcription", () => {
+    // The check this was missing. It asserted `ciHigh > CORE_FP_CEILING`, which
+    // every stale value also satisfied — so eighteen of nineteen wrong numbers
+    // sat here for a release, described by prose that had drifted with them
+    // (QA-PY-002 recorded 0.152 against a real 0.2996).
+    //
+    // Comparing to the live `measurementInterval` rather than to a
+    // re-derivation of the same expression catches the things a second copy of
+    // the formula would not: a stale `detectorRevision`, a withdrawn
+    // measurement, or the derivation drifting from `measurementInterval` itself.
+    const mismatches: string[] = [];
+    const unmeasurable: string[] = [];
+    for (const entry of DEMOTED_FOR_UNSUBSTANTIATED_CORE) {
+      const rule = RULES.find((candidate) => candidate.id === entry.ruleId);
+      if (rule === undefined) {
+        throw new Error(
+          `${entry.ruleId} is on the demotion list but not in the registry`,
+        );
+      }
+      const live = measurementInterval(rule);
+      if (live === undefined) {
+        unmeasurable.push(entry.ruleId);
+        continue;
+      }
+      if (Math.abs(live.ciHigh - entry.ciHigh) > 5e-5) {
+        mismatches.push(
+          `${entry.ruleId}: recorded ${entry.ciHigh}, live ${live.ciHigh}`,
+        );
+      }
+    }
+    expect(
+      unmeasurable,
+      "a demoted rule has no valid measurement, so the row citing it cannot be checked",
+    ).toEqual([]);
+    expect(
+      mismatches,
+      "a recorded ciHigh disagrees with the live measurement — the recorded " +
+        "value is what a reader of the matrix would believe",
+    ).toEqual([]);
   });
 
   it("the demotion list is the nineteen, no duplicates", () => {
@@ -631,6 +678,140 @@ describe("registry ratchet: recall floor (§20.6)", () => {
       silentCore,
       "effective-core rules that fire nowhere in the corpus (recall floor §20.6)",
     ).toEqual([]);
+  });
+});
+
+/**
+ * The declared tier is a floor that may only ever TIGHTEN (B0, 2026-10-01).
+ *
+ * `rule.tier` is not a duplicate of the measurement — it is a THIRD floor,
+ * stricter than both derivations, and today it is the only thing holding 33
+ * rules out of the default scan. Measured over all 79 live rules:
+ *
+ *   - the INTERVAL floor quarantines ZERO rules (`ciLow >= 50%` is not reached
+ *     at n = 10..80), and derives CORE for none of them;
+ *   - 33 rules declare `quarantine`, and every one of them would be promoted
+ *     into a default scan if the field were deleted.
+ *
+ * A floor that could also LOOSE would not be a floor. It would be a way to ship
+ * a rule the corpus says should not ship, and — because every derived number
+ * in the tree reads the declared value through `effectiveTier` — nothing else
+ * would disagree. One hand-edit could release `QA-TEST-002` at 62% observed FP
+ * and the tier matrix, the capability registry and the docs would all render it
+ * as a normal finding.
+ *
+ * So: tightening is permitted (quarantine a well-measured rule — it costs a
+ * reader one flag), releasing is not.
+ */
+
+/** Tier order, most permissive first. A declared tier may only move right. */
+const TIER_RANK: Record<Tier, number> = {
+  core: 0,
+  extended: 1,
+  quarantine: 2,
+};
+
+describe("registry ratchet: a declared tier may only tighten (B0)", () => {
+  const looseners = RULES.filter(
+    (rule) =>
+      rule.tier !== undefined &&
+      TIER_RANK[rule.tier] < TIER_RANK[defensibleTier(rule)],
+  );
+
+  it("no rule declares a tier MORE permissive than its evidence allows", () => {
+    expect(
+      looseners.map((r) => {
+        const m = measurementFor(r.id);
+        const measured =
+          m === undefined ? "none" : `${(m.fpRate * 100).toFixed(0)}%`;
+        return (
+          `${r.id}: declares ${r.tier} but its evidence supports ` +
+          `${defensibleTier(r)} (measured ${measured})`
+        );
+      }),
+    ).toEqual([]);
+  });
+
+  it("the floor has teeth — it is not `extended` for every rule", () => {
+    // A law that can never fire is not a law. Written against
+    // `measurementTier` this assertion passes trivially, because that function
+    // returns `extended` for 78 of 79 rules; `defensibleTier` quarantines 18
+    // and the loosening assertion above becomes capable of failing.
+    const floor = RULES.map(defensibleTier);
+    expect(floor.filter((t) => t === "quarantine").length).toBeGreaterThan(0);
+    expect(
+      new Set(floor).size,
+      "the floor resolves one answer only",
+    ).toBeGreaterThan(1);
+  });
+
+  it("the floor catches a badly-measured rule being declared extended", () => {
+    // The failure this exists to prevent, run as a probe. `QA-TEST-001` is
+    // measured at 60% FP; setting its tier to `extended` is a one-word edit
+    // that would put it in every default scan. Under `measurementTier` that
+    // edit is INVISIBLE — the interval floor also says `extended` — which is
+    // why the floor is `defensibleTier` and not the interval alone.
+    const measured = RULES.find(
+      (r) => defensibleTier(r) === "quarantine" && r.tier === "quarantine",
+    );
+    expect(measured, "no quarantined rule to probe").toBeDefined();
+    if (measured === undefined) return;
+    const loosened = { ...measured, tier: "extended" as const };
+    expect(TIER_RANK[loosened.tier] < TIER_RANK[defensibleTier(loosened)]).toBe(
+      true,
+    );
+    // And the interval floor alone would have missed it.
+    expect(
+      TIER_RANK[loosened.tier] < TIER_RANK[measurementTier(loosened)],
+    ).toBe(false);
+  });
+
+  it("the floor catches an unmeasured rule being declared extended", () => {
+    // The other hole. A rule with no measurement has no evidence for shipping
+    // by default; the interval floor cannot see this, because it also returns
+    // `extended` when there is no interval to read.
+    const unmeasured = RULES.filter(
+      (r) => !hasValidMeasurement(r) && r.tier === "quarantine",
+    );
+    expect(
+      unmeasured.length,
+      "no unmeasured quarantine rule to probe",
+    ).toBeGreaterThan(0);
+    for (const rule of unmeasured) {
+      expect(defensibleTier(rule)).toBe("quarantine");
+      const loosened = { ...rule, tier: "extended" as const };
+      expect(
+        TIER_RANK[loosened.tier] < TIER_RANK[defensibleTier(loosened)],
+      ).toBe(true);
+    }
+  });
+
+  it("the declared floor is doing the work: tightening a measured rule is allowed", () => {
+    // The permitted direction, as a fact about this registry rather than a
+    // hypothetical. `QA-TEST-003` is measured at 22% FP over n=78 — better
+    // evidence than most rules here carry — and is declared quarantine anyway.
+    // That is the third floor being exercised, and it is why deleting the
+    // declared field is not a refactor.
+    const heldDown = RULES.filter(
+      (r) => r.tier === "quarantine" && defensibleTier(r) === "extended",
+    );
+    expect(
+      heldDown.length,
+      "the declared floor stopped holding anything down — B0 measured 33",
+    ).toBeGreaterThan(0);
+  });
+
+  it("every declared tier is one of the three the product knows", () => {
+    // A fourth value would be silently unreachable rather than rejected here:
+    // `TIER_RANK[...]` would be `undefined`, `undefined < 2` is false, and the
+    // loosening assertion would pass it.
+    for (const rule of RULES) {
+      if (rule.tier === undefined) continue;
+      expect(
+        Object.prototype.hasOwnProperty.call(TIER_RANK, rule.tier),
+        `${rule.id} declares an unknown tier ${String(rule.tier)}`,
+      ).toBe(true);
+    }
   });
 });
 

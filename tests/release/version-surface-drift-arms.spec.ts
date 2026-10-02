@@ -154,15 +154,29 @@ describe("T8: the envelope check refuses a version it cannot reason about", () =
 
   it("catches a Home.vue pinned to a different Action major", () => {
     // The one drift rule the existing suite does not reach: a site that
-    // still advertises `Mjolnir@v3` while the CLI is 4.x. Nothing else
-    // would notice, because both strings are internally consistent.
+    // still advertises an old `Mjolnir@vN` while the CLI is on a different
+    // major. Nothing else would notice, because both strings are internally
+    // consistent.
+    //
+    // The major is read off the clean fixture and the expected message is
+    // composed from it. Transcribing both — the seeded pin and the expected
+    // sentence — is how this arm came to assert "v3 does not match v4" while
+    // seeding v5: the check fired correctly and the test failed anyway, which
+    // is the test asserting its own staleness.
+    const major = VERSION.split(".")[0] as string;
+    const seededMajor = String(Number(major) + 1);
     const surfaces = cleanSurfaces();
-    surfaces["site/.vitepress/theme/Home.vue"] = surfaces[
-      "site/.vitepress/theme/Home.vue"
-    ]?.replace("Sergey-Bar/Mjolnir@v4", "Sergey-Bar/Mjolnir@v5");
+    const home = surfaces["site/.vitepress/theme/Home.vue"];
+    expect(home, "the Home.vue fixture is a version surface").toBeTruthy();
+    surfaces["site/.vitepress/theme/Home.vue"] = home?.replace(
+      `Sergey-Bar/Mjolnir@v${major}`,
+      `Sergey-Bar/Mjolnir@v${seededMajor}`,
+    );
     const violations = checkVersionSurfaceEnvelope(VERSION, surfaces, STABLE);
     expect(
-      violations.some((v) => v.includes("action major v3 does not match v4")),
+      violations.some((v) =>
+        v.includes(`action major v${seededMajor} does not match v${major}`),
+      ),
       violations.join("; "),
     ).toBe(true);
   });

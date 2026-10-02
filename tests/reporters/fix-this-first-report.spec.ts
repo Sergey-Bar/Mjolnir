@@ -90,8 +90,7 @@ describe("MVP-005 default terminal report", () => {
         "= FINDINGS",
         "$ mjolnir explain QA-TEST-001",
         "$ mjolnir explain <file:line> tests/login.spec.ts:12",
-        "$ mjolnir baseline",
-        "$ mjolnir diff",
+        "$ mjolnir scan --scope changed",
       ]
     `);
   });
@@ -153,8 +152,7 @@ describe("MVP-005 default terminal report", () => {
         "= FINDINGS",
         "$ mjolnir explain QA-TEST-001",
         "$ mjolnir explain <file:line> tests/login.spec.ts:12",
-        "$ mjolnir baseline",
-        "$ mjolnir diff",
+        "$ mjolnir scan --scope changed",
         "Analysis: PARTIAL — verdict may be incomplete · 9ms",
       ]
     `);

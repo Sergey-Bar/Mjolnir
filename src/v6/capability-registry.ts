@@ -416,8 +416,24 @@ function proofFor(
   facts: RuleFacts,
 ): ProofRef {
   if (maturityRank(maturity) >= maturityRank("M2_IMPLEMENTED")) {
+    // A rule that has a VALID MEASUREMENT, not merely the first rule that is
+    // still live.
+    //
+    // This picked `base.rules.find((rule) => !facts.retired.has(rule))` — the
+    // first entry in declaration order that had not been deleted. So a
+    // capability whose first listed rule had no corpus evidence at all could be
+    // marked `LOCAL_PROVEN` with a pointer into `docs/FP-AUDIT.md` for a rule
+    // the audit never measured. The status is the claim; the pointer is the
+    // evidence; pointing at an unmeasured rule makes the pointer decorative and
+    // the claim unverifiable.
+    //
+    // `facts.measured` is exactly the set of rules `hasValidMeasurement` holds
+    // for — the same predicate `evidence.registry.hasMeasurement` reports on —
+    // so the cited rule and the status now come from one fact.
     const measured = evidence.registry.hasMeasurement
-      ? base.rules.find((rule) => !facts.retired.has(rule))
+      ? base.rules.find(
+          (rule) => !facts.retired.has(rule) && facts.measured.has(rule),
+        )
       : undefined;
     if (measured !== undefined && observedAt !== "") {
       return {
@@ -721,10 +737,29 @@ export function buildCapabilityRegistry(
   };
 }
 
+/**
+ * The rule family a framework's capability is evidenced by.
+ *
+ * The keys are RULE-ID PREFIXES — what `ruleFamily()` computes from `QA-SE-001`
+ * — not rule categories, which are a different namespace and happen to collide
+ * confusingly here: the three Selenium rules carry the `QA-SE-` id prefix and
+ * the `QA-PW` category.
+ *
+ * That distinction is not cosmetic. `liveByFamily` is built from
+ * `ruleFamily(rule.id)`, so a key that is a plausible-looking family with no
+ * rules behind it resolves to the empty list and the capability claims no
+ * evidence at all.
+ *
+ * `selenium` was `"QA-SEL"`, which is not a family any rule id carries — the
+ * real prefix is `QA-SE`. So the Selenium capability was deriving its evidence
+ * from a family with zero members while its own three rules (`QA-SE-001`,
+ * `QA-SE-002`, `QA-SE-003`) sat unread in a family nothing pointed at.
+ * `QA-SE` is the only family in the registry that no entry could reach.
+ */
 const FRAMEWORK_FAMILY: Readonly<Record<string, string>> = {
   playwright: "QA-PW",
   cypress: "QA-CYP",
-  selenium: "QA-SEL",
+  selenium: "QA-SE",
   jest: "QA-JV",
   vitest: "QA-JV",
   mocha: "QA-JV",

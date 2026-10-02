@@ -42,6 +42,7 @@
 import type { QADoctorRule } from "./rule.js";
 import { MEASURED_FP } from "./measured-fp.generated.js";
 import { CORE_FP_CEILING, measurementInterval } from "./measurement.js";
+import { wilsonInterval } from "../lib/wilson.js";
 
 export interface DeclaredCoreClaim {
   ruleId: string;
@@ -76,128 +77,169 @@ export interface DeclaredCoreClaim {
  */
 export interface DemotedCoreClaim {
   ruleId: string;
-  /** The 95% Wilson upper bound that failed to clear the core ceiling. */
-  ciHigh: number;
+  /**
+   * The 95% Wilson upper bound that failed to clear the core ceiling.
+   *
+   * NOT hand-written. It used to be, and **eighteen of nineteen were wrong**:
+   * the committed values were transcribed once at the demotion and never
+   * re-derived, so a re-sample moved the real interval and left the number
+   * beside it describing a measurement that no longer exists. QA-PY-002
+   * recorded 0.152 while the interval was 0.2996 — the row said "the largest
+   * sample on an observed-nonzero Python rule here, and still short of the
+   * ceiling" about a rule that was twice as far from the ceiling as recorded.
+   *
+   * The ratchet that was supposed to catch this did not, because it only
+   * asserted `ciHigh > CORE_FP_CEILING`, which every stale value also
+   * satisfied. A check on a hand-maintained number that only tests its sign
+   * is a check that cannot fail.
+   *
+   * So the number is computed from `MEASURED_FP` at load, using the same
+   * expression `measurementInterval` uses. The hand-written part of a row is
+   * now exactly the part that is judgement — `ruleId` and `justification` —
+   * and the part that is arithmetic is arithmetic.
+   */
+  readonly ciHigh: number;
   /** Why `extended` is the right word rather than `quarantine`. */
   justification: string;
 }
 
-export const DEMOTED_FOR_UNSUBSTANTIATED_CORE: readonly DemotedCoreClaim[] = [
+/**
+ * The Wilson upper bound for a rule id, or `null` when it has no measurement.
+ *
+ * `MEASURED_FP` records a rate and a sample count rather than an integer count
+ * of false positives, so `fpRate * n` is generally fractional (10.5% of 19 is
+ * 1.995) and `wilsonInterval` rounds internally. Round here exactly as
+ * `measurementInterval` does — see its docstring for why the two are one fact
+ * rather than two.
+ */
+function ciHighFor(ruleId: string): number | null {
+  const m = MEASURED_FP[ruleId];
+  if (m === undefined) return null;
+  return wilsonInterval(Math.round(m.fpRate * m.n), m.n).ciHigh;
+}
+
+/**
+ * Demoted rules, with the interval that failed re-derived on every load.
+ *
+ * `ciHigh` is written as a computed property rather than a literal so the
+ * committed source holds no number that can go stale. A rule whose measurement
+ * has since been withdrawn gets `Number.NaN`, which the ratchet rejects — an
+ * unmeasurable row cannot be evidence for anything, and `NaN > 0.1` is false,
+ * so it fails the check rather than passing it.
+ */
+const DEMOTED_ROWS: ReadonlyArray<{
+  ruleId: string;
+  justification: string;
+}> = [
   {
     ruleId: "QA-PW-002",
-    ciHigh: 0.163,
     justification:
       "n=10, 0% observed. Selector specificity was reasoned about by hand; the sample is too thin to call it core and too clean to quarantine.",
   },
   {
     ruleId: "QA-PW-003",
-    ciHigh: 0.404,
     justification:
       "n=10 with 1 observed FP — the widest interval in the registry. The premise was reviewed, but 40.4% is not a 10% ceiling.",
   },
   {
     ruleId: "QA-PY-001",
-    ciHigh: 0.308,
     justification:
       "n=20, 0% observed. Module-level mutable state is structural; the sample does not establish the rate.",
   },
   {
     ruleId: "QA-PY-002",
-    ciHigh: 0.152,
     justification:
       "n=23, 2 observed FPs. The largest sample on an observed-nonzero Python rule here, and still short of the ceiling.",
   },
   {
     ruleId: "QA-PY-009",
-    ciHigh: 0.308,
     justification:
       "n=20, 0% observed. The premise was reviewed by hand and holds; twenty clean samples still do not establish the rate, and nothing argues the rule down either.",
   },
   {
     ruleId: "QA-PY-011",
-    ciHigh: 0.286,
     justification:
       "n=10, 1 observed FP. Neither the point estimate nor the interval could place it in either direction.",
   },
   {
     ruleId: "QA-PW-101",
-    ciHigh: 0.308,
     justification:
       "n=20, 0% observed. A selector race is structural; the measurement is thin.",
   },
   {
     ruleId: "QA-PW-113",
-    ciHigh: 0.151,
     justification:
       "n=24, 2 observed FPs. Expect-without-locator is structural; the rate is not established.",
   },
   {
     ruleId: "QA-PW-117",
-    ciHigh: 0.138,
     justification:
       "n=20, 0% observed. Closest to the boundary of the nineteen, and the most likely of them to clear on a re-sample.",
   },
   {
     ruleId: "QA-PW-121",
-    ciHigh: 0.233,
     justification:
       "n=12, 0% observed. A thin sample: the rate is not established, and nothing about the rule argues it down.",
   },
   {
     ruleId: "QA-PW-104",
-    ciHigh: 0.308,
     justification:
       "n=20, 0% observed. A clean run of twenty is not a 10% ceiling, and the rule has no argument of its own either way.",
   },
   {
     ruleId: "QA-PW-140",
-    ciHigh: 0.308,
     justification:
       "n=20, 0% observed. Same shape as QA-PW-104: twenty clean samples, no ceiling established, nothing arguing the other way.",
   },
   {
     ruleId: "QA-PY-103",
-    ciHigh: 0.194,
     justification:
       "n=25, 2 observed FPs. Wait-for-timeout is structural; the rate is not established.",
   },
   {
     ruleId: "QA-JV-101",
-    ciHigh: 0.308,
     justification:
       "n=20, 0% observed. Static mutable shared across tests is structural, and a structural premise does not measure its own false-positive rate.",
   },
   {
     ruleId: "QA-CS-102",
-    ciHigh: 0.15,
     justification:
       "n=24, 2 observed FPs — the largest C# sample in this group, and 15.0% is still above a 10% ceiling.",
   },
   {
     ruleId: "QA-JV-105",
-    ciHigh: 0.181,
     justification:
       "n=20, 2 observed FPs. Ten percent of twenty is two findings; the interval cannot distinguish that from anything better.",
   },
   {
     ruleId: "QA-JV-109",
-    ciHigh: 0.138,
     justification:
       "n=20, 0% observed. Retry-masks-test-failures is structural; the rate is not established.",
   },
   {
     ruleId: "QA-CS-101",
-    ciHigh: 0.308,
     justification:
       "n=20, 0% observed. The C# skipped-test rule mirrors the Java one; twenty clean samples do not establish its rate.",
   },
   {
     ruleId: "QA-CS-103",
-    ciHigh: 0.233,
     justification:
       "n=12, 0% observed. A thin sample, and the C# no-assertions rule has no argument of its own either way.",
   },
 ];
+
+/**
+ * The demotion list, with each row's interval re-derived from the live
+ * measurement on load.
+ *
+ * See `DemotedCoreClaim.ciHigh` for why the number is not committed.
+ */
+export const DEMOTED_FOR_UNSUBSTANTIATED_CORE: readonly DemotedCoreClaim[] =
+  DEMOTED_ROWS.map((row) => ({
+    ruleId: row.ruleId,
+    ciHigh: ciHighFor(row.ruleId) ?? Number.NaN,
+    justification: row.justification,
+  }));
 
 /**
  * A rule whose declared `core` is not backed by a confidence interval.

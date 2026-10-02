@@ -106,36 +106,23 @@ const COMMITTED = {
   "src/change-intelligence.ts":
     "GAP — the diff-scoped affected-path computation (M37). It is NOT a small wiring job: `calculateAffectedPaths` takes `ChangeRecord[]`, and nothing in the tree builds those. They need a git diff turned into SEMANTIC and DEPENDENCY records, which means a dependency graph the scanner does not have. `src/scope/changed.ts` computes which files a PR touched, which is coarser and is what the diff-scoped comment uses today.\n\n" +
     'An earlier commit here said "6.0 wires it" and that was not done. The reason is the size of the work, and the honest description of an unwired module is the one above rather than a promise.',
-  "src/v6/tool-coverage.ts":
-    "ORPHAN — the tool-coverage v6 check. Its only would-be caller (test-doubles) is itself an orphan, so the pair is dead as a unit.",
   "src/store/legacy-import.ts":
     "ORPHAN — imports a legacy evidence store. The store it imports is reachable only from here, so neither has a caller.",
-  "src/scorer/scoring-validation.ts":
-    "ORPHAN — scoring self-validation. Nothing runs it, so the scoring model has no runtime check.",
-  "src/rules/families/flaky-patterns.ts":
-    "ORPHAN — a rule family with no registrar. Its siblings (assertion-quality, test-independence) are reachable; this one is not.",
-  "src/rules/families/marker-registry.ts":
-    "ORPHAN — the marker registry for the family framework. Nothing consults it, so the framework's markers resolve to nothing.",
-  "src/rules/families/no-assertions.ts":
-    "ORPHAN — a rule family with no registrar, like flaky-patterns.",
-  "src/release/pack-audit.ts":
-    "ORPHAN — the packaged-tarball audit. Nothing in the release flow calls it, which is how the AST-grammar packaging defect survived.",
+  "src/v6/test-doubles.ts":
+    "ORPHAN — the false-proof detector, and the module this product is named after. Its only importer was `src/v6/tool-coverage.ts`, deleted as dead: so nothing in `src/` or `scripts/` has called this since. Only tests do.\n\n" +
+    "It is listed rather than deleted deliberately. The defect it detects — a test whose every assertion is about its own mock — is the product's thesis, and a thesis module that is unwired is a product gap, not a cleanup candidate. Deleting it would make the gap invisible rather than gone, and re-deriving it would be more code than keeping it. The 2026-10 fix that made `DOUBLE_ONLY` require a double landed here, on a module no scan reaches: the logic is now right, and the wiring is still owed.\n\n" +
+    'Wire it to a surface that renders `assessDoubleRisk` per test. Until then the honest state is "this detector does not run".',
   "src/release/provenance.ts":
-    "ORPHAN — release provenance. Not called by the release flow.",
+    "ORPHAN — release provenance, and there is no script counterpart the way `sbom.ts` and `pack-audit.ts` had. The release workflow gets provenance from `npm publish --provenance` (npm's own build attestation), which is a different mechanism entirely: this module was never the thing that would have supplied it.\n\n" +
+    "Kept rather than deleted because the gap it names is real and a deletion would hide it: the release attests via npm, not via a check this repository runs over its own build. Wiring it means deciding what 'provenance' is claimed to mean and who asserts it.",
   "src/release/reproducibility.ts":
-    "ORPHAN — release reproducibility. Not called by the release flow.",
-  "src/release/sbom.ts":
-    "ORPHAN — the SBOM generator. The release workflow checksums and attaches an SBOM it does not produce from this module, so a second, unwired SBOM implementation exists.",
-  "src/integrations/github/github-permissions.ts":
-    "ORPHAN — the GitHub permissions model. The workflow emitter (ci-adapter) does not consult it, which is the D5 defect: the generated workflow inherited the default token scope.",
-  "src/integrations/github/stale-guard.ts":
-    "ORPHAN — the stale-artifact guard. The PR publisher does not consult it, so a stale scan can overwrite a newer comment.",
+    "ORPHAN — release reproducibility. Not called by the release flow, and no script counterpart. Kept for the same reason as `provenance.ts` above: a named release property that nothing in this repository verifies is a gap, and deleting the only code that would verify it converts a gap into an absence.",
   "src/engine/command-registry.ts":
-    "ORPHAN — a command registry. The CLI derives its verbs from src/cli.ts, so this second source of truth is not consulted.",
+    "ORPHAN — a command registry. The CLI derives its verbs from src/cli.ts, so this second source of truth is not consulted. Safe to delete: `cli.ts` and the `CI_SUBCOMMANDS` table in the same file are the only verb list the dispatcher reads.",
   "src/discovery/ecosystem-detection.ts":
-    "ORPHAN — ecosystem detection. The adapters detect their own ecosystems, so this is a second implementation with no caller.",
+    "ORPHAN — ecosystem detection. The adapters detect their own ecosystems, so this is a second implementation with no caller. The duplication is the risk, not the code: two implementations of 'what ecosystem is this' drift, and only the one the adapters call is exercised.",
   "src/commands/registry.ts":
-    "ORPHAN — a command registry beside src/engine/command-registry.ts. Two registries, neither used by the CLI, which is a third source of truth for the verb list.",
+    "ORPHAN — a command registry beside src/engine/command-registry.ts. Two registries, neither used by the CLI, which is a third source of truth for the verb list. This is the clearest instance of the derived-fact-twice pattern in the tree: three descriptions of one list, one of which is authoritative and two of which nobody reads.",
   "src/bench/memory-profiling.ts":
     "ORPHAN — memory profiling. No benchmark runs it.",
   "src/bench/regression-gates.ts":

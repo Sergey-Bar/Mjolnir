@@ -182,15 +182,52 @@ export interface RuleMeta {
   /** First released version (semver). Immutable once set. */
   introduced?: string;
   /**
-   * Tier assignment (Phase 4 — Tempering Plan; measurement-dependent
-   * default per Verification Trust Evolution Plan §11.2 Step 2).
-   * - "core": ships in the default report (≤10% measured FP rate)
-   * - "extended": included by default, lower confidence (≤30% FP)
-   * - "quarantine": opt-in only via --strict (>30% FP or unmeasured)
+   * Tier assignment — a declared floor that may only ever TIGHTEN.
+   *
+   * Three floors decide a rule's effective tier, and they are not
+   * interchangeable. Measured over all 79 live rules (B0 dry-run, 2026-10-01):
+   *
+   *   - POINT ESTIMATE  — `fpRate <= 30%` -> extended, else quarantine.
+   *     The noise floor. Answers "does this ship by default?"
+   *   - INTERVAL        — `ciHigh <= 10%` -> core, `ciLow >= 50%` -> quarantine,
+   *     else extended. The evidence floor. Answers "does the evidence place it?"
+   *   - DECLARED (this field) — overrides both.
+   *
+   * B0 measured what the first two do to this registry, and the result is the
+   * reason this field exists rather than being deleted:
+   *
+   *   - The INTERVAL floor quarantines **exactly one** of the 79 rules:
+   *     `QA-ENV-001`, which was wrong 20 times out of 20. `ciLow >= 50%`
+   *     needs 15 of 20 false positives to fire, so the worst of the rest
+   *     (`QA-TEST-002`, 62%) clears neither bound.
+   *   - No rule derives CORE. `ciHigh <= 10%` needs n >= 35 with zero false
+   *     positives and the sampler caps at 20, where even 0/20 reads 16.1%.
+   *     The arithmetic is in `tests/rules/core-tier-reachability.spec.ts`.
+   *   - **34 rules declare `quarantine`, and 33 of them would be PROMOTED into
+   *     the default scan if this field were deleted** — every one of the 33
+   *     moves in the promoting direction and none moves the other way.
+   *
+   * So this field is a THIRD floor, stricter than both derivations, and for 33
+   * of the 34 quarantined rules it is the ONLY thing holding them out of a
+   * default scan. That is why deleting the declared tiers is not a refactor: it
+   * ships 33 quarantined detectors — including the six CI rules the README's
+   * caught-by-default table marks advisory — as ordinary findings.
+   *
+   * THE INVARIANT, enforced by the tightening law in
+   * `tests/rules/registry-ratchet.spec.ts` (not by
+   * `checkDeclaredTierMayOnlyTighten`, which does not exist — the first
+   * version of this comment named a function that was never written, which is
+   * the same defect as a spec pointing at a deleted file): a declared
+   * tier may only ever hold a rule DOWN. Quarantining a well-measured rule is
+   * permitted (conservative, costs a reader a `--strict` flag); shipping a
+   * badly-measured rule is not (it hands a user a finding the corpus says is
+   * wrong). B0 found zero rules loosening, but nothing made that structural —
+   * one hand-edit could have released `QA-TEST-002` at 62% observed FP, and
+   * every derived number in the tree would have agreed with it.
+   *
    * When omitted, the tier resolves measurement-dependently via
-   * `effectiveTier` (src/rules/measurement.ts): core for rules with a
-   * valid corpus measurement, extended (displayed PROVISIONAL)
-   * otherwise — an unmeasured rule can never default into core.
+   * `effectiveTier` (src/rules/measurement.ts) — extended when there is no
+   * valid measurement, so an unmeasured rule can never default into core.
    */
   tier?: "core" | "extended" | "quarantine";
   /**

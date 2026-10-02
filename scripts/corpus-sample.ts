@@ -258,6 +258,23 @@ function writeReviewSheets(byRule: Map<string, SampledFinding[]>): void {
   for (const [ruleId, samples] of [...byRule.entries()].sort((a, b) =>
     a[0].localeCompare(b[0]),
   )) {
+    // A rule that sampled ZERO findings gets no sheet at all.
+    //
+    // The loop below ran anyway and wrote a sheet whose entire content was a
+    // heading, the verdict legend, and "Total sampled: 0" — a review task with
+    // nothing to review. Worse, it OVERWROTE any sheet the rule had from an
+    // earlier run that did have samples, destroying owner classifications that
+    // were still pending adjudication.
+    //
+    // So a zero-sample rule removes its sheet rather than replacing it. That is
+    // distinct from the cleanup above, which preserves a sheet for a rule this
+    // run did not visit: not-visited is owner work-in-progress, whereas
+    // visited-and-found-nothing means the queue is genuinely empty.
+    if (samples.length === 0) {
+      rmSync(join(REVIEW_DIR, `${ruleId}.md`), { force: true });
+      console.log(`  ${ruleId}: sampled nothing, removed any review sheet`);
+      continue;
+    }
     const lines: string[] = [
       `# ${ruleId} — Sample Findings for Classification`,
       "",

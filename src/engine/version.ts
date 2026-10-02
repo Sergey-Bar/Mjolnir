@@ -10,7 +10,7 @@
 import { execFileSync } from "node:child_process";
 import { resolveGitPath } from "../scope/git-resolve.js";
 
-export const ENGINE_VERSION = "5.0.0";
+export const ENGINE_VERSION = "5.1.0";
 
 /**
  * Build identity — WHICH BUILD IS RUNNING, as distinct from WHICH RELEASE IS

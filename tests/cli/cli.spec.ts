@@ -222,9 +222,7 @@ describe("runDoctorPlaywright", () => {
     mkdirSync(join(dir, ".github"), { recursive: true });
     writeFileSync(join(dir, "sample.spec.ts"), "page.getByRole('button');\n");
     const cap = capture();
-    expect(
-      await runDoctorPlaywright(["doctor", "--frameworks", dir], cap.io),
-    ).toBe(0);
+    expect(await runDoctorPlaywright([dir], cap.io)).toBe(0);
     expect(cap.text()).toContain("SELECTOR HEALTH");
   });
 });
@@ -305,7 +303,10 @@ describe("runScanCommand / main dispatch", () => {
   it("main dispatches subcommands", async () => {
     process.chdir(dir);
     expect(await main(["ci", "install"])).toBe(0);
-    expect(await main(["suppressions"])).toBe(0);
+    // `suppressions` was a verb; it is the `--suppressions` scan flag now
+    // (it prints the ledger and stops), and `forensics` was `explain
+    // --evidence`. Both are asserted through the surface that ships.
+    expect(await main([".", "--suppressions"])).toBe(0);
     expect(await main(["forensics"])).toBe(10);
   });
 

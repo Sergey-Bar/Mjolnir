@@ -91,11 +91,32 @@ function git(args) {
 function changedFiles() {
   const baseFlag = process.argv.find((arg) => arg.startsWith("--base="));
   if (baseFlag) {
-    return git([
-      "diff",
-      "--name-only",
-      `${baseFlag.slice("--base=".length)}..HEAD`,
-    ])
+    const base = baseFlag.slice("--base=".length);
+    // A missing base ref used to surface as a raw
+    // `fatal: ambiguous argument 'origin/main..HEAD'` stack trace, which says
+    // nothing about the cause and nothing about the fix. It is a
+    // configuration problem — a shallow checkout with no `origin/<base>` —
+    // and it is worth saying so, because the failure mode hides itself: on a
+    // push to main the base IS HEAD, so the same command resolves and the gate
+    // passes. Only a pull request reaches the broken path, so the defect is
+    // invisible on the one branch a maintainer watches.
+    try {
+      git(["rev-parse", "--verify", `${base}^{commit}`]);
+    } catch {
+      console.error(
+        `check-unreleased-entry: the base ref ${JSON.stringify(base)} does not ` +
+          "exist in this checkout, so the change set cannot be read.\n" +
+          "This is a checkout-depth problem, not a changelog problem. A CI job " +
+          "that runs this must fetch the base:\n" +
+          "  actions/checkout:\n" +
+          "    with:\n" +
+          "      fetch-depth: 0\n" +
+          "or pass a base that exists locally (`--base=HEAD~1` reads the last " +
+          "commit instead of the branch).",
+      );
+      process.exit(2);
+    }
+    return git(["diff", "--name-only", `${base}..HEAD`])
       .split("\n")
       .map((line) => line.trim())
       .filter(Boolean);

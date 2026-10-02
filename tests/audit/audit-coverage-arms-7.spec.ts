@@ -63,7 +63,7 @@ describe("doctor:playwright catch arms (S8)", () => {
     specWithTest(dir);
     writeFileSync(join(dir, "mjolnir.config.json"), "{ not json");
     const cap = capture();
-    const code = await runDoctorPlaywright(["doctor", "--frameworks", dir], {
+    const code = await runDoctorPlaywright([dir], {
       out: cap.io.out,
       err: cap.io.err,
     });
@@ -77,7 +77,7 @@ describe("doctor:playwright catch arms (S8)", () => {
     writeFileSync(join(dir, "mjolnir.config.json"), "{ not json");
     const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     try {
-      const code = await runDoctorPlaywright(["doctor", "--frameworks", dir], {
+      const code = await runDoctorPlaywright([dir], {
         out: () => {},
       });
       expect(code).toBe(10);
@@ -92,7 +92,7 @@ describe("doctor:playwright catch arms (S8)", () => {
     specWithTest(dir);
     const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     try {
-      const code = await runDoctorPlaywright(["doctor", "--frameworks", dir], {
+      const code = await runDoctorPlaywright([dir], {
         out: () => {
           throw new Error("probe-crash");
         },
@@ -189,7 +189,7 @@ describe("runSuppressions sink fallback arms", () => {
     specWithTest(dir);
     const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     try {
-      const code = await runDoctorPlaywright(["doctor", "--frameworks", dir], {
+      const code = await runDoctorPlaywright([dir], {
         out: () => {
           // eslint-disable-next-line @typescript-eslint/only-throw-error -- the arm under test: a non-Error thrown value
           throw 42;

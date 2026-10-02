@@ -15,7 +15,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-// Each journey step spawns the built CLI (baseline/diff/stats); Windows
+// Each journey step spawns the built CLI (scan/ci verify/fix); Windows
 // CI runners exceed vitest's 5s default under load (reproduced
 // 2026-09-01).
 vi.setConfig({ testTimeout: 30_000 });
@@ -52,9 +52,9 @@ const HARD_SLEEP = [
   "",
 ].join("\n");
 
-describe("E2E journey 3: baseline → resolve → diff → stats", () => {
+describe("E2E journey 3: baseline → resolve → ci verify", () => {
   it(
-    "the full loop: baseline captures, resolution diff reports RESOLVED, stats increments",
+    "the full loop: --save-baseline captures, ci verify reports RESOLVED",
     { timeout: 60_000 },
     () => {
       writeSpec("focused.spec.ts", ONLY);
@@ -64,48 +64,58 @@ describe("E2E journey 3: baseline → resolve → diff → stats", () => {
 
       // --strict: the debt probes are quarantine-tier (QA-TEST-001 since
       // Phase 2, QA-PW-003 core) — strict is where all tiers run.
-      const base = runCli(["baseline", dir, "--strict"]);
-      expect(base.status).toBe(0);
-      expect(base.stdout).toContain("Captured 2 findings");
+      //
+      // The exit code is the SCAN's, not the save's. The old `baseline` verb
+      // returned 0 unconditionally after capturing, which meant a repo full
+      // of error findings exited clean as long as you snapshotted it. A flag
+      // on the scan keeps the one exit code a reader already knows: capture
+      // the debt and still be told about it.
+      const base = runCli([dir, "--save-baseline", "--strict"]);
+      expect(base.status).toBe(1); // the .only is an error-tier finding
+      expect(base.stdout).toContain("Captured");
       expect(existsSync(join(dir, ".mjolnir", "baseline.json"))).toBe(true);
 
       // Resolve the findings.
       writeSpec("focused.spec.ts", FIXED);
 
-      const diff = runCli(["diff", dir, "--strict"]);
-      expect(diff.status).toBe(0);
-      expect(diff.stdout).toContain("FIXED SINCE BASELINE");
-
-      const stats = runCli(["stats", dir, "--strict"]);
-      expect(stats.status).toBe(0);
-      expect(stats.stdout).toContain("QA-TEST-001");
+      const verify = runCli(["ci", "verify", dir, "--strict"]);
+      expect(verify.status).toBe(0);
+      expect(verify.stdout).toContain("VERIFY — before/after digest");
+      expect(verify.stdout).toContain("RESOLVED");
+      expect(verify.stdout).toContain("0 new");
     },
   );
 
   it(
-    "diff reports NEW OR WORSENED DEBT for findings that appeared after the baseline",
+    "ci verify reports NEW findings for debt that appeared after the baseline",
     { timeout: 60_000 },
     () => {
       writeSpec("focused.spec.ts", FIXED);
       git(["init", "-b", "main"]);
       git(["config", "user.email", "t@t"]);
       git(["config", "user.name", "t"]);
-      const base = runCli(["baseline", dir]);
-      expect(base.status).toBe(0);
+      runCli([dir, "--save-baseline", "--strict"]);
+      expect(existsSync(join(dir, ".mjolnir", "baseline.json"))).toBe(true);
       writeSpec("extra-debt.spec.ts", ONLY);
-      const diff = runCli(["diff", dir, "--strict"]);
-      expect(diff.stdout).toContain("NEW OR WORSENED DEBT");
+      const verify = runCli(["ci", "verify", dir, "--strict"]);
+      expect(verify.stdout).toContain(
+        "NEW (introduced by the change under verification)",
+      );
     },
   );
 
   it(
-    "diff on a repo without a baseline degrades honestly (exit 2)",
+    "ci verify on a repo without a baseline degrades honestly (exit 2)",
     { timeout: 60_000 },
     () => {
       writeSpec("focused.spec.ts", ONLY);
-      const diff = runCli(["diff", dir]);
-      expect(diff.status).toBe(2);
-      expect(diff.stdout).toContain("baseline");
+      const verify = runCli(["ci", "verify", dir]);
+      expect(verify.status).toBe(2);
+      // The degradation must name the command that FIXES it. It used to say
+      // `mjolnir baseline` — a verb removed in the v6 carve, so the recovery
+      // instruction led nowhere. A degradation that cannot be recovered from
+      // is a dead end dressed as an explanation.
+      expect(verify.stdout).toContain("--save-baseline");
     },
   );
 });

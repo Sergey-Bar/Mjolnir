@@ -8,7 +8,11 @@ import {
   hollowFingerprint,
   isEvidential,
 } from "../../src/v6/test-doubles.js";
-import { normalize, type NeutralTest } from "../../src/v6/qa-ir.js";
+import {
+  ASSERTION_KINDS,
+  normalize,
+  type NeutralTest,
+} from "../../src/v6/qa-ir.js";
 import {
   IGNORED_TOOLING,
   NOT_QA_TOOLING,
@@ -35,6 +39,52 @@ describe("the false proof the product is named after", () => {
     expect(finding.hollowRatio).toBe(1);
     expect(isEvidential(finding)).toBe(false);
     expect(HOLLOW_RISKS.has(finding.risk)).toBe(true);
+  });
+
+  it("a lone truthiness assertion is not DOUBLE_ONLY", () => {
+    // `defaultExpectation` (qa-ir.ts) gives TRUTHY an "ANY" shape — an
+    // explicit, evidence-bearing expectation — but the risk model did not
+    // list TRUTHY as substantiating. The two modules disagreed, so a lone
+    // `expect(x).toBeTruthy()` counted as neither substantiating nor a
+    // double and fell into DOUBLE_ONLY: a false-proof verdict reading
+    // "every assertion is about a test double" about a test with no double
+    // assertions at all, at hollowRatio 0.
+    const finding = assessDoubleRisk(test(["toBeTruthy"]));
+    expect(finding.risk).not.toBe("DOUBLE_ONLY");
+    expect(finding.substantiatingAssertions).toBe(1);
+    expect(finding.doubleAssertions).toBe(0);
+    expect(HOLLOW_RISKS.has(finding.risk)).toBe(false);
+    expect(isEvidential(finding)).toBe(true);
+  });
+
+  it("DOUBLE_ONLY requires a double to be about", () => {
+    // The guard is independent of the TRUTHY fix: any assertion kind that
+    // is neither substantiating nor double-shaped would otherwise produce
+    // this. Asserted over the whole closed enum so adding a kind to
+    // ASSERTION_KINDS without classifying it here fails this test.
+    for (const kind of ASSERTION_KINDS) {
+      for (const expectation of [
+        "NONE",
+        "ANY",
+        "LITERAL",
+        "PATTERN",
+        "COMPUTED",
+      ] as const) {
+        const finding = assessDoubleRisk({
+          dialect: "ts",
+          intention: "FUNCTIONAL",
+          hasFixture: false,
+          hasLifecycle: false,
+          assertions: [{ kind, expectation, negated: false }],
+        });
+        if (finding.risk === "DOUBLE_ONLY") {
+          expect(
+            finding.doubleAssertions,
+            `${kind}/${expectation} was DOUBLE_ONLY with no double assertion`,
+          ).toBeGreaterThan(0);
+        }
+      }
+    }
   });
 
   it("flags a test that asserts nothing at all", () => {

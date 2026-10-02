@@ -125,8 +125,9 @@ export function renderVerifyDigest(digest: VerifyDigest): string {
       "VERIFY — no baseline",
       "",
       "No committed baseline at .mjolnir/baseline.json — nothing to verify",
-      "against. Establish the before-state once with `mjolnir scan --json`,",
-      "then re-run `mjolnir ci verify` after the fix.",
+      "against. Establish the before-state once with",
+      "`mjolnir <target> --save-baseline`, then re-run `mjolnir ci verify`",
+      "after the fix.",
     ].join("\n");
   }
 

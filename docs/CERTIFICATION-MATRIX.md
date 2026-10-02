@@ -16,19 +16,19 @@ A cell is one concept, in one language, on one framework. §6's gates are
 independent: precision, sensitivity, regression resistance, language
 parity, framework parity, corpus diversity.
 
-| Ecosystem               | Language support (manifest-v5)                                                                          | Detection certification (v6) | Next gap                                                   |
-| ----------------------- | ------------------------------------------------------------------------------------------------------- | ---------------------------- | ---------------------------------------------------------- |
-| GitHub Actions          | GitHub Actions — DISCOVERED (4 capabilities; next: workflow corpus, then a detector measurement on it)  | 0/5 · v6-PENDING             | workflow corpus, then a detector measurement on it         |
-| TypeScript / JavaScript | TypeScript / JavaScript — CERTIFIED (8 capabilities; no recorded gap to the next state)                 | 0/13 · v6-PENDING            | at the ceiling on manifest-v5; §6 detection is not started |
-| Python                  | Python — MEASURED (5 capabilities; next: pytest runner evidence)                                        | 0/16 · v6-PENDING            | pytest runner evidence                                     |
-| Java                    | Java — CANDIDATE (4 capabilities; next: runner evidence on a JUnit cohort)                              | 0/9 · v6-PENDING             | runner evidence on a JUnit cohort                          |
-| Playwright              | Playwright — DISCOVERED (5 capabilities; next: Playwright runner evidence, then the 156-cell surface)   | 0/14 · v6-PENDING            | Playwright runner evidence, then the 156-cell surface      |
-| C#                      | C# / .NET — CANDIDATE (4 capabilities; next: runner evidence on an xunit cohort)                        | 0/9 · v6-PENDING             | runner evidence on an xunit cohort                         |
-| Cypress                 | Cypress — DISCOVERED (3 capabilities; next: cypress runner evidence on a wider corpus)                  | 0/10 · v6-PENDING            | cypress runner evidence on a wider corpus                  |
-| Selenium                | Selenium — DISCOVERED (2 capabilities; next: two more repositories, then per-language binding evidence) | 0/9 · v6-PENDING             | two more repositories, then per-language binding evidence  |
-| GitLab CI               | GitLab CI — DISCOVERED (2 capabilities; next: one real .gitlab-ci.yml, then a measurement)              | 0/5 · v6-PENDING             | one real .gitlab-ci.yml, then a measurement                |
-| Jenkins                 | Jenkins — DISCOVERED (2 capabilities; next: one real Jenkinsfile, then a measurement)                   | 0/5 · v6-PENDING             | one real Jenkinsfile, then a measurement                   |
-| Azure Pipelines         | Azure Pipelines — DISCOVERED (2 capabilities; next: one real pipeline file, then a measurement)         | 0/5 · v6-PENDING             | one real pipeline file, then a measurement                 |
+| Ecosystem               | Language support (manifest-v5)                                                                                  | Detection certification (v6) | Next gap                                                        |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------- | ---------------------------- | --------------------------------------------------------------- |
+| GitHub Actions          | GitHub Actions — DISCOVERED (4 capabilities; next: workflow corpus, then a detector measurement on it)          | 0/5 · v6-PENDING             | workflow corpus, then a detector measurement on it              |
+| TypeScript / JavaScript | TypeScript / JavaScript — CERTIFIED (8 capabilities; no recorded gap to the next state)                         | 0/13 · v6-PENDING            | at the ceiling on manifest-v5; §6 detection is not started      |
+| Python                  | Python — MEASURED (5 capabilities; next: pytest runner evidence)                                                | 0/16 · v6-PENDING            | pytest runner evidence                                          |
+| Java                    | Java — CANDIDATE (4 capabilities; next: runner evidence on a JUnit cohort)                                      | 0/9 · v6-PENDING             | runner evidence on a JUnit cohort                               |
+| Playwright              | Playwright — DISCOVERED (5 capabilities; next: Playwright runner evidence, then the language-framework surface) | 0/14 · v6-PENDING            | Playwright runner evidence, then the language-framework surface |
+| C#                      | C# / .NET — CANDIDATE (4 capabilities; next: runner evidence on an xunit cohort)                                | 0/9 · v6-PENDING             | runner evidence on an xunit cohort                              |
+| Cypress                 | Cypress — DISCOVERED (3 capabilities; next: cypress runner evidence on a wider corpus)                          | 0/10 · v6-PENDING            | cypress runner evidence on a wider corpus                       |
+| Selenium                | Selenium — DISCOVERED (2 capabilities; next: two more repositories, then per-language binding evidence)         | 0/9 · v6-PENDING             | two more repositories, then per-language binding evidence       |
+| GitLab CI               | GitLab CI — DISCOVERED (2 capabilities; next: one real .gitlab-ci.yml, then a measurement)                      | 0/5 · v6-PENDING             | one real .gitlab-ci.yml, then a measurement                     |
+| Jenkins                 | Jenkins — DISCOVERED (2 capabilities; next: one real Jenkinsfile, then a measurement)                           | 0/5 · v6-PENDING             | one real Jenkinsfile, then a measurement                        |
+| Azure Pipelines         | Azure Pipelines — DISCOVERED (2 capabilities; next: one real pipeline file, then a measurement)                 | 0/5 · v6-PENDING             | one real pipeline file, then a measurement                      |
 
 **11 ecosystems, ALL RETAINED, none deleted.** A wave is a
 ranking by `corpusRepos × concepts`, not a deletion. Wave C ecosystems with

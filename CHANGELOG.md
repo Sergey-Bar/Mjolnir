@@ -11,6 +11,722 @@ once shipped, so this file is the record of what changed between versions.
 
 ## [Unreleased]
 
+### Two subtractions declined, because the surface they would remove says something the replacement does not
+
+**`mjolnir capability`: delete the M0–M5 ladder, render the tier instead.** The
+two are not two names for one thing. `M0_UNKNOWN … M4_CORPUS_VERIFIED` is an
+_evidence_ axis — how far a capability's detection has been proven — and the tier
+(`core`/`extended`/`quarantine`) is a _shipping_ axis — whether it appears in a
+default scan. They are orthogonal in exactly the case that matters: a capability
+can be corpus-verified and still quarantine, and does. `QA-TEST-001` is
+`M2_IMPLEMENTED` with a measured 60% FP over n=20; the maturity ladder says how
+well its detection is built, the tier says it must not gate a build, and neither
+answer implies the other.
+
+Rendering the tier "instead" would also delete the `next level` line — the
+ladder's actual product, which names the next rung and what it requires
+(`M3_FIXTURE_VERIFIED` — "positive + negative + boundary + adversarial fixtures
+pass deterministically in CI"). That is roadmap information stated as evidence,
+and it is the part a maintainer uses. The arm already says the right thing about
+itself: "shown at the level the machine can prove, or not shown at all."
+
+**Cut the PR tier from 28 gates to 8.** This is a velocity trade, not a defect,
+and it runs opposite to the rest of this release: everything above restored
+verification that had silently stopped running — a suite with 48 failures, a
+typecheck with 8 errors, a coverage ratchet that could not evaluate, an anti-creep
+ratchet that switched itself off at release time. Removing 20 gates from
+per-push verification to save eleven minutes on a machine, while leaving CI's own
+`required` set as the binding one, is a decision about which machine developers
+use. It should be made as that decision, explicitly, not as cleanup.
+
+Five of the plan's nine Phase C items are now either done or refuted, and three
+of the refutations shared a cause: each was written from a directory name or an
+orphan-list reason rather than from reading what the code actually does.
+
+### Four unwired modules deleted, two of them second implementations of live ones
+
+C1, the orphan list. Deleting an unwired module is only safe when the reason says
+_why it is dead now_ rather than _what defect it was written for_ — and four of
+the reasons were describing a world that no longer existed.
+
+- **`src/release/pack-audit.ts`** — `scripts/pack-audit.mjs` is what
+  `stable-release.yml` runs, and `tests/contract/pack-audit.spec.ts` proves
+  _that script_ can fire on every forbidden shape and stay silent on the
+  shipped one. An unused copy of the audit is a second answer to "what is a
+  forbidden tarball entry", and only the copy with a gate behind it would ever
+  have been exercised.
+- **`src/release/sbom.ts`** — same shape. `scripts/generate-sbom.mjs` produces
+  and checksums the SBOM the release attaches.
+- **`src/integrations/github/github-permissions.ts`** — validated a token
+  before publishing a PR comment. **There is no PR comment publisher in
+  `src/`**: the `pr-comment` verb went with the v6 carve. Its recorded reason
+  also cited D5 ("the generated workflow inherited the default token scope"),
+  which was fixed by emitting `permissions: contents: read` in both
+  `ci-adapter.ts` and `ci-install.ts` — without this module. The defect was
+  real, the fix did not go through here, and the reason outlived both.
+- **`src/integrations/github/stale-guard.ts`** — enforced TI-020, that an
+  artifact carries the head SHA it was produced for. Same missing publisher.
+
+Kept, with their reasons corrected to state what is actually true:
+`release/provenance.ts` and `release/reproducibility.ts` (the release gets
+provenance from `npm publish --provenance`, a different mechanism; a named
+release property nothing here verifies is a gap, and deleting the only code
+that would verify it converts a gap into an absence), `commands/registry.ts`
+and `engine/command-registry.ts` (three descriptions of one verb list, one
+authoritative — the clearest derived-fact-twice instance in the tree),
+`discovery/ecosystem-detection.ts`, the two `bench/` modules,
+`change-intelligence.ts`, `store/legacy-import.ts`, `v6/test-doubles.ts`, and
+the ten barrels. Orphan count 25 → 21.
+
+**A gap in the gate that authorises these deletions.**
+`docs/CARVE-MANIFEST.json` is exactly the right mechanism — facts generated,
+dispositions hand-written and preserved, and `--check` failing on any file that
+left the tree without a DELETE disposition. It caught these four on the first
+run and named them. But regeneration rebuilds the manifest from the files that
+_exist_, so a DELETE disposition disappears the moment the file it describes is
+gone: the gate reports "2 already removed" for exactly one run, and then the
+reason is no longer in the repository. A manifest whose purpose is to hold the
+human decision should keep a tombstone for it; this one does not. The reasoning
+for these four is in this entry instead.
+
+### The declared tier is a third floor, and now it has teeth
+
+B0 measured all 79 live rules against both existing derivations before anything
+was refactored. The result changed the shape of the work.
+
+The interval floor is all but unreachable at the corpus sample cap, in both
+directions, and `tests/rules/core-tier-reachability.spec.ts` now pins the
+arithmetic with the product's own `wilsonInterval`:
+
+- **core is unreachable.** `ciHigh <= 10%` needs n >= 35 with ZERO false
+  positives — 0/20 reads 16.1%, 0/30 reads 11.3%, 0/35 reads 9.9%. The sampler
+  caps at 20 per rule, so the best a rule can look at that cap is 0/20, and
+  16.1% is above the ceiling. `MEASURED-CORE` in `RuleStatus` is a state this
+  corpus cannot produce. The cap is bounded by the adjudication budget, not by
+  statistics: raising it to 40 previously produced 1,121 unadjudicated rows
+  across 42 rules, which the committed ceiling refused outright — correctly,
+  because blank verdict rows are dropped rather than counted.
+- **quarantine needs a 75% error rate.** `ciLow >= 50%` first fires at 15 of 20
+  false positives; 14/20 reads 48.1%. Exactly one rule clears it:
+  `QA-ENV-001`, wrong 20 times out of 20. The worst of the rest,
+  `QA-TEST-002`, sits at 62% and clears neither bound.
+
+So **34 rules declare `quarantine`, and 33 of them would be promoted into the
+default scan if the declared `tier` field were deleted** — every one in the
+promoting direction, none the other way. Deleting the declared tiers is not a
+refactor; it ships 33 quarantined detectors, including the six CI rules the
+README's caught-by-default table marks advisory.
+
+The arithmetic corrects a summary I wrote first, and the spec caught it: I said
+the interval floor "quarantines zero rules". It quarantines one — `QA-ENV-001` —
+and B0's own table had said so throughout, under a declared column that
+happened to agree with it. The declared count is 34, not 33; 33 is the number of
+rules held down by the declaration alone.
+
+So the declared tier stays, stated for what it is: a floor stricter than both
+derivations, and currently the only thing holding those 33 rules out of a
+default scan. That is documented at the field, with the numbers.
+
+A floor that can also LOOSE is not a floor — it is a way to ship a rule the
+corpus says should not ship, and because every derived number in the tree reads
+the declared value through `effectiveTier`, nothing else would disagree.
+`defensibleTier` now states the floor a declared tier may never sit above, and a
+registry ratchet enforces it: no measurement at all, or observed FP above 30%,
+both mean quarantine.
+
+The first version of that law was written against the interval floor alone and
+measured at **zero teeth** — it could only ever catch a rule declaring `core`,
+which no rule declares, so it would have passed no matter what the registry
+said. Both failure directions are now probed as tests, and they assert that the
+interval floor would have missed them.
+
+The anti-creep exception is discharged rather than copied forward: 5.1.0 shipped
+the declaration, so the baseline absorbs it at 45/45 and the marker no longer has
+to be re-declared on every commit. The demanding branch stays covered by a
+pre-discharge fixture, and one rule above the absorbed baseline is still refused
+without a declaration.
+
+### Three orphan `families/` taxonomies deleted, one of them after being measured
+
+`flaky-patterns.ts`, `marker-registry.ts` and `no-assertions.ts` shipped with
+no importer. The repo's rule for these is "if a rule's measured FP names the
+cause one of them describes, wire it; otherwise delete it" — and none of the
+three describes a cause anything is measured against.
+
+`no-assertions.ts` was the interesting one: 7 framework assertion
+vocabularies, written for `QA-TEST-003`'s named FP cause. Its cause is
+_hidden-assertion helpers and deliberate no-throw smoke tests_, which is not a
+framework-vocabulary gap. Diffed against the rule's own predicate over 15
+representative test bodies it changed 2, **in both directions**: it suppresses
+`expect.extend(…)` — which _defines_ a matcher rather than asserting — and
+reintroduces a false positive on `should(x).be.ok`. Wiring it would have been a
+behaviour change to a quarantined rule justified by a claim the evidence does
+not support, so it is gone and the gap is recorded in the ledger instead, where
+it will be re-measured rather than quietly closed.
+
+(The first measurement of that diff was wrong — a `g`-flagged `RegExp.test()`
+carries `lastIndex` between calls, so the two predicates were being fed a
+moving target. Two differences, not three.)
+
+`flaky-patterns.ts` carried its own `HARD_SLEEP` patterns while a wired
+`hard-sleep` family already exists: a second source for one fact, which is the
+pattern that manufactures drift. Orphan count 28 → 25.
+
+### Two plan items refuted before acting on them
+
+**"Delete `scripts/video/` — nothing consumes it."** It has three npm scripts,
+a workflow, and a README-linked asset. Its storyboard is gated by
+`tests/contract/video-script.spec.ts` (11 tests, re-running the capture and
+failing on drift); only the `.mp4` encode needs Chromium and ffmpeg, which is
+why that step is manual by design. Left alone.
+
+What _is_ true is narrower and worth saying: the committed `mjolnir-demo.mp4`
+was rendered before the v6 carve, so it demonstrates output the CLI no longer
+prints. The README now says so, and names the re-render command, rather than
+letting a stale artifact read as current.
+
+**"Delete the ~25 rule docs for retired rules; make `docs:regen` prune so it
+cannot recur."** The retired pages are kept **deliberately** — they are the
+record of what the tool used to claim — and
+`tests/contract/rule-docs-set.spec.ts` enforces exactly `live ∪ RETIRED_RULE_IDS`
+and nothing else. A prune was written, deleted all 22 on its first run, and was
+removed. That is the strongest available demonstration that "the generator
+cannot remove its own output" is a reason to add a `docs:regen` check, not a
+reason to add a delete. The existing spec already catches the real orphan: a
+page for an id in neither list.
+
+**"Delete `src/certification/` — it certifies 1 language."** It reports
+**0 of 100** detection cells across **5** ecosystems, and separately 1 language
+(`manifest-v5` language support) as CERTIFIED. Those are different ladders and
+the file says so. A module that honestly reports 0% with a per-ecosystem next
+gap is a live status document, not dead weight — the repo already applied this
+reasoning to `src/v6/test-doubles.ts` on the orphan list. Left alone, with the
+number corrected.
+
+### Two bytes of encoding damage
+
+`src/cli.ts` and `docs/DISTRIBUTION-KIT.md` each carried UTF-8 that had been
+decoded as Latin-1 and written back (`Â·`, `â‰¥`, `Ã—`). Invisible to a reader
+whose editor auto-detects encoding, and to any gate that does not look. Both
+fixed; a scan of all 10,133 text files in the tree finds no others.
+
+### Test fixes
+
+- `tests/contract/coverage-state.spec.ts` was passing its keys to a helper
+  typed for a different shape, so they were dropped and the test loaded a
+  consistent default document. It never tested what it claimed.
+- `src/commands/rule-families.ts` sat at 60% because the carve removed
+  `create-rule`, its second consumer. `tests/contract/rule-families.spec.ts`
+  checks the table against the live registry.
+- The anti-creep and unreleased-entry gates both anchored on "the first `## `
+  heading", which stops describing anything the moment a version is cut. Both
+  now scope to the current version's section.
+
+## [5.1.0] — 2026-10-01
+
+### `ci verify` could never leave its no-baseline arm
+
+**The `baseline` verb was removed in the v6 carve and nothing replaced it.**
+`saveBaseline` had no remaining caller, so nothing in the shipped product wrote
+`.mjolnir/baseline.json`. `mjolnir ci verify` — a `ci` subcommand, listed in
+`mjolnir ci --help` — therefore exited `2` with "no committed baseline" for
+every user, permanently.
+
+Worse, three shipped messages told you to fix it by running a command that
+could not: the `verify` digest, the MCP `verify` tool, and the agent
+instruction brief `mjolnir install` writes all said to establish the
+before-state with a scan that never wrote one. A recovery instruction that does
+not recover is worse than none — it costs a round trip and teaches the reader
+that the tool's own guidance is unreliable.
+
+`mjolnir <target> --save-baseline` now writes the snapshot, reusing the
+existing writer and renderer. The exit code stays the **scan's**, not the save's:
+the old verb returned `0` unconditionally after capturing, so a repo full of
+error findings exited clean as long as you snapshotted it.
+
+### Unknown flags were silently ignored on three commands
+
+`mjolnir doctor --bogus` printed its usage and exited `10` after a flag-parity
+fix. `mjolnir analyze --bogus` printed "Use --cross-file to enable cross-file
+analysis" and exited `0`; `mjolnir explain --list --nonsense` printed the whole
+rule catalogue and exited `0`. A caller scripting a filter got every rule and no
+warning, and a command that looks like it ran and does nothing is the shape this
+product exists to catch. All three now reject an unknown flag with a usage
+message naming the accepted set.
+
+### The agent instructions named four commands that exit 10
+
+`mjolnir install` writes instruction files for Claude Code, Kilo, Cursor and
+`AGENTS.md` telling an agent how to run the loop. After the v6 carve they said
+`baseline`, `verify`, `why`, `triage` and `forensics` — all removed, all exit
+`10`. The 79 rule docs were re-pointed at the real command; the shipped agent
+brief was not. It now names `--save-baseline`, `ci verify` and `explain`.
+
+### The brand gate checked a file that no longer exists
+
+`scripts/brand-doctor.mjs` rule 7 had a self-test seed and a rule arm both
+reading `src/commands/badge.ts`, deleted by the v6 carve. The arm was guarded
+by `existsSync`, so it reported "0 generated bands" and the self-test aborted
+the whole gate on a missing file. Both are gone: the product emits no
+shields.io badge (the PR comment renders HTML cells), and a check behind an
+`existsSync` that is always false is a check that cannot fail — the exact defect
+that script exists to catch. The self-test now proves 11 of 11 rules.
+
+### Two gates could not have been running
+
+**The anti-creep ratchet switched itself off at release time.** The exception
+marker was scoped to the first `^## ` heading in the changelog. Cutting a
+release empties `## [Unreleased]` — that is what the section is for — and moves
+the change's notes into the version heading below it. From that moment the
+declaration was still there, one heading down, and the law reported legitimate
+growth as unlicensed. The parser now accepts the release heading below an
+empty `[Unreleased]`, and still refuses a marker from any older release; three
+arms pin both directions.
+
+**`tests/contract/coverage-state.spec.ts` never tested its claim.** It called a
+helper typed `Partial<analysisStatus>` with `{ partial, analysisStatus }`, so
+both keys were dropped and the helper's own consistent defaults were used. The
+document loaded for the wrong reason. It now passes the real
+`coverageState` — and fails without it, which is how you know.
+
+### The type gate had never run
+
+`npm run typecheck` reports **8 errors**, all in test files, all pre-existing at
+`ef500a8b`. The gate was red in the same way the release was red: nobody ran
+it. Two were hiding a real defect behind a cast — `TrustSummary` had
+`level: "high"`, which is not a `TrustLevel` at all (`L0`..`L5`), and
+`assessDoubleRisk` was being called with `intent` where the interface says
+`intention` and requires `hasFixture`/`hasLifecycle`. Neither had compiled
+against the real type. Both are fixed; the gate is green.
+
+### A test that passed vacuously, found by the coverage floor
+
+`src/commands/rule-families.ts` sat at 60% because the carve removed
+`create-rule`, its second consumer — the table's rows went from "exercised by
+the scaffolder" to "loaded once and never checked". `tests/contract/rule-families.spec.ts`
+now checks the table against the live registry: every token is a family the
+rules use, every family with rules has a directory that exists, and the derived
+`RULE_ID_RE` accepts every family in the table and rejects families that are
+not in it.
+
+The check that surfaced the drop is the reason the new arms were added
+in-process. A test that spawns the binary earns no istanbul credit, so
+`--save-baseline` and the two flag-parity arms would have shipped untested by
+the ratchet's own measure.
+
+### The coverage ratchet, measured against a suite that could not run
+
+The high-water marks (98.28 / 94.87 / 99.17 / 98.64) were recorded against a
+green suite. At `ef500a8b` 48 tests failed, a failing run writes no summary,
+and `coverage:ratchet` errored with "run npm run test:coverage first" instead
+of reporting a number — there was no comparable measurement. The measured value
+with a fully green suite is **97.22 / 93.71 / 98.78 / 97.80**; the marks moved
+accordingly, with the reasoning recorded in `docs/COVERAGE-GATE.md` before the
+build was expected to pass.
+
+### `runDoctorPlaywright` was not reachable, and its tests passed a wrong argv
+
+Six test files called `runDoctorPlaywright(["doctor", "--frameworks", dir])`.
+The handler takes the target as the first non-flag argument, so it was scanning
+the literal string `"doctor"` and printing `SELECTOR HEALTH` for it. The verb
+was removed by the carve, so nothing in the product reaches the handler at all.
+The calls pass `[dir]`.
+
+### The brand gate checked a file that no longer exists
+
+`scripts/brand-doctor.mjs` rule 7 had a self-test seed and a rule arm both
+reading `src/commands/badge.ts`, deleted by the v6 carve. The arm was guarded by
+`existsSync`, so it reported "0 generated bands" and the self-test aborted the
+whole gate on a missing file. Both are gone: the product emits no shields.io
+badge (the PR comment renders HTML cells), and a check behind an `existsSync`
+that is always false is a check that cannot fail — the exact defect that script
+exists to catch. The self-test now proves 11 of 11 rules.
+
+### Test fixes
+
+- `tests/milestone-12.spec.ts` cast four `ScanResult` fixtures with `as any`
+  and omitted the required `frameworks` field, so the fixtures threw
+  `TypeError` on `.length`. The product reads `result.frameworks.length`; the
+  fixtures were wrong. One also asserted `scoreDelta === 0` for two null
+  scores, contradicting the deliberate `?? 0` fix — a null score yields a null
+  delta, and the expectation now says so.
+- `TI-024`'s `verificationCase` named a test title that was replaced when the
+  translation machinery was retired. It now names the case that exists, and the
+  registry spec proves the title is still in the named file.
+- The version-surface drift arm hardcoded `@v4` in both its seed and its
+  expected message, so it seeded `v5` and asserted "v3 does not match v4" — the
+  check fired correctly and the test failed on its own staleness. The major is
+  now read off the fixture and the message composed from it.
+- The exit-code sweep, journeys 2, 3/4 and 5/6/7/8 called fourteen verbs the
+  carve removed. Each is now asserted in the form that ships, and the retired
+  names are asserted to be usage errors — a verb that comes back under its old
+  name is a surface the docs no longer describe.
+- `crash-paths.spec.ts` had a `describe` with no tests (the carve deleted every
+  body and left the hooks), which fails collection. Its arms made the write
+  target unwritable with `chmod 0o555` — a no-op on Windows, so half the suite
+  verified nothing on the platform most contributors run. The throw is now
+  injected at the IO boundary: deterministic everywhere, same catch.
+- `tests/integrations/release-workflow.spec.ts` expected the release job list
+  to be `["contract-verify", "tag"]` — a CLI verb, not a job in the workflow —
+  while the assertion 15 lines below still read `needs.verify.outputs.tarball`.
+  Both cannot be true, and the one naming a job that does not exist would have
+  let a rename break the publish path silently.
+- `CORPUS` pinned `positive-fixtures` to a tree SHA the carve had moved.
+- `test:release` still named the empty `release-trust-branch.spec.ts`, which
+  was deleted.
+- `candidate-manifest-base-sha` tolerated 3 of the checker's 4 content
+  invariants, so a `lockfileSha256` drift — what any `npm audit fix` produces —
+  failed the test with a message it did not recognise as transient.
+- The anti-creep and unreleased-entry gates both anchored on "the first `## `
+  heading", which stops describing anything the moment a version is cut. Both
+  now scope to the current version's section.
+
+### README
+
+The opening claimed seven detections and put the strict-mode split 21 lines
+below the list. The list now carries a **caught-by-default** column beside each
+false-green, and the split sits directly under it. The seven claims were not
+false — every one of those false-greens is real and detected — but the default
+scan catches five of the nine rows, and the README's structure made the
+advisory four look equivalent to the other five.
+
+### Maintenance
+
+`npm audit fix` — `brace-expansion` high-severity DoS (transitive), three
+advisories.
+
+### The demotion ratchet's own numbers were transcribed, not measured
+
+**Eighteen of the nineteen `ciHigh` values in `DEMOTED_FOR_UNSUBSTANTIATED_CORE`
+were wrong.** They were written once at the 6.0 demotion and never re-derived,
+so a re-sample moved the real interval and left the number beside it describing
+a measurement that no longer exists. `QA-PY-002` recorded `0.152` against a real
+`0.2996` — the row said "the largest sample on an observed-nonzero Python rule
+here, and still short of the ceiling" about a rule that was twice as far from the
+ceiling as recorded.
+
+The ratchet that should have caught this only asserted `ciHigh >
+CORE_FP_CEILING`, which every stale value also satisfied. A check on a
+hand-maintained number that tests only its sign cannot fail.
+
+So the number is no longer hand-written. Each row keeps `ruleId` and
+`justification` — the part that is judgement — and `ciHigh` is computed from
+`MEASURED_FP` on load using the same expression `measurementInterval` uses. A
+rule whose measurement has been withdrawn yields `NaN`, and `NaN > 0.1` is
+false, so it fails the check rather than passing it. A new ratchet assertion
+compares each recorded value against the **live** `measurementInterval`, so a
+stale `detectorRevision` or a withdrawn measurement is caught too, and the
+check now fires when a value drifts.
+
+All nineteen remain legitimately demoted — none clears the ceiling — so the
+ratchet stays armed and the tier is still empty.
+
+`docs/CORE-READINESS.md` now records, in the generator rather than only in
+prose, that `EARNED`, `DECLARED` and `EXPIRED` are empty because no rule's
+interval clears the ceiling and no rule carries a `corePromotion`. All three
+states are kept: they are reachable, and deleting a state because its count is
+zero deletes the branch that would have reported a non-zero count.
+
+### The anti-creep law now governs the rules that actually ship
+
+`ANTI-CREEP-EXCEPTION` — the law's own mechanism for a growth that is not a
+creep. The launch set is redefined from `tier === "core"` to
+`effectiveTier !== "quarantine"`, which is what the law has always said it
+covers ("the rules that ship in the default report"). That is **45 rules, not
+0**: the core tier has been empty since 6.0, with all 79 rules resolving to 34
+`quarantine` and 45 `extended`.
+
+The ratchet therefore reports growth of 45 against a previous baseline of 0,
+and this line is the reason. It is not new surface area — every one of those 45
+rules already shipped; the law simply was not counting them. What changes is the
+bar: growth above 45 now needs one of these markers, and `CORE_CAP`'s 65 leaves
+20 free slots rather than 65.
+
+- **`docs/ANTI-CREEP-BASELINE.json`** records `baselineCore: 45` with
+  `previousBaselineCore` left at **0** deliberately. The law compares the tier
+  against the _previous_ baseline, so leaving it at 0 keeps the move from 0 to
+  45 visible as growth; setting it to 45 in the same edit would make a
+  redefinition of the governed set look like a legal no-op, which is the exact
+  escape that rule exists to close.
+- **Law 3 (north-star) keeps governing the core tier, on purpose.** The ≥10
+  verdict requirement is enforced against `tier === "core"` and was not moved to
+  the shipped set: applying it to 45 rules would fail the check on day one. That
+  is a policy decision about what the product may ship, not a defect, so it is
+  recorded here rather than taken unilaterally. The open question — does the
+  ≥10 requirement apply to the shipped set or the core tier? — is unresolved and
+  belongs to the law's owner.
+- `CORE_CAP` stays at 65 and `MAX_SAMPLES_PER_RULE` stays at 20. Both are
+  deliberate; the corpus sampler's in-source rationale (`scripts/corpus-sample.ts`)
+  records why raising the cap produced 1,121 unadjudicated rows that the
+  committed ceiling refused. The defect was never the constants — it was that
+  the law measured a set of zero.
+
+### Single-site corrections, and one key that matched nothing
+
+- **`FRAMEWORK_FAMILY.selenium` and `SLUG_TO_FAMILY.selenium` were `"QA-SEL"`.**
+  No rule id carries that prefix — the real one is `QA-SE` — so both maps
+  resolved to the empty list. The Selenium capability reported no evidence at
+  all while its three rules (`QA-SE-001`–`003`) were credited to nothing.
+  An unmatched key returns an empty result rather than an error, which is why
+  nothing reported it. `QA-SE` was the only family in the registry that no
+  capability could reach.
+- **`M5_FIELD_PROVEN` did not require `M4`.** `fieldProven` was the first test
+  in `deriveMaturityFromEvidence`, so a capability carrying only that flag
+  reached M5 — a level whose published meaning includes "declared" and
+  "implemented" — without either. The ladder's own stated invariant ("each level
+  requires every criterion below it") did not hold at the top, and the only route
+  to M5 was to satisfy none of M4's criteria.
+- **`LOCAL_PROVEN` could cite an unmeasured rule.** `proofFor` picked the first
+  non-_retired_ rule, so a capability whose first listed rule had no corpus
+  evidence could be marked proven with a pointer into `docs/FP-AUDIT.md` for a
+  rule the audit never measured. It now picks a rule from `facts.measured` —
+  the same predicate the status itself reports on.
+- **A parity violation could name a field that cannot differ.** `checkParity`
+  guarded on the fingerprints being different and then iterated
+  `["intention", "fingerprint"]`, so the `fingerprint` arm was unreachable. Its
+  sibling `extractBindings` already looped correctly over the same files for the
+  same kind of marker.
+- **The claim linter reported the first claim on a line and dropped the rest.**
+  `scanText` used a single `exec` per line, so a line making two claims of the
+  same kind reported one — and the half it dropped was the half a maintainer has
+  to go and fix. All matches are now reported, with a zero-length guard so a
+  future pattern that can match empty cannot hang the linter.
+- **The forensics `successRate` was not a rate.** It could only be 0 or 1, and
+  this object is only built when a test passed _on retry_ — so within
+  `maskedFailures` it was invariably 1. A reader seeing "success rate: 1" would
+  conclude the test passed on every attempt, which is the opposite of what the
+  entry means. Renamed `finalPassBinary`. Its `attempts === 0` guard was
+  unreachable: the enclosing filter requires `attempts > 1`.
+- **Two CI findings reported themselves under the wrong name.** An `exit 0` was
+  typed `or-true` while its own description said it forced an exit code of 0, and
+  the pattern `||\s*(?:true|:)` matched both `|| true` and `|| :` while the
+  description said `|| true` unconditionally — naming a construct the script does
+  not contain, on exactly the finding a reader is about to go looking for. They
+  are now `or-true`, `or-colon` and `exit-zero`.
+- **A rule that sampled nothing no longer overwrites its review sheet.**
+  `writeReviewSheets` wrote a sheet whose entire content was a heading, the
+  verdict legend, and "Total sampled: 0" — and replaced any sheet from an earlier
+  run that had samples, destroying pending classifications. A zero-sample rule now
+  removes its sheet. This is distinct from a rule this run did not _visit_, whose
+  sheet is owner work-in-progress and is still preserved.
+
+### The readiness table told maintainers to do the wrong work
+
+`docs/CORE-READINESS.md` is the document a maintainer reads to decide what to
+do next, and two of its three actionable columns did not compute what they said.
+
+- **`FP headroom` could never contain a positive number.** It asked how many
+  _more_ false positives a rule could be **added** and still clear the ceiling —
+  and adding false positives only widens the interval, so every rule that had
+  already earned the tier read `0` and every other rule read `—`. The quantity
+  that actually decides work is the opposite one: how much of the current
+  evidence has to be **retracted**. Renamed `FPs to remove` and computed by
+  searching downward from the observed count. It is now `—` only where
+  retraction genuinely cannot reach the ceiling at that `n`, which is a fact
+  about the sample rather than a missing value.
+- **`NEEDS-FP-REDUCTION` condemned detectors on thin evidence.** It fired on a
+  point estimate above the ceiling, so a rule observed at 42.9% over `n=14` was
+  labelled "the rule is wrong, not the corpus" by an interval that comfortably
+  _included_ the ceiling. It now requires the Wilson interval to exclude the
+  ceiling from below, so a rule the data cannot yet distinguish from a
+  conforming one is told to gather more evidence first. **Nine rules moved from
+  `NEEDS-FP-REDUCTION` to `NEEDS-SAMPLES`**, and the document's own counts
+  change with them (28 → 19, 45 → 54).
+- **The same FP count was reconstructed two ways.** `measurementInterval` and
+  `compareFpMeasurements` handed `wilsonInterval` an unrounded `fpRate * n`
+  while this table rounded it — 10.5% of 19 is 1.995, and `wilsonInterval`
+  rounds internally, so the ratchet and the readiness table derived two
+  different `ciHigh` values for the same rule at the same n. Both round now. The
+  interval math was always correct; the defect was in what reached it.
+- **`samplesForZeroFp`'s cross-check was wrong.** Its docstring quotes two
+  `wilsonInterval(0, n)` values as the verification of the closed form. The
+  `n=34` figure was quoted as 0.1012; the function returns 0.1015. A
+  cross-check that fails when you run it reads as evidence and is not, so the
+  numbers are now asserted in a test rather than only in prose.
+
+### Three places a claim was checked by something other than the thing it claimed
+
+- **CONVERGENT did not mean convergence.** `groupByRootCause` fell back to
+  `ruleId`, and nothing in the tree assigns `rootCauseId` — the machine
+  contract reports it `null` on every finding — so the key for every group was
+  the rule. N independent defects from one rule across N files rendered as
+  "CONVERGENT — N findings share root cause QA-PW-002", which is the inverse of
+  the claim: several findings being one thing versus several findings sharing a
+  rule id. The fallback is now the finding fingerprint, `rootCauseId` still
+  wins the moment anything populates it, and the listed identities are distinct
+  — the old fallback made a three-finding group list one id three times, so a
+  consumer could not tell the members apart, and the same-file AMPLIFIED
+  conclusion it suppressed was being lost as collateral.
+- **Two glob compilers disagreed, and a gate used the wrong one.** `ignores.ts`
+  and `scan-pipeline.ts` each compiled globs, and they differed on `?` (a
+  metacharacter in one, a literal in the other) and on both forms of `**`. The
+  mass-suppression integrity gate reached into `ignores.ts` for its compiler
+  while the scan applied suppressions through `scan-pipeline.ts` — so it
+  measured the suppressed set in a different dialect than the one that
+  suppressed it, counting findings the scan never suppressed. Both now compile
+  through `src/lib/glob.ts`, which is the only implementation of the dialect.
+  One behaviour narrows: config `exclude` no longer reads `?` as a wildcard. No
+  shipped default or repository config uses `?`, and `*`/`**` are unchanged.
+- **An unparseable expiry was perpetual.** `new Date("2026-13-45").getTime()`
+  is `NaN`, and every comparison against `NaN` is false — so a suppression with
+  a typo in its expiry date was never reported expired and suppressed findings
+  forever. A date nobody can read now counts as expired; a suppression that
+  genuinely never expires must say so by omitting `expires`, which is a
+  decision someone made on purpose.
+
+`detectMassSuppression`'s threshold boundary was already `>=`; what was missing
+is that the boundary was stated nowhere, so "50%" read as "above 50%".
+
+### Deletions, and one that was hiding another
+
+- **`src/v6/tool-coverage.ts` deleted.** `ScanResult.toolCoverage` was declared
+  and never assigned by anything — no assignment exists in `src/` or `scripts/`
+  — so the block it assembled reached no surface, no report and no contract.
+  Its header claimed "the census gap list shrinks by 15 real entries"; that
+  reduction comes from `NOT_QA_TOOLING` in `ecosystem-census.ts`, which
+  classifies names regardless of who calls it. The module contributed nothing to
+  it. Recorded as a `DELETE` disposition in `docs/CARVE-MANIFEST.json` with that
+  evidence, rather than dropped from the record.
+- **Deleting it exposed a second gap.** Its only importer was
+  `src/v6/test-doubles.ts` — the false-proof detector, the module this product
+  is named after. Nothing in `src/` or `scripts/` has called it since. That is
+  now an explicit entry on the committed orphan list with the reason, rather
+  than a fact hidden by a dead import edge. The `DOUBLE_ONLY`/`TRUTHY` fix
+  landed on it in this release, so the logic is right and the wiring is still
+  owed. It is listed, not deleted: a thesis module that is unwired is a
+  product gap, and deleting it would make the gap invisible rather than gone.
+- **`src/scorer/scoring-validation.ts` deleted.** An orphan that documents four
+  scoring invariants and implements two, one of them vacuous. It also carried a
+  duplicate `SCORING_MODEL_VERSION` — `contract-versions.ts` owns that
+  constant and `scan-pipeline.ts` reads it from there. Fixing and wiring it
+  would have been strictly more code than deleting a module nothing runs.
+- **`--policy` no longer prints a scoring formula.** It read
+  `score = 100 · (1 − deductions / (findings + NORMALIZATION_K))`, which
+  contradicts `scorer.ts` on four counts: the denominator is test
+  _declarations_, not findings; `SMOOTHING_C` is missing from it;
+  `NORMALIZATION_K` multiplies the rate rather than sitting in the denominator;
+  and the `min(100, …)` cap is absent, so the line described a score that can go
+  negative. A table whose header says "every number here is imported, never
+  written down" was carrying a formula written by hand, and it was wrong. It now
+  names `docs/SCORING.md` and `scorer.ts` instead — a restated formula is the
+  same defect one layer over, and it drifts the first time the scorer changes.
+- **Three empty imports removed from `src/commands/milestone.ts`** —
+  `import {} from …` on three modules, which asserted a dependency the file
+  does not have.
+
+### One path check, three callers: a claim that names a deleted file is now a failed check
+
+Every artifact claim in this repository is a path inside a file — a
+`provisionalArtifacts` entry in `ROADMAP.yaml`, an `evidence` citation in the
+v6 inventory, a `regression_test`/`evidence_artifact` on an M26 ledger row.
+Three validators read those claims and all three asked the same weak question,
+"is this field a non-empty string?", so a citation to a module the v6 carve
+deleted validated clean. One check now serves all three, so a fourth caller
+cannot come back weaker.
+
+- **`docs:roadmap:backlinks` is wired into the release and nightly tiers.**
+  It was correct and red the whole time — reporting 19 missing provisional
+  artifacts — and in no tier at all. It now runs through `gates:claim-integrity`,
+  which is where a roadmap's artifact claims belong.
+- **The 19 dead `provisionalArtifacts` rows are deleted, not repointed.** M29,
+  M31–M36, M38, M39, M41, M43–M50 each declared an artifact the carve
+  removed. A successor is a different module answering a different question,
+  so citing one would turn "this was never built" into a claim that something
+  was.
+- **`docs/V6-CURRENT-STATE.md` and `docs/V6-GAP-MATRIX.md` are drift-locked.**
+  Only the JSON halves of these generated artifacts were ever compared against
+  a fresh render. The `.md` halves were hand-editable, which is how a
+  hand-edited line came to contradict the `docs/v6-inventory.json` beside it.
+  Both are now compared, and both sides are formatted in memory so the check
+  still never writes to the tree it inspects.
+- **A generated artifact may no longer cite a file that does not exist.**
+  Every repo-relative path in the rendered `.md` is now checked, which is what
+  found the 11 dead citations the §100 classification was still carrying. The
+  claims were corrected at source rather than in the rendered output: §59
+  (dashboard) and §66 (quality debt) are now `OBSOLETE`, which is the state
+  the enum had declared and nothing had ever used.
+- **M26 ledger rows are BLOCKED when a cited evidence path does not resolve.**
+  `regression_test` and `evidence_artifact` are the only pointer a closure
+  claim has to the thing that proves it. A `warning`, not an `error`: a row may
+  legitimately cite a path this checkout does not carry, and "unverifiable
+  here" is the honest status. The root is a parameter rather than a default,
+  so a record's validity never depends on the working directory.
+- **Hand-written prose deleted from the generators.** GAP-V6-005's summary
+  carried "14 of the 108" while the matrix beside it reported 18 — two
+  representations of one number, one hand-maintained, where the renderer
+  already derives the authoritative figure. The §38/§65 notes named
+  `pw-report` and `trend`, which are commands, as modules of `src/forensics`.
+  The `QA_DOMAIN_RECORDS` provenance column named a symbol that exists
+  nowhere in `src/`.
+- **"156 cells" was never true.** The support matrix carries 136 cells and 6 on
+  the language-framework axis. The figure was hand-written in source, so
+  regenerating could not have fixed it; the language manifest now names the
+  surface and points at the matrix that carries the count.
+- **`docs/ANTI-CREEP.md` pointed at `src/rules/tier-policy.ts`;** the module is
+  at `src/engine/tier-policy.ts`.
+- **`docs/MANUAL-SCRIPTS.md` claimed `docs:roadmap:backlinks` was wired into
+  the nightly tier.** It was not. It is now, so the row is gone — and the
+  script-reachability gate enforces that a script cannot be both a gate and a
+  manual tool.
+
+A gate that has never fired is not a gate: the rendered-markdown comparison was
+verified to fail on a planted hand edit and pass after reverting it.
+
+### False greens: three places a scan reported a stronger result than it had
+
+Every ordinary scan withheld 34 quarantined rules and reported nothing about
+it at three different surfaces. This release closes that gap. **These are
+user-visible status changes** — an `INCONCLUSIVE` finding is no longer
+`FIXED`, and SARIF `executionSuccessful` is now `false` on a scan that
+withheld rules. Existing baselines and saved reports will show the new,
+weaker claim; that is the point of the change.
+
+- **A quarantined rule could prove a finding "fixed" on a scan that never ran
+  it.** `analysisStatus` reported _how many_ rules were withheld but not
+  _which_, and lifecycle resolution — which decides one finding at a time —
+  had nothing to go on. A finding whose rule was filtered out disappeared
+  from the scan and rendered `FIXED SINCE BASELINE`. New optional field
+  `analysisStatus.withheldRuleIds` carries the set; `resolve()` returns
+  `INCONCLUSIVE` with a new `rule-withheld` cause when the finding's rule was
+  withheld. With `--strict` the rule runs and the fix resolves normally.
+  `schemaVersion: 1` is unchanged — both new fields are additive
+  (`docs/VERSIONING.md`).
+- **"FIXED SINCE BASELINE (verified by a complete same-revision scan)" was
+  false for every withheld scan.** The sentence claimed the whole scan was
+  complete; it now claims only what survived every guard — the rule ran, the
+  file was in scope, it no longer fires.
+- **SARIF called a `PARTIAL`-coverage scan fully successful.**
+  `executionSuccessful` was `!partial && rulesCrashed === 0`, and
+  `coverageState` is deliberately orthogonal to `partial`, so a scan that read
+  every file it was given and ran 45 of 79 detectors reported success to GitHub
+  code scanning. `executionSuccessful` now also requires
+  `coverageState !== "PARTIAL"`, with a `toolExecutionNotifications` entry
+  naming the withheld count and pointing at `--strict`.
+- **`analysisStatus.reasons` now carries `coverage:quarantine:<n>`,** which
+  `types.ts` already promised and nothing emitted. The flat reason set is what
+  a machine consumer reads, and it was empty for the one gap that affects
+  every non-`--strict` scan. `coverage:*` reasons are excluded from
+  report-io's `partial` markers, so disclosing coverage does not make a saved
+  report unloadable and does not turn ordinary scans into partial ones.
+- **A lone `expect(x).toBeTruthy()` was reported as a false proof.** The QA-IR
+  gives `TRUTHY` an `"ANY"` expectation — an explicit, evidence-bearing shape
+  — while the double-risk model did not list it as substantiating. The two
+  modules disagreed, so the assertion counted as neither substantiating nor a
+  double and fell into `DOUBLE_ONLY`: "every assertion is about a test double"
+  about a test with no double assertions, at a `hollowRatio` of 0. `TRUTHY` is
+  now substantiating, and `DOUBLE_ONLY` requires at least one double.
+- **The trust-trend report invented numbers.** `score` is `null` for a repo
+  with no tests, and `(last ?? 0) - (first ?? 0)` reported a fabricated
+  `+100` when a repo gained its first score. `scoreDelta` is now
+  `number | null` and the rendering says "not comparable". `overallDirection`
+  compared the _number_ of regression entries against improvements, so one
+  50-point drop lost to three 1-point gains and the trend read "improving" —
+  it now sums magnitude. `frameworkCount` was `1` whenever detection was known
+  (four detected frameworks and one rendered identically) and is now
+  `frameworks.length`. The `warnings > errors * 2` ratio degenerated to
+  `warnings > 0` at zero errors, reporting "weak assertions" for every repo
+  with warnings and none; it now requires a denominator.
+
 ### Names: one command, one name
 
 `package.json` carried eight families of stragglers — two names for the same

@@ -132,7 +132,18 @@ describe("reporter version-sync gate (WI-10, plan §14)", () => {
     const pkg = JSON.parse(
       readFileSync(join(ROOT, "package.json"), "utf8"),
     ) as { scripts: Record<string, string> };
-    expect(pkg.scripts["check-version"]).toContain("check-reporter-version");
+    // `check-version` is an ORCHESTRATOR: it runs the reporter-version arm
+    // among others. The old assertion required the arm's script name to
+    // appear in the npm script string, which stopped being true the moment
+    // the other three arms were folded in — the gate was alive and the
+    // assertion was checking the wrong shape. The orchestrator's own ARM
+    // table is the thing that has to name the script.
+    expect(pkg.scripts["check-version"]).toBe("node scripts/check-version.mjs");
+    const orchestrator = readFileSync(
+      join(ROOT, "scripts", "check-version.mjs"),
+      "utf8",
+    );
+    expect(orchestrator).toContain("scripts/check-reporter-version.ts");
   });
 
   it("the reporter keeps the ingestion contract: default output is mjolnir.report.json", () => {

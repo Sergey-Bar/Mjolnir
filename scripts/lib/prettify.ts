@@ -32,3 +32,26 @@ export async function prettify(filepath: string): Promise<void> {
   });
   writeFileAtomic(filepath, formatted);
 }
+
+/**
+ * The same formatting, applied to a string, writing nothing.
+ *
+ * Exists because a drift checker that compares a COMMITTED file against a
+ * FRESH render has to compare like with like. The generators call
+ * `prettify` after rendering, so the bytes on disk are the formatted ones and
+ * a raw render will differ from them on every table — which is how the
+ * rendered-`.md` comparison came to report permanent drift on a correctly
+ * generated artifact. Formatting both sides in memory keeps the checker's
+ * promise (never write to the tree it inspects) AND makes it compare the
+ * thing it claims to.
+ *
+ * `filepath` is the path the text WOULD occupy, so `.prettierrc` overrides and
+ * parser inference (markdown vs JSON) resolve the same way they did on write.
+ */
+export async function prettifyText(
+  text: string,
+  filepath: string,
+): Promise<string> {
+  const config = await resolveConfig(filepath);
+  return format(text, { ...config, filepath });
+}

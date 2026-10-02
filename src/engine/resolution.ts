@@ -30,7 +30,8 @@ export type ResolutionCause =
   | "revision-changed"
   | "legacy-baseline"
   | "retired"
-  | "scope-changed";
+  | "scope-changed"
+  | "rule-withheld";
 
 /** The lifecycle record rendered by comparison surfaces. */
 export interface Resolution {
@@ -98,6 +99,17 @@ export function resolve(input: ResolveInput): Resolution {
     return { status: "INCONCLUSIVE", cause: "crash", comparedAgainst };
   }
 
+  // 2b. the finding's rule was WITHHELD from the current scan (quarantine
+  //     tier, no `--strict`). The rule never executed, so its absence from
+  //     the current findings is the absence of a detector, not evidence the
+  //     detector found nothing. Without this arm a quarantined rule's
+  //     findings render FIXED on every non-strict scan — the one claim §15
+  //     exists to prevent. Read off the current result rather than an input,
+  //     because the withheld set is a property of THAT run.
+  if (current.analysisStatus.withheldRuleIds?.includes(entry.ruleId) === true) {
+    return { status: "INCONCLUSIVE", cause: "rule-withheld", comparedAgainst };
+  }
+
   // 3. the finding's file was skipped (parser failure/oversized/budget).
   if (input.skippedFiles?.has(entry.file)) {
     return { status: "INCONCLUSIVE", cause: "skipped", comparedAgainst };
@@ -163,7 +175,13 @@ export function resolve(input: ResolveInput): Resolution {
 export function renderResolution(r: Resolution): string {
   switch (r.status) {
     case "VERIFIED-RESOLVED":
-      return "FIXED SINCE BASELINE (verified by a complete same-revision scan)";
+      // The old text — "(verified by a complete same-revision scan)" — was a
+      // claim about the SCAN that was false whenever coverage was withheld.
+      // The claim that survives every guard above is narrower and is the one
+      // the status itself makes: this finding's rule ran, its file was in
+      // scope, and it did not fire. Says nothing about the rules that did
+      // not run.
+      return "FIXED SINCE BASELINE (rule ran, file in scope, no longer reported)";
     case "STILL-PRESENT":
       return "STILL PRESENT";
     case "SUPPRESSED":

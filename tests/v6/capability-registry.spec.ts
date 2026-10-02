@@ -384,18 +384,43 @@ describe("evidence is resolved per entry, not once for the registry", () => {
 
   it("an entry with no supporting rule is never LOCAL_PROVEN, and never above M1", () => {
     // The control that proves the resolution is per entry. If the global
-    // flags still leaked, `test.framework.selenium` — no rules, no adapter
-    // file — would come back M2 with a proof, which is exactly what it did.
+    // flags still leaked, an entry with no rules and no adapter file would come
+    // back M2 with a proof, which is exactly what `test.framework.selenium` did
+    // — it was used as this control for a long time, and that use was itself
+    // hiding a defect: it asserted `sel.rules` was `[]`, which was only true
+    // because `FRAMEWORK_FAMILY.selenium` named a family no rule belongs to.
+    // The premise was false and the test enforced it.
+    //
+    // So the control is now stated over EVERY zero-rule entry, and Selenium
+    // keeps the separate property it actually demonstrates (below: rules
+    // without an adapter).
+    const ruleLess = registry.entries.filter(
+      (entry) => (entry.rules ?? []).length === 0,
+    );
+    expect(ruleLess.length).toBeGreaterThan(0);
+    for (const entry of ruleLess) {
+      expect(
+        entry.adapter,
+        `${entry.id} has no rules and no adapter`,
+      ).toBeNull();
+      expect(entry.maturity, `${entry.id} maturity`).toBe("M1_DECLARED");
+      expect(entry.proof.status, `${entry.id} proof`).toBe("BLOCKED");
+      expect(entry.proof.authority, `${entry.id} authority`).toBe("NONE");
+    }
+  });
+
+  it("rules without an adapter reach no further than the rules justify", () => {
+    // Selenium has three real rules and no adapter of its own. The rules are
+    // its evidence; there is no file, so there is nothing to point an adapter
+    // claim at, and `adapter` must say so rather than naming a language
+    // adapter used to RUN its tests.
     const sel = registry.entries.find(
       (entry) => entry.id === "test.framework.selenium",
     );
     expect(sel, "selenium is in the inventory").toBeDefined();
     if (sel === undefined) return;
-    expect(sel.rules).toEqual([]);
+    expect(sel.rules).toEqual(["QA-SE-001", "QA-SE-002", "QA-SE-003"]);
     expect(sel.adapter).toBeNull();
-    expect(sel.maturity).toBe("M1_DECLARED");
-    expect(sel.proof.status).toBe("BLOCKED");
-    expect(sel.proof.authority).toBe("NONE");
   });
 
   it("the executor-adapter list never stands in for an adapter of its own", () => {
@@ -680,6 +705,29 @@ describe("rule-family facts are derived, not typed", () => {
   it("maps a framework to the family that evidences it", () => {
     expect(familyForFramework("playwright")).toBe("QA-PW");
     expect(familyForFramework("github-actions")).toBe("QA-CI");
+    // Selenium's three rules carry the `QA-SE-` id prefix, so `QA-SE` is the
+    // key that reaches them. It was `QA-SEL` — a family no rule id carries —
+    // which is why the entry resolved to an empty rule list and reported no
+    // evidence at all. A key that names a family with zero members produces an
+    // empty result rather than an error, so nothing else reports it.
+    expect(familyForFramework("selenium")).toBe("QA-SE");
+    // And the key must actually resolve to rules, not merely look right.
+    const { liveByFamily } = collectRuleFacts();
+    expect(familyForFramework("selenium")).not.toBe("QA-SEL");
+    for (const framework of [
+      "playwright",
+      "cypress",
+      "selenium",
+      "jest",
+      "pytest",
+      "github-actions",
+    ]) {
+      const family = familyForFramework(framework);
+      expect(
+        liveByFamily.get(family)?.length ?? 0,
+        `${framework} → ${family} resolves to no rules`,
+      ).toBeGreaterThan(0);
+    }
     // An unmapped framework falls back to the generic test family rather
     // than guessing a specific one — and the entry then carries no rules,
     // so it lands at M1 with a gap instead of M2 on a guess.

@@ -1,4 +1,5 @@
 import { isRecord } from "../lib/safe-json.js";
+import { assertPathsExist, type PathClaim } from "../lib/path-existence.js";
 
 export const M26_SCHEMA_VERSION = 1 as const;
 
@@ -376,6 +377,17 @@ const EXTERNAL_ID_PATTERN = /^EXT-[A-Z0-9][A-Z0-9._-]*$/;
 const SHA_PATTERN = /^[0-9a-f]{40}$/i;
 const BODY_SHA_PATTERN = /^[0-9a-f]{64}$/i;
 const TRAIN_PATTERN = /^M(?:\d|[1-4]\d|50)$/;
+
+/**
+ * The ledger fields whose VALUE is a repo-relative path.
+ *
+ * Only these two. Every other string field is prose, a command, an owner or
+ * an id, and existence-checking those would produce noise on every row.
+ * `source_url_or_command` is deliberately absent: it is usually a URL, and a
+ * URL is not a path in this checkout.
+ */
+const PATH_CITATION_KEYS = ["regression_test", "evidence_artifact"] as const;
+
 const UNOWNED_VALUES = new Set([
   "unassigned",
   "unowned",
@@ -1355,6 +1367,18 @@ function normalizedExitCode(value: unknown): number | undefined {
 
 export function validateGapLedgerRecord(
   value: unknown,
+  /**
+   * The checkout `regression_test` / `evidence_artifact` are resolved
+   * against.
+   *
+   * Optional on purpose. A validator is a pure function over a record: it has
+   * no repository, and defaulting to `process.cwd()` would make a record's
+   * validity depend on which directory the process started in — the same class
+   * of bug this check exists to remove. A caller that HAS a repository passes
+   * it and gets the existence check; a caller that does not gets no path
+   * diagnostics rather than wrong ones.
+   */
+  root?: string,
 ): LedgerValidationResult {
   if (value === undefined || value === null) {
     return blocked(
@@ -1696,6 +1720,41 @@ export function validateGapLedgerRecord(
     }
   }
 
+  // The two fields that cite a FILE, checked for existence rather than for
+  // being a non-empty string. `regression_test` and `evidence_artifact` are
+  // the ledger's only pointer to the thing it claims proves a closure, and
+  // a deleted module leaves the pointer behind pointing at nothing — which
+  // validated clean, because the string was a string.
+  //
+  // Not an `error`: a ledger row may legitimately cite a path that this
+  // checkout does not carry (a fixture from a sibling repo, a consumer's
+  // own harness). It is BLOCKED, not rejected — the row is unverifiable
+  // here, and saying so is the honest status. The shared check is the same
+  // one the roadmap and the inventory use, so a fourth caller cannot come
+  // back weaker.
+  const pathClaims: PathClaim[] = [];
+  for (const key of PATH_CITATION_KEYS) {
+    const cited = value[key];
+    if (isNonEmptyString(cited)) {
+      pathClaims.push({
+        path: cited,
+        citedBy: `${isNonEmptyString(value.gap_id) ? value.gap_id : "(unidentified record)"}.${key}`,
+      });
+    }
+  }
+  if (pathClaims.length > 0 && root !== undefined) {
+    assertPathsExist(root, pathClaims, (missing) => {
+      addDiagnostic(
+        diagnostics,
+        "UNRESOLVED_EVIDENCE_PATH",
+        `$.${missing.citedBy.split(".").pop() ?? ""}`,
+        `${missing.citedBy} cites "${missing.path}", which does not exist in ` +
+          "this checkout; the closure claim cannot be verified here",
+        "warning",
+      );
+    });
+  }
+
   if (diagnostics.some((diagnostic) => diagnostic.severity === "error")) {
     return failed(diagnostics);
   }
@@ -1741,7 +1800,11 @@ function dependencyCycles(
   return cycles;
 }
 
-export function validateGapLedger(value: unknown): LedgerValidationResult {
+export function validateGapLedger(
+  value: unknown,
+  /** Forwarded to each record validator — see `validateGapLedgerRecord`. */
+  root?: string,
+): LedgerValidationResult {
   if (!Array.isArray(value)) {
     return failed([
       {
@@ -1775,7 +1838,7 @@ export function validateGapLedger(value: unknown): LedgerValidationResult {
   const records: Record<string, unknown>[] = [];
   let hasBlocked = false;
   for (let index = 0; index < value.length; index += 1) {
-    const recordResult = validateGapLedgerRecord(value[index]);
+    const recordResult = validateGapLedgerRecord(value[index], root);
     diagnostics.push(
       ...recordResult.diagnostics.map((diagnostic) => ({
         ...diagnostic,
@@ -1915,7 +1978,11 @@ export function validateGapLedger(value: unknown): LedgerValidationResult {
   return pass(diagnostics);
 }
 
-export function validateGapLedgerJsonl(value: unknown): LedgerValidationResult {
+export function validateGapLedgerJsonl(
+  value: unknown,
+  /** Forwarded to each record validator — see `validateGapLedgerRecord`. */
+  root?: string,
+): LedgerValidationResult {
   if (typeof value !== "string") {
     return failed([
       {
@@ -1973,7 +2040,7 @@ export function validateGapLedgerJsonl(value: unknown): LedgerValidationResult {
       ]);
     }
   }
-  const result = validateGapLedger(records);
+  const result = validateGapLedger(records, root);
   return {
     ...result,
     diagnostics: result.diagnostics.map((diagnostic) => ({

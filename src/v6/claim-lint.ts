@@ -262,22 +262,44 @@ export function scanText(
     // `lines[index]` `string | undefined`, and the `?? ""` that satisfies it
     // is a branch no input can reach.
     for (const [index, line] of lines.entries()) {
+      // A fresh RegExp per line: a global regex carries `lastIndex` across
+      // calls, which silently skips matches and under-reports. An
+      // under-reporting linter is worse than none. The source is a literal
+      // from this module's own `CLAIM_PATTERNS`, never user input.
+      // `entries()` rather than an index loop: `noUncheckedIndexedAccess` makes
+      // `lines[index]` `string | undefined`, and the `?? ""` that satisfies it
+      // is a branch no input can reach.
+      //
+      // EVERY match on the line, not the first. This was a single `exec` plus
+      // `continue`, so a line making two claims of the same kind reported one —
+      // and the half it dropped was the half a maintainer has to go and fix. An
+      // under-counting linter under-reports the work by exactly the amount that
+      // is hardest to notice: a second claim on a line somebody already edited
+      // once today. `extractBindings` below already loops correctly for the
+      // same reason; these two functions scan the same files for the same kind
+      // of marker and must not differ in whether they see everything.
       // eslint-disable-next-line security/detect-non-literal-regexp
       const regex = new RegExp(
         claimPattern.pattern.source,
         claimPattern.pattern.flags,
       );
-      const match = regex.exec(line);
-      if (match === null) continue;
-      found.push({
-        location: `${surface}:${index + 1}`,
-        surface,
-        kind,
-        patternId: claimPattern.id,
-        severity: claimPattern.severity,
-        text: match[0].trim().slice(0, 160),
-        line: index + 1,
-      });
+      let match: RegExpExecArray | null;
+      while ((match = regex.exec(line)) !== null) {
+        found.push({
+          location: `${surface}:${index + 1}`,
+          surface,
+          kind,
+          patternId: claimPattern.id,
+          severity: claimPattern.severity,
+          text: match[0].trim().slice(0, 160),
+          line: index + 1,
+        });
+        // A zero-length match would spin forever: `exec` would return the same
+        // position with an empty match and `lastIndex` would not advance. None
+        // of this module's patterns can match empty today; the guard is there
+        // so adding one that can does not hang the linter.
+        if (match[0].length === 0) regex.lastIndex += 1;
+      }
     }
   }
   return found;

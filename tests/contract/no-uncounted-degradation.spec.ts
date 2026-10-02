@@ -403,7 +403,7 @@ const ALLOWED_VALUE_RETURNS: ReadonlyArray<{
   },
   {
     file: "engine/scan-pipeline.ts",
-    line: 891,
+    line: 867,
     direction: "fails-explicitly",
     reason:
       "Counts the failure three ways in the block itself " +
@@ -413,7 +413,7 @@ const ALLOWED_VALUE_RETURNS: ReadonlyArray<{
   },
   {
     file: "engine/scan-pipeline.ts",
-    line: 1294,
+    line: 1272,
     direction: "fails-explicitly",
     reason:
       "Sets identityIncomplete and returns hash: 'UNAVAILABLE'. The literal " +
@@ -484,7 +484,7 @@ const ALLOWED_VALUE_RETURNS: ReadonlyArray<{
   },
   {
     file: "discovery/ignores.ts",
-    line: 291,
+    line: 250,
     direction: "reducing",
     reason:
       "isLintFixtureDir returns false for a directory it cannot list, so the " +
@@ -494,14 +494,14 @@ const ALLOWED_VALUE_RETURNS: ReadonlyArray<{
   },
   {
     file: "v6/capability-registry.ts",
-    line: 783,
+    line: 819,
     direction: "fails-by-absence",
     reason:
       "Returns an empty list. The probe could not complete, and the only thing this reports is that nothing was found. Absence is never read downstream as a pass: a capability, edge or capability-level with no evidence stays unproven, which is the direction that cannot manufacture a green.",
   },
   {
     file: "v6/capability-registry.ts",
-    line: 469,
+    line: 485,
     direction: "fails-by-absence",
     reason:
       "Returns an empty map when docs/ECOSYSTEM-CENSUS.json is absent or unreadable. An empty map makes every entry advertise the level it PROVED rather than the level the census claims, so an unreadable ledger can only LOWER a claim and never raise one — the direction that cannot manufacture a green.",

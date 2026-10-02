@@ -51,9 +51,6 @@ import {
   getPlaywrightMaturityReport,
   renderPlaywrightMaturityReport,
 } from "../engine/framework-maturity.js";
-import {} from "../engine/historical-trust.js";
-import {} from "../engine/machine-contract.js";
-import {} from "../engine/machine-contract-verification.js";
 import {
   KNOWN_RULE_IDS,
   runScan,

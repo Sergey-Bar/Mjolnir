@@ -24,7 +24,13 @@
  *    settings yields QA-CYP-003 (config rule currently unreachable).
  */
 
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -35,7 +41,9 @@ import {
   runScanCommand,
   runSuppressions,
   runDoctorPlaywright,
+  EXPLAIN_ARMS,
 } from "../../src/cli.js";
+import { runAnalyzeCommand } from "../../src/commands/analyze.js";
 import { computeCodeText } from "../../src/engine/code-text.js";
 
 const createdDirs: string[] = [];
@@ -102,37 +110,45 @@ describe("audit-C1: cache identity — verdicts identify their file", () => {
 
 describe("audit-C3: default io sinks are variadic", () => {
   it("default err sink emits every argument joined by spaces", async () => {
-    // Deterministic two-arg default-err call: `triage` on a report whose
-    // TRIAGE.md write fails (blocked by a same-named directory) reaches
-    // the catch-to-20 handler, which calls the DEFAULT io.err. On main
-    // the friendly crash path routes through `internalErrorMessage`
-    // (multiple emit calls on the default sink); the sink itself stays
-    // variadic and carries the cause — pinned here.
+    // The property under test is the DEFAULT `err` sink: when a command
+    // crashes and the caller passed no `io`, the fallback sink must still
+    // render every part of the multi-arg call, so the cause survives.
+    //
+    // The trigger used to be a blocked `TRIAGE.md` write, which reached the
+    // catch via `triage`. `triage` is now `explain --evidence`, and that arm
+    // only ever writes FLAKY.md — so the fixture could not fire and the test
+    // asserted a crash that no path produces. The trigger is now the one that
+    // is guaranteed: make the default OUT sink throw, so the arm's own
+    // `io.out(...)` raises and the catch routes to the default `err`.
     const dir = tmpRepo("c3");
     const results = join(dir, "results");
     mkdirSync(results);
-    mkdirSync(join(results, "TRIAGE.md"));
     writeFileSync(
       join(results, "report.xml"),
       '<testsuite tests="1">\n' +
         '  <testcase classname="tests/test_a.py" name="test_ok" time="0.100"/>\n' +
         "</testsuite>",
     );
+    const outSpy = vi.spyOn(console, "log").mockImplementation(() => {
+      throw new Error("probe-out-sink");
+    });
     const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-    await main(["explain", "--evidence", results]);
+    const code = await main(["explain", "--evidence", results]);
     // Read calls BEFORE restore — mockRestore() clears the call log.
     const calls = errSpy.mock.calls.map((c) => c.map(String).join(" "));
+    outSpy.mockRestore();
     errSpy.mockRestore();
+
+    expect(code).toBe(20);
     const internal = calls.find((c) => c.includes("mjolnir internal error"));
-    expect(internal).toBeDefined();
     expect(
-      calls.some(
-        (c) =>
-          c.trim().length > 0 &&
-          !c.includes("mjolnir internal error") &&
-          c !== "undefined",
-      ),
-    ).toBe(true);
+      internal,
+      `no internal-error line in: ${calls.join(" | ")}`,
+    ).toBeDefined();
+    // The sink is variadic: the CAUSE is emitted, not just the prefix. This
+    // is the whole point of audit C3 — a non-variadic sink printed
+    // "mjolnir internal error:" and dropped the message that says why.
+    expect(calls.join("\n")).toContain("probe-out-sink");
   });
 });
 
@@ -179,9 +195,15 @@ describe("audit-S8: help contract; handler throws become exit 20", () => {
 
   it("verb --help routes to the verb page (exit 0)", async () => {
     const cap = capture();
+    // The `rules` verb is now the `explain --list` arm. The page it renders
+    // is the arms table, and it is rendered from `EXPLAIN_ARMS` — the same
+    // table the dispatcher reads — so the assertion is on the arm's own
+    // summary text rather than a hand-copied row.
     const code = await main(["explain", "--list", "--help"], cap.io);
     expect(code).toBe(0);
-    expect(cap.text()).toContain("rules — ");
+    const arm = EXPLAIN_ARMS["--list"];
+    expect(arm, "the --list arm is registered").toBeDefined();
+    expect(cap.text()).toContain(arm?.summary ?? "");
   });
 
   it("runSuppressions maps a thrown error to exit 20 (not unhandled rejection)", () => {
@@ -202,7 +224,7 @@ describe("audit-S8: help contract; handler throws become exit 20", () => {
     const dir = tmpRepo("s8-dp");
     // Any downstream crash must be contained by the handler. Today an
     // error propagates as a rejection; after the fix: exit 20.
-    const code = await runDoctorPlaywright(["doctor", "--frameworks", dir], {
+    const code = await runDoctorPlaywright([dir], {
       out: () => {
         throw new Error("probe-crash");
       },
@@ -246,5 +268,98 @@ describe("audit-C4: cypress-only repo reaches QA-CYP-003", () => {
     // dead rule now fires) but does not gate the exit code.
     expect(cap.text()).toContain("QA-CYP-003");
     expect(code).toBe(0);
+  });
+});
+
+describe("flag-parity: an unknown flag is a usage error, not a no-op", () => {
+  // `doctor` got this first. `analyze` and `explain --list` did not, and both
+  // failed the same way: the flag was silently ignored and the command
+  // printed output and exited 0. A caller scripting a filter got every rule
+  // and no warning, and a command that looks like it ran and did nothing is
+  // the shape this product exists to catch — so it is asserted here in
+  // process, where the coverage is real. (The e2e sweep spawns the binary and
+  // earns no istanbul credit, which is why these arms exist at all.)
+  it("analyze rejects a flag outside --cross-file", () => {
+    const cap = capture();
+    expect(runAnalyzeCommand(["--bogus"], cap.io)).toBe(10);
+    expect(cap.text()).toContain("Usage: mjolnir analyze");
+  });
+
+  it("analyze accepts the flag it does support", () => {
+    const cap = capture();
+    // 2, not 10: the usage arm is only about flag SHAPE, and a valid flag
+    // must not be refused. A directory with no tests is the ordinary
+    // nothing-to-do answer.
+    expect(runAnalyzeCommand(["--cross-file"], cap.io)).not.toBe(10);
+  });
+
+  it("explain --list rejects an unknown flag instead of printing everything", async () => {
+    const cap = capture();
+    expect(await main(["explain", "--list", "--nonsense"], cap.io)).toBe(10);
+    expect(cap.text()).toContain("Usage: mjolnir explain --list");
+    // The failure mode being prevented: the full catalogue rendered as if the
+    // filter had been honoured.
+    expect(cap.text()).not.toContain("QA-TEST-001");
+  });
+
+  it("explain --list accepts the closed set of flags it declares", async () => {
+    for (const flag of [
+      "--md",
+      "--json",
+      "--measured",
+      "--unmeasured",
+      "--stats",
+      "--health",
+    ]) {
+      const cap = capture();
+      expect(
+        await main(["explain", "--list", flag], cap.io),
+        `explain --list ${flag} was rejected`,
+      ).toBe(0);
+    }
+    // `--limit=<n>` is valued, so it is matched by prefix. It belongs to
+    // `--health`; without that flag it is still not an unknown flag.
+    const cap = capture();
+    expect(await main(["explain", "--list", "--limit=5"], cap.io)).toBe(0);
+  });
+});
+
+describe("--save-baseline writes the snapshot and reports honestly when it cannot", () => {
+  it("writes .mjolnir/baseline.json and says how many findings it captured", async () => {
+    const dir = tmpRepo("save-baseline");
+    mkdirSync(join(dir, "e2e"), { recursive: true });
+    writeFileSync(
+      join(dir, "e2e", "focused.spec.ts"),
+      "test.only('a', () => { expect(1 + 1).toBe(2); });\n",
+    );
+    const cap = capture();
+    const code = await runScanCommand(
+      [dir, "--save-baseline", "--strict"],
+      cap.io,
+    );
+    // The exit code is the SCAN's, not the save's. The old `baseline` verb
+    // returned 0 unconditionally after capturing, so a repo full of error
+    // findings exited clean as long as you snapshotted it.
+    expect(code).toBe(1);
+    expect(existsSync(join(dir, ".mjolnir", "baseline.json"))).toBe(true);
+    expect(cap.text()).toContain("Captured");
+  });
+
+  it("reports a failed write instead of claiming the baseline was captured", async () => {
+    const dir = tmpRepo("save-baseline-fail");
+    mkdirSync(join(dir, "e2e"), { recursive: true });
+    writeFileSync(
+      join(dir, "e2e", "clean.spec.ts"),
+      "it('a', () => { expect(1 + 1).toBe(2); });\n",
+    );
+    // A DIRECTORY where the baseline file belongs makes the write fail for
+    // the same reason a permission error would: the target is not a file.
+    mkdirSync(join(dir, ".mjolnir", "baseline.json"), { recursive: true });
+    const cap = capture();
+    await runScanCommand([dir, "--save-baseline", "--strict"], cap.io);
+    // A reader told "captured" when nothing was written is exactly the false
+    // green this product exists to catch — the message has to say it failed.
+    expect(cap.text()).toContain("baseline save FAILED");
+    expect(cap.text()).not.toContain("Captured");
   });
 });

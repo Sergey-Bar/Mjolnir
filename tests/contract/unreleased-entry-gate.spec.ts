@@ -62,6 +62,15 @@ interface CheckerResult {
  * `git status`, so a fixture without a commit history answers every question
  * with a "no" and the negative arms pass for the wrong reason.
  */
+/**
+ * Escape every regex metacharacter, not just the ones this file's own data
+ * happens to contain. Used where a value read from `package.json` is
+ * interpolated into a pattern.
+ */
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\/-]/g, "\\$&");
+}
+
 function fixture(changelog: string, version: string): string {
   const dir = mkdtempSync(join(tmpdir(), "mjolnir-changelog-"));
   scratch.push(dir);
@@ -293,15 +302,37 @@ describe("a user-visible change needs a release note", () => {
     expect(run.output).toContain("src-moved.ts");
   });
 
-  it("the shipped changelog is not empty", () => {
-    // The premise of the gate. If the `[Unreleased]` section goes back to
-    // being empty while there are uncommitted changes, this fails with a
-    // message that says so rather than leaving the gate passing vacuously.
+  it("the shipped changelog carries a release note for the current version", () => {
+    // The premise of the gate: a user-visible change is recorded. This used
+    // to assert the `[Unreleased]` section specifically, which contradicts the
+    // checker's own law — `check-unreleased-entry.mjs` states that "a version
+    // bump IS the release record, and demanding a separate `[Unreleased]`
+    // block on the commit that sets the new version would make the two
+    // disagree on purpose." On a release commit the section is empty *by
+    // design* and the note lives under the version heading.
+    //
+    // So the invariant is the one the gate enforces: the changelog names the
+    // current version, and that section has a body. Asserting Unreleased
+    // specifically made this test fail on every legitimate release and
+    // train a reader to keep a stale Unreleased section open.
     const text = readFileSync(join(ROOT, "CHANGELOG.md"), "utf8");
-    const heading = /^## \[Unreleased\][^\n]*$/m.exec(text);
+    const pkg = JSON.parse(
+      readFileSync(join(ROOT, "package.json"), "utf8"),
+    ) as { version: string };
+    // `pkg.version` is interpolated into a RegExp, so it is ESCAPED as a whole
+    // rather than having its dots replaced. Escaping only the dots is the kind
+    // of partial escape that looks right: a prerelease suffix like `5.2.0-rc.1`
+    // has no metacharacter and sails through, while anything carrying `+` or `(`
+    // changes what the pattern MATCHES. CodeQL flagged the dot-only version
+    // of this line ("does not escape backslash characters in the input"), which
+    // is the same defect wearing a narrower hat.
+    const heading = new RegExp(
+      `^## \\[${escapeRegExp(pkg.version)}\\]`,
+      "m",
+    ).exec(text);
     expect(
       heading,
-      "the changelog has no `## [Unreleased]` section",
+      `the changelog has no section for the current version ${pkg.version}`,
     ).not.toBeNull();
     if (heading === null) return;
     const rest = text.slice(heading.index + heading[0].length);
@@ -318,7 +349,8 @@ describe("a user-visible change needs a release note", () => {
       );
     expect(
       body.length,
-      "the unreleased section is empty again",
+      `the ${pkg.version} section is empty: a release with no note is ` +
+        "indistinguishable from a release with nothing in it",
     ).toBeGreaterThan(0);
   });
 });

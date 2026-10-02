@@ -67,6 +67,20 @@ async function main(): Promise<void> {
     renderRuleDocsIndexMd(RULES) + "\n",
   );
 
+  // This generator writes and does NOT prune, and that is deliberate.
+  //
+  // A page for a retired rule is the record of what the tool used to claim.
+  // Twenty-two of them are committed against 79 live rules, and
+  // `tests/contract/rule-docs-set.spec.ts` enforces exactly that set: live
+  // rules plus `RETIRED_RULE_IDS`, and nothing else. A page outside both is
+  // the real orphan — one that no retirement ever recorded — and that spec is
+  // where it is caught.
+  //
+  // A prune was added here and removed. It deleted all 22 retired pages on its
+  // first run, which is the strongest possible demonstration that "the
+  // generator cannot remove its own output" is a reason to add a
+  // `docs:regen` check and not a reason to add a delete. The history of a
+  // tool's claims is not its generator's to garbage-collect.
   for (const [ruleId] of pages) {
     await prettify(join(OUT_DIR, `${ruleId}.md`));
   }

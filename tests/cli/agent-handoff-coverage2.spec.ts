@@ -86,7 +86,13 @@ describe("main() dispatch to the new verbs (plan §9 wiring)", () => {
   it("`mjolnir explain <file:line>` dispatches with the caller's io (exit 10 no args)", async () => {
     const cap = capture();
     await expect(main(["explain"], cap.io)).resolves.toBe(10);
-    expect(cap.errText()).toContain("Usage: mjolnir explain <file:line>");
+    // The usage line widened when `verdict` and the arms were folded in, so
+    // it names the three subject forms rather than one. Asserted on the
+    // `file:line` form specifically — that is the arm this test is about —
+    // plus the subject word, so a usage line that drops the form fails here
+    // rather than reading as a pass.
+    expect(cap.errText()).toContain("Usage: mjolnir explain");
+    expect(cap.errText()).toContain("file:line");
   });
 
   it("`mjolnir handoff` dispatches with the caller's io", async () => {

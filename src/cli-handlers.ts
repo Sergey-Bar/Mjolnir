@@ -45,6 +45,8 @@ import {
   DEFAULT_BASELINE_PATH,
   diffAgainstBaseline,
   loadBaseline,
+  renderBaselineSaved,
+  saveBaseline,
 } from "./commands/baseline.js";
 import { buildVerifyDigest, renderVerifyDigest } from "./commands/verify.js";
 import {
@@ -88,6 +90,7 @@ import {
 import { ENGINE_VERSION as CLI_VERSION } from "./engine/version.js";
 import { internalErrorMessage, out, err } from "./cli-io.js";
 import type { Output } from "./cli-io.js";
+import { currentCommit } from "./lib/git-utils.js";
 
 import { parseArgsOrUsage, validateScanTarget } from "./cli.js";
 
@@ -310,6 +313,38 @@ export async function runScanCommand(
       },
     );
     progress.done();
+
+    // `--save-baseline` writes the snapshot this scan just produced, so a
+    // later scan can distinguish RESOLVED from NEW. It is a write, so a
+    // failure is reported as one rather than swallowed — the scan succeeded,
+    // the snapshot did not, and a reader who is told "captured" when nothing
+    // was written is exactly the false-green this product exists to catch.
+    if (args.saveBaseline) {
+      const outPath = join(target, DEFAULT_BASELINE_PATH);
+      try {
+        const saved = saveBaseline(
+          result,
+          currentCommit(target) ?? "unknown",
+          outPath,
+        );
+        io.out(
+          renderBaselineSaved(DEFAULT_BASELINE_PATH, result.findings.length, {
+            ...(saved.backupPath !== undefined
+              ? { backupPath: saved.backupPath }
+              : {}),
+          }),
+        );
+      } catch (saveErr) {
+        io.err(
+          `baseline save FAILED — ${saveErr instanceof Error ? saveErr.message : String(saveErr)}`,
+        );
+        io.err(
+          "The scan completed; the snapshot was not written. Fix the path permissions and re-run with `--save-baseline`.",
+        );
+        return EXIT_FINDINGS;
+      }
+    }
+
     if (args.debug && crashLog.length > 0) {
       io.err(
         `debug: ${crashLog.length} rule crash(es) were swallowed by crash isolation:`,
@@ -615,6 +650,38 @@ export async function runRulesCommand(
   argv: string[],
   io: { out: Output; err: Output } = { out, err },
 ): Promise<number> {
+  // Flag-parity with every other subcommand: the catalogue arm accepts a
+  // closed set of flags, and a flag outside it is a typo. Silently ignoring
+  // it made `mjolnir explain --list --nonsense` print the full catalogue and
+  // exit 0 — a caller scripting a filter got every rule and no warning. The
+  // set is listed, not pattern-matched, so adding a flag is one line here and
+  // the error message below is derived from the same list.
+  const CATALOGUE_FLAGS = new Set([
+    "--external",
+    "--enable-plugins",
+    "--stats",
+    "--health",
+    "--unmeasured",
+    "--measured",
+    "--md",
+    "--json",
+    "capability",
+  ]);
+  // `--limit=<n>` is a valued flag, so it is matched by prefix rather than
+  // membership. Its value is validated by the `--health` arm below; here it
+  // only has to be recognised so the shape is not reported as unknown.
+  const unknownFlags = argv.filter(
+    (a) =>
+      a.startsWith("-") && !CATALOGUE_FLAGS.has(a) && !a.startsWith("--limit="),
+  );
+  if (unknownFlags.length > 0) {
+    io.err(
+      `Usage: mjolnir explain --list [--md] [--json] [--measured|--unmeasured] ` +
+        `[--health [--limit=<n>]] [--stats]`,
+    );
+    return EXIT_USAGE;
+  }
+
   const withExternal = argv.includes("--external");
 
   // The capability registry is the same evidence the rule catalog renders,

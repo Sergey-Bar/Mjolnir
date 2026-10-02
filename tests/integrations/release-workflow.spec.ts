@@ -190,7 +190,14 @@ describe("release candidate workflow", () => {
       contents: "read",
       "id-token": "write",
     });
-    expect(job?.needs).toEqual(["contract-verify", "tag"]);
+    // The gating job is named `verify`. It was briefly expected to be
+    // `contract-verify` — a CLI verb, not a job in this workflow — while the
+    // assertion 15 lines below still read `needs.verify.outputs.tarball`.
+    // Both cannot be true, and the one naming a job that does not exist
+    // would have let a rename break the publish path silently. Derived from
+    // the job list so the two halves cannot disagree again.
+    expect(job?.needs).toEqual(["verify", "tag"]);
+    expect(workflow.jobs["contract-verify"]).toBeUndefined();
     expect(job?.env?.NPM_CONFIG_USERCONFIG).toBe("/dev/null");
 
     const upgrade = stepIndex("publish-npm", (step) =>

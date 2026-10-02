@@ -16,6 +16,7 @@ import {
   compareLocalized,
   DISPLAY_LOCALE,
 } from "../lib/compare.js";
+import { findingFingerprint } from "./finding-identity.js";
 
 export type CorrelationStrength = "NONE" | "SUPPORTING" | "STRONG";
 
@@ -88,20 +89,50 @@ function groupByFile(findings: readonly Finding[]): Map<string, Finding[]> {
 }
 
 /**
- * Group findings by rootCauseId (or ruleId when rootCauseId is absent)
- * to detect convergent findings pointing at the same root cause.
+ * Group findings by root cause, falling back to the FINDING FINGERPRINT.
+ *
+ * The fallback used to be `ruleId`, and that is the defect this fixes. Nothing
+ * in the tree assigns `rootCauseId` — the machine contract reports it `null` on
+ * every finding — so `ruleId` was the key for every group, and N independent
+ * defects from one rule across N files were reported as
+ *
+ *   CONVERGENT — N findings share root cause QA-PW-002
+ *
+ * which is the precise inverse of what convergence means. Convergence is the
+ * claim that several findings are ONE thing; the key that produced it said
+ * only "these are the same rule". A fingerprint is ruleId + file + message, so
+ * two `QA-PW-002` findings in different files are two keys, two groups of one,
+ * and neither is reported.
+ *
+ * This is also why `findingId`/`rootCauseId`/`deduplicationGroup` are not
+ * wired instead: they are the same idea, and an unwired field plus a fallback
+ * would be two mechanisms for one claim. When a rule declares a real root
+ * cause, `rootCauseId` still wins — the field is honoured the moment anything
+ * populates it.
  */
 function groupByRootCause(
   findings: readonly Finding[],
 ): Map<string, Finding[]> {
   const groups = new Map<string, Finding[]>();
   for (const f of findings) {
-    const key = f.rootCauseId ?? f.ruleId;
+    const key = f.rootCauseId ?? findingFingerprint(f);
     const list = groups.get(key) ?? [];
     list.push(f);
     groups.set(key, list);
   }
   return groups;
+}
+
+/**
+ * The identity a conclusion lists a finding under.
+ *
+ * `findingId` when something has populated it, else the fingerprint. Never
+ * `ruleId`: the fallback used to collapse every finding from one rule onto one
+ * id, so a three-finding CONVERGENT group listed the same id three times and
+ * the `alreadyConvergent` set below could not tell the members apart.
+ */
+function conclusionId(f: Finding): string {
+  return f.findingId ?? findingFingerprint(f);
 }
 
 /**
@@ -121,7 +152,7 @@ export function correlateFindings(
     (a, b) => compareLocalized(DISPLAY_LOCALE)(a[0], b[0]),
   )) {
     if (group.length < 2) continue;
-    const findingIds = group.map((f) => f.findingId ?? f.ruleId);
+    const findingIds = group.map(conclusionId);
     conclusions.push({
       conclusionType: "CONVERGENT",
       certainty: correlationStrength(group),
@@ -142,11 +173,9 @@ export function correlateFindings(
         for (const id of c.findingIds) alreadyConvergent.add(id);
       }
     }
-    const novel = group.filter(
-      (f) => !alreadyConvergent.has(f.findingId ?? f.ruleId),
-    );
+    const novel = group.filter((f) => !alreadyConvergent.has(conclusionId(f)));
     if (novel.length < 2) continue;
-    const findingIds = novel.map((f) => f.findingId ?? f.ruleId);
+    const findingIds = novel.map(conclusionId);
     conclusions.push({
       conclusionType: "AMPLIFIED",
       certainty: correlationStrength(novel),
@@ -165,7 +194,7 @@ export function correlateFindings(
       certainty: "STRONG",
       corroboration: `${corroborated.length} finding(s) with runtime corroboration`,
       sourceCount: corroborated.length,
-      findingIds: corroborated.map((f) => f.findingId ?? f.ruleId),
+      findingIds: corroborated.map(conclusionId),
     });
   }
 

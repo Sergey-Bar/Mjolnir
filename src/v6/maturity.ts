@@ -251,7 +251,30 @@ export interface MaturityEvidence {
 export function deriveMaturityFromEvidence(
   evidence: MaturityEvidence,
 ): Maturity {
-  if (evidence.fieldProven) return "M5_FIELD_PROVEN";
+  // M5 is `M4`'s chain PLUS independent field evidence, not a shortcut past it.
+  //
+  // `fieldProven` used to be the FIRST test, so a capability with only
+  // `fieldProven: true` — not even declared, not implemented — resolved to
+  // `M5_FIELD_PROVEN`, whose published meaning is "independent field
+  // repositories + declared field support + stable confidence interval". That
+  // is non-monotone in both directions: M5 did not require M4, so the ladder's
+  // own invariant ("each level requires every criterion below it", stated in
+  // this function's docstring) did not hold at the top, and the ONLY way to
+  // reach M5 was to not meet any of M4's criteria.
+  //
+  // Checked last, against the full M4 chain. A capability cannot have field
+  // proof of something that was never declared and never implemented, so the
+  // conjunction is the honest encoding rather than a defensive one.
+  if (
+    evidence.fieldProven &&
+    evidence.corpusVerified &&
+    evidence.fixtureQuadVerified &&
+    evidence.unitTested &&
+    evidence.implemented &&
+    evidence.declared
+  ) {
+    return "M5_FIELD_PROVEN";
+  }
   if (
     evidence.corpusVerified &&
     evidence.fixtureQuadVerified &&

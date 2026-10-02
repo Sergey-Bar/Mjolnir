@@ -1,6 +1,13 @@
 /**
- * E2E journeys 5+6+7+8 — forensics flow, explain/rules, create-rule
- * onboarding, and the config journey, against the built binary.
+ * E2E journeys 5+6+7+8 — the runtime-evidence flow, explain/catalogue, the
+ * suppression ledger, and the config journey, against the built binary.
+ *
+ * Three of these journeys changed shape in the v6 carve and the test titles
+ * are updated to match what ships: `forensics` + `triage` + `pw-report` are
+ * now the `explain --evidence` / `--playwright` arms, `rules` is `explain
+ * --list`, and `suppressions` is the `--suppressions` scan flag. `create-rule`
+ * is gone outright — the onboarding story moved to `families/` in-repo, so
+ * its journey is asserted as absent rather than skipped.
  */
 
 import {
@@ -50,30 +57,30 @@ function writeReport(
   );
 }
 
-describe("E2E journey 5: forensics flow", () => {
+describe("E2E journey 5: runtime-evidence flow (was forensics/triage/pw-report)", () => {
   it(
-    "forensics → triage → pw-report on a known flake; FLAKY.md written",
+    "explain --evidence classifies a known flake and writes FLAKY.md",
     { timeout: 60_000 },
     () => {
       writeReport([
         { status: "failed", duration: 100 },
         { status: "passed", duration: 50 },
       ]);
-      const forensics = runCli(["forensics", join(dir, "test-results")]);
-      expect(forensics.status).toBe(1);
-      expect(forensics.stdout).toContain("TRUE-FLAKE");
-      expect(existsSync(join(dir, "test-results", "FLAKY.md"))).toBe(true);
-
-      const triage = runCli([
+      const evidence = runCli([
         "explain",
         "--evidence",
         join(dir, "test-results"),
       ]);
-      // triage is informational: it always exits 0 when the report parses
-      // (forensics carries the gate exit code).
-      expect(triage.status).toBe(0);
-      expect(triage.stdout).toContain("TRUE-FLAKE");
-      expect(existsSync(join(dir, "test-results", "TRIAGE.md"))).toBe(true);
+      // The arm is informational: it classifies and writes, it does not gate.
+      // The old `forensics` verb carried the exit code; folding the two into
+      // one flag means the exit code belongs to the scan, not the report.
+      expect(evidence.status).toBe(0);
+      expect(evidence.stdout).toContain("TRUE-FLAKE");
+      // FLAKY.md is the committed artifact. TRIAGE.md is render-only
+      // (`--md` prints it), so the test asserts the file that is written
+      // rather than the one a removed verb used to drop on disk.
+      expect(existsSync(join(dir, "test-results", "FLAKY.md"))).toBe(true);
+      expect(existsSync(join(dir, "test-results", "TRIAGE.md"))).toBe(false);
 
       const pw = runCli(["explain", "--playwright", join(dir, "test-results")]);
       expect(pw.status).toBe(1);
@@ -82,13 +89,16 @@ describe("E2E journey 5: forensics flow", () => {
   );
 
   it(
-    "exit 2 with honest output for a missing test-results dir",
+    "a missing test-results dir reports honestly and writes nothing",
     { timeout: 60_000 },
     () => {
-      const forensics = runCli(["forensics", join(dir, "nope")]);
-      expect(forensics.status).toBe(2);
-      const triage = runCli(["explain", "--evidence", join(dir, "nope")]);
-      expect(triage.status).toBe(2);
+      const evidence = runCli(["explain", "--evidence", join(dir, "nope")]);
+      expect(evidence.status).toBe(0);
+      // "Nothing recognized" is an honest zero, not a crash and not a green
+      // claim: the output has to say it found nothing rather than render an
+      // empty table a reader could mistake for a clean run.
+      expect(evidence.stdout).toContain("Nothing to triage");
+      expect(existsSync(join(dir, "nope"))).toBe(false);
     },
   );
 });
@@ -127,24 +137,25 @@ describe("E2E journey 6: explain and rules", () => {
   );
 });
 
-describe("E2E journey 7: create-rule onboarding", () => {
-  it("scaffold lands in the target cwd", { timeout: 60_000 }, () => {
-    const scaffold = runCli(
-      ["create-rule", "QA-PW-160", "--title", "Vmewport overflow"],
-      dir,
-    );
-    expect(scaffold.status).toBe(0);
-    expect(scaffold.stdout).toContain("RULE SCAFFOLD CREATED");
-
-    expect(existsSync(join(dir, "src", "rules"))).toBe(true);
-  });
-
-  it("duplicate create-rule exits 1", { timeout: 60_000 }, () => {
-    const first = runCli(["create-rule", "QA-PW-161", "--title", "T"], dir);
-    expect(first.status).toBe(0);
-    const second = runCli(["create-rule", "QA-PW-161", "--title", "T"], dir);
-    expect(second.status).toBe(1);
-  });
+describe("E2E journey 7: create-rule onboarding is retired, not broken", () => {
+  it(
+    "the verb is a usage error rather than a silent scaffold",
+    { timeout: 60_000 },
+    () => {
+      // `create-rule` scaffolded a rule file into the user's `src/rules`. The
+      // carve retired it: a rule belongs in this repository's `families/` with
+      // a measured FP rate, and a scaffold that emits an unmeasured detector
+      // into a user's tree hands them a rule that cannot say whether it is
+      // trustworthy. Asserted as GONE so a comeback under the old name is a
+      // decision somebody has to make on purpose.
+      const scaffold = runCli(
+        ["create-rule", "QA-PW-160", "--title", "Viewport overflow"],
+        dir,
+      );
+      expect(scaffold.status).toBe(10);
+      expect(existsSync(join(dir, "src", "rules"))).toBe(false);
+    },
+  );
 });
 
 describe("E2E journey 8: config journey", () => {
@@ -181,7 +192,7 @@ describe("E2E journey 8: config journey", () => {
       expect(result.suppressionCount).toBe(1);
       expect(result.findings.map((f) => f.ruleId)).not.toContain("QA-TEST-001");
 
-      const suppressions = runCli(["suppressions"], dir);
+      const suppressions = runCli([dir, "--suppressions"]);
       expect(suppressions.status).toBe(0);
       expect(suppressions.stdout).toContain("planned fix next sprint");
       expect(suppressions.stdout).toContain("2099-01-01");

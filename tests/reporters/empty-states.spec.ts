@@ -103,10 +103,11 @@ describe("dead end: zero findings (flawless victory)", () => {
  * system's next-step token — a command the user can copy verbatim.
  */
 describe("subcommand dead ends carry a $ next-step command", () => {
-  it("stats with no recorded fixes points at the baseline→diff loop", () => {
+  // The baseline→diff loop is gone (v6 carve). The empty state now points at
+  // the one command that still answers "is this fixed?" — a scoped re-scan.
+  it("stats with no recorded fixes points at the changed-scope loop", () => {
     const text = renderStats(null);
     expect(text).toContain("No fixes recorded yet");
-    expect(text).toMatch(/^\s*\$ mjolnir baseline$/m);
-    expect(text).toMatch(/^\s*\$ mjolnir diff$/m);
+    expect(text).toMatch(/^\s*\$ mjolnir scan --scope changed$/m);
   });
 });

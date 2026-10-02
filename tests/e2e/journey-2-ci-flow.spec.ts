@@ -65,22 +65,27 @@ describe("E2E journey 2: CI PR flow", () => {
   });
 
   it(
-    "summary turns a saved --json report into a step summary (CI flow tail)",
+    "--format github-summary turns a saved --json report into a step summary (CI flow tail)",
     { timeout: 60_000 },
     () => {
       writeSpec("clean.spec.ts", CLEAN);
       writeSpec("debt.spec.ts", DEBT);
       const scan = runCli([dir, "--json", "--strict"]);
       expect(scan.status).toBe(0);
-      const reportPath = join(dir, "mjolnir.json");
-      writeFileSync(reportPath, scan.stdout);
       // Neutralize the Actions-runner env: this test pins the documented
       // "outside GitHub Actions" behavior (summary on stdout, no
       // annotations); the annotations flow is covered in summary.spec.
-      const { stdout, status } = runCli(["summary", "mjolnir.json"], dir, {
-        GITHUB_ACTIONS: undefined,
-        GITHUB_STEP_SUMMARY: undefined,
-      });
+      // `--format` is render-only: it changes the document, never the exit
+      // code. So this is the same scan as the one above (same flags, same
+      // verdict) printed as a step summary rather than JSON.
+      const { stdout, status } = runCli(
+        [dir, "--format", "github-summary", "--strict"],
+        dir,
+        {
+          GITHUB_ACTIONS: undefined,
+          GITHUB_STEP_SUMMARY: undefined,
+        },
+      );
       expect(status).toBe(0);
       // Step summary markdown: score + verdict band + deduction context.
       expect(stdout).toContain("Verification Trust");

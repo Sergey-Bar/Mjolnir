@@ -7,36 +7,36 @@ contract enforces: **every external import in src/ must belong to the
 allowlist**, and the shipped surface (adapters, rules, flags, formats, exit
 codes) must match this document exactly.
 
-## Inventory: 309 files, 75559 LOC
+## Inventory: 302 files, 74990 LOC
 
 | Area              | Files | LOC   |
 | ----------------- | ----- | ----- |
-| src/rules         | 89    | 12997 |
-| src/engine        | 44    | 11954 |
-| src/commands      | 33    | 11483 |
-| src/v6            | 11    | 6436  |
-| src/(root)        | 8     | 3809  |
-| src/reporter      | 13    | 3623  |
-| src/forensics     | 17    | 3067  |
-| src/ledger        | 1     | 2855  |
-| src/certification | 6     | 2622  |
+| src/rules         | 86    | 12394 |
+| src/engine        | 44    | 12098 |
+| src/commands      | 33    | 11643 |
+| src/v6            | 10    | 6295  |
+| src/(root)        | 8     | 3887  |
+| src/reporter      | 13    | 3641  |
+| src/forensics     | 17    | 3085  |
+| src/ledger        | 1     | 2922  |
+| src/certification | 6     | 2630  |
 | src/frameworks    | 5     | 2015  |
-| src/discovery     | 10    | 1817  |
-| src/adapters      | 11    | 1778  |
+| src/adapters      | 11    | 1809  |
+| src/discovery     | 10    | 1776  |
 | src/gaps          | 2     | 1390  |
-| src/integrations  | 9     | 1356  |
-| src/release       | 7     | 1087  |
+| src/integrations  | 7     | 1153  |
 | src/mcp           | 3     | 825   |
+| src/release       | 5     | 825   |
 | src/brand         | 3     | 817   |
+| src/lib           | 9     | 734   |
 | src/plugins       | 4     | 715   |
 | src/store         | 2     | 665   |
-| src/scorer        | 4     | 634   |
 | src/bench         | 4     | 592   |
 | src/config        | 3     | 559   |
-| src/lib           | 7     | 468   |
+| src/scorer        | 3     | 505   |
 | src/traceability  | 2     | 441   |
 | src/scope         | 2     | 427   |
-| src/trust         | 2     | 362   |
+| src/trust         | 2     | 382   |
 | src/playwright    | 2     | 332   |
 | src/benchmark     | 2     | 174   |
 | src/anti-gaming   | 2     | 169   |
@@ -46,7 +46,7 @@ codes) must match this document exactly.
 
 | Module                          | Importers |
 | ------------------------------- | --------- |
-| src/types                       | 125       |
+| src/types                       | 124       |
 | src/rules/rule                  | 82        |
 | src/rules/shared/positions      | 62        |
 | src/cli-io                      | 20        |
@@ -59,8 +59,8 @@ codes) must match this document exactly.
 | src/lib/fs-atomic               | 13        |
 | src/rules/measured-fp.generated | 13        |
 | src/engine/degradation-ledger   | 12        |
-| src/discovery/ignores           | 11        |
 | src/rules/measurement           | 11        |
+| src/discovery/ignores           | 10        |
 
 ## External dependency allowlist (containment)
 
@@ -68,7 +68,7 @@ codes) must match this document exactly.
 | ------------------ | ------------------ |
 | node:fs            | 65                 |
 | node:path          | 63                 |
-| node:crypto        | 15                 |
+| node:crypto        | 14                 |
 | ts-morph           | 7                  |
 | node:url           | 4                  |
 | node:child_process | 4                  |
@@ -86,6 +86,6 @@ codes) must match this document exactly.
 
 - **Adapters** (7): typescript, python, java, csharp, github-actions, azure-pipelines, jenkins
 - **Rules registry**: 79 live, 22 retired, 73 measured
-- **CLI flags**: "--ascii" "--base" "--blocking" "--cache" "--category" "--classic" "--debug" "--enable-plugins" "--format" "--help" "--json" "--max-duration" "--monorepo" "--no-ascii" "--no-progress" "--policy" "--record-milestones" "--require-full-coverage" "--scope" "--score" "--staged" "--strict" "--suppression-gate" "--suppressions" "--tone" "--verbose" "--width" "-h"
+- **CLI flags**: "--ascii" "--base" "--blocking" "--cache" "--category" "--classic" "--debug" "--enable-plugins" "--format" "--help" "--json" "--max-duration" "--monorepo" "--no-ascii" "--no-progress" "--policy" "--record-milestones" "--require-full-coverage" "--save-baseline" "--scope" "--score" "--staged" "--strict" "--suppression-gate" "--suppressions" "--tone" "--verbose" "--width" "-h"
 - **Report formats**: codequality, json, mermaid, sarif, terminal
 - **Exit codes** (frozen): 0 clean · 1 findings at/above gate · 2 inconclusive (partial or unsupported analysis — a CI step should fail on it) · 10 usage error · 20 internal error (frozen, docs/VERSIONING.md)

@@ -201,6 +201,11 @@ export const HELP_FLAGS: Array<{ flag: string; summary: string }> = [
   },
   { flag: "--debug", summary: "print swallowed rule crashes" },
   { flag: "--cache", summary: "reuse local per-file verdicts" },
+  {
+    flag: "--save-baseline",
+    summary:
+      "write this scan to .mjolnir/baseline.json so a later scan can say RESOLVED (what `mjolnir ci verify` reads)",
+  },
   { flag: "--no-progress", summary: "no live scan-progress line on stderr" },
   { flag: "--score", summary: "print only the numeric score (or `unknown`)" },
   { flag: "--category <cat>", summary: "presentation filter (repeatable)" },

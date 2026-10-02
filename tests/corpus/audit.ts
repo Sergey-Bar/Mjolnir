@@ -395,7 +395,7 @@ export const CORPUS: CorpusRepo[] = [
   {
     name: "positive-fixtures",
     url: "local:tests/corpus/positive-fixtures",
-    ref: "47a4aac2bec15524f9ceafded2dd2012b8aefd68",
+    ref: "0a772cca2cfe374ebb1525a6b2b51d1e6aba7001",
     note: "committed class-B positive corpus — realistic anti-pattern variants per rule that MUST fire; every fire classifies TP.",
   },
   {

@@ -43,6 +43,18 @@ export function runAnalyzeCommand(
   argv: string[],
   io: { out: Output; err: Output },
 ): number {
+  // Flag-parity with every other subcommand: `analyze` accepts only
+  // `--cross-file` and an optional path. A flag-shaped arg is a typo, and
+  // silently ignoring it made `mjolnir analyze --bogus` print the
+  // "use --cross-file" hint and exit 0 — a command that looked like it ran
+  // and did nothing. Same rule, same reason as `doctor`.
+  const unknownFlags = argv.filter(
+    (a) => a.startsWith("-") && a !== "--cross-file",
+  );
+  if (unknownFlags.length > 0) {
+    io.err("Usage: mjolnir analyze [path] --cross-file");
+    return EXIT_USAGE;
+  }
   const target = argv.find((a) => !a.startsWith("-")) ?? ".";
   const crossFile = argv.includes("--cross-file");
 

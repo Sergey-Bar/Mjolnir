@@ -60,10 +60,22 @@ describe("candidate manifest base SHA is reported, not enforced", () => {
     // be quiescent is still checked end to end. If a parallel writer made the
     // tree move, this reports it rather than hiding it — and the message it
     // then produces is a real finding about this run, not about the base SHA.
+    //
+    // The tolerated set is "any content-invariant drift", and the checker
+    // names its own invariants as `<key> drift` (`CONTENT_INVARIANTS`).
+    // This used to spell out three of the four as a regex, so a
+    // `lockfileSha256 drift` — what any `npm audit fix` produces — failed
+    // here with a message the test did not recognise as the transient it is.
+    // A hand-copied tolerance list is a second source that goes stale; the
+    // shape of the message is the contract.
     const result = runCheck();
     if (result.status !== 0) {
-      expect(result.stderr + result.stdout).toMatch(
-        /workingTreeSha256 drift|dirty-file inventory drift|changedPathCount drift|worktree inventory drift/,
+      const message = result.stderr + result.stdout;
+      expect(message).toMatch(/\w+ drift/);
+      // …and specifically not the base-SHA complaint, which is the one
+      // failure this file exists to prove is NOT fatal.
+      expect(message).not.toContain(
+        "candidate base SHA is not the current or an ancestor HEAD",
       );
     }
   });

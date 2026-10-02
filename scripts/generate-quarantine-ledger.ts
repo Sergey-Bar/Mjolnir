@@ -62,6 +62,15 @@ const DISPOSITIONS: Record<
     target:
       "re-measure gate: corpus re-run + owner re-adjudication of surviving findings",
   },
+  "QA-TEST-003": {
+    failureMode:
+      "hidden-assertion helpers (`expectSnapshot`, `verify*` wrappers) and deliberate no-throw smoke tests dominate real fire sites; the detector cannot know a codebase's own assertion vocabulary from text alone — 21.8% FP at n=78",
+    disposition: "OPEN — the proposed fix was measured and rejected",
+    rework:
+      "`families/no-assertions.ts` (7 framework vocabularies) was deleted 2026-10-01. Diffed against the rule's own predicate over 15 representative test bodies it changed 2, in BOTH directions: it suppresses `expect.extend(…)` (which defines a matcher rather than asserting) and reintroduces a false positive on `should(x).be.ok`. It is a framework-vocabulary gap, not the named cause, and the named cause is not lexically fixable",
+    target:
+      "re-measure gate: a corpus re-run + owner re-adjudication of surviving findings, against a fix that addresses hidden helpers rather than framework vocabulary",
+  },
   "QA-TQUAL-009": {
     failureMode:
       "Cypress command chains (`cy.request().then()`) are queued and awaited by the Cypress driver; one deliberate `void` discard — 78.6% FP at n=14",

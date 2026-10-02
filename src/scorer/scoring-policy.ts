@@ -62,8 +62,27 @@ export function renderScoringPolicy(): string {
   const lines: string[] = [];
   lines.push("SCORING POLICY — the numbers this run used");
   lines.push("");
+  // The FORMULA is deliberately absent, and deleting it is a fix rather than
+  // an omission. It read
+  //
+  //   score = 100 · (1 − deductions / (findings + NORMALIZATION_K))
+  //
+  // which contradicted scorer.ts on four counts at once: the denominator is
+  // test DECLARATIONS, not findings; `SMOOTHING_C` is missing from it;
+  // `NORMALIZATION_K` multiplies the rate rather than appearing in the
+  // denominator; and the `min(100, …)` cap is absent, so the line described a
+  // score that can go negative. A policy table whose header says "every number
+  // here is imported, never written down" was carrying a formula written by
+  // hand, and it was wrong.
+  //
+  // Not rewritten from the corrected source. A prose formula in a second place
+  // is the same defect one layer over — it drifts the first time the scorer
+  // changes and nothing checks it. `docs/SCORING.md` is the authority, and
+  // `src/scorer/scorer.ts` is what actually runs.
   lines.push("Formula");
-  lines.push("  score = 100 · (1 − deductions / (findings + NORMALIZATION_K))");
+  lines.push(
+    "  see docs/SCORING.md — and src/scorer/scorer.ts, which is what runs",
+  );
   lines.push("");
   lines.push("Constants");
   lines.push(

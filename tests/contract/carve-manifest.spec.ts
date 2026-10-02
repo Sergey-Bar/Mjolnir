@@ -189,15 +189,21 @@ describe("the carve manifest covers its scope, and its facts are current", () =>
       copy(rel);
     }
 
-    // `src/v6/tool-coverage.ts` is the probe: a real file with no importer, so
+    // `src/benchmark/index.ts` is the probe: a real file with no importer, so
     // removing it is the one change that is cheap to make and hard to argue
     // about. Its committed disposition is KEEP, so its disappearance is
     // exactly the "left without a decision" case.
-    rmSync(join(dir, "src", "v6", "tool-coverage.ts"), { force: true });
+    //
+    // This was `src/v6/tool-coverage.ts` until that module was deleted as
+    // dead. The probe is a FUNCTION of the tree, not a fixed file: picking one
+    // that gets deleted turns this test into a fixture that fails for a reason
+    // that has nothing to do with what it tests. Anything with a KEEP
+    // disposition and no importer does the job equally well.
+    rmSync(join(dir, "src", "benchmark", "index.ts"), { force: true });
     const { code, output } = execGate(["--check", `--root=${dir}`], dir);
     expect(code).toBe(1);
     expect(output).toContain("left the tree without a DELETE disposition");
-    expect(output).toContain("src/v6/tool-coverage.ts");
+    expect(output).toContain("src/benchmark/index.ts");
   });
 
   it("an unknown flag is a usage error, not a silent pass", () => {

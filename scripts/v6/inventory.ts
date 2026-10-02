@@ -405,7 +405,7 @@ export const REQUIREMENT_CLASSIFICATION: readonly (RequirementClassification & {
     specSection: "§9",
     area: "Evidence graph",
     state: "ALREADY_COMPLETE",
-    evidence: ["src/engine/runtime-evidence-graph.ts"],
+    evidence: ["src/engine/evidence-graph.ts"],
     wave: "5",
     note: "Provisional but present.",
   },
@@ -413,7 +413,7 @@ export const REQUIREMENT_CLASSIFICATION: readonly (RequirementClassification & {
     specSection: "§10",
     area: "Evidence freshness",
     state: "ALREADY_COMPLETE",
-    evidence: ["src/engine/runtime-evidence-graph.ts"],
+    evidence: ["src/engine/evidence-core.ts"],
     wave: "5",
     note: "Freshness binding exists.",
   },
@@ -429,17 +429,21 @@ export const REQUIREMENT_CLASSIFICATION: readonly (RequirementClassification & {
     specSection: "§12",
     area: "Mutation engine",
     state: "MISSING",
-    evidence: ["src/mutation/failure-sensitivity.ts"],
+    // No evidence, because there is none: `src/mutation/` did not survive
+    // the v6 carve. A MISSING row that cited a deleted module was a claim
+    // about a file, not about the requirement — and it read as "MISSING,
+    // pending" when the honest state is "MISSING, and the module is gone".
+    evidence: [],
     wave: "6",
-    note: "Contract only, non-gating.",
+    note: "Contract only, non-gating. The contract module was removed in the v6 carve.",
   },
   {
     specSection: "§13",
     area: "Failure sensitivity",
     state: "PARTIALLY_COMPLETE",
-    evidence: ["src/mutation/failure-sensitivity.ts"],
+    evidence: [],
     wave: "6",
-    note: "False-green rules exist; no explicit 5-stage model.",
+    note: "False-green rules exist; no explicit 5-stage model. The model module was removed in the v6 carve.",
   },
   {
     specSection: "§14",
@@ -469,7 +473,11 @@ export const REQUIREMENT_CLASSIFICATION: readonly (RequirementClassification & {
     specSection: "§17",
     area: "Impact analysis",
     state: "ALREADY_COMPLETE",
-    evidence: ["src/commands/impact.ts", "docs/BLAST-RADIUS-AUDIT.md"],
+    // `src/commands/impact.ts` was removed in the v6 carve. What survives is
+    // the blast-radius render and the traceability matrix, which is what the
+    // section was ever for — so the evidence names those rather than a
+    // command that no longer exists.
+    evidence: ["docs/BLAST-RADIUS-AUDIT.md", "src/traceability/rtm.ts"],
     wave: "7",
     note: "Blast radius is computed and audited; the residual gap is that it is per-rule, not per-capability.",
   },
@@ -644,7 +652,13 @@ export const REQUIREMENT_CLASSIFICATION: readonly (RequirementClassification & {
     state: "ALREADY_COMPLETE",
     evidence: ["src/forensics"],
     wave: "9",
-    note: "17 modules incl. pw-report and trend.",
+    // Was "17 modules incl. pw-report and trend." Both halves were wrong
+    // about the cited directory: `pw-report` and `release-trend` are COMMANDS
+    // (`src/commands/`), not forensics modules, so the note described the
+    // evidence and then named files the evidence does not contain. The count
+    // happened to be right and would have been wrong on the next module added
+    // or removed, in a field nothing derives.
+    note: "Parsers per runner plus flaky-integration and triage.",
   },
   {
     specSection: "§39",
@@ -677,10 +691,10 @@ export const REQUIREMENT_CLASSIFICATION: readonly (RequirementClassification & {
     specSection: "§42",
     area: "Coverage integrity",
     state: "ALREADY_COMPLETE",
-    evidence: [
-      "src/engine/coverage-ingestion.ts",
-      "src/rules/ci/qa-ci-005-report-never-generated.ts",
-    ],
+    // `src/engine/coverage-ingestion.ts` was removed in the v6 carve. The
+    // rule that enforces "a coverage report was never generated" is the
+    // surviving evidence for the section.
+    evidence: ["src/rules/ci/qa-ci-005-report-never-generated.ts"],
     wave: "9",
     note: "Coverage is evidence, not truth.",
   },
@@ -704,7 +718,7 @@ export const REQUIREMENT_CLASSIFICATION: readonly (RequirementClassification & {
     specSection: "§45",
     area: "Risk-based model",
     state: "PARTIALLY_COMPLETE",
-    evidence: ["src/commands/impact.ts", "src/traceability"],
+    evidence: ["src/traceability/rtm.ts"],
     wave: "7",
     note: "Impact-driven ordering exists; the risk model itself is not derived from corpus frequency.",
   },
@@ -755,7 +769,10 @@ export const REQUIREMENT_CLASSIFICATION: readonly (RequirementClassification & {
     specSection: "§51",
     area: "Packs",
     state: "ALREADY_COMPLETE",
-    evidence: ["src/frameworks/universal-pack-contract.ts"],
+    // The universal-pack contract was removed in the v6 carve; the provider
+    // capability contract is the surface that survived and is what a pack
+    // consumer actually reads.
+    evidence: ["src/frameworks/provider-capability-contract.ts"],
     wave: "4",
     note: "Contracts exist; packs are the Wave 8 work.",
   },
@@ -818,10 +835,16 @@ export const REQUIREMENT_CLASSIFICATION: readonly (RequirementClassification & {
   {
     specSection: "§59",
     area: "Dashboard",
-    state: "PARTIALLY_COMPLETE",
-    evidence: ["src/commands/dashboard.ts"],
+    // OBSOLETE, not PARTIALLY_COMPLETE: `src/commands/dashboard.ts` did not
+    // survive the v6 carve and nothing replaced it. The carve deleted the
+    // dashboard surface outright, so a PARTIALLY_COMPLETE row citing the
+    // deleted module described a product that does not exist. `deployment`
+    // above reports `dashboard: ABSENT`, derived from the tree — this row now
+    // agrees with it.
+    state: "OBSOLETE",
+    evidence: [],
     wave: "10",
-    note: "Local HTML only.",
+    note: "Local HTML only. The surface was removed in the v6 carve and is not claimed.",
   },
   {
     specSection: "§60",
@@ -869,15 +892,20 @@ export const REQUIREMENT_CLASSIFICATION: readonly (RequirementClassification & {
     state: "ALREADY_COMPLETE",
     evidence: ["src/forensics"],
     wave: "11",
-    note: "17 modules, including pw-report and trend.",
+    // Same defect as §38: a hand-typed module count, naming two commands
+    // that are not in the cited directory. Kept honest by saying what the
+    // directory holds rather than how much of it there is.
+    note: "Trace and retry analysis over the parsed run history.",
   },
   {
     specSection: "§66",
     area: "Quality debt",
-    state: "ALREADY_COMPLETE",
-    evidence: ["src/commands/debt.ts"],
+    // OBSOLETE for the same reason as §59: `src/commands/debt.ts` was
+    // removed in the v6 carve. The debt register does not ship.
+    state: "OBSOLETE",
+    evidence: [],
     wave: "9",
-    note: "The debt register ships as a command.",
+    note: "The debt register shipped as a command until the v6 carve removed it.",
   },
   {
     specSection: "§67",
@@ -918,7 +946,11 @@ export const REQUIREMENT_CLASSIFICATION: readonly (RequirementClassification & {
     specSection: "§71",
     area: "Custom rule SDK",
     state: "ALREADY_COMPLETE",
-    evidence: ["src/plugins/sdk-contract.ts"],
+    // `src/plugins/sdk-contract.ts` was removed in the v6 carve. What a
+    // custom-rule author actually loads is the local-rules loader, and the
+    // trust gate is what makes a custom rule start unproven — which is this
+    // section's entire claim.
+    evidence: ["src/plugins/local-rules.ts", "src/plugins/trust-gate.ts"],
     wave: "11",
     note: "Custom rules start unproven.",
   },
@@ -1479,8 +1511,14 @@ export const WAVE0_GAPS: readonly V6Gap[] = [
     severity: "medium",
     status: "open",
     category: "roadmap-reconciliation",
+    // The count is NOT written here. This summary said "14 of the 108
+    // historical design-record issues" while the enumeration beside it
+    // reported 18 — two representations of one number, one hand-maintained,
+    // in a field nothing derives. The gap matrix already emits the
+    // authoritative figure from `archive.openIssuesInArchive.length`, so
+    // repeating it here could only ever drift from it.
     summary:
-      "The ROADMAP.yaml archive block cannot honestly reconcile: 14 of the 108 historical design-record issues (539–646) are still open, so 7 of 8 records are only partially reconciled and the block status must stay UNRECONCILED.",
+      'The ROADMAP.yaml archive block cannot honestly reconcile: design-record issues in the 539–646 range are still open, so 7 of 8 records are only partially reconciled and the block status must stay UNRECONCILED. See "Archive issues blocking reconciliation" above for the current count.',
     owner: "roadmap",
     targetWave: "0",
     maturityImpact: [

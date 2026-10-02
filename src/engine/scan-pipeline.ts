@@ -57,6 +57,7 @@ import {
   discoverAllTestFiles,
 } from "../discovery/scan-adapters.js";
 import { createIgnoreMatcher, LIMITS } from "../discovery/ignores.js";
+import { pathMatchesGlob } from "../lib/glob.js";
 import { RULES } from "../rules/index.js";
 import { MEASURED_FP } from "../rules/measured-fp.generated.js";
 import { effectiveTier } from "../rules/measurement.js";
@@ -178,6 +179,8 @@ export async function buildUniversalRules(
   rulesApplied: number;
   /** Rules removed by the quarantine filter because `--strict` was absent. */
   rulesWithheld: number;
+  /** The same rules, named. The count is the disclosure; this is the evidence. */
+  withheldRuleIds: string[];
 }> {
   const gateOpen = pluginsGateOpen(opts.enablePlugins);
   const { plugins, errors, skipped } = loadPlugins(root, gateOpen);
@@ -228,13 +231,19 @@ export async function buildUniversalRules(
   // downstream surface — the machine contract, the report, the PR comment —
   // reported a scan that had covered the registry. `rulesWithheld` is what
   // `coverageState` is derived from, and it never feeds `partial`.
-  const withheldBeforeFilter = rules.filter(
-    (r) => tierByRuleId.get(r.id) === "quarantine",
-  );
+  //
+  // The ids travel alongside the count for the one consumer that cannot use
+  // a number: lifecycle resolution has to decide, per baseline finding,
+  // whether the rule that raised it could have run at all. A count cannot
+  // answer that; the set can.
+  const withheldRuleIds = rules
+    .filter((r) => tierByRuleId.get(r.id) === "quarantine")
+    .map((r) => r.id)
+    .sort();
   if (!strict) {
     rules = rules.filter((r) => tierByRuleId.get(r.id) !== "quarantine");
   }
-  const rulesWithheld = strict ? 0 : withheldBeforeFilter.length;
+  const rulesWithheld = strict ? 0 : withheldRuleIds.length;
   const rulesApplied = rules.length;
   const pluginMeta = [
     ...plugins.map((p) => ({
@@ -258,6 +267,7 @@ export async function buildUniversalRules(
     externalRules: local.rules,
     rulesApplied,
     rulesWithheld,
+    withheldRuleIds,
   };
 }
 
@@ -315,6 +325,21 @@ export interface CliArgs {
   debug?: boolean;
   /** --record-milestones: let a scan write .mjolnir/stats.json (audit R-1). */
   recordMilestones?: boolean;
+  /**
+   * --save-baseline: write this scan's findings to `.mjolnir/baseline.json`
+   * so a LATER scan can say RESOLVED rather than reporting the same debt
+   * forever.
+   *
+   * This flag exists because the `baseline` verb was removed in the v6 carve
+   * and nothing replaced it. That left `ci verify` unable to leave its
+   * no-baseline arm for any user, and left three shipped messages — the
+   * verify digest, the MCP `verify` tool, and the agent instruction brief —
+   * naming a command that could not perform the action they described. A
+   * recovery instruction that does not recover is worse than no instruction:
+   * it costs the reader a round trip and teaches them that the tool's own
+   * guidance is unreliable.
+   */
+  saveBaseline?: boolean;
   /**
    * --cache: reuse per-file rule verdicts from the local content-addressed
    * cache (M5.2). Post-loop processing always re-runs; the cache only
@@ -463,53 +488,19 @@ export function fallbackWorkspace(targetAbs: string): Workspace {
 
 /**
  * Minimal glob match for suppression `files` patterns, with gitignore
- * `**` semantics (bug-audit M5). Supports:
- *   "tests/**"             — everything inside tests/
- *   "tests" + "/**\/*.spec.ts" — any depth UNDER tests/ (including none) ending in .spec.ts
- *   "**" + "/*.spec.ts"    — any depth including root-level files
- *   "tests/foo.spec.ts"    — exact path
- *   "*" within a segment never crosses "/".
+ * `**` semantics (bug-audit M5).
  *
- * Forward slashes only (findings always use normalized paths). `?`,
- * character classes and `!` negation are not metacharacters here — same
- * as before this rewrite.
+ * RE-EXPORTED from `src/lib/glob.ts`, which is the single compiler for this
+ * dialect. This function used to carry its own segment walk while
+ * `src/discovery/ignores.ts` carried a second one, and the two disagreed on
+ * `?` (a metacharacter there, a literal here) and on both forms of `**`. The
+ * mass-suppression gate therefore measured the suppressed set in a different
+ * dialect than the scan applied it in. The dialect is now documented in one
+ * place and the two surfaces cannot drift.
+ *
+ * Forward slashes only (findings always use normalized paths).
  */
-export function pathMatchesGlob(path: string, glob: string): boolean {
-  // Bug-audit QA-2026-08-30 QA-8: normalize BOTH sides to forward
-  // slashes. Finding paths are already normalized by the walker, but a
-  // suppression `files` pattern written on Windows ("e2e\\x.spec.ts")
-  // compiled to a literal-backslash regex that could never match any
-  // finding — the suppression silently never applied.
-  const p = path.replaceAll("\\", "/");
-  const segments = glob.replaceAll("\\", "/").split("/");
-  let re = "^";
-  for (const [i, segment] of segments.entries()) {
-    const last = i === segments.length - 1;
-    if (segment === "**") {
-      // A `**` segment matches ZERO or more whole path segments. The old
-      // split+join compiled it to `.*`, which (a) demanded ≥1 segment in
-      // `a/**/b`-shaped patterns and (b) made `tests/**/*.spec.ts` skip
-      // single-level paths — suppressions silently never matched.
-      if (last) {
-        // Trailing `**`: everything inside the prefix, never the prefix
-        // directory itself (gitignore semantics).
-        re += "(?:[^/]+/)*[^/]+";
-      } else {
-        re += "(?:[^/]+/)*";
-      }
-      continue;
-    }
-    re += segment
-      .replace(/[.+?^${}()|[\]\\]/g, "\\$&")
-      .replaceAll("*", "[^/]*");
-    if (!last) re += "/";
-  }
-  // glob segments are escape-quoted line-by-line above — no unescaped
-  // regex metacharacters reach the RegExp.
-  // eslint-disable-next-line security/detect-non-literal-regexp
-  return new RegExp(`${re}$`).test(p);
-}
-
+export { pathMatchesGlob } from "../lib/glob.js";
 /**
  * Plan §16 + WI-11: locate a runtime run report next to the scan
  * target, using the exact conventions the forensics ingestion already
@@ -1131,6 +1122,8 @@ export interface AssembleScanResultInput {
    * the withheld set — into `coverageState`. Never an input to `partial`.
    */
   rulesWithheld?: number;
+  /** Rules withheld, named. See `buildUniversalRules`. */
+  withheldRuleIds?: string[];
   /** Rules that actually ran. The denominator `rulesWithheld` is measured against. */
   rulesApplied?: number;
   scanned: number;
@@ -1343,6 +1336,9 @@ export function assembleScanResult(o: AssembleScanResultInput): ScanResult {
     // claiming PARTIAL would be a fabricated new failure.
     ...(o.rulesWithheld !== undefined
       ? { rulesWithheld: o.rulesWithheld }
+      : {}),
+    ...(o.withheldRuleIds !== undefined
+      ? { withheldRuleIds: o.withheldRuleIds }
       : {}),
     ...(o.rulesApplied !== undefined ? { rulesApplied: o.rulesApplied } : {}),
     ...(o.scopeInfo.degraded !== undefined
@@ -1655,6 +1651,7 @@ export async function runScan(
     pluginMeta,
     rulesApplied,
     rulesWithheld,
+    withheldRuleIds,
   } = await buildUniversalRules(workspace.root, args.strict, {
     ...(args.enablePlugins !== undefined
       ? { enablePlugins: args.enablePlugins }
@@ -1817,6 +1814,7 @@ export async function runScan(
     degradations: summarizeDegradations(degradationsSince(degradationWindow)),
     rulesApplied,
     rulesWithheld,
+    ...(withheldRuleIds.length > 0 ? { withheldRuleIds } : {}),
     scanned,
     analyzed,
     testFiles,

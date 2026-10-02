@@ -47,7 +47,7 @@ and do not pin a release candidate — it is not on the registry until it ships.
 npx mjolnir-qa@latest
 
 # What a gate should run. Exact, so the run is identical next month:
-npx mjolnir-qa@5.0.0
+npx mjolnir-qa@5.1.0
 ```
 
 The Action has no `latest` alias — GitHub resolves only refs — which is why its
@@ -77,7 +77,7 @@ Listing content (paste verbatim into the marketplace draft):
   `assets/readme/score-gauge.svg`, `assets/readme/demo.svg` —
   Marketplace renders SVG via user-content; if the upload dialog rejects
   SVG, convert with `npm run docs:video`'s renderer stack (same fonts,
-  same palette) to PNG 1280Ã—640.
+  same palette) to PNG 1280x640.
 - **Link back:** README quickstart anchors the listing's "Usage"
   section; keep `action.yml`'s `description:` in sync with the listing
   (test: `tests/integrations/action-surface.spec.ts`).

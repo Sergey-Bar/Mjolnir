@@ -71,6 +71,35 @@ export type RuleStatus =
  * The false-positive rate a rule must be able to defend at 95% confidence to
  * count as core. Applied to the Wilson UPPER bound, so a rule earns core by
  * proving its ceiling, not by reporting a point estimate under it.
+ *
+ * !! UNREACHABLE AT THE CURRENT CORPUS CAP — read this before trying to earn it.
+ *
+ * 10% on the upper bound needs **n >= 35 with ZERO false positives**, using
+ * this file's own `wilsonInterval`: 0/20 reads 16.1%, 0/30 reads 11.3%, 0/35
+ * reads 9.9%. The corpus samples at most 20 per rule
+ * (`MAX_SAMPLES_PER_RULE`, scripts/corpus-sample.ts:87), so the best a rule can
+ * look at that cap is 0/20 — and 16.1% is above this ceiling. Not "hard to
+ * reach": unreachable, for every rule, at every sample size the sampler can
+ * produce.
+ *
+ * The cap is bounded by the ADJUDICATION budget, not by statistics. Raising it
+ * to 40 previously produced 1,121 unadjudicated rows across 42 rules, which
+ * the committed ceiling refused outright — correctly, because blank verdict
+ * rows are dropped rather than counted, so a mostly-blank corpus reports a
+ * rate measured on whatever subset happened to be adjudicated. Raising the cap
+ * without the adjudication budget to fill it makes the gate stop complaining
+ * without adding evidence.
+ *
+ * So `MEASURED-CORE` in `RuleStatus` above, and `"core"` in `Rule.tier`, are
+ * states this corpus cannot produce. `tests/rules/core-tier-reachability.spec.ts`
+ * pins this with the arithmetic and fails LOUDLY the day it stops being true,
+ * so that opening the core tier becomes a deliberate event with a diff rather
+ * than something a future reader infers from a tier nobody holds.
+ *
+ * The two constants here were chosen independently and their product is
+ * unreachable. That is a product call, not an oversight to be tidied away: it
+ * is stated here so the next person does not spend a day earning a tier that
+ * cannot be earned.
  */
 export const CORE_FP_CEILING = 0.1;
 
@@ -78,6 +107,21 @@ export const CORE_FP_CEILING = 0.1;
  * The rate a rule must be able to defend at 95% confidence to be quarantined
  * on measurement alone. Applied to the Wilson LOWER bound: a rule is not
  * quarantined for looking bad on four samples.
+ *
+ * Also nearly inert at the corpus cap, in the other direction. At n=20 a rule
+ * needs **15 of 20 false positives (75% observed)** before the lower bound
+ * clears 50%: 14/20 reads 48.1%, 16/20 reads 58.4%. Exactly one rule in the
+ * registry clears it — `QA-ENV-001`, which was wrong 20 times out of 20. The
+ * worst of the rest is `QA-TEST-002` at 62%, which clears neither bound.
+ *
+ * Consequence, measured across all 79 live rules: `measurementTier` returns
+ * `core` for none of them, and `quarantine` for exactly one. The interval rule
+ * is not inert — it is all but unreachable, and the one rule it reaches is the
+ * one that was wrong every single time. That is why `rule.tier` is a THIRD
+ * floor rather than a duplicate of this: 33 of the 34 declared quarantines are
+ * held down by the declaration alone. See the `tier` doc in src/rules/rule.ts,
+ * `defensibleTier` below, and the arithmetic in
+ * `tests/rules/core-tier-reachability.spec.ts`.
  */
 export const QUARANTINE_FP_FLOOR = 0.5;
 
@@ -135,6 +179,15 @@ export function hasStaleMeasurement(rule: QADoctorRule): boolean {
  * it has none. A stale measurement returns undefined rather than its stale
  * interval: a number derived from an older detector is not evidence about
  * this one, and returning it would let the straddle test pass on stale data.
+ *
+ * The FP count is ROUNDED, and it is not an optimization. The shipped
+ * measurement records a rate and a sample count, not an integer count of false
+ * positives, so `fpRate * n` is generally fractional — 10.5% of 19 is 1.995.
+ * `wilsonInterval` rounds internally, so passing the raw product gave this
+ * function and `scripts/core-readiness.ts` two different `ciHigh` values for
+ * the same rule at the same n: the ratchet decided one tier and the
+ * readiness table printed another, both derived, neither reconciled. Every
+ * caller now reconstructs the count the same way.
  */
 export function measurementInterval(
   rule: QADoctorRule,
@@ -142,7 +195,7 @@ export function measurementInterval(
   if (!hasValidMeasurement(rule)) return undefined;
   const m = MEASURED_FP[rule.id];
   if (m === undefined) return undefined;
-  return wilsonInterval(m.fpRate * m.n, m.n);
+  return wilsonInterval(Math.round(m.fpRate * m.n), m.n);
 }
 
 /**
@@ -193,8 +246,13 @@ const Z_SQUARED = 1.959963984540054 ** 2;
  *     c = 0.1 → n ≥ 34.57 → 35
  *
  * Cross-checked against the interval function itself: `wilsonInterval(0, 34)`
- * gives ciHigh 0.1012 — above the ceiling — and `wilsonInterval(0, 35)` gives
+ * gives ciHigh 0.1015 — above the ceiling — and `wilsonInterval(0, 35)` gives
  * 0.0989, which clears it. This function returns 35.
+ *
+ * The n=34 figure was quoted here as 0.1012, which is not what the function
+ * returns. A cross-check exists to be run; one carrying a number that fails
+ * when you run it is worse than no cross-check, because it reads as evidence
+ * and is not.
  */
 export function samplesForZeroFp(ceiling: number): number {
   if (!(ceiling > 0) || ceiling >= 1) return 1;
@@ -211,6 +269,16 @@ export function samplesForZeroFp(ceiling: number): number {
  * could not straddle, because `fpRate <= 0.1 && n >= 10` was a gate a rule
  * either passed or failed — so a rule at n=10 with 0% observed FP was
  * indistinguishable from one at n=400.
+ *
+ * The `rule.tier` short-circuit is now deliberate rather than incidental. A
+ * straddle says "the evidence cannot place this rule", which is a statement
+ * about a rule with NO declared tier: a declared tier IS the placement, and a
+ * rule the corpus cannot place can still be deliberately held in quarantine —
+ * that is what the 33 declared quarantines are. Removing the guard would make
+ * all 33 display `TIER-STRADDLE` in `ruleStatus`, which is true of their
+ * evidence and would misrepresent their DECISION. The maintainer-facing
+ * version of this question ("is this rule's evidence thin?") is
+ * `straddleDetail`, which has no such guard.
  */
 export function isTierStraddling(rule: QADoctorRule): boolean {
   if (rule.tier !== undefined) return false;
@@ -218,16 +286,86 @@ export function isTierStraddling(rule: QADoctorRule): boolean {
 }
 
 /**
- * The tier a rule effectively ships as: its declared tier, or — for the
- * omitted-tier case — what its measurement's interval supports (§11.2 Step 2).
+ * The tier the MEASUREMENT alone supports, ignoring any declared tier.
+ *
+ * This is the interval floor that `effectiveTier` falls back to, extracted so
+ * the tightening law can ask the question `effectiveTier` structurally cannot:
+ * a declared tier may only ever hold a rule DOWN, never release it.
+ *
+ * `effectiveTier` cannot answer that, because it short-circuits on
+ * `rule.tier` — asking it what a rule's tier "would" be returns the declared
+ * value, and a comparison built on it compares the declaration with itself.
+ * The first B0 dry-run made exactly that mistake and reported zero
+ * mismatches for a comparison that had never run.
+ *
+ * READ THIS BEFORE USING IT AS A FLOOR. Measured over all 79 live rules, this
+ * function returns `extended` for 78 of them and `quarantine` for none: on
+ * this corpus the interval rule is very nearly an empty rule, because
+ * `ciLow >= 50%` is not reached at n = 10..80. A "declared tier may only
+ * tighten" law written against THIS function is decorative — it can only ever
+ * catch a rule declaring `core`, which no rule declares. It was written that
+ * way first and measured at zero teeth.
+ *
+ * The floor with teeth is `defensibleTier`, below.
  */
-export function effectiveTier(rule: QADoctorRule): Tier {
-  if (rule.tier !== undefined) return rule.tier;
+export function measurementTier(rule: QADoctorRule): Tier {
   const interval = measurementInterval(rule);
   if (interval === undefined) return "extended";
   if (interval.ciHigh <= CORE_FP_CEILING) return "core";
   if (interval.ciLow >= QUARANTINE_FP_FLOOR) return "quarantine";
   return "extended";
+}
+
+/**
+ * The point-estimate quarantine floor: the NOISE floor.
+ *
+ * `> 30% observed false positives` means the detector is wrong more often
+ * than it is right about the thing it claims. That is a product decision
+ * independent of how confident the statistics are, which is why it is a
+ * separate constant from `QUARANTINE_FP_FLOOR` (the evidence floor) rather
+ * than another use of it: the two answer different questions, and B0 measured
+ * rules on which they disagree (12 of them).
+ */
+export const POINT_QUARANTINE_FLOOR = 0.3;
+
+/**
+ * The most defensible tier: the STRICTEST of every floor the evidence can
+ * support. A declared tier may never sit above this.
+ *
+ * Built from three inputs because a rule can be indefensible in more than one
+ * way, and a floor that only checks one of them is a floor with a hole:
+ *
+ *   - NO valid measurement at all -> quarantine. A rule nobody has measured
+ *     has no evidence for shipping by default, which is the whole reason the
+ *     quarantine tier exists. 6 rules are in this state today.
+ *   - observed FP above `POINT_QUARANTINE_FLOOR` -> quarantine. The noise
+ *     floor: 12 rules are above it today, including `QA-TEST-001` at 60% and
+ *     `QA-TEST-002` at 62%.
+ *   - otherwise the interval floor, which can still place a rule in core.
+ *
+ * `defensibleTier(measured well) <= measurementTier(...)` always holds; the
+ * point floor and the unmeasured rule are the two ways the interval floor can
+ * be too generous, and both are quieter than it is.
+ */
+export function defensibleTier(rule: QADoctorRule): Tier {
+  const m = measurementFor(rule.id);
+  if (!hasValidMeasurement(rule) || m === undefined) return "quarantine";
+  if (m.fpRate > POINT_QUARANTINE_FLOOR) return "quarantine";
+  return measurementTier(rule);
+}
+
+/**
+ * The tier a rule effectively ships as: its declared tier, or — for the
+ * omitted-tier case — what its measurement's interval supports (§11.2 Step 2).
+ *
+ * The declared tier is a floor that may only tighten, and the measurement is
+ * what it is measured against. See `rule.ts`'s `tier` doc for the B0
+ * measurement behind that, and `defensibleTier` for the floor it is measured
+ * against.
+ */
+export function effectiveTier(rule: QADoctorRule): Tier {
+  if (rule.tier !== undefined) return rule.tier;
+  return measurementTier(rule);
 }
 
 /**

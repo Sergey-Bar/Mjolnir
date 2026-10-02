@@ -118,10 +118,7 @@ describe("pr-comment no-baseline partial gate", () => {
 describe("runDoctorPlaywright usage arm", () => {
   it("a dangling verb --help target resolves as usage (exit 10)", async () => {
     const cap = capture();
-    const code = await runDoctorPlaywright(
-      ["doctor", "--frameworks", "definitely/not/here"],
-      cap.io,
-    );
+    const code = await runDoctorPlaywright(["definitely/not/here"], cap.io);
     expect(code).toBe(10);
   });
 });

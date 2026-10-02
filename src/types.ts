@@ -575,6 +575,21 @@ export interface ScanResult {
      */
     rulesApplied?: number;
     rulesWithheld?: number;
+    /**
+     * WHICH rules were withheld, when the count is non-zero.
+     *
+     * The count answers "how much of the registry did this scan not see";
+     * this answers "which". It exists because a consumer that has to
+     * classify one finding — lifecycle resolution must, because a
+     * quarantined rule that never ran cannot have fixed anything — cannot
+     * answer from a number. The count alone forced those consumers to
+     * claim what they could not know.
+     *
+     * Absent means the producer did not report the set. It does NOT mean
+     * nothing was withheld: `rulesWithheld` is the authority on that, and
+     * this field is only the disambiguator.
+     */
+    withheldRuleIds?: string[];
   };
   /**
    * Scoring model version stamped into the result (ENGINE-001). Allows
@@ -624,18 +639,6 @@ export interface ScanResult {
     /** The named scope reasons, present only when PARTIAL. */
     reasons?: string[];
   };
-  /**
-   * Tool coverage (v6): which QA tooling this scan actually saw, what the
-   * engine does about it, and what it is blind to.
-   *
-   * Present when the scan ran the ecosystem probe. Additive within
-   * schemaVersion 1; absent when the producer predates this field.
-   *
-   * complete is always false. A scan that could not see through a test
-   * double must never render as a scan with no blind spots, and that is
-   * the one claim a verification tool cannot make.
-   */
-  toolCoverage?: import("./v6/tool-coverage.js").ToolCoverage;
   /**
    * Run Identity (R4c): the deterministic anchor binding verdict ←
    * evidence ← execution ← scope ← source ← rule(rev). Present when the

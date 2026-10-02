@@ -3,14 +3,14 @@
   "artifact": "capability-registry",
   "generatedBy": "npm run docs:capability",
   "registryId": "mjolnir-capability-registry",
-  "observedAt": "2026-09-30",
-  "baseSha": "94a4c3299c6de382f9b93bc559c545fe4aa3001e",
+  "observedAt": "2026-10-01",
+  "baseSha": "d56bb6eee8303c42c78ec8f49e2456430479c59e",
   "counts": {
     "entries": 27,
     "kind:ci-cd-provider": 4,
-    "maturity:M2": 8,
+    "maturity:M2": 9,
     "kind:domain": 13,
-    "maturity:M1": 18,
+    "maturity:M1": 17,
     "kind:test-framework": 9,
     "maturity:M3": 1,
     "kind:test-runner": 1
@@ -52,7 +52,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-CI-001",
         "digest": null,
-        "observedAt": "2026-09-30",
+        "observedAt": "2026-10-01",
         "authority": "provider-capability-contract"
       }
     },
@@ -92,7 +92,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-CI-001",
         "digest": null,
-        "observedAt": "2026-09-30",
+        "observedAt": "2026-10-01",
         "authority": "provider-capability-contract"
       }
     },
@@ -132,7 +132,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-CI-001",
         "digest": null,
-        "observedAt": "2026-09-30",
+        "observedAt": "2026-10-01",
         "authority": "provider-capability-contract"
       }
     },
@@ -172,7 +172,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-CI-001",
         "digest": null,
-        "observedAt": "2026-09-30",
+        "observedAt": "2026-10-01",
         "authority": "provider-capability-contract"
       }
     },
@@ -645,7 +645,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-CYP-001",
         "digest": null,
-        "observedAt": "2026-09-30",
+        "observedAt": "2026-10-01",
         "authority": "framework-inventory"
       }
     },
@@ -685,7 +685,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-JV-104",
         "digest": null,
-        "observedAt": "2026-09-30",
+        "observedAt": "2026-10-01",
         "authority": "framework-inventory"
       }
     },
@@ -723,7 +723,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-TEST-001",
         "digest": null,
-        "observedAt": "2026-09-30",
+        "observedAt": "2026-10-01",
         "authority": "framework-inventory"
       }
     },
@@ -761,7 +761,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-TEST-001",
         "digest": null,
-        "observedAt": "2026-09-30",
+        "observedAt": "2026-10-01",
         "authority": "framework-inventory"
       }
     },
@@ -815,7 +815,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-PW-002",
         "digest": null,
-        "observedAt": "2026-09-30",
+        "observedAt": "2026-10-01",
         "authority": "framework-inventory"
       }
     },
@@ -863,7 +863,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-PY-003",
         "digest": null,
-        "observedAt": "2026-09-30",
+        "observedAt": "2026-10-01",
         "authority": "framework-inventory"
       }
     },
@@ -872,7 +872,7 @@
       "name": "selenium",
       "kind": "test-runner",
       "owner": "framework-inventory",
-      "rules": [],
+      "rules": ["QA-SE-001", "QA-SE-002", "QA-SE-003"],
       "censusId": "ec.test-framework.selenium",
       "frameworkId": "selenium",
       "domains": [],
@@ -884,23 +884,22 @@
         "src/adapters/python.ts",
         "src/adapters/java.ts"
       ],
-      "proven": "M1_DECLARED",
-      "maturity": "M1_DECLARED",
+      "proven": "M2_IMPLEMENTED",
+      "maturity": "M2_IMPLEMENTED",
       "nextLevelGap": {
-        "target": "M2_IMPLEMENTED",
+        "target": "M3_FIXTURE_VERIFIED",
         "missing": [
-          "implementation exists",
-          "unit tests for the implementation"
+          "positive + negative + boundary + adversarial fixtures pass deterministically in CI"
         ],
         "owner": "framework-inventory",
         "revisitTrigger": "capability test.framework.selenium gains evidence for its next level"
       },
       "proof": {
-        "status": "BLOCKED",
-        "artifact": null,
+        "status": "LOCAL_PROVEN",
+        "artifact": "docs/FP-AUDIT.md#QA-SE-001",
         "digest": null,
-        "observedAt": null,
-        "authority": "NONE"
+        "observedAt": "2026-10-01",
+        "authority": "framework-inventory"
       }
     },
     {
@@ -937,7 +936,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-TEST-001",
         "digest": null,
-        "observedAt": "2026-09-30",
+        "observedAt": "2026-10-01",
         "authority": "framework-inventory"
       }
     },
@@ -977,7 +976,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-JV-104",
         "digest": null,
-        "observedAt": "2026-09-30",
+        "observedAt": "2026-10-01",
         "authority": "framework-inventory"
       }
     },
@@ -1015,7 +1014,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-TEST-001",
         "digest": null,
-        "observedAt": "2026-09-30",
+        "observedAt": "2026-10-01",
         "authority": "framework-inventory"
       }
     }

@@ -195,6 +195,24 @@ jobs:
       - name: Install site deps
         working-directory: site
         run: npm ci
+      # The ROOT dependencies too. `npm run doctor` below is
+      # `node dist/cli.mjs doctor && npm --prefix site run doctor` — the
+      # self-audit plus the site doctor — and this job previously installed only
+      # the site's, so the step died with `sh: 1: tsdown: not found` when it
+      # tried to build. Pre-existing on main.
+      #
+      # The alternative was splitting the command, and
+      # `gates/pr.json` says why that is not free: `site-doctor` is declared as
+      # `npm run doctor`, and `gate-tiers.spec.ts` reports a declared gate with
+      # no matching step as "declared and never run — the declaration reads as
+      # coverage". The declaration is right, so the job gets what it was
+      # missing. `--ignore-scripts` because this job needs the tree, not a
+      # postinstall side effect, and `cache-dependency-path` above points at
+      # the site's lockfile — hence no `cache: npm` benefit here.
+      - name: Install root deps (for the doctor)
+        run: npm ci --ignore-scripts
+      - name: Build mjolnir (for the doctor)
+        run: npm run build
       - name: Test the catalog generator
         working-directory: site
         run: npm test
@@ -213,6 +231,16 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          # REQUIRED by the last step in this job. `check-version --base=…`
+          # runs `git diff --name-only <base>..HEAD`, and the default
+          # `fetch-depth: 1` checkout has no `origin/<base>` ref at all:
+          #   fatal: ambiguous argument 'origin/main..HEAD': unknown revision
+          # On a push to main the base IS HEAD, so the diff is empty and the
+          # ref resolves — the step passes there. On a pull request the base
+          # is a different commit and the step dies, so every PR fails on a
+          # defect only main can hide. Lines 189 and 379 already fetch full
+          # history for the same reason; this job was missed.
+          fetch-depth: 0
       # ci:standard reads ci.yml and mjolnir.yml through the `yaml`
       # dependency, so this job needs the workspace installed. It was
       # unit-tested (tests/integrations/ci-standard.spec.ts) but wired to
@@ -274,7 +302,19 @@ jobs:
       # via the same single emitter the generated workflow uses.
       - name: Self-scan annotations
         if: always()
-        run: node dist/cli.mjs summary self-scan.json
+        # Renders the SAVED report, which is what this step already has on disk.
+        # The verb it used to call was removed by the v6 positioning carve, so
+        # the step exited 10 with `unknown subcommand` on every run. It never
+        # showed up because the job is `needs: build-test`, which had been
+        # failing, so this job was `skipped`.
+        #
+        # `--format github-summary` is the other rendering surface and is NOT a
+        # substitute here: it needs a live scan, not the artifact written two
+        # steps above. The removed verb is not named in this comment either,
+        # because `check-cli-contract` reads any mention of it in this file as a
+        # live consumer — which is right, and is why a comment that quotes a
+        # dead command is a thing to avoid writing.
+        run: node dist/cli.mjs explain verdict --json self-scan.json
       # Bug-audit G8 (self-scan honesty gate): the old gate blocked only on
       # error-severity findings — a TRUNCATED self-scan (partial: true) or
       # one where rules crashed silently passed. A truncated self-scan of
@@ -288,7 +328,13 @@ jobs:
           node -e "const fs=require('fs');try{const r=JSON.parse(fs.readFileSync('self-scan.json','utf8'));const n=r.findings.filter(f=>f.severity==='warning').length;fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,'Self-scan warnings (non-blocking) - '+n+'\n')}catch(e){}"
       - name: Generate badge artifact (Master-Stabilization-Plan Sprint 2 Task 11)
         continue-on-error: true
-        run: node dist/cli.mjs badge .
+        # Removed with `src/commands/badge.ts` in the v6 carve: the product emits
+        # no shields.io badge, and the PR comment renders HTML cells instead.
+        # `continue-on-error: true` is why this never surfaced as a failure — it
+        # has been exiting 10 silently since the carve.
+        run: |
+          echo "::notice::No badge artifact: the badge command was removed with the v6 carve."
+          echo '{"note":"badge generation retired; see CHANGELOG 5.1.0"}' > mjolnir-badge.json
       - name: Upload self-scan result as a build artifact
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -388,7 +434,20 @@ jobs:
           git show "${BASE}:tests/corpus/detector-hashes.json" > /tmp/detector-hashes-base.json \
             || echo "no base manifest (first landing)"
           if [ -s /tmp/detector-hashes-base.json ]; then
-            npx tsx scripts/diff-detector-hashes.ts /tmp/detector-hashes-base.json
+            # `scripts/check-detector-hashes.ts`, not `scripts/diff-detector-hashes.ts`.
+            #
+            # The step named a script that does not exist, so it died with
+            #   Error [ERR_MODULE_NOT_FOUND]: Cannot find module
+            #   '.../scripts/diff-detector-hashes.ts'
+            # The capability is not missing: this script's own header documents
+            # `--base <manifest>` as "REVIEW VISIBILITY, the CI base-diff", and
+            # the staleness arm in the same file is the gate that can block.
+            # One file, two modes — the shape the script says it exists to
+            # avoid duplicating.
+            #
+            # The step never ran before, because `needs: build-test` and
+            # build-test had been failing, so the job was always `skipped`.
+            npm run check-detector-hashes -- --base /tmp/detector-hashes-base.json
           else
             echo "INFO: no detector-hashes manifest on the base branch (first landing) — nothing to diff."
           fi

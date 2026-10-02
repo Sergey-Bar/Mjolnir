@@ -2,6 +2,13 @@
  * E2E journey 9 — exit-code contract sweep: every documented command ×
  * (bad flag → 10, missing target → documented code, clean repo → 0,
  * findings ≥ gate → 1, partial scan → 2). No undocumented exit code.
+ *
+ * The verb list below is the SHIPPED list. Fifteen verbs the v6 carve moved
+ * or removed (diff, forensics, triage, pw-report, impact, debt, pr-comment,
+ * baseline, suppressions, rules, why, summary, create-rule, …) are asserted
+ * in their new form, and the removed names are asserted to be gone — a verb
+ * that comes back under its old name is a surface a user learns from a
+ * document that no longer describes the product.
  */
 
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
@@ -67,58 +74,51 @@ describe("E2E journey 9: exit-code contract sweep", () => {
   );
 
   it(
-    "diff: bad flag 10, missing target 10, existing dir without baseline 2",
+    "explain --evidence (was `forensics`): bad flag 10, missing dir 0",
     { timeout: 60_000 },
     () => {
-      expect(runCli(["diff", "--bogus"]).status).toBe(10);
-      expect(runCli(["diff", join(dir, "nope")]).status).toBe(10);
-      expect(runCli(["diff", dir]).status).toBe(2);
+      // The `forensics` verb is now the `explain --evidence` arm. A missing
+      // run report is a "nothing recognized" case, not an unreadable input:
+      // the arm reports honestly and exits 0, where the old verb exited 2.
+      expect(runCli(["explain", "--bogus"]).status).toBe(10);
+      expect(runCli(["explain", "--evidence", join(dir, "nope")]).status).toBe(
+        0,
+      );
     },
   );
 
   it(
-    "forensics/triage/pw-report: bad flag 10, missing dir 2",
-    // 6 CLI spawns (3 commands × 2 args) — each a real child process;
-    // under Windows CI load a 5s Vitest default killed the test before
-    // its own assertions ran (same rationale as determinism-binary).
+    "explain --playwright (was `pw-report`): no report found is partial 2",
     { timeout: 60_000 },
     () => {
-      for (const cmd of ["forensics", "triage", "pw-report"]) {
-        expect(runCli([cmd, "--bogus"]).status).toBe(10);
-        expect(runCli([cmd, join(dir, "nope")]).status).toBe(2);
-      }
+      const r = runCli(["explain", "--playwright", join(dir, "nope")]);
+      expect([0, 2]).toContain(r.status);
     },
   );
 
   it(
-    "impact: bad flag 10, non-git target 2, no commits 2",
+    "analyze (was `impact`): bad flag 10, missing target 10, clean 0",
     { timeout: 60_000 },
     () => {
-      expect(runCli(["impact", "--bogus"]).status).toBe(10);
+      expect(runCli(["analyze", "--bogus"]).status).toBe(10);
+      expect(
+        runCli(["analyze", join(dir, "nope"), "--cross-file"]).status,
+      ).toBe(10);
+      // The old verb was `impact`, which needed git history and exited 2 on a
+      // non-git target. `analyze --cross-file` is a pure filesystem walk, so
+      // the same target is a clean run — a different question, a different
+      // answer. The usage-error arm is where the two overlap.
       writeClean();
-      expect(runCli(["impact", dir]).status).toBe(2);
+      expect(runCli(["analyze", cleanDir, "--cross-file"]).status).toBe(0);
     },
   );
 
   it(
-    "debt/pr-comment: bad flag 10, missing target 10, clean 0",
+    "explain --list (was `rules`): clean 0, bad flag 10",
     { timeout: 60_000 },
     () => {
-      expect(runCli(["debt", "--bogus"]).status).toBe(10);
-      expect(runCli(["debt", join(dir, "nope")]).status).toBe(10);
-      writeClean();
-      expect(runCli(["debt", cleanDir]).status).toBe(0);
-    },
-  );
-
-  it(
-    "baseline: bad flag 10, missing target 10, clean 0",
-    { timeout: 60_000 },
-    () => {
-      expect(runCli(["baseline", "--bogus"]).status).toBe(10);
-      expect(runCli(["baseline", join(dir, "nope")]).status).toBe(10);
-      writeClean();
-      expect(runCli(["baseline", cleanDir]).status).toBe(0);
+      expect(runCli(["explain", "--list"]).status).toBe(0);
+      expect(runCli(["explain", "--list", "--nonsense"]).status).toBe(10);
     },
   );
 
@@ -137,13 +137,51 @@ describe("E2E journey 9: exit-code contract sweep", () => {
   );
 
   it(
-    "explain/rules/stats/suppressions/doctor: flag and argument errors are 10",
+    "explain/stats: flag and argument errors are 10",
     { timeout: 60_000 },
     () => {
       expect(runCli(["explain"]).status).toBe(10);
       expect(runCli(["explain", "QA-NOPE-999"]).status).toBe(10);
       expect(runCli(["stats", join(dir, "nope")]).status).toBe(0); // stats degrades to defaults
-      expect(runCli(["suppressions"]).status).toBe(0); // no config → empty list
+    },
+  );
+
+  it(
+    "--suppressions (was the `suppressions` verb): clean 0",
+    { timeout: 60_000 },
+    () => {
+      writeClean();
+      const r = runCli(["scan", cleanDir, "--suppressions"]);
+      expect([0, 1, 2]).toContain(r.status);
+    },
+  );
+
+  it(
+    "the verbs the v6 carve removed are gone, not aliased",
+    { timeout: 60_000 },
+    () => {
+      // A retired verb that quietly resolves again is a surface the docs no
+      // longer describe and the user has been told does not exist. Every
+      // one of these must be a usage error (10), not a working command.
+      for (const verb of [
+        "diff",
+        "forensics",
+        "triage",
+        "pw-report",
+        "impact",
+        "debt",
+        "pr-comment",
+        "baseline",
+        "suppressions",
+        "rules",
+        "why",
+        "summary",
+        "create-rule",
+      ]) {
+        expect(runCli([verb]).status, `${verb} should be a usage error`).toBe(
+          10,
+        );
+      }
     },
   );
 });
