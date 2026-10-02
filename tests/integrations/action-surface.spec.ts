@@ -12,8 +12,8 @@
  *    template tests enforce — audit S-3);
  *  - no `${{ github.event… }}` interpolation inside `run:` bodies
  *    (audit S-5 — event data reaches the shell through env only);
- *  - partial scans warn by default and can require a complete scan only
- *    through an explicit opt-in;
+ *  - an inconclusive scan (exit 2) fails the job by default, with an explicit
+ *    advisory opt-out that warns;
  *  - the ci-install action template agrees with the real action: the
  *    inputs it sets exist in action.yml and its gate level maps to a
  *    real fail-on value — the two surfaces ship one contract.
@@ -81,9 +81,9 @@ describe("root action.yml (Marketplace surface) is locked", () => {
     );
   });
 
-  it("defaults to error findings and non-blocking partial scans", () => {
+  it("defaults to error findings and to failing an inconclusive scan", () => {
     expect(action.inputs["fail-on"]?.default).toBe("error");
-    expect(action.inputs["fail-on-partial"]?.default).toBe("false");
+    expect(action.inputs["fail-on-partial"]?.default).toBe("true");
   });
 
   it("defaults to the published stable version, never the working candidate", () => {
@@ -252,12 +252,18 @@ describe("root action.yml (Marketplace surface) is locked", () => {
     }
   });
 
-  it("partial scans warn by default and fail only when opted in", () => {
+  it("an inconclusive scan fails by default and needs an explicit advisory opt-out", () => {
+    // 6.0 aligned the Action with the law it ships: docs/VERSIONING.md says
+    // exit `2` must fail, and `fail-on-partial: false` used to be the
+    // default — i.e. the Marketplace surface told every consumer that a scan
+    // which did not finish was a green one. The opt-out still exists; it is
+    // no longer the posture a consumer gets without asking for it.
     const scan = action.runs.steps.find((s) => s.id === "scan");
-    expect(action.inputs["fail-on-partial"]?.default).toBe("false");
+    expect(action.inputs["fail-on-partial"]?.default).toBe("true");
     expect(scan?.env?.MJ_FAIL_ON_PARTIAL).toBe("${{ inputs.fail-on-partial }}");
+    // Only the explicit opt-out downgrades, and it warns that it is doing so.
     expect(scan?.run).toMatch(
-      /if \[ "\$MJ_FAIL_ON_PARTIAL" = "true" \]; then[\s\S]*?exit 2[\s\S]*?fi\s+exit 0/,
+      /if \[ "\$MJ_FAIL_ON_PARTIAL" = "false" \]; then[\s\S]*?exit 0[\s\S]*?fi[\s\S]*?exit 2/,
     );
   });
 

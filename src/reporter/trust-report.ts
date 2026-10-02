@@ -21,13 +21,48 @@
 import type { Finding, ScanResult, TrustSummary } from "../types.js";
 import { isAdvisoryFinding } from "../types.js";
 import type { TrustClassification } from "../engine/trust-classification.js";
-import { classifyTrust } from "../engine/trust-classification.js";
-import { TRUST_RUNGS } from "../brand/symbols.js";
+import { classifyTrust, isComplete } from "../engine/trust-classification.js";
+import { isAtGate, type GateLevel } from "../claim-evidence.js";
 import { palette, shouldColorize, shouldUseAscii } from "./theme.js";
 import { sectionHeader, type UiContext } from "./ui.js";
 import { renderTerminal } from "./terminal.js";
 import { pct } from "../lib/format.js";
 import { evidenceTag, testsAnalyzedCell } from "./presentation.js";
+
+/**
+ * The default user-facing tier vocabulary: two words.
+ *
+ * 6.0 collapsed `core` / `extended` / `quarantine` — and, separately, the
+ * `E0–E2` evidence rungs and the `L0–L5` trust rungs — out of the first-run
+ * report. They are all still computed and all still in `--json` and
+ * `mjolnir explain`; they are the differentiator, and a reader who has not
+ * run the tool yet is not the person they are for. A first run reads
+ * `GATE` / `WARN` and nothing else, and `GATE` means exactly the thing the
+ * exit code means: this finding counts against the configured gate.
+ */
+export type GateLabel = "GATE" | "WARN";
+
+/** The one label rule, so no renderer grows a second opinion. */
+export function gateLabel(f: Finding, gate: GateLevel): GateLabel {
+  return isAtGate(f, gate, isAdvisoryFinding) ? "GATE" : "WARN";
+}
+
+/** How many findings count against the gate, and how many do not. */
+export function gateCounts(
+  findings: readonly Finding[],
+  gate: GateLevel,
+): { gate: number; warn: number } {
+  let at = 0;
+  for (const f of findings) if (isAtGate(f, gate, isAdvisoryFinding)) at++;
+  return { gate: at, warn: findings.length - at };
+}
+
+/**
+ * The command that turns this report into a blocking check. One string,
+ * printed verbatim: a first run that finds problems but does not say how to
+ * gate them has answered the wrong question.
+ */
+export const GATE_COMMAND = "mjolnir ci install";
 
 export interface RenderTrustReportOpts {
   isTTY: boolean;
@@ -37,34 +72,18 @@ export interface RenderTrustReportOpts {
   tone?: "blunt";
   visibleFindings?: ScanResult["findings"];
   /**
+   * The gate level this run is judged at. Defaults to the shipped default
+   * (`error`); the caller passes the resolved value so the label on a finding
+   * and the exit code the shell sees come from one decision.
+   */
+  gate?: GateLevel;
+  /**
    * --classic: escape hatch back to the pre-Trust-Report terminal
    * render. Rendering flag only — scan semantics, exit codes and JSON
    * are identical under both surfaces.
    */
   classic?: boolean;
 }
-
-/**
- * The rung labels, built from `src/brand/symbols.ts` rather than typed
- * again here.
- *
- * They had drifted the moment there were two copies: this file said
- * "file executed" and "run corroborates defect" where the symbol module,
- * the architecture diagram and the website's ladder all said "the
- * finding's file executed" and "the run verdict corroborates". Small
- * enough that nobody would notice, and exactly the kind of divergence
- * that makes a reader wonder whether two surfaces mean the same thing.
- *
- * The runtime marker is not decoration either: L3 and above cannot be
- * reached without a real run report, and the label says so wherever the
- * ladder is not drawn to show it.
- */
-const TRUST_LABELS: Record<string, string> = Object.fromEntries(
-  TRUST_RUNGS.map((r) => [
-    r.level,
-    `${r.level} · ${r.meaning}${r.runtime ? " · runtime" : ""}`,
-  ]),
-);
 
 /**
  * The human verdict line, rendered from the ONE determination.
@@ -114,11 +133,12 @@ export function trustReasons(result: ScanResult, s: TrustSummary): string[] {
     (f) => f.runtimeCorroboration !== undefined,
   ).length;
   if (result.findings.length === 0) {
-    const incomplete =
-      result.partial ||
-      result.analysisStatus.discovery !== "complete" ||
-      result.analysisStatus.rules !== "complete" ||
-      (s.level === "L0" && s.evidenceCoverage === 0);
+    // The SAME determination the headline uses. It used to be a third,
+    // slightly different spelling of "incomplete" — `partial || discovery ||
+    // rules || (L0 and no coverage)` — which is how a report could print a
+    // confident headline and then say the opposite one line below it. One
+    // question, one function.
+    const incomplete = !isComplete(result, s);
     reasons.push(
       incomplete
         ? "No findings so far, but the scan or evidence is incomplete — the gaps are not proof of cleanliness."
@@ -220,14 +240,21 @@ export function renderTrustReport(
     provisionalRuleIds: [],
     ceilingReasons: [],
   };
+  const gate: GateLevel = opts.gate ?? "error";
 
   // ── 1. TRUST VERDICT ────────────────────────────────────────────────
   // The classification is computed HERE, once, and the headline renders it.
   // Every other surface calls the same function; none of them re-derives it.
   const classification = classifyTrust(result, s);
   lines.push(sectionHeader("TRUST VERDICT", ui));
-  lines.push(`  ${p.accent(TRUST_LABELS[s.level] ?? s.level)}`);
   lines.push(`  ${trustHeadline(s, classification)}`);
+  // The number. Two words, and the only ones a first run needs: what blocks,
+  // and what does not. The `L0–L5` rung that used to sit on this line is the
+  // differentiator and still lives in `--json` and `mjolnir explain`.
+  const counts = gateCounts(result.findings, gate);
+  lines.push(
+    `  ${p.accent(`${counts.gate} GATE`)} · ${p.dim(`${counts.warn} WARN`)}`,
+  );
   lines.push("");
 
   // ── 2. Can I trust the result? ─────────────────────────────────────
@@ -270,9 +297,12 @@ export function renderTrustReport(
     lines.push("  none — no non-advisory findings fired");
   } else {
     for (const f of risks) {
-      const ev = evidenceTag(f);
+      const label = gateLabel(f, gate);
+      // The `E`/`L` evidence descriptor is the differentiator, and it is one
+      // flag away: `--verbose` shows it, the default run does not.
+      const evidence = opts.verbose === true ? `  [${evidenceTag(f)}]` : "";
       lines.push(
-        `  ${p.warning("•")} ${f.ruleId} ${f.file}:${f.line}  [${ev}]`,
+        `  ${label === "GATE" ? p.accent("GATE") : p.dim(" WARN")} ${f.ruleId} ${f.file}:${f.line}${evidence}`,
       );
       lines.push(`      ${f.message}`);
     }
@@ -286,7 +316,14 @@ export function renderTrustReport(
 
   // ── 5. NEXT ACTION ─────────────────────────────────────────────────
   lines.push(sectionHeader("NEXT ACTION", ui));
-  lines.push(`  ${p.accent(nextAction(result))}`);
+  const action = nextAction(result);
+  lines.push(`  ${p.accent(action)}`);
+  // The gate command, once. `nextAction` names it only on a clean run, so
+  // printing it unconditionally would say the same thing twice; not printing
+  // it at all is how a first run ends with findings and no way to gate them.
+  if (!action.includes(GATE_COMMAND)) {
+    lines.push(`  ${p.dim("gate:")} ${GATE_COMMAND}`);
+  }
   lines.push("");
   return lines.join("\n");
 }

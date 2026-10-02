@@ -317,8 +317,20 @@ export interface CliArgs {
   ascii?: boolean;
   /** --tone blunt: opt-in blunter messages (Sprint 9 Task 40). */
   tone?: "blunt";
-  /** --strict: include quarantine-tier rules in the scan (Phase 4). */
+  /**
+   * --include-warn (was --strict): include quarantine-tier rules in the scan
+   * (Phase 4). The internal name predates the 6.0 flag rename and names a scan
+   * option rather than a user-facing promise; renaming it would touch every
+   * call site for a rename no user would ever see.
+   */
   strict?: boolean;
+  /**
+   * Deprecated flag spellings used on this invocation, each with its
+   * replacement. Populated by the parser so the CLI can print the whole
+   * deprecation notice once, in one place, rather than each arm printing its
+   * own warning where a `--json` consumer would have to read stderr to find it.
+   */
+  deprecatedFlags?: Array<{ flag: string; replacement: string }>;
   /** --base <ref>: base ref for --scope changed (audit H-10). */
   base?: string;
   /** --debug: print errors swallowed by crash isolation (audit R-9). */

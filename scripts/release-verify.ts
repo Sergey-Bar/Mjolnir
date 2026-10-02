@@ -6,7 +6,8 @@
  * THE DEFECT THIS FIXES
  *
  * `release:verify` was a `&&` chain of nine gates. `&&` short-circuits, and
- * the first gate that blocked was `m26:audit`, so an operator saw exactly one
+ * the first gate that blocked was `m26:audit` (removed in 6.0 with the M26
+ * program it read), so an operator saw exactly one
  * blocker — "M26 audit is not PASS" — out of ten real ones, fixed it, re-ran,
  * and met the next. The project's own plan budgets for this ("Re-validating 17
  * ledger rows surfaces new breakage … Budget for it rather than discovering it
@@ -39,7 +40,6 @@ type Gate = {
 };
 
 const GATES: readonly Gate[] = [
-  { name: "M26 audit", script: "m26:audit", blocking: true },
   { name: "version surface", script: "check-version", blocking: true },
   { name: "claim registry", script: "claims:check", blocking: true },
   {
@@ -127,7 +127,6 @@ const decision = decideRelease({
   currentVersion: pkg.version,
   publishedVersion: pkg.publishedStable ?? pkg.version,
   candidateStatus: statusOf("candidate:readiness"),
-  m26Status: statusOf("m26:audit"),
   versionStatus: statusOf("check-version") === "PASS" ? "PASS" : "FAIL",
   claimsStatus: statusOf("claims:check") === "PASS" ? "PASS" : "FAIL",
   roadmapStatus: statusOf("docs:roadmap:check") === "PASS" ? "PASS" : "FAIL",
@@ -139,7 +138,6 @@ const extraBlocked = results
       r.status !== "PASS" &&
       ![
         "candidate:readiness",
-        "m26:audit",
         "check-version",
         "claims:check",
         "docs:roadmap:check",

@@ -5,7 +5,6 @@ const passing = {
   currentVersion: "4.0.0",
   publishedVersion: "3.0.0",
   candidateStatus: "PASS" as const,
-  m26Status: "PASS" as const,
   versionStatus: "PASS" as const,
   claimsStatus: "PASS" as const,
   roadmapStatus: "PASS" as const,
@@ -38,14 +37,22 @@ describe("release decision", () => {
     const result = decideRelease({
       ...passing,
       candidateStatus: "BLOCKED",
-      m26Status: "BLOCKED",
       versionStatus: "FAIL",
     });
     expect(result.status).toBe("NO_GO");
     expect(result.blockers).toEqual([
       "candidate readiness is not PASS",
-      "M26 audit is not PASS",
       "version surface check is not PASS",
     ]);
+  });
+
+  it("has no M26 arm, because the M26 program it gated on is retired", () => {
+    // 6.0 removed `m26Status`. The gate read four ledgers recording blocked
+    // evidence that was never going to arrive, so it could only ever answer
+    // BLOCKED — a release decision with a wall in it is not a decision.
+    // Asserted as ABSENT rather than merely unused: an input nobody can set is
+    // a field a future author will wire back up by habit.
+    const decision = decideRelease({ ...passing });
+    expect(decision.blockers.join(" ")).not.toMatch(/M26/i);
   });
 });

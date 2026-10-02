@@ -19,6 +19,8 @@ import {
 } from "../../src/reporter/trust-report.js";
 import { renderTerminal } from "../../src/reporter/terminal.js";
 import { classifyTrust } from "../../src/engine/trust-classification.js";
+import { scanExitCode } from "../../src/claim-evidence.js";
+import { isAdvisoryFinding } from "../../src/types.js";
 import type { Finding, ScanResult } from "../../src/types.js";
 
 function finding(overrides: Partial<Finding>): Finding {
@@ -100,16 +102,16 @@ describe("the five questions (WI-5 acceptance)", () => {
   });
   const out = renderTrustReport(r, STATIC_OPTS);
 
-  it("1. what happened — TRUST VERDICT names the rung", () => {
+  it("1. what happened — TRUST VERDICT names the outcome and the counts", () => {
     expect(out).toContain("TRUST VERDICT");
-    // The rung line renders the SUMMARY level (L2 — the stamped summary
-    // is part of the fixture); the L4 finding's corroboration surfaces
-    // in WHY ("1 corroborated") and in the TOP TRUST RISKS evidence
-    // descriptor. BW-102: the descriptor is the terminal's full one, so
-    // the level, the kind, the measured FP rate, the sample size, the
-    // trust rung and what runtime vouched for all render together.
-    expect(out).toContain("L2");
-    expect(out).toContain("runtime: test executed");
+    // 6.0: the `L0–L5` rung left the default report. It is still in --json and
+    // in `mjolnir explain`; a first run reads GATE / WARN and nothing else.
+    expect(out).not.toMatch(/\bL[0-5]\b/);
+    // Both findings in the fixture are warnings, so neither gates at the
+    // default level: zero GATE, two WARN, stated as one number each.
+    expect(out).toContain("0 GATE");
+    expect(out).toContain("2 WARN");
+    expect(out).toContain("corroborated");
   });
 
   it("2. can I trust it — CONFIDENCE renders the measurement", () => {
@@ -123,15 +125,56 @@ describe("the five questions (WI-5 acceptance)", () => {
     expect(out).toContain("2 finding(s) fired; 1 corroborated");
   });
 
-  it("4. what supports it — TOP TRUST RISKS with evidence tags", () => {
+  it("4. what supports it — every finding carries exactly one of the two words", () => {
     expect(out).toContain("TOP TRUST RISKS");
-    expect(out).toContain("E2 · deterministic");
-    expect(out).toContain("runtime: test executed");
+    expect(out).toMatch(/ {2}(GATE|WARN) QA-/);
+    // The evidence descriptor is the differentiator and it is one flag away.
+    expect(out).not.toMatch(/E[0-2] · /);
+    const verbose = renderTrustReport(r, { ...STATIC_OPTS, verbose: true });
+    expect(verbose).toContain("E2 · deterministic");
+    expect(verbose).toContain("runtime: test executed");
   });
 
-  it("5. what next — NEXT ACTION names a concrete command", () => {
+  it("5. what next — NEXT ACTION names a concrete command AND the gate command", () => {
     expect(out).toContain("NEXT ACTION");
     expect(out).toContain("mjolnir explain QA-PW-141");
+    // 6.0's first-run promise: the verdict, the GATE count and the command
+    // that turns this report into a blocking check, on one screen.
+    expect(out).toContain("gate: mjolnir ci install");
+  });
+
+  it("GATE means exactly what the exit code means", () => {
+    // The label is not a second opinion about the gate: a finding labelled
+    // GATE is one `scanExitCode` counts, and a run whose GATE count is 0 at a
+    // gating level exits 0.
+    const errorFinding = finding({ severity: "error", line: 1 });
+    const warningFinding = finding({ severity: "warning", line: 2 });
+    const r2 = result({ findings: [errorFinding, warningFinding] });
+    for (const gate of ["error", "warning"] as const) {
+      const rendered = renderTrustReport(r2, { ...STATIC_OPTS, gate });
+      const code = scanExitCode({
+        partial: false,
+        findings: r2.findings,
+        gate,
+        isAdvisory: isAdvisoryFinding,
+      });
+      const counted = Number(/(\d+) GATE/.exec(rendered)?.[1] ?? "-1");
+      expect(code === 1, `${gate}: count says GATE but exit is ${code}`).toBe(
+        counted > 0,
+      );
+    }
+    // At `--blocking warning` both findings gate; at the default only the error.
+    expect(
+      renderTrustReport(r2, { ...STATIC_OPTS, gate: "warning" }),
+    ).toContain("2 GATE");
+    expect(renderTrustReport(r2, STATIC_OPTS)).toContain("1 GATE");
+  });
+
+  it("advisory (`--blocking none`) labels everything WARN, because nothing gates", () => {
+    const r2 = result({ findings: [finding({ severity: "error" })] });
+    const out2 = renderTrustReport(r2, { ...STATIC_OPTS, gate: "advisory" });
+    expect(out2).toContain("0 GATE");
+    expect(out2).toContain("1 WARN");
   });
 });
 
@@ -346,19 +389,25 @@ describe("P8 coverage — the remaining arms of the hero render", () => {
     expect(out).toContain("more in --json / --verbose");
   });
 
-  it("deterministic-evidence tag renders for non-corroborated E2 findings", () => {
+  // 6.0: the evidence descriptor left the default report. These three arms are
+  // the differentiator and they render under `--verbose`, which is the whole
+  // argument for keeping a flag that says more: the words are still here for
+  // the reader who asks for them.
+  const VERBOSE = { ...STATIC_OPTS, verbose: true };
+
+  it("deterministic-evidence tag renders for non-corroborated E2 findings (--verbose)", () => {
     const out = renderTrustReport(
       result({
         findings: [
           finding({ ruleId: "QA-TEST-905", file: "a.spec.ts", line: 1 }),
         ],
       }),
-      STATIC_OPTS,
+      VERBOSE,
     );
     expect(out).toContain("E2 · deterministic");
   });
 
-  it("pattern tag renders for E1 non-corroborated findings", () => {
+  it("pattern tag renders for E1 non-corroborated findings (--verbose)", () => {
     const out = renderTrustReport(
       result({
         findings: [
@@ -370,12 +419,12 @@ describe("P8 coverage — the remaining arms of the hero render", () => {
           }),
         ],
       }),
-      STATIC_OPTS,
+      VERBOSE,
     );
     expect(out).toContain("E1 · heuristic");
   });
 
-  it("run-executed tag renders for file/test-level corroboration", () => {
+  it("run-executed tag renders for file/test-level corroboration (--verbose)", () => {
     const out = renderTrustReport(
       result({
         findings: [
@@ -391,7 +440,7 @@ describe("P8 coverage — the remaining arms of the hero render", () => {
           }),
         ],
       }),
-      STATIC_OPTS,
+      VERBOSE,
     );
     expect(out).toContain("runtime: test executed");
   });

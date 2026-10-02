@@ -36,7 +36,7 @@ Options:
   --max-duration <sec>    analysis time budget
   --width <cols>          override terminal width
   --ascii / --no-ascii    force glyph mode
-  --strict                include quarantine-tier rules (advisory only — a quarantined
+  --include-warn          include quarantine-tier rules (advisory only — a quarantined
                           detector never gates; see docs/PRODUCT-DECISIONS.md D-2)
   --debug                 print swallowed rule crashes
   --cache                 reuse local per-file verdicts
@@ -81,6 +81,9 @@ Subcommands — Meta:
     deterministic fix-handoff artifact from a saved --json report
   install [--staged-hook] [--dry-run] [--force]   install the agent instruction surfaces
                                                   + optional staged hook
+  share [target] [--out <file>]                   write one self-contained HTML trust
+                                                  report (no server, no upload, no
+                                                  network)
   mcp                                             run as a read-only MCP server over
                                                   stdio (scan / explain / ci verify)
 
@@ -146,7 +149,7 @@ Options:
   --max-duration <sec>    analysis time budget
   --width <cols>          override terminal width
   --ascii / --no-ascii    force glyph mode
-  --strict                include quarantine-tier rules
+  --include-warn          include quarantine-tier rules
                           (advisory only — a quarantined
                           detector never gates; see
                           docs/PRODUCT-DECISIONS.md D-2)
@@ -217,6 +220,13 @@ Subcommands — Meta:
                                                   surfaces +
                                                   optional staged
                                                   hook
+  share [target] [--out <file>]                   write one
+                                                  self-contained
+                                                  HTML trust
+                                                  report (no
+                                                  server, no
+                                                  upload, no
+                                                  network)
   mcp                                             run as a
                                                   read-only MCP
                                                   server over

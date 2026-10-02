@@ -123,13 +123,13 @@ function specifiersIn(line) {
  * GATES as npm scripts, and a module that only a gate imports is still
  * shipped surface — `certify` and `release:verify` run it on every commit.
  * The two `SHIPPED_SURFACE` rows that would otherwise be misfiled are
- * `src/ledger/m26-validators.ts` and `src/release/version-surface.ts`, both
- * reached only from here.
+ * `src/release/version-surface.ts` and the v6 inventory, both reached only from
+ * here. (`src/ledger/m26-validators.ts` was the third until 6.0 deleted it
+ * along with the M26 program.)
  */
 const SHIPPED_ENTRY_POINTS = [
   "src/cli.ts",
   "src/mcp/server.ts",
-  "scripts/check-m26-ledgers.ts",
   "scripts/check-version-surface.ts",
   "scripts/sync-version-surface.ts",
   "scripts/check-candidate-decision.mjs",

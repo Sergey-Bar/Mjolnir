@@ -11,6 +11,248 @@ once shipped, so this file is the record of what changed between versions.
 
 ## [Unreleased]
 
+## [6.0.0-rc.1] — 2026-10-02
+
+Theme: **two words and one number**. A first run reads `GATE` / `WARN` and
+nothing else, and it names the command that makes the scan a gate. Everything
+below is either a subtraction or a correction of a surface that stated the
+opposite of its own law.
+
+### Fixed: three README claims and the gate that let them ship
+
+`README.md` said the published line was `3.0.0` and the working tree
+`4.0.0-rc.1` while `package.json` was `5.1.0`; its Status heading read
+`**Version 3.0.0.**`; and its exit-code table documented exit `2` as
+"Partial scan… **Never blocks**" — the exact wording
+[`docs/VERSIONING.md`](docs/VERSIONING.md) withdrew when it made exit `2` a
+failure.
+
+The exit-code one had a gate: `tests/contract/exit-code-contract-docs.spec.ts`
+matched `/partial[^.\n|]{0,40}never blocks/`. The character class excluded
+`.`, and the README's cell reads as two sentences —
+`Partial scan (time budget hit, unreadable files). Never blocks.` — so the one
+gate written to catch that sentence could not match it. The class now stops at
+the table cell (`|`) and the newline, which is the unit actually being read, and
+no longer at a full stop: a period ends a sentence, not a claim. The gate also
+gained a positive arm — a surface that publishes an exit table must now _say_
+that `2` fails, rather than being silent about it and reading as a pass.
+
+The version claims had no gate at all, because a version claim is not law prose
+and a docs-consistency gate that checks law prose cannot see one.
+`tests/contract/docs-consistency.spec.ts` now pins the README's release-status
+paragraph to `package.json`'s `publishedStable`/`version` and refuses a Status
+heading that names a line which is neither.
+
+### Fixed: the Action told consumers an unfinished scan was green
+
+`fail-on-partial` defaulted to `false`, and its description said so in as many
+words — "partial scans produce a warning, not a failure" — on the Marketplace
+surface, while `docs/VERSIONING.md` said there is no flag that turns an
+incomplete run into exit `0`. The default is now `true`; the advisory opt-out
+still exists, is still one input away, and now warns that it is reporting green
+on a scan that did not finish. The generated `mjolnir ci install` gate already
+failed on `partial: true`; only its comment had rotted.
+
+**Breaking:** a pipeline relying on the old default will now fail on an
+inconclusive scan. That is the point of the law, and 6.0 is the major where it
+belongs.
+
+### Changed: the default report reads GATE / WARN and nothing else
+
+The `core` / `extended` / `quarantine` tiers are now internal, as are the `E0–E2`
+evidence rungs and the `L0–L5` trust rungs. They are all still computed, still in
+`--json`, and still in `mjolnir explain` — they are the differentiator, and a
+first run is not the reader they are for. `--verbose` still prints the evidence
+descriptor beside each finding.
+
+`GATE` means exactly what the exit code means: that finding counts against the
+configured gate. The label and the exit code come from one function
+(`isAtGate` in `src/claim-evidence.ts`) rather than from two derivations of
+"which findings gate" in two files, which is how a report ends up counting three
+GATE findings on a run that exits `1` for two.
+
+The verdict block lost the rung line and gained the number — `3 GATE · 4 WARN` —
+and NEXT ACTION now names the gate command (`mjolnir ci install`) on every run,
+which removed the second, differently-worded "New here? …" trailer that used to
+print it. First screen: the verdict, the count, the command.
+
+`defensibleTier` / `effectiveTier` and the Wilson interval floor are untouched.
+5.1.0's arithmetic is load-bearing and is not re-litigated here; the tier
+simplification is a presentation decision on top of it.
+
+### Added: `gate` on every finding in the JSON report
+
+Additive within `schemaVersion: 1`, as `docs/VERSIONING.md` requires:
+`tier`, `evidenceLevel` and `trustLevel` are all still there, and this adds the
+boolean the exit code is computed from, so a consumer no longer has to
+re-derive the gate level to know what blocks.
+
+### Added: `mjolnir share` — React Doctor's proof loop, without its server
+
+One scan, one self-contained HTML file, no upload and no share id. It carries
+the score, every `GATE`/`WARN` finding with `file:line`, three commands that
+move the number, and each fired rule's measured FP rate with its sample size —
+including "unmeasured", never a zero.
+
+It is NOT a mode of `scan --format`, because the artifact's contract is
+narrower than the bound Trust Artifact's. That artifact names the repo, the
+commit, the scanId and the rule(rev) inventory precisely so a consumer can tell
+which run produced it — and those are exactly the facts that must not travel
+when a file is handed to a third party. Two renderers, two contracts, one
+canonical scan result underneath.
+
+`tests/contract/share-artifact.spec.ts` is new and asserts four properties:
+byte-identical for the same scan, no absolute path / drive letter / home
+directory / remote / commit SHA, no code (a rule message quoting source is
+escaped, not embedded) and no network primitive of any kind. The zero-network
+law itself (`privacy-network-isolation.spec.ts`) is unmodified; this is the
+output half of it, because that spec can only see source.
+
+### Removed: the M26–M50 program, and what it was keeping alive
+
+`docs/ROADMAP.yaml` was 479 lines: 25 trains, ~160 workstream ids, every owner
+`UNASSIGNED`, and a status of `blocked-pending-live-ledger`. It is now a
+five-row table — the 6.0–10.0 ladder, one promise, one number and one kill
+criterion per row — and the old program is in
+`docs/archive/ROADMAP-M26-M50.yaml` with a header that says, in those words,
+**text preserved, claims not**. `scripts/roadmap/validate.ts` was rewritten for
+the new shape: it no longer reads anything, and it now enforces what the
+retired file could not — one version in progress at a time, and a kill
+criterion on every row. The archive has to resolve and be tracked by git, or
+the retirement is a deletion.
+
+Deleted with it: `docs/M26-GAP-LEDGER.jsonl`, `docs/M26-SUPPORT-MATRIX.json`,
+`docs/M26-ISSUE-DISPOSITIONS.jsonl`, `docs/M26-GITHUB-SNAPSHOT.json`,
+`docs/M26-EXTERNAL-VALIDATION.json`, `docs/EXTERNAL-EVIDENCE-REQUEST.md`,
+`schemas/m26/`, `src/ledger/` (2,738 lines), `scripts/sync-m26-github.mjs`,
+`scripts/revalidate-gaps.mjs`, `scripts/check-m26-ledgers.ts`,
+`scripts/v6/check-issue-disposition.ts`, `scripts/check-disposition-source.mjs`,
+`scripts/v6/reconcile-archive.ts`, `tests/ledger/`,
+`tests/contract/m26-support-matrix.spec.ts`,
+`tests/contract/ledger-shrink-guard.spec.ts`, and nine npm scripts.
+
+The four ledgers were transcriptions of a plan document, and the v6 inventory
+published six numbers copied out of them under `counts:` — where a reader took
+them for measurements of this repository. Those fields are gone rather than
+zeroed: `0` would have claimed there are no gaps, which is the one thing a
+retired ledger must not say. The count that replaced one of them,
+`counts.ciProviders`, is now measured from the code
+(`CI_PROVIDERS` in `src/commands/ci-adapter.ts`) instead of counting support
+matrix cells whose id contained the string `CI`.
+
+Six controls went with their subjects and each is named in the spec that used
+to hold it, because "the thing this asserted is gone" is itself a fact a reader
+needs: the archive gate (TI-022, TI-023), the `release decision`'s `m26Status`
+arm, the support-matrix-backed domain capabilities in the capability registry,
+and `orphan.yml`'s exit-code table (kept, repointed at the run header).
+
+Three ideas from the program survive as gates on live code rather than as rows:
+the Wilson interval floor (`src/rules/tier-evidence.ts`), the adversarial /
+boundary fixture quad (`scripts/v6/check-fixture-quad.ts`), and the
+external-evidence discipline, which becomes the 10.0 benchmark.
+
+### Added: two entry points, and a gate that counts them
+
+`npm run check` is what a pull request runs — twelve commands. `npm run
+certify` is the release path, and it begins with `check`, so it is a superset by
+construction rather than by comparison.
+
+`scripts/check-entry-points.mjs` enforces the number, that neither entry point
+names a script `package.json` does not define, that neither runs a write-mode
+script, and that `certify` reaches everything `check` does.
+
+**Known open, deliberately:** the twelve commands expand to **39** leaf scripts.
+`check-version`, `gates:claim-integrity` and `docs:regen` are themselves
+chains, and collapsing them to their leaves is the plan's larger promise, not
+this release's. The gate prints both numbers on purpose — the chain's own terms
+(12, the ceiling) and the transitive leaf count (39) — because the cheap way to
+satisfy a budget is to count the one that is easy to count, and an alias added
+to make the leaf count smaller would make the chain shorter and the wait longer.
+`tests/contract/entry-points-budget.spec.ts` is the negative arm: it proves the
+gate rejects an entry point that reaches a write-mode script, which is the
+property trust-invariant TI-022 used to be proved against the deleted archive
+reconciler.
+
+### Fixed: a verdict that claimed the analysis stopped when it did not
+
+`classifyTrust` treated any confidence ceiling, and any entry in
+`analysisStatus.reasons`, as proof that the scan was incomplete. Scanning `src`
+— the PR tier's own self-scan target — examined every file, found nothing, and
+printed "**The analysis did not finish** — it proves nothing about the surface
+it did not reach", because the framework was undetectable (a ceiling) and 34
+rules sat in the WARN tier (a `coverage:quarantine:34` reason).
+
+A false "incomplete" is not the safe direction: it trains the reader to ignore
+the word, which is the one state where it was true. Incompleteness is now the
+work-not-done list, named field by field — `partial`, truncated discovery, rule
+evaluation or `truncationReasons`, skipped files, parse fallbacks, crashed
+rules — and a ceiling bounds what a finished run can conclude without claiming
+it stopped. It also no longer licenses a clean result
+(`licensesClean`), which is what a capped run has not earned.
+
+`trustReasons` had a third, slightly different spelling of the same question,
+which is how a report could print a confident headline and say the opposite one
+line below it. It now calls the same exported function.
+
+`npm run self-scan` also scanned `.` where the declared gate scans `src`; it now
+scans `src`, and both the report and the exit code are honest about what was
+examined.
+
+### Fixed: three gate-set defects, and the reason they survived
+
+`gates/nightly.json` declared both `qa-ir-parity` and `gate:qa-ir-parity` (the
+same command) and both `scripts-unimported` and
+`gate:unimported-modules` (the same command): four gate ids, two checks, each
+run twice a night. The duplicate-**id** validation could not see it, because
+the ids differ. `scripts/check-gate-tiers.mjs` now also rejects two ids
+running the same command, and the same pass turned up a third pair
+(`version-check` / `changelog`) in both `release.json` and `nightly.json`.
+
+`gates:check` was nightly-only, so gate-file drift was invisible to every PR
+for up to 24 hours — which is why the pairs above survived a release. It now
+runs in `ci.yml`, and it is declared in `gates/pr.json`, so the declaration and
+the step cannot drift apart.
+
+### Changed: the anti-creep law covers the whole surface
+
+Law 1 in `CLAUDE.md` was scoped to the shipped rule set — the one surface easy
+enough to measure — so every other surface grew unchecked: 139 npm scripts,
+137 script files, 16 verbs, three capability registries, and a
+`frontier:contracts` list hand-written in `package.json` that listed 31 specs
+while `certify` ran the whole `tests/contract/` directory. The latter is now
+the directory. Law 0 states that the governed surface is every capability the
+product claims, and the entry-point gate is its enforcement.
+
+**Known open, deliberately:** the script layer is still 137 files and 141 npm
+scripts, not the ~60 and ~45 the plan targets. Cutting them is a mechanical
+deletion with a wide consumer fan (gate files, workflows, MANUAL-SCRIPTS,
+`script:paths`, `scripts:reachable`) and it was not done inside a change that
+already moved the gate set. The entry-point gate and Law 0 exist so the number
+is now measured rather than guessed — `npm run entry-points:check` prints the
+chain length and the leaf count, and the ceiling fails the build if the chain
+grows past twelve.
+
+Two consumers were deleted rather than kept: the twelve-file `scripts/video/`
+pipeline (`docs:video:capture`, `docs:video:render`, `docs:video`) and its
+`demo-video.yml` workflow were left alone because the README embeds the video
+they produce, and deleting a marketing asset is a product decision this change
+set has no mandate to make. They are declared as write-mode, unreachable from
+either entry point, and cannot be run by accident.
+
+### Deprecated: `--strict` → `--include-warn`
+
+The old name promised enforcement the flag never had: a quarantined detector is
+advisory by design (decision D-2), so `--strict` could never make anything
+stricter, and a user reaching for it was asking for something the tool would not
+give them. The new name says what it does — it includes the WARN tier.
+
+`--strict` still works and warns, naming its replacement, and is removed at 7.0
+per the cycle in `docs/VERSIONING.md`. `tests/contract/deprecation-cycle.spec.ts`
+is new and makes that cycle executable: every deprecated spelling is data in one
+list, and the test walks all three steps of it — the old name parses and does
+exactly what the new one does, it reports the deprecation with its replacement,
+and the replacement itself never warns.
+
 ## [5.1.0] — 2026-10-02
 
 ### Two subtractions declined, because the surface they would remove says something the replacement does not

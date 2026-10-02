@@ -5,10 +5,16 @@
  *
  * The plan's own sentence for why this exists is the one worth repeating:
  * "several nominally-dead areas turned out load-bearing when checked, so
- * directory names are not evidence." `src/ledger/` sounds like bookkeeping.
- * It is 2,738 lines of M26 validators that four scripts import. `src/benchmark/`
+ * directory names are not evidence." `src/ledger/` sounded like bookkeeping.
+ * It was 2,738 lines of M26 validators that four scripts imported, and 6.0
+ * deleted all of it along with the ledgers it validated. `src/benchmark/`
  * sounds like a perf harness. It is a schema three release gates read. Reading
  * the directory name would have deleted both.
+ *
+ * 6.0 removed `src/ledger` from the scope list, because the directory no longer
+ * exists — and a scope list that names a deleted directory crashes the
+ * generator rather than reporting anything, which is the worst possible failure
+ * for a gate whose subject is deletions.
  *
  * So the manifest is PER FILE, and it records FACTS a reviewer can check rather
  * than a verdict:
@@ -64,7 +70,6 @@ const MANIFEST = join(ROOT, "docs", "CARVE-MANIFEST.json");
  * written for. A new directory is not in the manifest until someone adds it.
  */
 const SCOPE_DIRS = [
-  "src/ledger",
   "src/gaps",
   "src/traceability",
   "src/benchmark",
@@ -204,7 +209,12 @@ function render(facts) {
         "FACTS are generated; DISPOSITIONS are hand-written and preserved " +
         "across regeneration. Phase 0 admits every file with KEEP. A DELETE " +
         "disposition names the evidence that made deletion safe and the " +
-        "commit that carries it — directory names are not evidence.",
+        "commit that carries it — directory names are not evidence. " +
+        "A DELETE row is itself ephemeral: the next regeneration drops it, " +
+        "because the file it describes is gone and this manifest only ever " +
+        "described files that exist. That is why a deletion's record lives in " +
+        "CHANGELOG.md — the run prints `already removed`, but the file stops " +
+        "being able to say why.",
       scope: { dirs: SCOPE_DIRS, files: SCOPE_FILES },
       files: facts,
     },

@@ -8,10 +8,14 @@ import { isValidSemver } from "./version-consistency.js";
  * `"version": "4.0.0"` while the package was at 5.0.0, and nothing read it —
  * so it was a capability claim the repository was not keeping. Two options
  * were available, delete it or make it true. It is the product's
- * "what this is and is not" manifest, the `notProvided` list is cited by
- * `docs/M26-SUPPORT-MATRIX.json`, and that is a real record; so it is kept and
- * bound to the version check instead. A manifest that can drift is worse than
- * no manifest.
+ * "what this is and is not" manifest, so it is kept and bound to the version
+ * check instead. A manifest that can drift is worse than no manifest.
+ *
+ * The citation that justified keeping it — that `notProvided` was referenced by
+ * `docs/M26-SUPPORT-MATRIX.json` — was deleted with the M26 program in 6.0.
+ * The file survives on its own merits: it is the product's own statement of
+ * what it does not do, and a product that lists its gaps is worth more than one
+ * that has no such list.
  */
 export const IDENTITY_SURFACE_PATHS = [
   "src/engine/version.ts",

@@ -1,479 +1,98 @@
-schemaVersion: 1
-program: "M26-M50"
-status: "blocked-pending-live-ledger"
-source: "docs/RELEASE-TRAINS.md"
-archive:
-  status: "UNRECONCILED"
-  expectedDesignRecordCount: 108
-  records:
-    - logicalMilestone: "M18"
-      githubRange: [539, 549]
-      designRecords: 11
-      disposition: "HISTORICAL_DESIGN_ONLY"
-      evidence: "NOT_RECONCILED"
-    - logicalMilestone: "M19"
-      githubRange: [550, 560]
-      designRecords: 11
-      disposition: "HISTORICAL_DESIGN_ONLY"
-      evidence: "NOT_RECONCILED"
-    - logicalMilestone: "M20"
-      githubRange: [561, 573]
-      designRecords: 13
-      disposition: "HISTORICAL_DESIGN_ONLY"
-      evidence: "NOT_RECONCILED"
-    - logicalMilestone: "M21"
-      githubRange: [574, 586]
-      designRecords: 13
-      disposition: "HISTORICAL_DESIGN_ONLY"
-      evidence: "NOT_RECONCILED"
-    - logicalMilestone: "M22"
-      githubRange: [587, 600]
-      designRecords: 14
-      disposition: "HISTORICAL_DESIGN_ONLY"
-      evidence: "NOT_RECONCILED"
-    - logicalMilestone: "M23"
-      githubRange: [601, 615]
-      designRecords: 15
-      disposition: "HISTORICAL_DESIGN_ONLY"
-      evidence: "NOT_RECONCILED"
-    - logicalMilestone: "M24"
-      githubRange: [616, 631]
-      designRecords: 16
-      disposition: "HISTORICAL_DESIGN_ONLY"
-      evidence: "NOT_RECONCILED"
-    - logicalMilestone: "M25"
-      githubRange: [632, 646]
-      designRecords: 15
-      disposition: "HISTORICAL_NOT_PLANNED"
-      evidence: "NOT_RECONCILED"
-issueLedger: "docs/M26-GITHUB-SNAPSHOT.json"
-gapLedger: "docs/M26-GAP-LEDGER.jsonl"
-supportMatrix: "docs/M26-SUPPORT-MATRIX.json"
-externalValidation: "docs/M26-EXTERNAL-VALIDATION.json"
-dependencyResolution:
-  status: "APPROVED_STAGED"
-  approvedBy: "Sergey-Bar"
-  approvedAt: "2026-09-25"
-  # Provenance of the decision. Untracked by design: it records where the
-  # design note lived on the authoring machine. The program's authority is
-  # `source:` above, which every clone can read.
-  source: ".kilo/plans/1790280258089-qa-sdet-ten-release-trains.md"
-  cycles:
-    - "M31 -> M34 -> M33 -> M31"
-    - "M31 -> M35 -> M33 -> M31"
-  stages:
-    M31: "M31-BASE may proceed after M27 and M30; M31-EXTENDED waits for M33/M34/M35."
-    M33: "Control-plane pilot proceeds after M31-BASE, M32, and M35; otherwise remains deferred."
-    M45: "M45-A local lifecycle work precedes M47-A; M45-B promotion requires M47-B independent evidence."
-    M47: "M47-A local corpus runs before M45-B; M47-B independent reproduction precedes promotion."
-  note: "Approved staged gates resolve the cycles without weakening any external evidence or human promotion requirement."
-provisionalArtifacts:
-  M26:
-    - "docs/ROADMAP.yaml"
+# The version ladder.
+#
+# 6.0 replaced a 25-train program with five versions. The old program is in
+# `docs/archive/ROADMAP-M26-M50.yaml` — text preserved, claims not — and this
+# file is the whole of what the project has promised since.
+#
+# The change of shape is the point. Twenty-five trains with ~160 workstream
+# ids, every owner UNASSIGNED and a status of `blocked-pending-live-ledger`,
+# is a plan nobody could read or finish; a five-row table with one sentence and
+# one kill criterion per row is a plan that can be abandoned at its own
+# criterion without stranding the next version.
+#
+# Validated by `scripts/roadmap/validate.ts`; the archived program is NOT
+# validated, because a record of claims nobody is keeping is not a contract.
+
+schemaVersion: 2
+program: "6.0-10.0"
+status: "in-progress"
+
+retiredProgram:
+  id: "M26-M50"
+  status: "RETIRED"
+  retiredIn: "6.0.0"
+  archive: "docs/archive/ROADMAP-M26-M50.yaml"
+  deletedLedgers:
     - "docs/M26-GITHUB-SNAPSHOT.json"
-    - "docs/M26-ISSUE-DISPOSITIONS.jsonl"
     - "docs/M26-GAP-LEDGER.jsonl"
     - "docs/M26-SUPPORT-MATRIX.json"
     - "docs/M26-EXTERNAL-VALIDATION.json"
-  M27:
-    - "src/rules/registry-census.ts"
-  M30:
-    - "src/frameworks/provider-capability-contract.ts"
-  M37:
-    - "src/change-intelligence.ts"
-  M40:
-  M42:
-    - "src/frameworks/provider-capability-contract.ts"
-  # M29, M31, M32, M33, M34, M35, M36, M38, M39, M41, M43, M44, M45, M46,
-  # M47, M48, M49 and M50 once each declared a `provisionalArtifacts` entry,
-  # and every one of those modules was deleted in the v6 positioning carve
-  # (`1db886ca`) without the row being removed. `docs:roadmap:backlinks` has
-  # been reporting all nineteen as missing the whole time — the check was
-  # correct, red, and wired into no gate tier.
-  #
-  # They are deleted rather than repointed at successors. A successor is a
-  # different module answering a different question, and citing it here would
-  # turn "this was never built" into a claim that something was. An absent
-  # train and an empty list are the same statement, which is why M40 is the
-  # only remaining empty row: it never claimed anything.
-  #
-  # Recorded per train in CHANGELOG.md rather than here, because the list of
-  # trains that quietly lost a claim is the fact worth keeping and it does not
-  # belong in a file whose subject is what is coming.
-trains:
-  - id: "M26"
-    phase: "foundation"
+  why: >-
+    The program tracked four ledgers that only the retired trains read, and the
+    ledgers recorded BLOCKED cells and UNRECONCILED issues for evidence that was
+    never going to arrive — external validation on a project with no external
+    validator. Keeping the file kept four ledgers that had to be regenerated,
+    re-checked and re-reviewed forever to say the same thing. Three ideas from
+    it survive as gates on live code, not as rows: the Wilson interval floor
+    (src/rules/tier-evidence.ts), the adversarial/boundary fixture quad
+    (scripts/v6/check-fixture-quad.ts), and the external-evidence discipline,
+    which becomes the 10.0 benchmark.
+
+versions:
+  - version: "6.0"
     status: "in-progress"
-    owner: "Sergey-Bar"
-    outcome: "Truthful baseline, support matrix, release controls, and evidence boundaries"
-    dependsOn: []
-    workstreams:
-      [
-        "M26-01",
-        "M26-02",
-        "M26-03",
-        "M26-04",
-        "M26-05",
-        "M26-06",
-        "M26-07",
-        "M26-08",
-      ]
-    entryGate: "Approved plan and current candidate inventory"
-    exitGate: "All current issues, gaps, claims, matrix cells, and external evidence are reconciled"
-    evidence: []
-  - id: "M27"
-    phase: "foundation"
+    theme: "Two words and one number"
+    promise: >-
+      A first run reads GATE / WARN and nothing else, and names the gate
+      command.
+    moves: >-
+      npx to a gate recommendation in under 60 seconds, asserted by a
+      frozen-clock contract test.
+    killCriterion: >-
+      If `npm run check` still needs more than 12 commands, 6.0 is not done —
+      finish the cut. Do not start 7.0 on top of it.
+
+  - version: "7.0"
     status: "deferred"
-    owner: "UNASSIGNED"
-    outcome: "Practitioner test intelligence for the TypeScript/JavaScript beachhead"
-    dependsOn: ["M26"]
-    workstreams:
-      [
-        "M27-01",
-        "M27-02",
-        "M27-03",
-        "M27-04",
-        "M27-05",
-        "M27-06",
-        "M27-07",
-        "M27-08",
-      ]
-    entryGate: "M26 registry, claims, gaps, and support matrix are reconciled"
-    exitGate: "Measured rules, practitioner journey, and full/incremental equivalence"
-    evidence: []
-  - id: "M28"
-    phase: "foundation"
+    theme: "The gate proves itself"
+    promise: >-
+      The PR output is the change in trust, not the state.
+    moves: >-
+      Every gated PR proves it blocks; the demo repository blocks in one CI
+      run.
+    killCriterion: >-
+      A third CI provider that needs more than ~80 new lines gets dropped, not
+      built.
+
+  - version: "8.0"
     status: "deferred"
-    owner: "UNASSIGNED"
-    outcome: "Polyglot depth and honest language certification"
-    dependsOn: ["M27"]
-    workstreams:
-      [
-        "M28-01",
-        "M28-02",
-        "M28-03",
-        "M28-04",
-        "M28-05",
-        "M28-06",
-        "M28-07",
-        "M28-08",
-      ]
-    entryGate: "M27 practitioner evidence and adapter contract"
-    exitGate: "Each claimed language independently certified or visibly below certified"
-    evidence: []
-  - id: "M29"
-    phase: "foundation"
+    theme: "One notch wider"
+    promise: >-
+      Python/pytest and GitLab — measured, or not shipped.
+    moves: >-
+      Zero new default-scan rules without n >= 10 measured FP verdicts.
+    killCriterion: >-
+      A rule that cannot be measured inside the existing adjudication budget
+      does not ship.
+
+  - version: "9.0"
     status: "deferred"
-    owner: "UNASSIGNED"
-    outcome: "Runtime evidence and a local-first trust graph"
-    dependsOn: ["M27"]
-    workstreams:
-      [
-        "M29-01",
-        "M29-02",
-        "M29-03",
-        "M29-04",
-        "M29-05",
-        "M29-06",
-        "M29-07",
-        "M29-08",
-      ]
-    entryGate: "M27 test intelligence and M28 runtime/capability contracts"
-    exitGate: "Byte-stable graph, provenance, freshness, and recovery evidence"
-    evidence: []
-  - id: "M30"
-    phase: "foundation"
+    theme: "It ran"
+    promise: >-
+      Findings reach L3-L5 from a real run report, read from disk, parsed and
+      discarded.
+    moves: >-
+      Share of GATE findings reaching L3+, measured on fixtures.
+    killCriterion: >-
+      Anything requiring persistence across runs is out.
+
+  - version: "10.0"
     status: "deferred"
-    owner: "UNASSIGNED"
-    outcome: "CI and release control with least privilege and exact artifacts"
-    dependsOn: ["M26"]
-    workstreams:
-      [
-        "M30-01",
-        "M30-02",
-        "M30-03",
-        "M30-04",
-        "M30-05",
-        "M30-06",
-        "M30-07",
-        "M30-08",
-      ]
-    entryGate: "M26 release gates and M27 practitioner CI journey"
-    exitGate: "Candidate, stable, provider, recovery, and supply-chain evidence"
-    evidence: []
-  - id: "M31"
-    phase: "foundation"
-    status: "deferred"
-    owner: "UNASSIGNED"
-    outcome: "Full QA domain intelligence with independent evidence"
-    dependsOn: ["M27", "M30", "M34", "M35"]
-    workstreams:
-      [
-        "M31-01",
-        "M31-02",
-        "M31-03",
-        "M31-04",
-        "M31-05",
-        "M31-06",
-        "M31-07",
-        "M31-08",
-      ]
-    entryGate: "M27 test intelligence and M30 policy/release contracts"
-    exitGate: "Certified domain evidence and practitioner validation"
-    evidence: []
-  - id: "M32"
-    phase: "foundation"
-    status: "deferred"
-    owner: "UNASSIGNED"
-    outcome: "Approval-gated agentic SDET copilot"
-    dependsOn: ["M26", "M27", "M28", "M30", "M31"]
-    workstreams:
-      [
-        "M32-01",
-        "M32-02",
-        "M32-03",
-        "M32-04",
-        "M32-05",
-        "M32-06",
-        "M32-07",
-        "M32-08",
-      ]
-    entryGate: "Evidence graph, CI controls, and domain boundaries"
-    exitGate: "Independent re-scan, approval, receipts, privacy, and red-team evidence"
-    evidence: []
-  - id: "M33"
-    phase: "foundation"
-    status: "deferred"
-    owner: "UNASSIGNED"
-    outcome: "Opt-in team trust control-plane pilot"
-    dependsOn: ["M29", "M30", "M31", "M32", "M35"]
-    workstreams:
-      [
-        "M33-01",
-        "M33-02",
-        "M33-03",
-        "M33-04",
-        "M33-05",
-        "M33-06",
-        "M33-07",
-        "M33-08",
-      ]
-    entryGate: "ADR, tenancy, consent, and offline-first boundaries"
-    exitGate: "Consented pilot, RBAC, deletion, reconciliation, and local parity evidence"
-    evidence: []
-  - id: "M34"
-    phase: "foundation"
-    status: "deferred"
-    owner: "UNASSIGNED"
-    outcome: "Enterprise assurance foundation for sovereign and air-gapped operation"
-    dependsOn: ["M33"]
-    workstreams:
-      [
-        "M34-01",
-        "M34-02",
-        "M34-03",
-        "M34-04",
-        "M34-05",
-        "M34-06",
-        "M34-07",
-        "M34-08",
-      ]
-    entryGate: "Control-plane boundary and independent assurance approval"
-    exitGate: "Signed artifacts, recovery drill, isolation, and pilot evidence"
-    evidence: []
-  - id: "M35"
-    phase: "foundation"
-    status: "deferred"
-    owner: "UNASSIGNED"
-    outcome: "Ecosystem and durable community value"
-    dependsOn: ["M28", "M29", "M31", "M32", "M33", "M34"]
-    workstreams:
-      [
-        "M35-01",
-        "M35-02",
-        "M35-03",
-        "M35-04",
-        "M35-05",
-        "M35-06",
-        "M35-07",
-        "M35-08",
-      ]
-    entryGate: "Certified foundation and explicit ecosystem safety contract"
-    exitGate: "Clean consumer, contributor, integration, documentation, and support evidence"
-    evidence: []
-  - id: "M36"
-    phase: "frontier"
-    status: "deferred"
-    owner: "UNASSIGNED"
-    outcome: "Failure sensitivity and surviving-mutation correlation"
-    dependsOn: ["M29", "M30"]
-    workstreams: ["M36-01", "M36-02", "M36-03", "M36-04", "M36-05"]
-    entryGate: "Trust contracts, runtime evidence, and corpus governance"
-    exitGate: "Mutation, fault, false-negative, cost, and release-correlation evidence"
-    evidence: []
-  - id: "M37"
-    phase: "frontier"
-    status: "deferred"
-    owner: "UNASSIGNED"
-    outcome: "Change intelligence and evidence-complete test selection"
-    dependsOn: ["M29", "M36"]
-    workstreams: ["M37-01", "M37-02", "M37-03", "M37-04", "M37-05"]
-    entryGate: "Evidence graph, historical executions, and sensitivity evidence"
-    exitGate: "Differential selection, invalidation, and equivalence evidence"
-    evidence: []
-  - id: "M38"
-    phase: "frontier"
-    status: "deferred"
-    owner: "UNASSIGNED"
-    outcome: "Adversarial challenges that can disprove green results"
-    dependsOn: ["M29", "M30", "M31", "M37"]
-    workstreams: ["M38-01", "M38-02", "M38-03", "M38-04", "M38-05"]
-    entryGate: "Evidence graph, provider contracts, domains, and change topology"
-    exitGate: "Bounded challenge corpus and trust-downgrade evidence"
-    evidence: []
-  - id: "M39"
-    phase: "frontier"
-    status: "deferred"
-    owner: "UNASSIGNED"
-    outcome: "Side-effect-free what-if simulation"
-    dependsOn: ["M37", "M38"]
-    workstreams: ["M39-01", "M39-02", "M39-03", "M39-04", "M39-05"]
-    entryGate: "Change graph, evidence, policies, and challenge trust contract"
-    exitGate: "Replay, uncertainty, no-mutation, and recovery evidence"
-    evidence: []
-  - id: "M40"
-    phase: "frontier"
-    status: "deferred"
-    owner: "UNASSIGNED"
-    outcome: "Universal language expansion with explicit saturation states"
-    dependsOn: ["M28", "M36", "M37"]
-    workstreams: ["M40-01", "M40-02", "M40-03", "M40-04", "M40-05", "M40-06"]
-    entryGate: "Adapter SDK, certification harness, sensitivity, and change graph"
-    exitGate: "Per-language saturation and honest unsupported states"
-    evidence: []
-  - id: "M41"
-    phase: "frontier"
-    status: "deferred"
-    owner: "UNASSIGNED"
-    outcome: "Universal framework packs and certification factory"
-    dependsOn: ["M28", "M40"]
-    workstreams: ["M41-01", "M41-02", "M41-03", "M41-04", "M41-05"]
-    entryGate: "M28 adapter SDK and M40 language infrastructure"
-    exitGate: "Per-framework semantics, runtime, corpus, consumer, and security evidence"
-    evidence: []
-  - id: "M42"
-    phase: "frontier"
-    status: "deferred"
-    owner: "UNASSIGNED"
-    outcome: "Universal CI provider expansion"
-    dependsOn: ["M30", "M37", "M38"]
-    workstreams: ["M42-01", "M42-02", "M42-03", "M42-04", "M42-05"]
-    entryGate: "Provider CIR, change topology, and false-green challenge evidence"
-    exitGate: "Provider-specific permission, trigger, matrix, artifact, and approval evidence"
-    evidence: []
-  - id: "M43"
-    phase: "frontier"
-    status: "deferred"
-    owner: "UNASSIGNED"
-    outcome: "Cross-repository system-of-systems intelligence"
-    dependsOn: ["M29", "M37", "M41", "M42"]
-    workstreams: ["M43-01", "M43-02", "M43-03", "M43-04", "M43-05"]
-    entryGate: "Graph, change, framework, and provider evidence"
-    exitGate: "Cross-repo identity, dependency, ordering, failure, and local-fallback evidence"
-    evidence: []
-  - id: "M44"
-    phase: "frontier"
-    status: "deferred"
-    owner: "UNASSIGNED"
-    outcome: "Historical intelligence and trust-debt learning"
-    dependsOn: ["M12", "M29", "M36", "M37", "M38", "M30"]
-    workstreams: ["M44-01", "M44-02", "M44-03", "M44-04", "M44-05"]
-    entryGate: "Forensics, graph, sensitivity, change, challenge, and CI evidence"
-    exitGate: "Replay, incident, retention, deletion, and uncertainty evidence"
-    evidence: []
-  - id: "M45"
-    phase: "frontier"
-    status: "deferred"
-    owner: "UNASSIGNED"
-    outcome: "Evidence-bound self-improving detection lifecycle"
-    dependsOn: ["M36", "M44", "M47"]
-    workstreams: ["M45-01", "M45-02", "M45-03", "M45-04", "M45-05"]
-    entryGate: "Rule lifecycle, sensitivity, history, and benchmark evidence"
-    exitGate: "Differential TP/FP/performance/crash review and human promotion"
-    evidence: []
-  - id: "M46"
-    phase: "frontier"
-    status: "deferred"
-    owner: "UNASSIGNED"
-    outcome: "Reproducible verification research lab"
-    dependsOn: ["M26", "M40", "M41", "M42", "M43", "M44", "M45"]
-    workstreams: ["M46-01", "M46-02", "M46-03", "M46-04", "M46-05"]
-    entryGate: "Provenance, breadth, evidence, governance, and consent boundaries"
-    exitGate: "Independent, privacy-safe, reproducible research evidence"
-    evidence: []
-  - id: "M47"
-    phase: "frontier"
-    status: "deferred"
-    owner: "UNASSIGNED"
-    outcome: "False-green deception benchmark"
-    dependsOn: ["M38", "M41", "M42", "M45"]
-    workstreams: ["M47-01", "M47-02", "M47-03", "M47-04", "M47-05"]
-    entryGate: "Challenge, provider, framework, and detector lifecycle evidence"
-    exitGate: "Versioned, licensed, independently reproducible benchmark evidence"
-    evidence: []
-  - id: "M48"
-    phase: "frontier"
-    status: "deferred"
-    owner: "UNASSIGNED"
-    outcome: "Scale and performance operating model"
-    dependsOn: ["M19", "M28", "M29", "M37", "M43"]
-    workstreams: ["M48-01", "M48-02", "M48-03", "M48-04", "M48-05"]
-    entryGate: "Runtime, graph, incremental, and system-of-systems contracts"
-    exitGate: "S-XXL budgets, soak, fault, recovery, and fleet evidence"
-    evidence: []
-  - id: "M49"
-    phase: "frontier"
-    status: "deferred"
-    owner: "UNASSIGNED"
-    outcome: "Consistent full product experience across every surface"
-    dependsOn: ["M27", "M30", "M31", "M35", "M48"]
-    workstreams: ["M49-01", "M49-02", "M49-03", "M49-04", "M49-05"]
-    entryGate: "Practitioner UX, CI, domains, ecosystem, and scale evidence"
-    exitGate: "Canonical-result parity, accessibility, localization, and recovery evidence"
-    evidence: []
-  - id: "M50"
-    phase: "frontier"
-    status: "deferred"
-    owner: "UNASSIGNED"
-    outcome: "Auditable Trust OS operating model"
-    dependsOn:
-      [
-        "M26",
-        "M27",
-        "M28",
-        "M29",
-        "M30",
-        "M31",
-        "M32",
-        "M33",
-        "M34",
-        "M35",
-        "M36",
-        "M37",
-        "M38",
-        "M39",
-        "M40",
-        "M41",
-        "M42",
-        "M43",
-        "M44",
-        "M45",
-        "M46",
-        "M47",
-        "M48",
-        "M49",
-      ]
-    workstreams: ["M50-01", "M50-02", "M50-03", "M50-04", "M50-05"]
-    entryGate: "M26-M49 evidence and no blocking gaps"
-    exitGate: "Full change-to-immutable-release-proof chain and independent assurance"
-    evidence: []
+    theme: "Prove it on adversarial code"
+    promise: >-
+      A public, versioned, licensed false-green benchmark.
+    moves: >-
+      Every default-scan rule has a benchmark row with its measured FP rate.
+    killCriterion: >-
+      If it cannot be reproduced from a clean checkout without private data, it
+      stays internal and 10.0 ships as a documentation-only release.

@@ -50,6 +50,8 @@
     { "id": "quad-verified", "command": "npm run check-fixture-quad" },
     { "id": "promotion-ratchet", "command": "npm run rules:promotion:check" },
     { "id": "provenance-drift", "command": "npm run docs:provenance-drift" },
+    { "id": "entry-points", "command": "npm run entry-points:check" },
+    { "id": "gate-tiers", "command": "npm run gates:check" },
     { "id": "claim-integrity", "command": "npm run gates:claim-integrity" }
   ]
 }

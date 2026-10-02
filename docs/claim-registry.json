@@ -139,8 +139,8 @@
         "digest": null,
         "observedAt": null,
         "authority": "NONE",
-        "verificationTest": "tests/contract/m26-support-matrix.spec.ts",
-        "verificationCase": "keeps every evidence reference relative and present"
+        "verificationTest": "tests/enterprise/threat-model.contract.test.ts",
+        "verificationCase": "validates the checked-in model and all required data-flow classes"
       },
       "authority": "security-owner",
       "expiry": "on model, data-flow, or boundary change",

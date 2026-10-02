@@ -20,15 +20,36 @@ import { describe, expect, it } from "vitest";
 
 const ROOT = join(import.meta.dirname, "..", "..");
 
-/** Phrasings that reinstate "an incomplete analysis is fine". */
+/**
+ * Phrasings that reinstate "an incomplete analysis is fine".
+ *
+ * The character class stops at `|` and a newline because a table row is the
+ * unit being read — a match must not run out of one cell into the next. It
+ * deliberately does NOT stop at `.`: the first version of this gate excluded
+ * the period too, and that is precisely how `README.md`'s exit-code table
+ * shipped the withdrawn sentence for a whole release —
+ *
+ *   | `2` | Partial scan (time budget hit, unreadable files). Never blocks. |
+ *
+ * reads as two sentences inside one cell, so excluding `.` made the sentence
+ * invisible to the one gate written to catch it. A period ends a sentence; it
+ * does not end a claim.
+ */
 const WITHDRAWN: ReadonlyArray<{ pattern: RegExp; why: string }> = [
   {
-    pattern: /partial[^.\n|]{0,40}\(?never blocks\)?/i,
+    pattern: /partial[^|\n]{0,60}\(?never blocks\)?/i,
     why: "exit 2 is inconclusive, not a pass",
   },
   {
-    pattern: /`2`[^.\n|]{0,40}partial[^.\n|]{0,30}advisory/i,
+    pattern: /`2`[^|\n]{0,60}partial[^|\n]{0,30}advisory/i,
     why: "advisory suppresses findings, not an unfinished analysis",
+  },
+  // The same claim without the withdrawn adjective: a table cell that simply
+  // promises a partial scan cannot block is the defect, whatever it calls it.
+  {
+    pattern:
+      /`2`[^|\n]{0,60}(?:inconclusive|partial)[^|\n]{0,60}(?:never block|does not block|won'?t block|non-block)/i,
+    why: "exit 2 is inconclusive, not a pass",
   },
 ];
 
@@ -86,5 +107,28 @@ describe("the exit-code contract is stated the same way everywhere", () => {
     );
     expect(site).toMatch(/Treat as failure/);
     expect(site).toMatch(/no flag turns an incomplete run into\s+exit `0`/i);
+  });
+
+  it("every surface that publishes an exit table says `2` fails, not just the canonical doc", () => {
+    // The withdrawn wording is only half the risk: a surface can be
+    // perfectly silent about `2` and still read as a pass by omission. The
+    // README is the most-read exit table in the repository, so its `2` row
+    // has to carry the verdict, not just the state.
+    const readme = readFileSync(join(ROOT, "README.md"), "utf8");
+    const row = readme.split("\n").find((l) => /^\|\s*`2`\s*\|/.test(l));
+    expect(
+      row,
+      "README.md no longer publishes an exit table row for `2`",
+    ).toBeDefined();
+    if (row === undefined) return;
+    expect(
+      row,
+      "README.md's exit-2 row does not say a CI step fails — the law in " +
+        "docs/VERSIONING.md says `2` is inconclusive and a gate must fail on it",
+    ).toMatch(/fail/i);
+    expect(
+      row,
+      "README.md's exit-2 row no longer names the inconclusive state",
+    ).toMatch(/inconclusive/i);
   });
 });

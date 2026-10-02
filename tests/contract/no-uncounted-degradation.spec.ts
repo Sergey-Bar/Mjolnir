@@ -403,7 +403,7 @@ const ALLOWED_VALUE_RETURNS: ReadonlyArray<{
   },
   {
     file: "engine/scan-pipeline.ts",
-    line: 867,
+    line: 894,
     direction: "fails-explicitly",
     reason:
       "Counts the failure three ways in the block itself " +
@@ -413,7 +413,7 @@ const ALLOWED_VALUE_RETURNS: ReadonlyArray<{
   },
   {
     file: "engine/scan-pipeline.ts",
-    line: 1272,
+    line: 1299,
     direction: "fails-explicitly",
     reason:
       "Sets identityIncomplete and returns hash: 'UNAVAILABLE'. The literal " +
@@ -491,13 +491,6 @@ const ALLOWED_VALUE_RETURNS: ReadonlyArray<{
       "directory is scanned rather than skipped. Scanning a fixture directory " +
       "produces findings; skipping it would hide them, so the failure " +
       "direction here is the noisy one, which is the safe one.",
-  },
-  {
-    file: "v6/capability-registry.ts",
-    line: 819,
-    direction: "fails-by-absence",
-    reason:
-      "Returns an empty list. The probe could not complete, and the only thing this reports is that nothing was found. Absence is never read downstream as a pass: a capability, edge or capability-level with no evidence stays unproven, which is the direction that cannot manufacture a green.",
   },
   {
     file: "v6/capability-registry.ts",

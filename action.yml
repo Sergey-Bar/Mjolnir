@@ -99,11 +99,12 @@ inputs:
     default: "false"
   fail-on-partial:
     description: >-
-      Fail the job when the scan is partial (exit 2). Default: false
-      (partial scans produce a warning, not a failure). Set to true only
-      when a complete scan is required.
+      Fail the job when the scan is inconclusive (exit 2). Default: true —
+      a scan that did not finish has not found nothing, so it must not read
+      as green. Set to false only for advisory runs, where a warning is the
+      intended outcome.
     required: false
-    default: "false"
+    default: "true"
 
 outputs:
   # Output names use underscores, never hyphens. In an expression
@@ -242,17 +243,20 @@ runs:
         EXIT=$?
         set -e
         echo "exit=$EXIT" >> "$GITHUB_OUTPUT"
-        # Exit-code contract: 2 = partial scan. By default, partial scans
-        # produce a warning and never block. An explicit true opt-in makes
-        # a complete scan mandatory. Exit 1 (findings at gate) and 10/20
-        # (usage/internal) follow the selected finding gate.
+        # Exit-code contract (docs/VERSIONING.md): 2 = inconclusive, and a
+        # CI step FAILS on 2. An incomplete analysis has proven nothing about
+        # the surface it did not reach, so the default is to fail. `--blocking
+        # none` suppresses findings, not the fact that the run did not finish;
+        # `fail-on-partial: false` is the explicit advisory opt-out and says so
+        # out loud. Exit 1 (findings at gate) and 10/20 (usage/internal) follow
+        # the selected finding gate.
         if [ "$EXIT" = "2" ]; then
-          echo "::warning::Mjölnir scan was PARTIAL — some files were not analyzed; the gate is not enforced."
-          if [ "$MJ_FAIL_ON_PARTIAL" = "true" ]; then
-            echo "::error::fail-on-partial is enabled — failing the job on partial scan"
-            exit 2
+          if [ "$MJ_FAIL_ON_PARTIAL" = "false" ]; then
+            echo "::warning::Mjölnir scan was INCONCLUSIVE (exit 2) and fail-on-partial is false — this job will report green on a scan that did not finish."
+            exit 0
           fi
-          exit 0
+          echo "::error::Mjölnir scan was INCONCLUSIVE (exit 2) — failing; set fail-on-partial: false for an advisory run."
+          exit 2
         fi
         if [ "$MJ_FORMAT" = "sarif" ]; then
           echo "sarif_file=mjolnir-report.sarif" >> "$GITHUB_OUTPUT"
@@ -272,7 +276,7 @@ runs:
         else
           echo "findings=" >> "$GITHUB_OUTPUT"
         fi
-        # Propagate the gate result (exit 2 partial already downgraded).
+        # Propagate the gate result (exit 2 already handled above).
         exit "$EXIT"
 
     - name: Upload SARIF to GitHub Code Scanning

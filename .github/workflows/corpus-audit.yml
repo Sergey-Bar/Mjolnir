@@ -83,12 +83,10 @@ jobs:
           run_gate registry:check        npm run registry:check
           run_gate qa-ir:parity           npm run qa-ir:parity
           run_gate rules:quality:check    npm run rules:quality:check
-          run_gate issue-disposition     npm run issue-disposition:check
           run_gate claims:prose:strict   npm run claims:prose:strict
           run_gate claim:budget          npm run claim:budget
           run_gate ecosystem:census      npm run ecosystem:census
           run_gate ecosystem:gaps        npm run ecosystem:gaps
-          run_gate v6:archive:check      npm run v6:archive:check
           run_gate thresholds:parity     npm run thresholds:parity
           run_gate coverage:exemptions   npm run coverage:exemptions
           run_gate unimported:modules     npm run check-unimported-modules
@@ -96,7 +94,6 @@ jobs:
           run_gate claim-integrity      npm run gates:claim-integrity
           run_gate verify-build-determinism     npm run verify-build-determinism
           run_gate corpus:audit --resample      npm run corpus:audit --resample
-          run_gate m26:integrity         npm run m26:audit
           run_gate candidate:readiness   npm run candidate:readiness
           run_gate gate-tiers            node scripts/check-gate-tiers.mjs
           exit "$status"

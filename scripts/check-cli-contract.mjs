@@ -283,8 +283,6 @@ const isArchive = (r) =>
  * pattern in it cannot.
  */
 const CAPTURED_ARTEFACTS = new Set([
-  "docs/M26-GITHUB-SNAPSHOT.json",
-  "docs/M26-GITHUB-COMMENTS.json",
   // Captured scan output — the before/after pair a design document compares.
   // Rewriting a capture would make it a fabrication of a scan that did not
   // happen.

@@ -12,6 +12,21 @@ entry condition.
 
 ## Where Mjölnir is now
 
+- **v6.0.0-rc.1 — current release candidate.** Two words and one number: a
+  first run reads `GATE` or `WARN` per finding and nothing else, and it names
+  the command that turns the scan into a blocking check. The `core` /
+  `extended` / `quarantine` tiers, the `E0–E2` evidence rungs and the `L0–L5`
+  trust rungs stay in `--json` and `mjolnir explain` — they are the
+  differentiator, not first-run comprehension. `--strict` is now
+  `--include-warn`, because the old name promised enforcement the flag never
+  had: a quarantined detector is advisory by design.
+  <!-- census:total-rules -->79 rules<!-- /census:total-rules -->,
+  <!-- census:measured -->73<!-- /census:measured --> of them carrying a
+  false-positive rate measured against real OSS code
+  ([FP-AUDIT](/reference/fp-audit)); the unmeasured remainder is
+  quarantined, never silently shipped.
+  `mjolnir share` writes one self-contained HTML trust report — no server, no
+  network, byte-stable under the deterministic clock.
 - **v5.1.0 — current stable.** The reporting surface is checked against the
   working tree rather than against a plan, and each check is a gate in
   `npm run certify`. A silent capability loss is disclosed through a
@@ -19,15 +34,6 @@ entry condition.
   without a measurement behind it. Package publication does not imply Trust
   certification: the release-readiness record is separate and still names
   what is open.
-  <!-- census:total-rules -->79 rules<!-- /census:total-rules -->,
-  <!-- census:measured -->73<!-- /census:measured --> of them carrying a
-  false-positive rate measured against real OSS code
-  ([FP-AUDIT](/reference/fp-audit)); the unmeasured remainder is
-  quarantined, never silently shipped.
-  The 5.1 line closed the loop the v6 carve left open: `ci verify` can once
-  again be satisfied (`--save-baseline`), three commands reject unknown flags
-  instead of silently ignoring them, and the shipped agent instructions name
-  commands that exist.
 - JSON report (`schemaVersion: 1`), exit codes and CLI surface are
   [frozen contracts](/reference/exit-codes).
 - The scan core is deterministic and zero-network: the same input
@@ -55,8 +61,18 @@ the historical release train that led into the 3.0 cutover.
 
 ## Next
 
-- **Keep the 3.x line honest** through the standing gates — the
-  release-trust verdict (not a date) decides when each increment ships.
+One promise per version, in order. Each is a net subtraction of surface or
+vocabulary before it is an addition of feature, and each carries a kill
+criterion: if it cannot meet its exit gate, it is abandoned at that criterion
+rather than half-shipped on top of the version before it.
+
+| Version | Theme                        | The promise                                                                                                                               | The number it moves                                                   |
+| ------- | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| 7.0     | The gate proves itself       | The PR output is the **change** in trust, not the state — what this branch introduced and removed, against the merge-base.                | Every gated PR proves it blocks; the demo repo blocks in one CI run   |
+| 8.0     | One notch wider              | Python/pytest and GitLab, measured or not shipped. A rule enters the default scan only if it can carry a measured FP rate.                | Zero new default-scan rules without n ≥ 10 measured FP verdicts       |
+| 9.0     | It ran                       | Findings reach L3–L5 from a real run report, read from disk, parsed and discarded. No database, no history store, no dashboard.           | Share of `GATE` findings reaching L3+, measured on fixtures           |
+| 10.0    | Prove it on adversarial code | A public, versioned, licensed false-green benchmark: repositories where a green CI is provably wrong, each with its expected finding set. | Every default-scan rule has a benchmark row with its measured FP rate |
+
 - **Publish only registry-backed claims**: a git tag is not public
   install guidance until the matching npm version and GitHub Release are
   live. [VERSIONING](https://github.com/Sergey-Bar/Mjolnir/blob/main/docs/VERSIONING.md)

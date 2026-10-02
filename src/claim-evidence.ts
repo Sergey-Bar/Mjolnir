@@ -93,6 +93,32 @@ export function unmeasuredClaim(surface: string, why: string): ClaimDecision {
 export type GateLevel = "advisory" | "error" | "warning";
 
 /**
+ * Does this one finding count against the gate?
+ *
+ * The per-finding half of `scanExitCode`, exported so the label a renderer
+ * prints (`GATE` / `WARN`) and the exit code the shell sees can never be
+ * derived from two different rules. A renderer that computed "is this at the
+ * gate?" itself is exactly how a report ends up counting three GATE findings
+ * on a run that exits `1` for two.
+ *
+ * `advisory` gate = nothing gates, which is the `--blocking none` posture and
+ * also why the report says WARN for everything under it: nothing is being
+ * suppressed, the user chose not to gate.
+ */
+export function isAtGate<T extends { severity: string }>(
+  finding: T,
+  gate: GateLevel,
+  isAdvisory?: (finding: T) => boolean,
+): boolean {
+  if (gate === "advisory") return false;
+  const gateSeverities: readonly string[] =
+    gate === "warning" ? ["error", "warning"] : ["error"];
+  return (
+    gateSeverities.includes(finding.severity) && isAdvisory?.(finding) !== true
+  );
+}
+
+/**
  * The one exit-code matrix (plan V5-002).
  *
  * Every command that finishes an analysis routes its exit code through this
@@ -147,12 +173,7 @@ export function scanExitCode<T extends { severity: string }>(input: {
   }
   if (input.partial) return EXIT_PARTIAL;
   if (input.gate === "advisory") return EXIT_CLEAN;
-  const gateSeverities: readonly string[] =
-    input.gate === "warning" ? ["error", "warning"] : ["error"];
-  return input.findings.some(
-    (f) =>
-      gateSeverities.includes(f.severity) && input.isAdvisory?.(f) !== true,
-  )
+  return input.findings.some((f) => isAtGate(f, input.gate, input.isAdvisory))
     ? EXIT_FINDINGS
     : EXIT_CLEAN;
 }

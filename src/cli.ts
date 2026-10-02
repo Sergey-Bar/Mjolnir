@@ -96,6 +96,7 @@ export function parseArgs(
     maxDurationMs: DEFAULT_MAX_DURATION_MS,
     scopeChanged: false,
     format: "terminal",
+    deprecatedFlags: [],
   };
   const reject = (detail: UsageErrorDetail): null => {
     onError?.(detail);
@@ -167,8 +168,22 @@ export function parseArgs(
       const tone = argv[++i];
       if (tone === "blunt") args.tone = "blunt";
       else return reject({ flag: "--tone", token: tone });
-    } else if (a === "--strict") {
+    } else if (a === "--include-warn") {
+      // The one spelling from 6.0. The internal field is still called
+      // `strict` because it names a scan option, not a user-facing promise,
+      // and renaming it would touch every call site in the pipeline for a
+      // rename no user would ever see.
       args.strict = true;
+    } else if (a === "--strict") {
+      // Deprecated in 6.0, removed at 7.0, per the deprecation cycle in
+      // docs/VERSIONING.md: the old name keeps working, says so, and names
+      // its replacement. Removing a frozen surface's spelling without the
+      // cycle is the violation the cycle exists to prevent.
+      args.strict = true;
+      (args.deprecatedFlags ??= []).push({
+        flag: "--strict",
+        replacement: "--include-warn",
+      });
     } else if (a === "--debug") {
       args.debug = true;
     } else if (a === "--record-milestones") {
@@ -233,6 +248,7 @@ const KNOWN_SCAN_FLAGS = [
   "--no-ascii",
   "--tone",
   "--classic",
+  "--include-warn",
   "--strict",
   "--debug",
   "--record-milestones",
@@ -593,6 +609,7 @@ import { runAnalyzeCommand } from "./commands/analyze.js";
 import { runCiAdapterCommand } from "./commands/ci-adapter.js";
 import { CLI_COMMAND_NAMES } from "./engine/cli-command-names.js";
 import { runContractVerifyCommand } from "./commands/contract-verify.js";
+import { runShareCommand } from "./commands/share.js";
 import { runTrustTrendCommand } from "./commands/release-trend.js";
 import {
   runCIIntegrityCommand,
@@ -719,6 +736,7 @@ export async function main(
     explain: (a, o) => runExplainCommand(a, o),
     handoff: (a, o) => runHandoffCommand(a, o),
     install: (a, o) => runInstallCommand(a, o),
+    share: (a, o) => runShareCommand(a, o),
     // PENDING MERGE: the plan folds this into `ci verify`, which does not
     // yet run the contract validators. Kept as its own verb until it does.
     "contract-verify": (a, o) => runContractVerifyCommand(a, o),
@@ -734,6 +752,7 @@ export async function main(
   // argv[0] === "explain"
   // argv[0] === "handoff"
   // argv[0] === "install"
+  // argv[0] === "share"
   // argv[0] === "mcp"
   // argv[0] === "policy"
   // argv[0] === "analyze"

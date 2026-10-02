@@ -9,7 +9,7 @@ import {
 } from "../../src/rules/measurement.js";
 import { FRAMEWORK_INVENTORY } from "../../src/frameworks/framework-inventory.js";
 import { EXIT_USAGE, EXIT_INTERNAL } from "../../src/exit-codes.js";
-import { isGapCleared } from "../../src/ledger/m26-validators.js";
+import { CI_PROVIDERS } from "../../src/commands/ci-adapter.js";
 import type {
   RequirementClassification,
   V6Gap,
@@ -41,32 +41,18 @@ export interface RepoFacts {
   frameworks: number;
   frameworkMaturity: Record<string, number>;
   ciProviders: number;
-  qaDomains: number;
   /**
-   * Domain coverage, counted from the support matrix's `MATRIX-DOMAIN-*`
-   * cells and their dispositions — the ledger of record — rather than from
-   * the module that declares the domain records. See the note in
-   * `collectRepoFacts`: importing that module would give a
-   * `CONTRACT_ONLY`-classified file a production importer.
+   * RETIRED IN 6.0. `qaDomains` and `qaDomainCoverage` were counted from the
+   * support matrix's `MATRIX-DOMAIN-*` cells, `gapLedger` / `supportMatrix` /
+   * `issueDispositions` / `externalValidation` from the four M26 ledgers.
+   *
+   * None of them were measured from the code. They were transcriptions of a
+   * program document, and the inventory — whose entire job is to be a
+   * measurement of THIS tree — was carrying six transcriptions under
+   * `counts:`, where a reader took them for facts about the repository. The
+   * fields are gone rather than zeroed: a `0` would be a claim that there are
+   * no gaps, which is the one thing a retired ledger must not say.
    */
-  qaDomainCoverage: Record<string, number>;
-  gapLedger: {
-    total: number;
-    byStatus: Record<string, number>;
-    bySeverity: Record<string, number>;
-    openReleaseBlockers: string[];
-  };
-  supportMatrix: {
-    total: number;
-    byDisposition: Record<string, number>;
-    blockedCells: string[];
-  };
-  issueDispositions: {
-    total: number;
-    byDisposition: Record<string, number>;
-    openIssues: number;
-  };
-  externalValidation: string;
   exitCodes: { frozen: number[]; usage: number; internal: number };
   census: {
     entries: number;
@@ -134,6 +120,19 @@ function tally<T extends string>(values: readonly T[]): Record<string, number> {
   return out;
 }
 
+/**
+ * CI providers this tree can actually emit a workflow for.
+ *
+ * Counted from the adapters, because "can this tool generate a template for
+ * provider X" is a question about the code. It used to be answered from the
+ * support matrix — the number of cells whose id contained the string `CI` —
+ * which meant adding a matrix cell could raise a count of what the tool
+ * supports, and deleting the code could not lower it.
+ */
+function countCiProviders(_root: string): number {
+  return CI_PROVIDERS.length;
+}
+
 export function collectRepoFacts(root = ROOT): RepoFacts {
   const pkg = JSON.parse(readFileSync(join(root, "package.json"), "utf8")) as {
     version: string;
@@ -157,20 +156,12 @@ export function collectRepoFacts(root = ROOT): RepoFacts {
     );
   }).length;
 
-  const gapLedger = readJsonl<GapLedgerRow>(
-    join(root, "docs", "M26-GAP-LEDGER.jsonl"),
-  );
-  const supportMatrix = JSON.parse(
-    readFileSync(join(root, "docs", "M26-SUPPORT-MATRIX.json"), "utf8"),
-  ) as { cells: Array<{ cell_id: string; disposition: string }> };
-  const issueDispositions = readJsonl<DispositionRow>(
-    join(root, "docs", "M26-ISSUE-DISPOSITIONS.jsonl"),
-  );
-  const externalValidation = (
-    JSON.parse(
-      readFileSync(join(root, "docs", "M26-EXTERNAL-VALIDATION.json"), "utf8"),
-    ) as { status: string }
-  ).status;
+  // The four M26 ledgers used to be read here, and every number they supplied
+  // (`qaDomains`, `qaDomainCoverage`, `gapLedger`, `supportMatrix`,
+  // `issueDispositions`, `externalValidation`) landed in this inventory under
+  // `counts:`. 6.0 deleted the ledgers and the numbers with them: this file's
+  // whole claim is that it measures the tree, and a count copied out of a
+  // program document is not a measurement of the tree.
 
   const resolver = createEvidenceResolver(buildRepoEvidenceIndex(root), root);
   const census = buildCensus({ resolver, observedAt: "1970-01-01" });
@@ -198,62 +189,13 @@ export function collectRepoFacts(root = ROOT): RepoFacts {
       : 0,
     frameworks: FRAMEWORK_INVENTORY.length,
     frameworkMaturity: tally(FRAMEWORK_INVENTORY.map((f) => f.maturity)),
-    // Both of these are counted from the ledgers rather than by importing
-    // the modules that declare them. The domain model was classified
-    // `CONTRACT_ONLY` in `docs/COVERAGE-EXEMPTIONS.json` with a removal plan
-    // to retire it, and the v6 carve carried that out — a truth baseline that
-    // imports a module would also give a module declared to have no
-    // production importer a production importer, which is the one thing the
-    // orphan gate exists to prevent. The support matrix is the ledger of
-    // record for both numbers.
-    ciProviders: new Set(
-      supportMatrix.cells
-        .filter(
-          (c) =>
-            c.cell_id.startsWith("MATRIX-CAPABILITY-EXTERNAL-CERTIFICATION") ||
-            c.cell_id.includes("CI"),
-        )
-        .map((c) => c.cell_id),
-    ).size,
-    qaDomains: supportMatrix.cells.filter((c) =>
-      c.cell_id.startsWith("MATRIX-DOMAIN-"),
-    ).length,
-    qaDomainCoverage: tally(
-      supportMatrix.cells
-        .filter((c) => c.cell_id.startsWith("MATRIX-DOMAIN-"))
-        .map((c) => c.disposition),
-    ),
-    gapLedger: {
-      total: gapLedger.length,
-      byStatus: tally(gapLedger.map((g) => g.status)),
-      bySeverity: tally(gapLedger.map((g) => g.severity)),
-      // `status === "open"` was the filter here through 5.x, and no row in
-      // M26-GAP-LEDGER.jsonl has ever carried that word — the file's status
-      // vocabulary is CONFIRMED_STILL_OPEN / STALE_UNVERIFIABLE /
-      // ALREADY_FIXED. The field was therefore always `[]`, which is the
-      // worst possible shape for a release-blocker count: it reported zero
-      // blockers while eleven rows carried the severity. The predicate is
-      // now the one the ledger validator itself uses, so `STALE_UNVERIFIABLE`
-      // keeps blocking — an unverifiable claim must never unblock a release.
-      openReleaseBlockers: gapLedger
-        .filter((g) => g.severity === "release-blocker" && !isGapCleared(g))
-        .map((g) => g.gap_id),
-    },
-    supportMatrix: {
-      total: supportMatrix.cells.length,
-      byDisposition: tally(supportMatrix.cells.map((c) => c.disposition)),
-      blockedCells: supportMatrix.cells
-        .filter((c) => c.disposition === "BLOCKED")
-        .map((c) => c.cell_id),
-    },
-    issueDispositions: {
-      total: issueDispositions.length,
-      byDisposition: tally(
-        issueDispositions.map((d) => d.canonical_disposition),
-      ),
-      openIssues: issueDispositions.filter((d) => d.state === "open").length,
-    },
-    externalValidation,
+    // The one ledger-derived count that survives, and it survives as a
+    // MEASUREMENT: how many CI providers this tree can actually generate a
+    // template for, counted from the tree. It used to be the number of support
+    // matrix cells whose id contained the string "CI" — a count of what a
+    // document said, published under a `counts:` key a reader took for a fact
+    // about the repository.
+    ciProviders: countCiProviders(root),
     exitCodes: {
       frozen: [0, 1, 2, 10, 20],
       usage: EXIT_USAGE,
@@ -285,33 +227,6 @@ export function collectRepoFacts(root = ROOT): RepoFacts {
         : "ABSENT",
     },
   };
-}
-
-interface GapLedgerRow {
-  gap_id: string;
-  severity: string;
-  status: string;
-  owner: string;
-  target_train: string;
-  category: string;
-  [key: string]: unknown;
-}
-
-interface DispositionRow {
-  issue_number: number;
-  state: string;
-  canonical_disposition: string;
-  target_train: string;
-  release_effect: string;
-  [key: string]: unknown;
-}
-
-function readJsonl<T>(path: string): T[] {
-  if (!existsSync(path)) return [];
-  return readFileSync(path, "utf8")
-    .split("\n")
-    .filter((line) => line.trim())
-    .map((line) => JSON.parse(line) as T);
 }
 
 // ─── Requirement classification (§100) ────────────────────────────────
@@ -589,7 +504,11 @@ export const REQUIREMENT_CLASSIFICATION: readonly (RequirementClassification & {
     specSection: "§31",
     area: "Security verification QA",
     state: "BLOCKED",
-    evidence: ["docs/M26-SUPPORT-MATRIX.json"],
+    // 6.0: was `docs/M26-SUPPORT-MATRIX.json`, deleted with the M26 program.
+    // A citation must resolve, and the honest one for "external scanners are
+    // required and cannot be run" is the product's own statement of what it
+    // does not do.
+    evidence: ["capability-manifest.json"],
     wave: "8",
     note: "Requires external scanners; zero-network default.",
   },
@@ -1066,7 +985,10 @@ export const REQUIREMENT_CLASSIFICATION: readonly (RequirementClassification & {
     specSection: "§85",
     area: "Language matrix",
     state: "PARTIALLY_COMPLETE",
-    evidence: ["docs/M26-SUPPORT-MATRIX.json"],
+    // 6.0: was `docs/M26-SUPPORT-MATRIX.json`. The surface that still renders
+    // this section's coverage is the certification matrix, which is generated
+    // from the language manifest and does not exist to be a plan.
+    evidence: ["docs/RULE-CAPABILITY-MATRIX.md"],
     wave: "1",
     note: "2 cells only.",
   },
@@ -1074,7 +996,7 @@ export const REQUIREMENT_CLASSIFICATION: readonly (RequirementClassification & {
     specSection: "§86",
     area: "CI matrix",
     state: "PARTIALLY_COMPLETE",
-    evidence: ["docs/M26-SUPPORT-MATRIX.json"],
+    evidence: ["docs/RULE-CAPABILITY-MATRIX.md"],
     wave: "1",
     note: "4 cells only.",
   },
@@ -1335,100 +1257,15 @@ export function verifyRequirements(
   });
 }
 
-// ─── Archive reconciliation ──────────────────────────────────────────
-
-export interface ArchiveRecordReconciliation {
-  logicalMilestone: string;
-  githubRange: [number, number];
-  designRecords: number;
-  disposition: string;
-  /** Issues in the range still open — why the record cannot reconcile. */
-  openIssues: number[];
-  state: "RECONCILED" | "PARTIALLY_RECONCILED" | "UNRECONCILED";
-}
-
-export interface ArchiveReconciliation {
-  status: "RECONCILED" | "UNRECONCILED";
-  expectedDesignRecordCount: number;
-  observedDesignRecordCount: number;
-  openIssuesInArchive: number[];
-  records: readonly ArchiveRecordReconciliation[];
-  /** What would close the block. */
-  closureCommand: string;
-}
-
-/**
- * Reconcile the `archive` block of `docs/ROADMAP.yaml` against the
- * GitHub snapshot — deterministically, from data.
- *
- * The block declares `status: UNRECONCILED` for the M18–M25 historical
- * design records. The honest question is not "can this flag be flipped"
- * but "do the 108 issues in those ranges actually have a recorded
- * outcome". This function answers exactly that, and the answer is
- * currently **no**: 14 issues inside the historical ranges are still
- * open, so 7 of the 8 records can only be *partially* reconciled.
- *
- * That is recorded rather than papered over. Flipping the flag while 14
- * issues are open would be a false proof produced by the very
- * reconciliation meant to establish the truth.
- */
-export function reconcileArchive(root = ROOT): ArchiveReconciliation {
-  const roadmapText = readFileSync(join(root, "docs", "ROADMAP.yaml"), "utf8");
-  const snapshot = JSON.parse(
-    readFileSync(join(root, "docs", "M26-GITHUB-SNAPSHOT.json"), "utf8"),
-  ) as {
-    issues: Array<{
-      number: number;
-      state: string;
-      state_reason: string | null;
-    }>;
-  };
-  const byNumber = new Map(snapshot.issues.map((i) => [i.number, i]));
-
-  const records: ArchiveRecordReconciliation[] = [];
-  // The block is a flat list of `logicalMilestone` / `githubRange` pairs;
-  // parse them positionally rather than pulling in a YAML dependency.
-  const recordPattern =
-    /- logicalMilestone:\s*"([^"]+)"\s*\n\s*githubRange:\s*\[(\d+),\s*(\d+)\]\s*\n\s*designRecords:\s*(\d+)\s*\n\s*disposition:\s*"([^"]+)"/g;
-  let match: RegExpExecArray | null;
-  while ((match = recordPattern.exec(roadmapText)) !== null) {
-    const [, milestone, fromRaw, toRaw, countRaw, disposition] = match;
-    const from = Number(fromRaw);
-    const to = Number(toRaw);
-    const openIssues: number[] = [];
-    for (let number = from; number <= to; number += 1) {
-      const issue = byNumber.get(number);
-      if (issue === undefined || issue.state !== "closed")
-        openIssues.push(number);
-    }
-    records.push({
-      logicalMilestone: milestone ?? "UNKNOWN",
-      githubRange: [from, to],
-      designRecords: Number(countRaw),
-      disposition: disposition ?? "UNKNOWN",
-      openIssues,
-      state:
-        openIssues.length === 0
-          ? "RECONCILED"
-          : openIssues.length === Number(countRaw)
-            ? "UNRECONCILED"
-            : "PARTIALLY_RECONCILED",
-    });
-  }
-
-  const openIssuesInArchive = records.flatMap((record) => record.openIssues);
-  return {
-    status: openIssuesInArchive.length === 0 ? "RECONCILED" : "UNRECONCILED",
-    expectedDesignRecordCount: 108,
-    observedDesignRecordCount: records.reduce(
-      (total, record) => total + record.designRecords,
-      0,
-    ),
-    openIssuesInArchive,
-    records,
-    closureCommand: "npm run m26:github:sync",
-  };
-}
+// ─── Archive reconciliation — RETIRED IN 6.0 ─────────────────────────────────
+//
+// reconcileArchive() read docs/M26-GITHUB-SNAPSHOT.json to decide whether the
+// historical M18-M25 design records could honestly be marked RECONCILED. The
+// snapshot is deleted with the M26 program and cannot be regenerated without gh,
+// so the block it produced is now a dated record (docs/archive/
+// V6-ARCHIVE-RECONCILIATION.json) rather than a gate. A gate whose input nobody
+// can produce is a gate that can only ever report the same blocked thing, and
+// GAP-V6-005 keeps the finding open with the record as its evidence.
 
 // ─── v6 gaps discovered by Wave 0 ────────────────────────────────────
 

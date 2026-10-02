@@ -93,7 +93,6 @@ export default defineConfig({
         "src/commands/ci-adapter.ts",
         "src/commands/policy.ts",
         "src/change-intelligence.ts",
-        "src/ledger/m26-validators.ts",
         "src/release/version-surface.ts",
         "src/forensics/triage.ts",
         "src/cli.ts",

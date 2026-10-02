@@ -20,8 +20,9 @@ import {
   EXIT_INTERNAL,
 } from "./exit-codes.js";
 // The one exit-code matrix (plan V5-002).
-import { scanExitCode } from "./claim-evidence.js";
+import { scanExitCode, isAtGate, type GateLevel } from "./claim-evidence.js";
 import { isAdvisoryFinding } from "./types.js";
+import type { Finding } from "./types.js";
 import type { CliArgs } from "./engine/scan-pipeline.js";
 import { runScan, KNOWN_RULE_IDS } from "./engine/scan-pipeline.js";
 import { buildMachineContract } from "./engine/machine-contract.js";
@@ -95,6 +96,43 @@ import { currentCommit } from "./lib/git-utils.js";
 import { parseArgsOrUsage, validateScanTarget } from "./cli.js";
 
 /**
+ * The one place a run's gate level is resolved from `--blocking`, then
+ * `mjolnir.config.json`, then the shipped default.
+ *
+ * It used to be written out three times in this file — once for `--score`,
+ * once for the exit code, and implicitly a third time inside whatever
+ * rendered the report. Three copies of "which findings gate" is how a report
+ * ends up disagreeing with the exit code it ships next to, so it is resolved
+ * once and passed down.
+ */
+export function resolveGateLevel(
+  blocking: CliArgs["blocking"],
+  config: { gate?: "advisory" | "error" | "warning" },
+): GateLevel {
+  return blocking === "none"
+    ? "advisory"
+    : (blocking ?? config.gate ?? "error");
+}
+
+/**
+ * The additive per-finding gate flag for the JSON contract.
+ *
+ * `schemaVersion: 1` is additive-only (docs/VERSIONING.md), so nothing is
+ * removed: `tier`, `evidenceLevel` and `trustLevel` all stay exactly as they
+ * were, and this adds the one field a consumer needed to act on without
+ * re-deriving the gate itself — the boolean the exit code is computed from.
+ */
+function withGateFlags(
+  findings: readonly Finding[],
+  gate: GateLevel,
+): Array<Finding & { gate: boolean }> {
+  return findings.map((f) => ({
+    ...f,
+    gate: isAtGate(f, gate, isAdvisoryFinding),
+  }));
+}
+
+/**
  * Render scan output in the requested format.
  *
  * Extracted from runScanCommand (Task 6) to reduce cyclomatic complexity.
@@ -115,6 +153,7 @@ export function renderScanOutput(
   args: CliArgs,
   target: string,
   io: { out: Output; err: Output },
+  gate: GateLevel,
 ): void {
   if (args.format === "sarif") {
     io.out(renderSarif(result, pathToFileURL(target).href));
@@ -140,7 +179,11 @@ export function renderScanOutput(
   } else if (args.json) {
     io.out(
       JSON.stringify(
-        { ...result, contract: buildMachineContract(result) },
+        {
+          ...result,
+          findings: withGateFlags(result.findings, gate),
+          contract: buildMachineContract(result),
+        },
         null,
         2,
       ),
@@ -155,6 +198,7 @@ export function renderScanOutput(
       renderTrustReport(result, {
         isTTY: process.stdout.isTTY ?? false,
         verbose: args.verbose,
+        gate,
         ...(categories && categories.length > 0
           ? { visibleFindings: visible }
           : {}),
@@ -352,13 +396,24 @@ export async function runScanCommand(
       for (const line of crashLog.slice(0, 50)) io.err(`  ${line}`);
       if (crashLog.length > 50) io.err(`  … and ${crashLog.length - 50} more`);
     }
+    // The config is loaded ONCE and the gate level resolved from it once.
+    // `--score`, the report and the exit code must all agree about which
+    // findings gate, and three separate reads of the same config is how they
+    // stop agreeing.
+    const { config, warnings } = loadConfig(target, {
+      knownRuleIds: KNOWN_RULE_IDS,
+    });
+    for (const d of args.deprecatedFlags ?? []) {
+      io.err(
+        `warning: ${d.flag} is deprecated and will be removed in 7.0 — use ${d.replacement}. ` +
+          "It still does exactly what it did; nothing about your scan changes this release.",
+      );
+    }
+    const gate = resolveGateLevel(args.blocking, config);
     if (args.scoreOnly) {
       if (args.json) {
         io.err("--score overrides --json; stdout is the bare score.");
       }
-      const { config: scoreConfig } = loadConfig(target, {
-        knownRuleIds: KNOWN_RULE_IDS,
-      });
       io.out(result.score === null ? "unknown" : String(result.score));
       // V5-002: this path used to call exitForFindings directly and never
       // look at `partial`, so `--score` on a truncated scan with zero
@@ -367,10 +422,7 @@ export async function runScanCommand(
       return scanExitCode({
         partial: result.partial,
         findings: result.findings,
-        gate:
-          args.blocking === "none"
-            ? "advisory"
-            : (args.blocking ?? scoreConfig.gate ?? "error"),
+        gate,
         isAdvisory: isAdvisoryFinding,
         // `--score` is what the badge and baseline tooling read, so it has
         // to honour the same coverage law as the full report: an opt-in
@@ -385,22 +437,14 @@ export async function runScanCommand(
       });
     }
 
-    renderScanOutput(result, args, target, io);
+    renderScanOutput(result, args, target, io, gate);
 
     if (args.format === "terminal") {
-      const bareFirstRun =
-        !args.scopeChanged &&
-        !args.verbose &&
-        args.target === "." &&
-        !existsSync(join(target, "mjolnir.config.json")) &&
-        result.findings.length > 0;
-      if (bareFirstRun) {
-        io.out(
-          "  New here? `mjolnir ci install` adds this as a PR check. " +
-            "`mjolnir explain <RULE-ID>` explains any finding above.\n",
-        );
-      }
-
+      // 6.0 deleted the "New here? `mjolnir ci install` …" trailer. It named
+      // the gate command a SECOND time, in different words, on a different
+      // part of the screen than the one the reader was looking at; the report's
+      // NEXT ACTION block now names the gate command on every run, so a first
+      // run sees it once and in the place where it answers a question.
       if (
         args.recordMilestones &&
         !result.partial &&
@@ -425,17 +469,11 @@ export async function runScanCommand(
     }
 
     if (result.partial) return EXIT_PARTIAL;
-    const { config, warnings } = loadConfig(target, {
-      knownRuleIds: KNOWN_RULE_IDS,
-    });
     for (const w of warnings) io.err(w);
     return scanExitCode({
       partial: false,
       findings: result.findings,
-      gate:
-        args.blocking === "none"
-          ? "advisory"
-          : (args.blocking ?? config.gate ?? "error"),
+      gate,
       isAdvisory: isAdvisoryFinding,
       // Coverage gating is opt-in and stays opt-in. See scanExitCode for
       // why a default here would be self-defeating.

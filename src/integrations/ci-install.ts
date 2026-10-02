@@ -32,9 +32,9 @@ export type EnforcingGate = Exclude<GateLevel, "advisory">;
  * the tool's own exit-code contract:
  *  - missing/unreadable `mjolnir.json` → fail (the scan step crashed; a
  *    silent pass here would turn a broken pipeline into a green one);
- *  - `partial: true` → never block (truncated results can neither prove
- *    nor disprove the gate — the "PARTIAL" banner in the summary is the
- *    honest signal);
+ *  - `partial: true` → fail (truncated results can neither prove
+ *    nor disprove the gate — and the surface that was not reached is exactly
+ *    where an unknown blocking finding would live);
  *  - `error` gate → block on any error-severity finding;
  *  - `warning` gate → block on warnings and errors.
  */

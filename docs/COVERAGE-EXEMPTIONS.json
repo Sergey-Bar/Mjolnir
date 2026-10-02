@@ -99,20 +99,6 @@
       "defectSignatures": ["export function calculateAffectedPaths\\b"]
     },
     {
-      "path": "src/ledger/m26-validators.ts",
-      "classification": "SHIPPED_SURFACE",
-      "shippedSurface": true,
-      "owner": "maintainers",
-      "reviewBy": "2026-12-31",
-      "removalPlan": "V5-006 — wire m26:audit into `certify` so the validators gate engineering certification, then cover the validator branches.",
-      "justification": "Runs inside the release gate via `npm run m26:audit`. A gate that is not covered is a gate that can silently stop working. The signatures are the schema the gate enforces: a required-field list that shrinks, or a record cap that grows without review, is the validator quietly accepting records it used to reject.",
-      "defectSignatures": [
-        "export const MAX_M26_LEDGER_RECORDS = 10_000;",
-        "export const GAP_REQUIRED_FIELDS = \\[",
-        "export const SUPPORT_REQUIRED_FIELDS = \\["
-      ]
-    },
-    {
       "path": "src/release/version-surface.ts",
       "classification": "SHIPPED_SURFACE",
       "shippedSurface": true,

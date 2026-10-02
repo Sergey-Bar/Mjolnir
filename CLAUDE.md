@@ -7,6 +7,15 @@ ignore.
 
 ## The laws
 
+0. **Surface law (6.0).** The governed surface is every capability the
+   product claims, not only the rule set. Adding a CLI verb, an npm script, a
+   gate, a generator or a documented format requires an equal-size removal or a
+   recorded `ANTI-CREEP-EXCEPTION` in `CHANGELOG.md` with the reason.
+   `npm run check` is the whole PR path and it is at most 12 commands;
+   `npm run entry-points:check` is what enforces the number, so "the surface
+   grew" cannot be a fact nobody measures. `CLAUDE.md`, `README.md`,
+   `docs/ROADMAP.yaml`, `gates/*.json` and `package.json` are the surfaces
+   this applies to. Law 1 is the rule-set arm of this law, not the whole of it.
 1. **Anti-creep law.** Every addition to the launch set requires an
    equal-size removal. The launch set is the rules that ship in the default
    report — every rule whose effective tier is not `quarantine`, which is 45 of
@@ -46,3 +55,11 @@ Law 1 was amended 2026-10-01 to name the shipped set rather than the core
 tier, which is what it always described. The quoting sites updated with it:
 `docs/ANTI-CREEP.md`, `docs/ANTI-CREEP-BASELINE.json`, `.github/copilot-instructions.md`,
 `tests/contract/docs-consistency.spec.ts`, and `src/commands/doctor.ts`.
+
+Law 0 was added 2026-10-02 (6.0). Law 1 was scoped to the shipped rule set,
+and a rule set is the easiest surface to measure — so every other surface grew
+unchecked: 139 npm scripts, 137 script files, 16 verbs and three overlapping
+capability registries, all with drift gates that caught none of it. The law now
+names the surface rather than the one part of it that was easy to count.
+`tests/contract/docs-consistency.spec.ts` reads this file, so widening the law
+is itself gated on the quoting sites being updated in the same commit.

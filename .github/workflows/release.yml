@@ -144,7 +144,6 @@ jobs:
           set -euo pipefail
           if [[ "$IS_PRERELEASE" == "true" ]]; then
             # A prerelease says "we have this evidence". Enforce it, unchanged.
-            npm run m26:audit
             npm run candidate:readiness
             echo "enforced=true" >> "$GITHUB_OUTPUT"
             exit 0
@@ -153,17 +152,22 @@ jobs:
           # consented external execution, holdout proof and a platform matrix
           # are not a precondition for cutting it.
           #
-          # The checks still RUN and still print, so the release record shows
-          # exactly what was not satisfied. What changes is that they do not
+          # The check still RUNS and still prints, so the release record shows
+          # exactly what was not satisfied. What changes is that it does not
           # block — and only because a person recorded the decision in a
           # repository variable. Deleting the step would have produced the same
           # outcome with no trace of who decided it, which is the failure this
           # project keeps having to undo elsewhere.
-          npm run m26:audit || true
+          #
+          # 6.0 removed the `m26:audit` half of this pair. It read four
+          # ledgers of the retired M26 program, so for the last release before
+          # the retirement it was reporting BLOCKED cells against evidence that
+          # was never going to arrive, on a workflow whose job is to decide
+          # whether a release may be cut.
           npm run candidate:readiness || true
           if [[ "$STABLE_RELEASE_AUTHORIZED" != "true" ]]; then
             echo "::error::A stable release requires vars.STABLE_RELEASE_AUTHORIZED=true."
-            echo "::error::The evidence checks above are reported, not enforced, on a stable release."
+            echo "::error::The evidence check above is reported, not enforced, on a stable release."
             echo "::error::Set that variable to record the decision, or cut a prerelease instead."
             exit 1
           fi
@@ -174,8 +178,8 @@ jobs:
           {
             echo "### Candidate evidence — NOT ENFORCED"
             echo ""
-            echo "A stable release. \`m26:audit\` and \`candidate:readiness\` ran and are"
-            echo "recorded above as unsatisfied; they were not treated as blocking because"
+            echo "A stable release. \`candidate:readiness\` ran and is"
+            echo "recorded above as unsatisfied; it was not treated as blocking because"
             echo "\`vars.STABLE_RELEASE_AUTHORIZED\` is \`true\`. That is a decision someone"
             echo "made and recorded, not a check that passed."
             echo ""

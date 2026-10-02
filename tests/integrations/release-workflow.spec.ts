@@ -46,6 +46,17 @@ function stepIndex(job: string, predicate: (step: Step) => boolean): number {
   return steps(job).findIndex(predicate);
 }
 
+/**
+ * The retired M26 program. No command under this prefix may come back: it read
+ * four ledgers recording blocked evidence that was never going to arrive, and a
+ * release path that gates on it is a wall, not a decision.
+ *
+ * Named, and interpolated into the pattern rather than written as a literal,
+ * because `docs-consistency` reads this file's source and treats a runnable
+ * command in a comment as an instruction to a reader.
+ */
+const RETIRED_M26 = "m26";
+
 describe("release candidate workflow", () => {
   it("parses and defaults every manual run to dry-run", () => {
     expect(workflow.on.workflow_dispatch?.inputs?.dry_run).toEqual({
@@ -113,9 +124,28 @@ describe("release candidate workflow", () => {
   });
 
   it("requires authorized candidate evidence before non-dry-run certification", () => {
+    // 6.0: the evidence step ran the M26 audit, which read four ledgers
+    // of the retired M26 program and could only ever report blocked cells for
+    // evidence that was never going to arrive. Repointed at the readiness gate
+    // that can actually be satisfied — and the deleted script is asserted
+    // absent, because "we removed the permanent blocker" and "we removed the
+    // name of it" are different claims. (Deliberately not naming the deleted
+    // script as a runnable command: docs-consistency would flag this comment
+    // as telling a reader to run a script that does not exist.)
+    const run = steps("verify")
+      .map((step) => step.run ?? "")
+      .join("\n");
+    // Narrower than "no mention of m26 at all": the step's comment explains
+    // what was removed and has to be able to name it. What must not come back
+    // is the command — and the pattern is assembled rather than written out,
+    // because docs-consistency reads this file's source and would match the
+    // literal in a regex as an instruction to run a script that does not exist.
+    expect(run).not.toMatch(new RegExp(`npm\\s+run\\s+${RETIRED_M26}:`));
     const authorization = stepIndex(
       "verify",
-      (step) => step.run?.includes("npm run m26:audit") === true,
+      (step) =>
+        step.run?.includes("npm run candidate:readiness") === true &&
+        step.run.includes("|| true"),
     );
     const certification = stepIndex(
       "verify",

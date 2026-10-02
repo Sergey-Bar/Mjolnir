@@ -119,13 +119,77 @@ describe("completeness is a precondition, not a factor", () => {
     ).toBe("INCOMPLETE");
   });
 
-  it("a ceiling reason makes it INCOMPLETE and names the ceiling", () => {
+  it("a confidence ceiling caps confidence and is named, but does not claim the analysis stopped", () => {
+    // 6.0. A ceiling used to force INCOMPLETE, so scanning `src` — the PR
+    // tier's own self-scan target, a run that examines every file and finds
+    // nothing — printed "the analysis did not finish". `framework-detection-
+    // unknown` caps what a finished run can conclude; it does not mean a file
+    // went unanalysed. The claim is still conservative about the evidence, and
+    // it is no longer a false claim about the work.
     const c = classifyTrust(
       result(),
-      summary({ ceilingReasons: ["budget-exceeded"] }),
+      summary({ ceilingReasons: ["framework-detection-unknown"] }),
     );
-    expect(c.claim).toBe("INCOMPLETE");
-    expect(c.gaps.join(" ")).toMatch(/budget-exceeded/);
+    expect(c.claim).not.toBe("INCOMPLETE");
+    expect(c.licensesClean).toBe(false);
+    expect(c.gaps.join(" ")).toMatch(/framework-detection-unknown/);
+    // And the four things that genuinely mean "work not done" still do.
+    for (const partial of [true]) {
+      expect(classifyTrust({ ...result(), partial }, summary()).claim).toBe(
+        "INCOMPLETE",
+      );
+    }
+    expect(
+      classifyTrust(
+        result({
+          analysisStatus: {
+            discovery: "partial",
+            rules: "complete",
+            skippedFiles: 0,
+            parseFallbacks: 0,
+            rulesCrashed: 0,
+            rulesWithheld: 0,
+            durationMs: 1,
+            reasons: [],
+          },
+        }),
+        summary(),
+      ).claim,
+    ).toBe("INCOMPLETE");
+    expect(
+      classifyTrust(
+        result({
+          analysisStatus: {
+            discovery: "complete",
+            rules: "complete",
+            skippedFiles: 2,
+            parseFallbacks: 0,
+            rulesCrashed: 0,
+            rulesWithheld: 0,
+            durationMs: 1,
+            reasons: [],
+          },
+        }),
+        summary(),
+      ).claim,
+    ).toBe("INCOMPLETE");
+    expect(
+      classifyTrust(
+        result({
+          analysisStatus: {
+            discovery: "complete",
+            rules: "complete",
+            skippedFiles: 0,
+            parseFallbacks: 0,
+            rulesCrashed: 1,
+            rulesWithheld: 0,
+            durationMs: 1,
+            reasons: [],
+          },
+        }),
+        summary(),
+      ).claim,
+    ).toBe("INCOMPLETE");
   });
 
   it("a missing analysisStatus is not a complete scan", () => {

@@ -101,7 +101,9 @@ describe("coverage exclusion truth ledger (V5-000)", () => {
     expect(reachable.has("src/cli.ts")).toBe(true);
     expect(reachable.has("src/mcp/server.ts")).toBe(true);
     // A gate-only module is shipped surface: `certify` runs it every commit.
-    expect(reachable.has("src/ledger/m26-validators.ts")).toBe(true);
+    // 6.0 repointed this from `src/ledger/m26-validators.ts`, which this file
+    // also deleted — `reachable.has("…")` is false for a path that does not
+    // exist, so the arm had become a vacuous pass.
     expect(reachable.has("src/release/version-surface.ts")).toBe(true);
     // A contract nothing reaches is not.
     //

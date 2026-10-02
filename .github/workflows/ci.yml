@@ -265,6 +265,24 @@ jobs:
       - name: CI standard (PR scan gate layers + least-privilege invariants)
         run: npm run ci:standard
 
+      # The gate-set invariant, on a PR.
+      #
+      # It was nightly-only until 6.0, which is precisely why the nightly gate
+      # file drifted for a release: a `pr.json` entry with no matching step, a
+      # release gate missing from nightly, a gate id duplicated under two names
+      # — all invisible to every PR for up to 24 hours, and three such
+      # defects shipped in 5.x. The check costs one file read; the cost of NOT
+      # running it on a PR is a week of someone's attention.
+      - name: Gate-tier invariant (pr ⊆ release ⊆ nightly)
+        run: npm run gates:check
+
+      # The two entry points, and their budgets. `npm run check` is what a PR
+      # runs and it is at most 12 commands; `npm run certify` is the release
+      # path and must reach everything `check` does. Declared in
+      # `gates/pr.json` for the same reason the step above is here.
+      - name: Entry-point budget
+        run: npm run entry-points:check
+
       # The claim-integrity gates, as ONE step.
       #
       # Each of these is a separate npm script so a failure names the gate
