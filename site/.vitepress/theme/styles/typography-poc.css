@@ -197,7 +197,11 @@ body {
   border-top: 0;
 }
 .mj .st::before {
-  background: linear-gradient(90deg, var(--mj-reading-accent), var(--mj-reading-accent-alt));
+  background: linear-gradient(
+    90deg,
+    var(--mj-reading-accent),
+    var(--mj-reading-accent-alt)
+  );
 }
 .mj .st-body {
   background: transparent;
