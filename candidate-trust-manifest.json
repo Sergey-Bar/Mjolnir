@@ -28,12 +28,12 @@
   "generatedAt": "2026-10-02",
   "identity": {
     "state": "WORKING_CANDIDATE",
-    "baseSha": "1e45221cf9736e127b3bb91124a8716d2b513376",
+    "baseSha": "a2315ec43bbbc8a0212fd32e3c1c318e00f2f852",
     "candidateSha": null,
     "version": "5.1.0",
     "packageSha256": "631147ba94aea04da415e1b1a2e0bd953d211199242a6af2733968b59583b201",
     "lockfileSha256": "f7589d1ba3118e6e7bc341de9129d038fe4be6b738687b4bce674109a0bc1c40",
-    "workingTreeSha256": "a3f01a6e6880476be8fb09ec0ee9dcb81acfbc4a4e3711a16dbc1b6b30ca10aa",
+    "workingTreeSha256": "6d6269a7cf83dd7eee9272134122db15fd1c3c63ab1e060d21b57191c3c5f422",
     "changedPathCount": 0,
     "supportEnvelope": "self-hosted; hosted services require explicit consent and separate proof",
     "worktreeInventory": {
