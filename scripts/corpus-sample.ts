@@ -15,6 +15,9 @@
  *   npx tsx scripts/corpus-sample.ts --update  # re-scan and regenerate
  *   npx tsx scripts/corpus-sample.ts --update --repo <name> [--repo <n>…]
  *                                              # resumable: named repos only
+ *   npx tsx scripts/corpus-sample.ts --core-candidates --core-target QA-PW-117
+ *                                              # targeted: only the named rules,
+ *                                              # and only they may exceed the cap
  *   … --budget 300000                          # raise per-repo scan budget
  *                                              # (chronic truncation remedy)
  *
@@ -39,9 +42,16 @@ import { fileURLToPath } from "node:url";
 import { prettify } from "./lib/prettify.js";
 
 import { runScan } from "../src/cli.js";
+import { RULES } from "../src/rules/index.js";
 // Single source of truth for the corpus — do NOT redefine it here.
 import { CORPUS, type CorpusRepo } from "../tests/corpus/audit.js";
 import { MEASURED_FP } from "../src/rules/measured-fp.generated.js";
+import {
+  CORE_CANDIDATE_CAP,
+  coreCandidateRuleIds,
+  isCoreCandidate,
+  selectCoreCandidates,
+} from "./lib/core-candidates.js";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, "..");
@@ -83,6 +93,28 @@ const VERDICTS_DIR = join(ROOT, "tests", "corpus", "verdicts");
  * CEILING, not about the sample: 10% is unreachable below n ≈ 35 for a
  * clean rule, so either the ceiling moves or core stays unearned. Both are
  * product calls, and neither is made by a constant in this file.
+ *
+ * ## What `--core-candidates` changes, and what it deliberately does not
+ *
+ * The constant below stays 20. It was never the thing that was wrong — the
+ * ALLOCATION was. Raising it globally spends 35+ samples on rules that cannot
+ * use them: a rule already observed wrong, or one whose interval already
+ * excludes 10% from below, gets the same budget and buys nothing with it,
+ * while the adjudication budget is finite and belongs to a person.
+ *
+ * So the raise is kept for the rules that CAN spend it and withdrawn from the
+ * rest. `--core-candidates` emits rows ONLY for a rule that observes zero
+ * false positives and whose `straddleDetail` says more clean samples would
+ * settle it, and only those rules get `CORE_CANDIDATE_CAP` instead of this
+ * constant. The predicate, the arithmetic behind it and the reason it is
+ * re-derived per run rather than committed live in `scripts/lib/core-candidates.ts`.
+ *
+ * The filter is on EMISSION, not only on the cap, and the difference is the
+ * whole design. A per-rule-cap-only change would let every rule below n=20 emit
+ * rows, which is the 1,121-row failure above reproduced with a different
+ * number — and it would break the arithmetic that makes this affordable: the
+ * ceiling moves by the number of rows a person is asked to classify, so the
+ * mode has to be able to say exactly how many that is before anyone is asked.
  */
 const MAX_SAMPLES_PER_RULE = 20;
 const CONTEXT_LINES = 5; // lines above and below the finding
@@ -92,6 +124,21 @@ const CONTEXT_LINES = 5; // lines above and below the finding
  * rules without a valid measurement so classification effort goes to the
  * Phase 1 exit gate (unmeasured ≤ 20) instead of re-sampling rules that
  * are already measured at their quota.
+ *
+ * `--core-candidates`: sample ONLY rules that can still earn the core tier
+ * by sampling more, and let those — and only those — exceed the global cap.
+ * See `scripts/lib/core-candidates.ts` for the predicate and the arithmetic.
+ *
+ * `--core-target <RULE-ID>` (repeatable, requires `--core-candidates`):
+ * fund only the named candidates in this pass. The predicate says who CAN earn
+ * a tier — 26 rules today; the target says who gets FUNDED, which is a person's
+ * budget decision and the one that keeps the ceiling arithmetic knowable before
+ * the run instead of after it. Naming a rule that is not a candidate is an
+ * error, not a silent skip.
+ *
+ * The modes compose predictably: `--unmeasured-only --core-candidates` is empty
+ * by construction, because a rule with no measurement is not a candidate (there
+ * is no observed FP count to be zero).
  *
  * `--repo <name>` (repeatable): sample only the named corpus repos —
  * resumability. The full-corpus run in one process hits V8 heap limits
@@ -104,6 +151,22 @@ const CONTEXT_LINES = 5; // lines above and below the finding
  * the budget rather than record a partial scan.
  */
 const UNMEASURED_ONLY = process.argv.includes("--unmeasured-only");
+const CORE_CANDIDATES = process.argv.includes("--core-candidates");
+const CORE_TARGETS = process.argv.flatMap((a, i) =>
+  a === "--core-target" ? [process.argv[i + 1] ?? ""] : [],
+);
+if (CORE_TARGETS.length > 0 && !CORE_CANDIDATES) {
+  console.error(
+    "--core-target is a filter on --core-candidates, not a mode of its own: " +
+      "without it every rule still draws up to the global cap and the targets " +
+      "would never be funded.",
+  );
+  process.exit(2);
+}
+/** The rules this run may emit rows for. Empty means "no filter". */
+const FUNDED_CANDIDATES = CORE_CANDIDATES
+  ? selectCoreCandidates(CORE_TARGETS)
+  : undefined;
 
 const ONLY_REPOS = process.argv
   .flatMap((a, i) => (a === "--repo" ? [process.argv[i + 1] ?? ""] : []))
@@ -116,6 +179,116 @@ const BUDGET_MS = (() => {
 
 function ruleIsUnmeasured(ruleId: string): boolean {
   return MEASURED_FP[ruleId] === undefined;
+}
+
+/**
+ * The per-rule cap THIS run applies to `ruleId`.
+ *
+ * One function so the finding loop and the review-sheet header cannot disagree
+ * about the number — a sheet that prints the cap the run did not apply tells
+ * the classifier something false about why there are that many rows in front of
+ * them.
+ *
+ * The candidate arm asks `isCoreCandidate` rather than reading the funded list,
+ * because the funded list may be a subset: a named target is always a candidate
+ * (`selectCoreCandidates` refuses anything else), and the cap follows the
+ * rule's shape rather than the operator's flag list.
+ */
+function capFor(ruleId: string): number {
+  return CORE_CANDIDATES && isCoreCandidate(ruleId)
+    ? CORE_CANDIDATE_CAP
+    : MAX_SAMPLES_PER_RULE;
+}
+
+/**
+ * How many NEW blank rows this run may still add for `ruleId`.
+ *
+ * The cap in `capFor` limits SAMPLES collected, which is the wrong quantity to
+ * stop on once the mode is scoped. Measured on the first real
+ * `--core-target` run: it collected 35 samples for each funded rule and
+ * appended 46 new rows, because dedupe is per verdict FILE and keycloak's file
+ * already held 19 QA-PW-117 and 10 QA-JV-101 rows — 35 − 18 found again left 17
+ * new for one rule and 35 − 6 left 29 for the other, against 11 and 12 needed.
+ *
+ * That is not a rounding detail. The whole reason the mode is affordable is
+ * that the ceiling moves by a number a person was shown BEFORE they were asked
+ * to classify anything, and a run that emits 46 when it printed 23 makes the
+ * printed projection a lie and the ceiling bump a guess.
+ *
+ * So the budget is on rows, not samples: `cap - n - pending`, where `n` is the
+ * classified count `MEASURED_FP` already carries and `pending` is the blank
+ * rows an earlier pass left un-adjudicated. Counting pending is what makes the
+ * mode re-runnable — without it, a second run over the same repository would
+ * size its budget from `n` alone, which does not move until a person classifies,
+ * and would add the same rows again.
+ */
+function rowsStillNeeded(ruleId: string): number {
+  const n = MEASURED_FP[ruleId]?.n ?? 0;
+  return Math.max(0, capFor(ruleId) - n - (pendingByRule.get(ruleId) ?? 0));
+}
+
+/**
+ * Blank verdict rows per rule, read from the committed corpus.
+ *
+ * Only top-level `*.jsonl` files, matching `loadVerdicts()` in
+ * `scripts/generate-fp-audit-table.ts` — the same set the FP rate and the
+ * unclassified ceiling are computed from. `quad/` and `archive/` are
+ * subdirectories of the same directory and are deliberately NOT counted here:
+ * counting rows the ratchet cannot see would size the budget from evidence
+ * that does not count.
+ */
+function readPendingVerdictRows(): Map<string, number> {
+  const pending = new Map<string, number>();
+  if (!existsSync(VERDICTS_DIR)) return pending;
+  for (const file of readdirSync(VERDICTS_DIR)) {
+    if (!file.endsWith(".jsonl")) continue;
+    for (const line of readFileSync(join(VERDICTS_DIR, file), "utf8").split(
+      "\n",
+    )) {
+      const trimmed = line.trim();
+      if (!trimmed) continue;
+      let entry: { ruleId?: string; verdict?: string };
+      try {
+        entry = JSON.parse(trimmed) as { ruleId?: string; verdict?: string };
+      } catch {
+        continue;
+      }
+      if (entry.verdict || entry.ruleId === undefined) continue;
+      pending.set(entry.ruleId, (pending.get(entry.ruleId) ?? 0) + 1);
+    }
+  }
+  return pending;
+}
+
+const pendingByRule = readPendingVerdictRows();
+
+/**
+ * The `ruleId|file|line` keys already recorded in one repository's verdict file.
+ *
+ * ONE definition, used by the finding loop and by the writer, because the
+ * budget the loop enforces is only meaningful if it is computed against the
+ * same key set the writer de-dupes with. Two parsers would be two chances for
+ * the projected row count and the appended row count to disagree, and the whole
+ * reason this exists is that they disagreed once.
+ */
+function recordedVerdictKeys(repo: string): Set<string> {
+  const keys = new Set<string>();
+  const path = join(VERDICTS_DIR, `${repo}.jsonl`);
+  if (!existsSync(path)) return keys;
+  for (const line of readFileSync(path, "utf8").split("\n")) {
+    if (!line.trim()) continue;
+    try {
+      const o = JSON.parse(line) as {
+        ruleId: string;
+        file: string;
+        line: number;
+      };
+      keys.add(`${o.ruleId}|${o.file}|${o.line}`);
+    } catch {
+      /* preserve malformed rows as-is — never overwrite verdicts */
+    }
+  }
+  return keys;
 }
 
 interface SampledFinding {
@@ -172,6 +345,11 @@ function getContext(filePath: string, line: number): string[] {
 
 async function scanAndSample(): Promise<Map<string, SampledFinding[]>> {
   const byRule = new Map<string, SampledFinding[]>();
+  // Per-repo de-dupe state and per-rule NEW-row counters. See
+  // `recordedVerdictKeys` and `rowsStillNeeded` for why the budget is counted
+  // here rather than left to the writer.
+  const repoKeys = new Map<string, Set<string>>();
+  const freshByRule = new Map<string, number>();
 
   for (const repo of CORPUS) {
     if (ONLY_REPOS.length > 0 && !ONLY_REPOS.includes(repo.name)) continue;
@@ -216,8 +394,38 @@ async function scanAndSample(): Promise<Map<string, SampledFinding[]>> {
 
     for (const finding of result.findings) {
       if (UNMEASURED_ONLY && !ruleIsUnmeasured(finding.ruleId)) continue;
+      // Emission is filtered here, at the same point as `--unmeasured-only`, so
+      // a non-funded rule contributes no rows AT ALL in this mode. Filtering
+      // only the cap below would still emit rows for every rule under n=20,
+      // which is the 1,121-row failure with a different number on it.
+      if (CORE_CANDIDATES && !FUNDED_CANDIDATES?.includes(finding.ruleId))
+        continue;
       const samples = byRule.get(finding.ruleId) ?? [];
-      if (samples.length >= MAX_SAMPLES_PER_RULE) continue;
+      const cap = capFor(finding.ruleId);
+      if (samples.length >= cap) continue;
+      // Two budgets, both deliberate, and they count different things.
+      //
+      // `cap` bounds what one rule may be READ for. `rowsStillNeeded` bounds
+      // what one rule may ADD to the adjudication queue, and it is the number a
+      // person is asked to classify — so it has to be exact, and it has to
+      // exclude findings this file already records. Skipping an already-recorded
+      // finding here rather than in the writer also means the review sheet lists
+      // work that does not exist yet, which is the only kind of sheet a sheet is
+      // for.
+      const keys = repoKeys.get(repo.name) ?? recordedVerdictKeys(repo.name);
+      repoKeys.set(repo.name, keys);
+      const key = `${finding.ruleId}|${finding.file}|${finding.line}`;
+      if (keys.has(key)) continue;
+      if (
+        (freshByRule.get(finding.ruleId) ?? 0) >=
+        rowsStillNeeded(finding.ruleId)
+      )
+        continue;
+      keys.add(key);
+      freshByRule.set(
+        finding.ruleId,
+        (freshByRule.get(finding.ruleId) ?? 0) + 1,
+      );
 
       const filePath = join(dir, finding.file);
       const context = getContext(filePath, finding.line);
@@ -240,17 +448,25 @@ async function scanAndSample(): Promise<Map<string, SampledFinding[]>> {
 function writeReviewSheets(byRule: Map<string, SampledFinding[]>): void {
   mkdirSync(REVIEW_DIR, { recursive: true });
 
-  // Clear old review sheets — EXCEPT sheets whose rule was not sampled in
-  // this run. §19 review material is owner work-in-progress (pending
-  // verdict classifications); --repo resumability used to delete every
-  // sheet of a rule the current run did not visit, wiping 25 sheets /
-  // 191 pending classifications on a scoped run. Sheets are regenerated
-  // only when their rule is re-sampled (de-duped against existing
-  // verdict rows), so deleting a not-visited sheet loses owner work for
-  // nothing.
-  const sampledRules = new Set(byRule.keys());
+  // Clear old review sheets for rules that are NO LONGER LIVE.
+  //
+  // What this loop must NOT do is delete a sheet whose rule this run did not
+  // visit. §19 review material is owner work-in-progress — pending verdict
+  // classifications — and `--repo`/`--core-candidates` runs are scoped by
+  // design, so "not visited" is the normal case rather than the exception. The
+  // previous wording of this block described that protection in a comment
+  // while the condition underneath did the opposite: `!sampledRules.has(id)`
+  // is true for every rule a scoped run did not visit, so the run deleted
+  // exactly the sheets it claimed to be keeping. A `--core-target` run over one
+  // repository wiped 8 committed sheets (QA-PY-002/003/004/007/009/011/012 and
+  // one more) before the condition was read.
+  //
+  // Sheets for a VISITED rule are handled below, where a rule that sampled
+  // nothing removes its own sheet — that is "the queue is genuinely empty",
+  // which is a different statement from "nobody looked".
+  const liveRules = new Set(RULES.map((rule) => rule.id));
   for (const f of readdirSync(REVIEW_DIR)) {
-    if (f.endsWith(".md") && !sampledRules.has(f.replace(/\.md$/, ""))) {
+    if (f.endsWith(".md") && !liveRules.has(f.replace(/\.md$/, ""))) {
       rmSync(join(REVIEW_DIR, f));
     }
   }
@@ -278,7 +494,10 @@ function writeReviewSheets(byRule: Map<string, SampledFinding[]>): void {
     const lines: string[] = [
       `# ${ruleId} — Sample Findings for Classification`,
       "",
-      `Total sampled: ${samples.length} (max ${MAX_SAMPLES_PER_RULE} per rule)`,
+      // The cap printed is the one THIS run applied. A sheet that says 20 while
+      // the run stopped at 35 tells the classifier a number that is not why
+      // there are 35 rows in front of it.
+      `Total sampled: ${samples.length} (max ${capFor(ruleId)} per rule)`,
       "",
       "Classify each finding as:",
       "- **TP** (True Positive) — the finding is correct, this IS the anti-pattern",
@@ -332,24 +551,11 @@ function initVerdictFiles(byRule: Map<string, SampledFinding[]>): void {
 
   for (const [repo, samples] of byRepo.entries()) {
     const verdictPath = join(VERDICTS_DIR, `${repo}.jsonl`);
-    const existing = new Set<string>();
-    if (existsSync(verdictPath)) {
-      for (const line of readFileSync(verdictPath, "utf8").split("\n")) {
-        if (!line.trim()) continue;
-        try {
-          const o = JSON.parse(line) as {
-            ruleId: string;
-            file: string;
-            line: number;
-          };
-          existing.add(`${o.ruleId}|${o.file}|${o.line}`);
-        } catch {
-          /* preserve malformed rows as-is — never overwrite verdicts */
-        }
-      }
-    } else {
-      mkdirSync(VERDICTS_DIR, { recursive: true });
-    }
+    // The same key set the finding loop budgeted against — see
+    // `recordedVerdictKeys`. It is re-read here rather than threaded through,
+    // because the loop has since added this run's own keys to its copy and this
+    // one must reflect the file as it was BEFORE the run.
+    const existing = recordedVerdictKeys(repo);
     const fresh = samples.filter(
       (s) => !existing.has(`${s.ruleId}|${s.file}|${s.line}`),
     );
@@ -384,8 +590,31 @@ async function main(): Promise<void> {
   if (UNMEASURED_ONLY) {
     console.log("Mode: --unmeasured-only — sampling unmeasured rules only.");
   }
+  if (CORE_CANDIDATES) {
+    const funded = FUNDED_CANDIDATES ?? [];
+    console.log(
+      `Mode: --core-candidates — ${funded.length} of ${coreCandidateRuleIds().length} ` +
+        `candidate rule(s) funded this pass, each drawing up to ${CORE_CANDIDATE_CAP}. ` +
+        `Every other rule emits nothing in this mode.`,
+    );
+    console.log(`  funded: ${funded.join(", ") || "(none)"}`);
+    // Printed because the ceiling bump and this number have to agree, and the
+    // person approving the bump is not the person reading this output. It is
+    // `rowsStillNeeded`, the same function the finding loop stops on, so the
+    // projection cannot drift from the run — the first version of this printed
+    // `cap - n` while the loop stopped on samples collected, and the two
+    // disagreed by 23 rows on the run that found it.
+    const projected = funded
+      .map((id) => ({ id, rows: rowsStillNeeded(id) }))
+      .filter((r) => r.rows > 0);
+    console.log(
+      `  new rows this pass may add (cap − classified − already pending): ` +
+        `${projected.map((r) => `${r.id} +${r.rows}`).join(", ") || "(none)"} = ` +
+        `${projected.reduce((sum, r) => sum + r.rows, 0)}`,
+    );
+  }
   console.log(
-    `Drawing up to ${MAX_SAMPLES_PER_RULE} findings per rule from ${CORPUS.length} corpus repos...\n`,
+    `Drawing up to ${CORE_CANDIDATES ? CORE_CANDIDATE_CAP : MAX_SAMPLES_PER_RULE} findings per rule from ${CORPUS.length} corpus repos...\n`,
   );
 
   const byRule = await scanAndSample();

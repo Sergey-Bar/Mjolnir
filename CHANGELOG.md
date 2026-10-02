@@ -11,6 +11,94 @@ once shipped, so this file is the record of what changed between versions.
 
 ## [Unreleased]
 
+### Added: `--core-candidates`, a sampling mode that spends the budget where it can be spent
+
+The core ceiling is 10% on the Wilson upper bound, so a rule earns core at
+**n ≥ 35 with zero observed false positives** (`samplesForZeroFp`). The corpus
+sampler capped at 20, so the tier was unreachable — and 6.0 found out the
+expensive way that raising the cap globally does not fix that: a raise to 40
+produced **1,121 unadjudicated rows across 42 rules** and
+`unclassified-ceiling.json` refused them, correctly.
+
+The global raise was the wrong ALLOCATION, not the wrong idea. It spends 35+
+samples on rules that cannot use them — a rule already observed wrong, or one
+whose interval already excludes 10% from below — while the adjudication budget is
+finite and belongs to a person.
+
+- `--core-candidates` emits rows **only** for a rule that observes zero false
+  positives and whose `straddleDetail` reports that more clean samples would
+  settle it, and only those rules may draw up to 35 instead of 20. The predicate
+  is derived from the live registry on every run
+  (`scripts/lib/core-candidates.ts`), so a rule crossing the line stops being
+  sampled without an edit.
+- `--core-target <RULE-ID>` (repeatable) says which candidates this pass
+  **funds**. The predicate is worth **29 rules** today; the nearest two are 11 and
+  12 rows from the ceiling. Conflating "who can earn a tier" with "who gets
+  funded this pass" would move the ceiling by an amount nobody decided, so the
+  two are separate and naming a rule that is not a candidate is an error rather
+  than a silent no-op.
+
+Filtering is on **emission**, not only on the cap. A cap-only change would still
+emit rows for every rule below n=20 — the 1,121-row failure with a different
+number on it.
+
+No npm script, CLI verb, gate or rule was added.
+
+### Fixed: three defects the first real `--core-target` run found
+
+- **The mode asked for twice the work it promised.** `tests/corpus/verdicts/unclassified-ceiling.json`
+  moves by the number of rows a person is shown _before_ they are asked to
+  classify anything, so that number has to be exact. The first run collected 35
+  samples per rule and appended **46** rows against a projection of 23, because
+  de-duplication is per verdict FILE and keycloak's file already held 19
+  `QA-PW-117` and 10 `QA-JV-101` rows. The budget is now on **rows**, not
+  samples — `cap − classified − already pending` — computed against the same key
+  set the writer de-dupes with, by one shared function. Re-running the identical
+  command now adds **0** rows, which is the property that stops a scoped pass
+  from silently exceeding the ceiling twice.
+- **A scoped run deleted the review sheets it claimed to preserve.**
+  `writeReviewSheets` carried a comment describing exactly this protection while
+  the condition underneath did the opposite: `!sampledRules.has(id)` is true for
+  every rule a `--repo` or `--core-candidates` run did not visit. A one-repo
+  targeted pass deleted 8 committed sheets (`QA-PY-002/003/004/007/009/011/012`
+  and one more) of pending owner work. Sheets are now removed only for rules that
+  are no longer live; a rule that was visited and sampled nothing still removes
+  its own sheet, because "the queue is empty" is a different statement from
+  "nobody looked".
+- **The unclassified-ceiling gate named the wrong cause.** It throws
+  `(23 > 31)` for a run whose total was 23 and whose ceiling was 31, because the
+  trigger is usually a **per-file** regression — a new file's first row exceeds
+  its allowance of 0 while the total stays inside the ceiling — and the message
+  only ever compared the two totals. It now says which condition fired and names
+  the files.
+
+### Changed: the unclassified ceiling, re-recorded at its reviewed value
+
+`31 → 23`, and `byFile` drops three stale entries for files whose pending rows
+have since been adjudicated away (`pallets-click` 1, `pytest-dev-pytest` 27,
+`new-repo.jsonl` 3) in favour of a new allowance for `keycloak-keycloak.jsonl`.
+
+The 23 rows are the scoped pass above: `QA-PW-117` +11 (n=24 → 35) and
+`QA-JV-101` +12 (n=23 → 35), awaiting human adjudication per
+`tests/corpus/verdicts/README.md`. **Not** 31 → 54: the live backlog had been
+classified down to 0 since the 31 was recorded, so this pass is 0 → 23, and a
+ceiling of 54 would have authorised 31 rows of pending work nobody asked for.
+Zero slack is the correct reading — the next pass must be acknowledged too.
+
+`measured-fp.generated.ts`, `docs/FP-AUDIT.md` and `docs/COUNT-LOCK.md` are
+unchanged, which is the point: blank rows are dropped, not counted, so 23
+unadjudicated findings move no rate until a person classifies them.
+
+### Changed: both plan targets already had a complete fixture quad
+
+`docs/CORE-READINESS.md` lists `QA-PW-117` and `QA-JV-101` as needing the
+four-leg quad. Measured against the tree, both already have all four:
+`MUST-FIRE` and `MUST-NOT-FIRE` fixtures on disk, 17 and 7 adjudicated `TP` rows
+and 12 and 8 adjudicated `TN` rows with zero `FP` in
+`tests/corpus/verdicts/quad/`. Nothing was authored, and the 10% ceiling still
+does not unblock 6.0.0 on its own — D-1 needs both the interval and the quad, and
+only the interval is missing.
+
 ### Added: agent skills, and the wiring that makes them load
 
 The repository had four agent skills under `.claude/skills/` and no way for

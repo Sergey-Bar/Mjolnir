@@ -467,8 +467,18 @@ export function checkUnclassifiedCompleteness(
         `ceiling with \`npm run generate-fp-audit-table -- --update\` after review.`,
     );
     for (const r of regressions) console.error(r);
+    // Which condition actually fired, named. The two are independent — a file
+    // can grow past its own allowance while the total stays inside the ceiling,
+    // and that is the ordinary shape of the failure: an allowance recorded for
+    // one file does not cover a second file's first row. Reporting only the
+    // total comparison said `(23 > 31)` for a run whose total was 23 and whose
+    // ceiling was 31, which sends the reader hunting for a subtraction error
+    // instead of reading the per-file line printed directly above.
+    const totalOver = report.total > ceiling.total;
     throw new Error(
-      `unclassified-verdict completeness gate failed (${report.total} > ${ceiling.total})`,
+      totalOver
+        ? `unclassified-verdict completeness gate failed (total ${report.total} > ceiling ${ceiling.total})`
+        : `unclassified-verdict completeness gate failed (${regressions.length} file(s) over their per-file allowance: ${regressions.map((r) => r.trim()).join("; ")})`,
     );
   }
   if (report.total < ceiling.total) {

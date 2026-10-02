@@ -72,34 +72,41 @@ export type RuleStatus =
  * count as core. Applied to the Wilson UPPER bound, so a rule earns core by
  * proving its ceiling, not by reporting a point estimate under it.
  *
- * !! UNREACHABLE AT THE CURRENT CORPUS CAP — read this before trying to earn it.
+ * !! NEEDS n >= 35, AND THE SAMPLER NOW HAS A MODE THAT FUNDS IT — read this
+ * before trying to earn it.
  *
  * 10% on the upper bound needs **n >= 35 with ZERO false positives**, using
  * this file's own `wilsonInterval`: 0/20 reads 16.1%, 0/30 reads 11.3%, 0/35
- * reads 9.9%. The corpus samples at most 20 per rule
- * (`MAX_SAMPLES_PER_RULE`, scripts/corpus-sample.ts:87), so the best a rule can
- * look at that cap is 0/20 — and 16.1% is above this ceiling. Not "hard to
- * reach": unreachable, for every rule, at every sample size the sampler can
- * produce.
+ * reads 9.9%. `samplesForZeroFp` derives the threshold from the ceiling rather
+ * than hard-coding 35, and `docs/CORE-READINESS.md` names the work list.
  *
- * The cap is bounded by the ADJUDICATION budget, not by statistics. Raising it
- * to 40 previously produced 1,121 unadjudicated rows across 42 rules, which
- * the committed ceiling refused outright — correctly, because blank verdict
- * rows are dropped rather than counted, so a mostly-blank corpus reports a
- * rate measured on whatever subset happened to be adjudicated. Raising the cap
- * without the adjudication budget to fill it makes the gate stop complaining
- * without adding evidence.
+ * The DEFAULT corpus cap is still 20 (`MAX_SAMPLES_PER_RULE`,
+ * scripts/corpus-sample.ts), so a plain `npm run corpus:sample` cannot reach
+ * this ceiling for any rule — 0/20 is 16.1%, and no amount of re-running that
+ * command changes it. What changed is the ALLOCATION, not the arithmetic:
+ * `--core-candidates` spends the sample cap only on rules that can actually
+ * earn a tier by sampling more, and `--core-target` decides which of those a
+ * given pass funds. The predicate and the budget split are in
+ * `scripts/lib/core-candidates.ts`.
  *
- * So `MEASURED-CORE` in `RuleStatus` above, and `"core"` in `Rule.tier`, are
- * states this corpus cannot produce. `tests/rules/core-tier-reachability.spec.ts`
- * pins this with the arithmetic and fails LOUDLY the day it stops being true,
- * so that opening the core tier becomes a deliberate event with a diff rather
- * than something a future reader infers from a tier nobody holds.
+ * The adjudication budget is what bounds this, and it always did. A global
+ * raise to 40 previously produced 1,121 unadjudicated rows across 42 rules,
+ * which the committed ceiling refused outright — correctly, because blank
+ * verdict rows are dropped rather than counted, so a mostly-blank corpus
+ * reports a rate measured on whatever subset happened to be adjudicated.
+ * Sampling without the adjudication budget to fill it makes the gate stop
+ * complaining without adding evidence. So earning core is still a person's
+ * work, one classification at a time
+ * (`tests/corpus/verdicts/README.md`), and the sampled rows are only an ask.
  *
- * The two constants here were chosen independently and their product is
- * unreachable. That is a product call, not an oversight to be tidied away: it
- * is stated here so the next person does not spend a day earning a tier that
- * cannot be earned.
+ * `tests/rules/core-tier-reachability.spec.ts` pins both halves of that
+ * sentence and fails LOUDLY in either direction, so opening the core tier
+ * becomes a deliberate event with a diff rather than something a future reader
+ * infers from a tier nobody holds.
+ *
+ * The two constants here were chosen independently, and whether their product is
+ * reachable is a product call rather than an oversight to tidy away. The 10%
+ * ceiling is now decided on the record: `docs/adr/0013-the-core-ceiling-is-decided.md`.
  */
 export const CORE_FP_CEILING = 0.1;
 

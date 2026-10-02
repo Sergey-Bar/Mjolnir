@@ -35,3 +35,26 @@
 {"ruleId":"QA-JV-103","file":"adapters/saml/core/src/test/java/org/keycloak/adapters/saml/config/parsers/KeycloakSamlAdapterXMLParserTest.java","line":82,"verdict":"FP","note":"same testValidationValid helper class"}
 {"ruleId":"QA-JV-103","file":"tests/base/src/test/java/org/keycloak/tests/keys/GeneratedEcdhKeyProviderTest.java","line":149,"verdict":"FP","note":"assertions live in unsupportedEc helper (assertEquals 400) — helper-body assertions undecidable at L2"}
 {"ruleId":"QA-CI-007","file":".github/workflows/stability-base-reruns.yml","line":54,"verdict":"TP","note":"adjudicated 2026-09-04 from source stability-base-reruns.yml:49-63: deliberate repeated-rerun stability harness — `for i in $(seq 1 $COUNT)` wraps ./mvnw test, per-run failures only increment FAILURES mid-loop (a flaky pass inside the loop is invisible), the final `exit $FAILURES` is honest. Loop-level retry-masking diagnosis holds for intermediate runs (same boundary ruling as the 2026-09-02 verdict for this workflow, whose step line moved 1 -> 54 at HEAD)","classifiedAt":"2026-09-04T23:10:00Z","classifiedBy":"mjolnir-m2-adjudication","protocolVersion":"W1.1-v1"}
+{"ruleId":"QA-JV-101","file":"core/src/test/java/org/keycloak/jose/JWETest.java","line":74,"verdict":"","note":""}
+{"ruleId":"QA-JV-101","file":"core/src/test/java/org/keycloak/jose/JWETest.java","line":114,"verdict":"","note":""}
+{"ruleId":"QA-JV-101","file":"core/src/test/java/org/keycloak/jose/JWETest.java","line":203,"verdict":"","note":""}
+{"ruleId":"QA-JV-101","file":"model/infinispan/src/test/java/org/keycloak/jgroups/protocol/JdbcPing2Test.java","line":75,"verdict":"","note":""}
+{"ruleId":"QA-JV-101","file":"model/infinispan/src/test/java/org/keycloak/models/sessions/infinispan/initializer/ConcurrencyVersioningTest.java","line":49,"verdict":"","note":""}
+{"ruleId":"QA-JV-101","file":"quarkus/runtime/src/test/java/org/keycloak/quarkus/runtime/cli/PicocliTest.java","line":580,"verdict":"","note":""}
+{"ruleId":"QA-JV-101","file":"rest/admin-v2/tests/src/test/java/org/keycloak/tests/admin/client/v2/ClientApiV2Test.java","line":1028,"verdict":"","note":""}
+{"ruleId":"QA-JV-101","file":"rest/admin-v2/tests/src/test/java/org/keycloak/tests/admin/client/v2/ClientApiV2Test.java","line":1056,"verdict":"","note":""}
+{"ruleId":"QA-JV-101","file":"rest/admin-v2/tests/src/test/java/org/keycloak/tests/admin/client/v2/ClientApiV2Test.java","line":1084,"verdict":"","note":""}
+{"ruleId":"QA-JV-101","file":"rest/admin-v2/tests/src/test/java/org/keycloak/tests/admin/client/v2/ClientApiV2Test.java","line":1112,"verdict":"","note":""}
+{"ruleId":"QA-JV-101","file":"rest/admin-v2/tests/src/test/java/org/keycloak/tests/admin/client/v2/ClientQueryTest.java","line":176,"verdict":"","note":""}
+{"ruleId":"QA-JV-101","file":"rest/admin-v2/tests/src/test/java/org/keycloak/tests/admin/client/v2/ClientQueryTest.java","line":345,"verdict":"","note":""}
+{"ruleId":"QA-PW-117","file":"js/apps/admin-ui/test/clients/details.spec.ts","line":20,"verdict":"","note":""}
+{"ruleId":"QA-PW-117","file":"js/apps/admin-ui/test/clients/saml.spec.ts","line":87,"verdict":"","note":""}
+{"ruleId":"QA-PW-117","file":"js/apps/admin-ui/test/clients/scope.spec.ts","line":52,"verdict":"","note":""}
+{"ruleId":"QA-PW-117","file":"js/apps/admin-ui/test/clients/scope.spec.ts","line":202,"verdict":"","note":""}
+{"ruleId":"QA-PW-117","file":"js/apps/admin-ui/test/clients/ssf-receiver.spec.ts","line":14,"verdict":"","note":""}
+{"ruleId":"QA-PW-117","file":"js/apps/admin-ui/test/clients/ssf-stream.spec.ts","line":13,"verdict":"","note":""}
+{"ruleId":"QA-PW-117","file":"js/apps/admin-ui/test/clients/ssf-subjects.spec.ts","line":15,"verdict":"","note":""}
+{"ruleId":"QA-PW-117","file":"js/apps/admin-ui/test/clients/ssf.spec.ts","line":18,"verdict":"","note":""}
+{"ruleId":"QA-PW-117","file":"js/apps/admin-ui/test/events/list.spec.ts","line":24,"verdict":"","note":""}
+{"ruleId":"QA-PW-117","file":"js/apps/admin-ui/test/events/list.spec.ts","line":57,"verdict":"","note":""}
+{"ruleId":"QA-PW-117","file":"js/apps/admin-ui/test/events/list.spec.ts","line":71,"verdict":"","note":""}
