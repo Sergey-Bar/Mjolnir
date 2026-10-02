@@ -29,6 +29,7 @@ import {
   buildArtifactIdentity,
   type ArtifactIdentity,
 } from "../commands/trust-report.js";
+import { renderAiHandover, renderSupportFooter } from "./pr-report-actions.js";
 import { PR_BRAND_CONTRACT } from "../brand/pr-brand-contract.js";
 
 export const UNIFIED_MARKER = "<!-- mjolnir-report:v2 -->";
@@ -407,7 +408,8 @@ export function renderUnifiedReport(
   if (incomplete) {
     const reasons = result.analysisStatus?.reasons ?? [];
     lines.push(
-      `> **Analysis status: INCOMPLETE.** ${reasons.length > 0 ? humanizeReasons(reasons) : "The scan did not complete a trustworthy analysis."}`,
+      `> [!WARNING]
+> **Analysis status: INCOMPLETE.** ${reasons.length > 0 ? humanizeReasons(reasons) : "The scan did not complete a trustworthy analysis."}`,
     );
     lines.push("");
   }
@@ -424,41 +426,46 @@ export function renderUnifiedReport(
       ? result.score - baseScore
       : undefined;
 
-  lines.push('<table role="presentation">');
-  lines.push("<tr>");
-  lines.push('<td width="130">');
-  lines.push("");
-  lines.push(renderTrustBadge(summary.level));
-  lines.push("");
-  lines.push("</td>");
-  lines.push('<td width="130">');
-  lines.push("");
+  const statusBadge = incomplete
+    ? "incomplete"
+    : deriveScoreState(result.score).band;
   lines.push(
-    renderScoreBadge(
-      result.score,
-      delta,
-      incomplete ? "INCOMPLETE" : undefined,
-      // The clamp reason, not a boolean re-derived here. A presentation
-      // surface that re-derives "was this clamped" from partial/scope will
-      // disagree with the pipeline the first time a third clamp is added.
-      result.scoreClampReason !== undefined,
-    ),
+    `![${incomplete ? "INCOMPLETE — investigate coverage" : result.score === null ? "UNMEASURED" : verdictFor(result.score)}](https://raw.githubusercontent.com/Sergey-Bar/Mjolnir/main/assets/brand/pr-status/${statusBadge}.svg)`,
   );
   lines.push("");
-  lines.push("</td>");
-  lines.push('<td width="130">');
+  lines.push(
+    incomplete
+      ? "**Next step:** Inspect the analysis reasons and ignored paths, then rerun the same scope. Do not treat the score or zero findings as a clean verdict."
+      : errorCount > 0
+        ? "**Next step:** Review the error findings and their evidence first. Validate any fix with the affected tests, then rerun the scan."
+        : "**Next step:** Review the findings and evidence below. A scan measures the analyzed surface; run your tests separately.",
+  );
   lines.push("");
-  lines.push(renderFindingsBadge(errorCount, warningCount));
-  lines.push("");
-  lines.push("</td>");
-  lines.push('<td width="130">');
-  lines.push("");
-  lines.push(renderEvidenceBadge(summary.evidenceCoverage));
-  lines.push("");
-  lines.push("</td>");
+  lines.push('<table role="presentation">');
+  lines.push("<tr>");
+  lines.push(
+    `<td>${renderFindingsBadge(errorCount, warningCount)}<br><small>${usingDiff ? "New since baseline" : "In the analyzed surface"} · ${findings.filter((f) => f.severity === "info").length} informational</small></td>`,
+  );
+  lines.push(
+    `<td>${renderTrustBadge(summary.level)}<br><small>Evidence depth, not test success</small></td>`,
+  );
+  lines.push("</tr>");
+  lines.push("<tr>");
+  lines.push(
+    `<td>${renderScoreBadge(result.score, delta, incomplete ? "INCOMPLETE" : undefined)}</td>`,
+  );
+  lines.push(`<td>${renderEvidenceBadge(summary.evidenceCoverage)}</td>`);
   lines.push("</tr>");
   lines.push("</table>");
   lines.push("");
+  if (result.scoreClampReason !== undefined) {
+    lines.push(
+      result.scoreClampReason === "scope-degraded"
+        ? "_Score capped from 100 because the requested scope could not be resolved completely. This is not a perfect-score claim._"
+        : "_Score capped from 100 because analysis was partial. This is not a perfect-score claim._",
+    );
+    lines.push("");
+  }
 
   // ─── Headline ───
   const state = deriveScoreState(result.score);
@@ -535,7 +542,7 @@ export function renderUnifiedReport(
       if (g.list.length === 0) continue;
       lines.push(`<details${g.open ? " open" : ""}>`);
       lines.push(
-        `<summary><b>${g.icon} ${g.list.length} ${g.label}</b>${g.open ? " — must fix before merge" : " — advisory"}</summary>`,
+        `<summary><b>${g.icon} ${g.list.length} ${g.label}</b>${g.open ? " — review first; gating depends on your CI policy" : " — review in context"}</summary>`,
       );
       lines.push("");
       for (const f of g.list.slice(0, MAX_FINDINGS_PER_GROUP)) {
@@ -603,6 +610,19 @@ export function renderUnifiedReport(
   );
   lines.push("```");
   lines.push("");
+  lines.push(
+    renderAiHandover({
+      incomplete,
+      score: result.score,
+      trust: summary.level,
+      findings: findings.length,
+      ...(options.version ? { version: options.version } : {}),
+      ...(options.commit !== undefined ? { commit: options.commit } : {}),
+    }),
+  );
+  lines.push("");
+  lines.push(renderSupportFooter());
+  lines.push("");
   const repoLink = options.repoUrl ? ` — ${options.repoUrl}` : "";
   // This used to claim "blocks merging when the CI gate reports findings at
   // the configured severity" — a statement about the PUBLISHER's
@@ -625,78 +645,57 @@ export function renderUnifiedReport(
   return enforceCommentLimit(lines);
 }
 
-/**
- * Keep the comment postable, and say so when it had to drop something.
- *
- * A comment over GitHub's 65,536-character limit is not an error the poster
- * reports clearly — the API rejects it and the workflow step has no length
- * assertion, so a large PR silently got no comment while the run itself
- * stayed green. Three severity groups at 25 findings each was enough to get
- * there, and nothing measured the output.
- *
- * Truncation is done by dropping whole BLOCKS from the end and saying so.
- * Slicing a markdown string at a character offset would leave an unclosed
- * `<details>`, and GitHub's sanitizer swallows the rest of the comment when
- * it sees unbalanced HTML — a hard truncation makes the damage worse, not
- * smaller.
- *
- * REACHABILITY, stated honestly: with `MAX_FINDINGS_PER_GROUP = 25` and the
- * current 79-rule registry, the longest renderable comment measured across a
- * matrix of 0–400 findings × three severities × 100–2,000-character messages
- * is ~62,400 characters — under the limit. So this is defence-in-depth, not a
- * fix for an observed overflow. It is exported and unit-tested anyway,
- * because the alternative is a ceiling that is discovered by a failed API
- * call on someone's large PR. It is NOT counted as closing a shipped bug, and
- * the test that pins the ceiling says so rather than implying the guard fires
- * on every run.
- */
+/** Keep complete HTML/fenced blocks and next actions when a report exceeds GitHub's limit. */
 export function enforceCommentLimit(lines: string[]): string {
-  const render = (parts: string[]) => parts.join("\n");
-  if (render(lines).length <= GITHUB_COMMENT_LIMIT) return render(lines);
-
-  // Drop the collapsible detail sections first: they are the least
-  // load-bearing content and the largest blocks. The footer, the hero
-  // table and the findings are what the reader came for.
-  const droppable = new Set([
-    "📊 Confidence & Evidence",
-    "🔧 Diff vs Baseline",
-    "🔗 Artifact Integrity",
-  ]);
-  const kept = lines.filter(
-    (line) => ![...droppable].some((label) => line.includes(label)),
-  );
-
-  const hidden = [...droppable].filter((label) =>
-    lines.some((line) => line.includes(label)),
-  );
-  kept.splice(
-    kept.length - 1,
-    0,
-    "",
-    `> ⚠️ **This comment was truncated to fit GitHub's ${GITHUB_COMMENT_LIMIT.toLocaleString("en-US")}-character limit.**`,
-    `> ${hidden.length} detail section${hidden.length === 1 ? "" : "s"} (${hidden.join(", ")}) ${hidden.length === 1 ? "was" : "were"} omitted, and the finding list above may be partial.`,
-    "> Run `npx mjolnir-qa` locally for the complete report — the machine contract (`--json`) carries no such limit.",
-    "",
-  );
-
-  const output = render(kept);
-  if (output.length <= GITHUB_COMMENT_LIMIT) return output;
-
-  // Still over: a single huge finding list. Drop findings lines, which are
-  // one `- ` bullet each and are the only block with a per-line cost.
-  const final: string[] = [];
-  for (const line of kept) {
-    if (
-      final.length > 0 &&
-      render([...final, line]).length > GITHUB_COMMENT_LIMIT - 400
-    ) {
-      break;
+  const original = lines.join("\n");
+  if (original.length <= GITHUB_COMMENT_LIMIT) return original;
+  const notice =
+    "\n\n> ⚠️ **This comment was truncated to fit GitHub's 65,536-character limit.** Counts above are unchanged; some details are omitted. Run `npx mjolnir-qa . --verbose` locally for the full report (or `--json` for machine output).";
+  const budget = GITHUB_COMMENT_LIMIT - notice.length;
+  // Entries can contain multiple lines. Remove complete HTML and fenced blocks.
+  const blocks: string[][] = [];
+  let block: string[] = [];
+  let depth = 0;
+  let fenced = false;
+  for (const entry of lines) {
+    block.push(entry);
+    for (const line of entry.split("\n")) {
+      if (/^```/.test(line)) fenced = !fenced;
+      if (!fenced) {
+        depth += (line.match(/<(?:details|table)\b/g) ?? []).length;
+        depth -= (line.match(/<\/(?:details|table)>/g) ?? []).length;
+      }
     }
-    final.push(line);
+    if (depth === 0 && !fenced) {
+      blocks.push(block);
+      block = [];
+    }
   }
-  final.push(
-    "",
-    `> ⚠️ **The finding list is truncated at ${GITHUB_COMMENT_LIMIT.toLocaleString("en-US")} characters.** The counts above are exact; the detail below this line is not complete. Run \`npx mjolnir-qa\` locally for the full list.`,
-  );
-  return render(final);
+  if (block.length) blocks.push(block);
+  const render = () => blocks.flat().join("\n");
+  const optional =
+    /Thanks for using Mjölnir|Share Mjölnir:|Share links open|Star on GitHub|Copy share text|Copy an investigation prompt/;
+  for (let i = blocks.length - 1; i >= 0 && render().length > budget; i--) {
+    if (optional.test((blocks[i] ?? []).join("\n"))) blocks.splice(i, 1);
+  }
+  // A finding and its fix are one entry. Retain section summaries and closers.
+  for (let i = blocks.length - 1; i >= 0 && render().length > budget; i--) {
+    const entries = blocks[i] ?? [];
+    for (let j = entries.length - 1; j >= 0 && render().length > budget; j--) {
+      if (entries[j]?.startsWith("- ")) entries.splice(j, 1);
+    }
+  }
+  // Exceptionally large metadata must also be removed as a complete block.
+  while (render().length > budget) {
+    let largest = 0;
+    for (let i = 1; i < blocks.length; i++) {
+      if (
+        (blocks[i] ?? []).join("\n").length >
+        (blocks[largest] ?? []).join("\n").length
+      )
+        largest = i;
+    }
+    blocks.splice(largest, 1);
+  }
+  return render() + notice;
 }

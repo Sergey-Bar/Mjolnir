@@ -25,22 +25,22 @@
     "Approve the hosted, enterprise, and agent threat-model boundaries.",
     "Approve human adjudication and design-partner evidence collection."
   ],
-  "generatedAt": "2026-10-01",
+  "generatedAt": "2026-10-02",
   "identity": {
     "state": "WORKING_CANDIDATE",
-    "baseSha": "b4b4cf02def82c72aa640d54c21a7d26da6dcb8d",
+    "baseSha": "fdbab31b1719f519b0715412c06f413098518bb5",
     "candidateSha": null,
     "version": "5.1.0",
-    "packageSha256": "e8bb7cdd2b08ce11936bc20574e6a89e4227b7e79e48b9676426a1015614adb5",
+    "packageSha256": "631147ba94aea04da415e1b1a2e0bd953d211199242a6af2733968b59583b201",
     "lockfileSha256": "f7589d1ba3118e6e7bc341de9129d038fe4be6b738687b4bce674109a0bc1c40",
-    "workingTreeSha256": "077daa30adfb969a16ce4cac5d0da50bbd10bb1d3985024d60a95992146f00a5",
-    "changedPathCount": 1,
+    "workingTreeSha256": "f7e7404621489888cda59e1ccf51996c93d6eb516408efee481dc09c63cd5cd7",
+    "changedPathCount": 0,
     "supportEnvelope": "self-hosted; hosted services require explicit consent and separate proof",
     "worktreeInventory": {
-      "changedPaths": [".github/workflows/ci.yml"],
+      "changedPaths": [],
       "untrackedPaths": []
     },
-    "dirtyFiles": [".github/workflows/ci.yml"]
+    "dirtyFiles": []
   },
   "claimRegistry": {
     "path": "docs/claim-registry.json",

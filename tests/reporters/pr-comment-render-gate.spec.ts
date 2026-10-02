@@ -342,6 +342,39 @@ describe("PR comment render gate — structural, not substring", () => {
     expect(enforceCommentLimit(short)).toBe(short.join("\n"));
   });
 
+  it("removes whole findings while keeping HTML, fences and next actions intact", () => {
+    const lines = [
+      UNIFIED_MARKER,
+      "<table><tr><td>200 errors</td></tr></table>",
+      "<details open>",
+      "<summary>Errors</summary>",
+      ...Array.from(
+        { length: 200 },
+        (_, i) =>
+          `- Finding ${i}: ${"x".repeat(500)}\n  Fix: inspect the source`,
+      ),
+      "</details>",
+      "**What to run next:**",
+      "```bash",
+      "npx mjolnir-qa . --verbose",
+      "```",
+      "<details><summary>Copy an investigation prompt</summary>\n\n```text\nInvestigate\n```\n</details>",
+    ];
+    const output = enforceCommentLimit(lines);
+    expect(output.length).toBeLessThanOrEqual(GITHUB_COMMENT_LIMIT);
+    expect(output).toContain("200 errors");
+    expect(output).toContain("Finding 0:");
+    expect(output).not.toContain("Finding 199:");
+    expect(output).toContain(
+      "**What to run next:**\n```bash\nnpx mjolnir-qa . --verbose\n```",
+    );
+    expect(output.match(/<details\b/g)?.length).toBe(
+      output.match(/<\/details>/g)?.length,
+    );
+    expect(output.match(/^```/gm)).toHaveLength(2);
+    expect(output).toContain("truncated");
+  });
+
   it("never exceeds the limit, at any input size", () => {
     // The property, not the sample. The guard has three paths — fit, drop the
     // collapsible blocks, then drop finding lines — and the last one appends
