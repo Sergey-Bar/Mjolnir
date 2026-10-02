@@ -88,10 +88,10 @@ need the artifacts of a run that already finished.
 
 ## Verdict bands
 
-| Score   | Verdict           |
-| ------- | ----------------- |
-| 100     | ⚡ **FORGED**     |
-| 80 – 99 | ✓ **WORTHY**      |
+| Score   | Verdict          |
+| ------- | ---------------- |
+| 100     | ⚡ **FORGED**    |
+| 80 – 99 | ✓ **WORTHY**     |
 | 50 – 79 | ⚠ **NEEDS WORK** |
 | < 50    | ✖ **UNWORTHY**   |
 
