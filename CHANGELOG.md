@@ -1531,7 +1531,7 @@ statement about distribution, not about evidence. The candidate manifest remains
 `WORKING_CANDIDATE` / `NOT_CERTIFIED` / `NOT_AUTHORIZED`, and nothing in this
 release moves those states.
 
-Three gates report `BLOCKED` on `npm run release:verify` and did not gate this
+Four gates report `BLOCKED` on `npm run release:verify` and did not gate this
 publish:
 
 - **`m26:audit`** — no consented external execution and no holdout proof.
@@ -1539,9 +1539,16 @@ publish:
   consumer-install evidence.
 - **`candidate:decision:release`** — the same, adjudicated as a release-stage
   decision rather than an engineering one.
+- **`docs:roadmap:check`** — 69 support-matrix cells are explicitly `BLOCKED`
+  and `docs/M26-EXTERNAL-VALIDATION.json` records external validation as
+  `BLOCKED`, not `COMPLETE`. This is the same missing evidence read through
+  the roadmap ledger, and it is a reporting gate: `stable-release.yml` does not
+  run it. It has read this way since the v6 carve — no commit since then has
+  touched `docs/M26-SUPPORT-MATRIX.json`, `docs/M26-EXTERNAL-VALIDATION.json`
+  or `docs/M26-GAP-LEDGER.jsonl`.
 
-All three still run and still print on every publish; they stopped blocking only
-because a person recorded `vars.STABLE_RELEASE_AUTHORIZED=true`
+The first three still run and still print on every publish; they stopped blocking
+only because a person recorded `vars.STABLE_RELEASE_AUTHORIZED=true`
 (`stable-release.yml`, `Candidate evidence`). `npm run ci-local` passes, because
 `candidate:decision:engineering` clears every engineering blocker.
 
