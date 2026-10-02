@@ -3,8 +3,8 @@
   "artifact": "capability-registry",
   "generatedBy": "npm run docs:capability",
   "registryId": "mjolnir-capability-registry",
-  "observedAt": "2026-10-01",
-  "baseSha": "d56bb6eee8303c42c78ec8f49e2456430479c59e",
+  "observedAt": "2026-10-02",
+  "baseSha": "a5368a0aa63bd25d48b6acd4db57469e289498a5",
   "counts": {
     "entries": 27,
     "kind:ci-cd-provider": 4,
@@ -52,7 +52,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-CI-001",
         "digest": null,
-        "observedAt": "2026-10-01",
+        "observedAt": "2026-10-02",
         "authority": "provider-capability-contract"
       }
     },
@@ -92,7 +92,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-CI-001",
         "digest": null,
-        "observedAt": "2026-10-01",
+        "observedAt": "2026-10-02",
         "authority": "provider-capability-contract"
       }
     },
@@ -132,7 +132,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-CI-001",
         "digest": null,
-        "observedAt": "2026-10-01",
+        "observedAt": "2026-10-02",
         "authority": "provider-capability-contract"
       }
     },
@@ -172,7 +172,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-CI-001",
         "digest": null,
-        "observedAt": "2026-10-01",
+        "observedAt": "2026-10-02",
         "authority": "provider-capability-contract"
       }
     },
@@ -645,7 +645,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-CYP-001",
         "digest": null,
-        "observedAt": "2026-10-01",
+        "observedAt": "2026-10-02",
         "authority": "framework-inventory"
       }
     },
@@ -685,7 +685,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-JV-104",
         "digest": null,
-        "observedAt": "2026-10-01",
+        "observedAt": "2026-10-02",
         "authority": "framework-inventory"
       }
     },
@@ -723,7 +723,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-TEST-001",
         "digest": null,
-        "observedAt": "2026-10-01",
+        "observedAt": "2026-10-02",
         "authority": "framework-inventory"
       }
     },
@@ -761,7 +761,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-TEST-001",
         "digest": null,
-        "observedAt": "2026-10-01",
+        "observedAt": "2026-10-02",
         "authority": "framework-inventory"
       }
     },
@@ -815,7 +815,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-PW-002",
         "digest": null,
-        "observedAt": "2026-10-01",
+        "observedAt": "2026-10-02",
         "authority": "framework-inventory"
       }
     },
@@ -863,7 +863,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-PY-003",
         "digest": null,
-        "observedAt": "2026-10-01",
+        "observedAt": "2026-10-02",
         "authority": "framework-inventory"
       }
     },
@@ -898,7 +898,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-SE-001",
         "digest": null,
-        "observedAt": "2026-10-01",
+        "observedAt": "2026-10-02",
         "authority": "framework-inventory"
       }
     },
@@ -936,7 +936,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-TEST-001",
         "digest": null,
-        "observedAt": "2026-10-01",
+        "observedAt": "2026-10-02",
         "authority": "framework-inventory"
       }
     },
@@ -976,7 +976,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-JV-104",
         "digest": null,
-        "observedAt": "2026-10-01",
+        "observedAt": "2026-10-02",
         "authority": "framework-inventory"
       }
     },
@@ -1014,7 +1014,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-TEST-001",
         "digest": null,
-        "observedAt": "2026-10-01",
+        "observedAt": "2026-10-02",
         "authority": "framework-inventory"
       }
     }
