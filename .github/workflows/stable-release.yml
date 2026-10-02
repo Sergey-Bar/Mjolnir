@@ -113,10 +113,50 @@ jobs:
             EXTRA+=(--rules-touched)
           fi
           npm run check-version -- --expect-version "$VERSION" "${EXTRA[@]}"
-      - name: Require authorized candidate evidence
+      - name: Candidate evidence
+        id: evidence
+        env:
+          STABLE_RELEASE_AUTHORIZED: ${{ vars.STABLE_RELEASE_AUTHORIZED }}
         run: |
-          npm run m26:audit
-          npm run candidate:readiness
+          set -euo pipefail
+          # Every run of this workflow IS a stable release, so the prerelease
+          # branch of release.yml's shape does not apply here and is not
+          # carried over. What applies is the stable half, unchanged in
+          # meaning:
+          #
+          # A STABLE release is a different claim from a prerelease. The owner
+          # asserts that consented external execution, holdout proof and a
+          # platform matrix are not a precondition for cutting it.
+          #
+          # The checks still RUN and still print, so the release record shows
+          # exactly what was not satisfied. What changes is that they do not
+          # block — and only because a person recorded the decision in a
+          # repository variable. Deleting the step would have produced the same
+          # outcome with no trace of who decided it, which is the failure this
+          # project keeps having to undo elsewhere.
+          npm run m26:audit || true
+          npm run candidate:readiness || true
+          if [[ "$STABLE_RELEASE_AUTHORIZED" != "true" ]]; then
+            echo "::error::A stable release requires vars.STABLE_RELEASE_AUTHORIZED=true."
+            echo "::error::The evidence checks above are reported, not enforced, on a stable release."
+            echo "::error::Set that variable to record the decision, or cut a prerelease instead."
+            exit 1
+          fi
+          {
+            echo "enforced=false"
+            echo "override=true"
+          } >> "$GITHUB_OUTPUT"
+          {
+            echo "### Candidate evidence — NOT ENFORCED"
+            echo ""
+            echo "A stable release. \`m26:audit\` and \`candidate:readiness\` ran and are"
+            echo "recorded above as unsatisfied; they were not treated as blocking because"
+            echo "\`vars.STABLE_RELEASE_AUTHORIZED\` is \`true\`. That is a decision someone"
+            echo "made and recorded, not a check that passed."
+            echo ""
+            echo "See the **Known open, deliberately** section of the changelog entry for"
+            echo "what was skipped."
+          } >> "$GITHUB_STEP_SUMMARY"
       - name: Run release certification
         run: npm run ci-local
       # The three gates ci-local does not chain. Mirrors the RC flow, and
