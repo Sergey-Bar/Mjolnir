@@ -63,3 +63,12 @@ capability registries, all with drift gates that caught none of it. The law now
 names the surface rather than the one part of it that was easy to count.
 `tests/contract/docs-consistency.spec.ts` reads this file, so widening the law
 is itself gated on the quoting sites being updated in the same commit.
+
+**The cut the law prompted was measured and declined.** `npm run check` is ~8
+minutes: the test suite is 79 % of it and all 38 gates together are 100 seconds.
+Cutting the gate surface from 39 to 12 would save under 15 % of the wait, by
+deleting checks that caught six real defects during 6.0. The numbers and the
+arithmetic are in the 6.0.0-rc.1 CHANGELOG entry, so the question does not have
+to be re-argued from counts. The lever that would move the wait is splitting
+the suite so the slow e2e tail runs beside the fast tests — CI work, not a
+surface cut.

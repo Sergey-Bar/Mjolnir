@@ -11,6 +11,16 @@ once shipped, so this file is the record of what changed between versions.
 
 ## [Unreleased]
 
+### Decided against, on measurement: the script-layer cut
+
+`npm run check` is ~8 minutes, and the test suite is 79 % of it. All 38 gates
+together cost 100 seconds, so cutting the gate surface from 39 to 12 — the plan's
+`~60 script files / ~45 npm scripts` target — would save under 15 % of the wait,
+while deleting checks that caught six real defects during 6.0. The numbers, the
+arithmetic and the alternative levers are recorded in the `6.0.0-rc.1` entry
+below and in `CLAUDE.md` law 0, so the question no longer has to be re-argued
+from file counts.
+
 ## [6.0.0-rc.1] — 2026-10-02
 
 Theme: **two words and one number**. A first run reads `GATE` / `WARN` and
@@ -223,21 +233,51 @@ while `certify` ran the whole `tests/contract/` directory. The latter is now
 the directory. Law 0 states that the governed surface is every capability the
 product claims, and the entry-point gate is its enforcement.
 
-**Known open, deliberately:** the script layer is still 137 files and 141 npm
-scripts, not the ~60 and ~45 the plan targets. Cutting them is a mechanical
-deletion with a wide consumer fan (gate files, workflows, MANUAL-SCRIPTS,
-`script:paths`, `scripts:reachable`) and it was not done inside a change that
-already moved the gate set. The entry-point gate and Law 0 exist so the number
-is now measured rather than guessed — `npm run entry-points:check` prints the
-chain length and the leaf count, and the ceiling fails the build if the chain
-grows past twelve.
+**Decided against, on measurement: the ~60-file / ~45-script cut.** The script
+layer is 138 files and 141 npm scripts. The plan's argument for cutting it was
+that a maintainer cannot hold it in their head — and the argument is about
+_waiting_, so it was worth measuring before deleting anything:
 
-Two consumers were deleted rather than kept: the twelve-file `scripts/video/`
-pipeline (`docs:video:capture`, `docs:video:render`, `docs:video`) and its
-`demo-video.yml` workflow were left alone because the README embeds the video
-they produce, and deleting a marketing asset is a product decision this change
-set has no mandate to make. They are declared as write-mode, unreachable from
-either entry point, and cannot be run by accident.
+| Term                                   | Wall clock | Share |
+| -------------------------------------- | ---------- | ----- |
+| `test:coverage:ci`                     | 372 s      | 79 %  |
+| `lint`                                 | 47 s       | 10 %  |
+| `docs:regen` (15 generators)           | 20.5 s     | 4 %   |
+| `typecheck`                            | 13 s       | 3 %   |
+| `gates:claim-integrity` (17 gates)     | 8.9 s      | 2 %   |
+| `build`                                | 7 s        | 1 %   |
+| `check-version`, `doctor`, `self-scan` | 4 s        | 1 %   |
+| **`npm run check`, whole**             | **~8 min** |       |
+
+**All 38 gates cost 100 seconds of an eight-minute wait.** Cutting the gate
+surface from 39 gates to 12 would save roughly 70 seconds — under 15 % — and it
+would do that by deleting checks that caught six real defects during this
+release, three of them in code written hours earlier: the exit-code regex that
+could not cross a sentence period, the README version claim no docs gate could
+see, a `DELETE` row whose reason had nowhere to live, a stale `gate` field, a
+carve manifest that had drifted from the tree, and a duplicated gate command.
+
+So the target the plan named was the wrong one. The wait is the **test suite**,
+not the gates, and it is the price of a tool whose thesis is that a green build
+is a claim rather than a fact. The levers that would actually move it are
+recorded rather than taken here: vitest reports ~18 s available from
+`isolate: false` (~4 %), and the e2e journeys are the slow tail — one of them
+spawns the CLI twenty times. Splitting the suite into fast and slow projects so
+the slow tail runs beside the fast one is the real win, and it is CI work
+rather than a surface cut.
+
+`npm run entry-points:check` prints `commands` (9), `executions` (39) and
+`leafCommands` (39) separately, and fails if the chain exceeds twelve terms,
+names a script that does not exist, runs a write-mode script, runs the same gate
+twice, or if `certify` is narrower than `check`. Law 0 makes the surface
+governed; these are its teeth.
+
+Two consumers were left alone rather than deleted: the twelve-file
+`scripts/video/` pipeline (`docs:video:capture`, `docs:video:render`,
+`docs:video`) and its `demo-video.yml` workflow, because the README embeds the
+video they produce and deleting a marketing asset is a product decision this
+change set has no mandate to make. They are declared as write-mode, unreachable
+from either entry point, and cannot be run by accident.
 
 ### Deprecated: `--strict` → `--include-warn`
 
