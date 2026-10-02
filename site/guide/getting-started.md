@@ -46,7 +46,7 @@ Open a terminal in the repository you want to inspect: the directory containing 
 Use a repository with supported test files or workflows; an empty repository has no test suite to score.
 
 1. Check your runtime with `node --version` — use Node.js 22.18 or later.
-2. Run `npx mjolnir-qa@5.0.0` from that repository root.
+2. Run `npx mjolnir-qa@5.1.0` from that repository root.
 3. Read the prioritized findings. Each gives you a rule ID, file location, evidence, and a suggested fix.
 4. Review one relevant finding, make the change, run the affected tests, and repeat the scan.
 
