@@ -7,13 +7,13 @@ contract enforces: **every external import in src/ must belong to the
 allowlist**, and the shipped surface (adapters, rules, flags, formats, exit
 codes) must match this document exactly.
 
-## Inventory: 303 files, 72681 LOC
+## Inventory: 303 files, 72682 LOC
 
 | Area              | Files | LOC   |
 | ----------------- | ----- | ----- |
-| src/rules         | 86    | 12394 |
+| src/rules         | 86    | 12397 |
 | src/engine        | 44    | 12140 |
-| src/commands      | 34    | 11990 |
+| src/commands      | 34    | 11988 |
 | src/v6            | 10    | 6206  |
 | src/(root)        | 8     | 3965  |
 | src/reporter      | 14    | 3778  |

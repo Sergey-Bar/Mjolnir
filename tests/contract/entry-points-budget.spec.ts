@@ -28,22 +28,14 @@ const ROOT = join(import.meta.dirname, "..", "..");
 const CHECKER = join(ROOT, "scripts", "check-entry-points.mjs");
 
 /**
- * `RUN` builds an invocation of a named script.
+ * Builds an invocation of a named script.
  *
- * Assembled rather than written out, because `docs-consistency` reads this
- * file's source and treats any runnable command in it — including a fixture —
- * as an instruction to a reader, and fails the build when the script does not
- * exist. The gate is right to: a file that reads like a command is a command
- * to whoever greps for one. This is the third time it has caught exactly that,
- * in three different files, so it is worth knowing before writing the next
- * fixture.
+ * Assembled rather than written out: `docs-consistency` reads this file's
+ * source and fails on any runnable command naming a script that does not
+ * exist, which is right — a fixture that reads like an instruction is one.
  */
-/** `RUN` builds an invocation of a named script. See its own doc comment. */
 const RUN = (name: string): string => ["npm", "run", name].join(" ");
-
-/** A two-term chain, assembled the same way. */
-const CHAIN = (...names: string[]): string =>
-  names.map((name) => RUN(name)).join(" && ");
+const CHAIN = (...names: string[]): string => names.map(RUN).join(" && ");
 
 const scratch: string[] = [];
 afterAll(() => {

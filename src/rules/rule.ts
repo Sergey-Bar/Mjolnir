@@ -259,8 +259,11 @@ export interface RuleMeta {
    * A declared, OWNED, EXPIRING commitment about a QUARANTINED rule.
    *
    * Same shape as `corePromotion`, and for the same reason: 34 quarantined
-   * rules carry no owner, no review date and no exit condition, so nothing in
+   * rules carry no `owner`, no `rationale` and no `expiresOn`, so nothing in
    * the tree says who will re-measure them or when the quarantine lapses.
+   * The expiry date IS the exit condition — `CorePromotion` has no separate
+   * exit-condition field, and a message naming one would send the next
+   * person looking for a field the contract does not have.
    * `src/rules/tier-evidence.ts` is the worked example of the pattern for the
    * nineteen rules demoted in 6.0, and `docs/QUARANTINE-REMEDIATION.md` is the
    * ledger for the rest — but a ledger nobody must update is a report.

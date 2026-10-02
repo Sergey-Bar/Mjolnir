@@ -290,6 +290,31 @@ const CAPTURED_ARTEFACTS = new Set([
   "docs/design/after/cli-scan.after.txt",
 ]);
 
+/**
+ * A FROZEN REPORT for a version that shipped is a record, not an instruction.
+ *
+ * `docs/RELEASE-3.0.0-READINESS.md` is dated 2026-09-25 and audits the 3.0.0
+ * line. Its command table names the `m26:audit` script, which
+ * `scripts/release-verify.ts` records as removed in 6.0 with the M26 ledger —
+ * so the name was real when the report was written and is gone now. Rewriting
+ * it to name a script that did not exist on that date would be the
+ * fabrication of a review nobody held.
+ *
+ * The retired name is written here WITHOUT its npm prefix on purpose. This
+ * file is scanned by `tests/contract/docs-consistency.spec.ts`, which greps
+ * every tracked `.mjs` for the `npm run` prefix and reports it as a reader
+ * being told to run something that does not exist — the same trap this gate's
+ * own header documents. A comment explaining a dangling name must not be
+ * itself one.
+ *
+ * This is the same decision `tests/contract/docs-consistency.spec.ts` already
+ * made for the same file, with the same reasoning, at the same layer: two gates
+ * catch the same class of dangling name, and a file exempt from one that still
+ * trips the other is an exemption made by accident rather than by decision. The
+ * list is by name, not by pattern, so it can be argued with per file.
+ */
+const FROZEN_REPORTS = new Set(["docs/RELEASE-3.0.0-READINESS.md"]);
+
 /** Every markdown, workflow and Action file this repository publishes. */
 const surfaces = [];
 for (const dir of ["", "docs", "site", join(".github", "workflows")]) {
@@ -355,6 +380,7 @@ function isLiveSurface(file) {
   const r = rel(file);
   if (isArchive(r)) return false;
   if (CAPTURED_ARTEFACTS.has(r)) return false;
+  if (FROZEN_REPORTS.has(r)) return false;
   if (r === "docs/cli-contract.json") return false;
   if (r.startsWith("docs/adr/")) return false;
   if (r.startsWith("tests/")) return false;
@@ -466,6 +492,13 @@ for (const [name, body] of Object.entries(SCRIPTS)) {
 const DANGLING_SURFACES = surfaces.filter((file) => {
   const r = rel(file);
   if (isArchive(r) || isNestedProject(file)) return false;
+  // The narrower list applies here than for the removed-verb check above: this
+  // filter already keeps `tests/` and `docs/adr/`, because a regression spec
+  // has to be able to name a command in order to prove it is gone. A frozen
+  // report is the same case for a different reason — the name was real when the
+  // report was written — so it is skipped by the same named list, not by a
+  // second one that could drift from it.
+  if (FROZEN_REPORTS.has(r)) return false;
   if (r.startsWith("site/")) return false;
   return (
     r.endsWith(".md") ||

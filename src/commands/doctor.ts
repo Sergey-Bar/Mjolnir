@@ -292,7 +292,7 @@ export function checkQuarantineOwnership(
     quarantined.length === 0
       ? `No rules are quarantined, but ${stranded.length} carry a quarantinePromotion record`
       : `${unowned.length}/${quarantined.length} quarantine rules carry no quarantinePromotion — ` +
-          "no owner, no review date, no exit condition. A quarantine with none is permanent by " +
+          "no `owner`, no `rationale`, no `expiresOn`. A quarantine with none is permanent by " +
           "default. Backfill from the ledger in docs/QUARANTINE-REMEDIATION.md" +
           // The count is REPORTED, not gated, and the message says so. A cap
           // here would have to be written at 34 on the day it landed and fall

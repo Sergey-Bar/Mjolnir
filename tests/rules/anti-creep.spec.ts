@@ -722,7 +722,10 @@ describe("the quarantine tier has the same owner/date/exit obligation", () => {
     expect(result.status).toBe("fail");
     const text = result.details.join("\n");
     expect(text).toContain("quarantinePromotion");
-    expect(text).toContain("no owner");
+    // The field the validator actually rejects, named as the type spells it.
+    // `checkCorePromotion` reads `owner`, so a message that said "reviewer"
+    // would send the reader looking for a field the contract does not have.
+    expect(text).toContain("owner");
   });
 
   it("an unexpired, owned quarantine promotion is accepted", () => {

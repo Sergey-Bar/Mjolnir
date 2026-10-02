@@ -49,6 +49,22 @@ const CHECK_ONLY = process.argv.includes("--check");
  * is the defect this repository exists to remove. It was deleted rather than
  * merged: `refresh-generated.mjs` already ends by PROVING convergence, and a
  * duplicate that proves nothing is worse than no duplicate.
+ *
+ * The list is also the answer to a question no gate was asking. It ran
+ * `docs:translations:sync` and `docs:translations` — two npm scripts the v6
+ * positioning carve (#697) deleted along with the 20 translated READMEs — and
+ * neither `npm run check` nor `scripts:reachable` could see it: the first never
+ * runs this file, and the second answers the opposite question (is a script
+ * reachable FROM a caller, not does every name here resolve). The refresh then
+ * reported `FAIL` on both and exited non-zero, so the convergence tool was
+ * broken in the one way that matters — it could not converge — and nothing said
+ * so until someone ran it.
+ *
+ * That is why `npm run <name>` inside a `.mjs` is now checked the same way a
+ * workflow step's is: `scripts/check-workflow-scripts.mjs` reads every
+ * `npm run <name>` a repository script invokes and fails when `package.json`
+ * does not define it. A name in this list that resolves to nothing is a
+ * convergence tool that cannot converge.
  */
 const GENERATORS = [
   ["docs:regen", "content chain (rules, FP audit, capability, counts)"],
@@ -56,8 +72,6 @@ const GENERATORS = [
   ["docs:registry", "capability registry (provenance-stamped)"],
   ["docs:blast-radius", "blast radius audit"],
   ["docs:readme-brand", "README brand assets"],
-  ["docs:translations:sync", "README translation sync"],
-  ["docs:translations", "translation staleness report"],
 ];
 
 const POST_CHECKS = [
@@ -113,9 +127,14 @@ let failed = false;
 for (const [script, label] of GENERATORS) {
   if (!run(label, script)) failed = true;
 }
+// `README.md`, not `README.*.md`: the 20 translated READMEs were deleted with
+// the translation scripts in the v6 carve, so the glob matched nothing and
+// prettier exited 2 — which this script reported as `FAIL` and turned into a
+// non-zero exit, so a formatter with no files to format was indistinguishable
+// from a formatter that could not format.
 if (
   !format("format generated markdown (before the tree hash)", [
-    "README.*.md",
+    "README.md",
     "docs/**/*.md",
   ])
 )

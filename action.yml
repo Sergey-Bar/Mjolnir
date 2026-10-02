@@ -30,6 +30,9 @@ description: >-
   Scanning. PR comments with actionable findings. Measured
   false-positive rates where corpus evidence exists; unmeasured rules are
   labeled explicitly.
+  **Breaking in v6:** a scan that did not finish (exit 2) now fails the job
+  by default. A run that reached only some of your files has proven nothing
+  about the rest. Set `fail-on-partial: false` for an advisory run.
 
 branding:
   icon: "shield"

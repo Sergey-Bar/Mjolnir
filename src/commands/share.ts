@@ -34,7 +34,7 @@ import { dirname, isAbsolute, resolve } from "node:path";
 import type { ScanResult } from "../types.js";
 import { runScan } from "../engine/scan-pipeline.js";
 import { isAtGate, type GateLevel } from "../claim-evidence.js";
-import { gateCounts } from "../reporter/trust-report.js";
+import { gateCounts, GATE_COMMAND } from "../reporter/trust-report.js";
 import { isAdvisoryFinding } from "../types.js";
 import { MEASURED_FP } from "../rules/measured-fp.generated.js";
 import { errorMessage, type Output } from "../cli-io.js";
@@ -43,8 +43,6 @@ import { writeFileAtomic } from "../lib/fs-atomic.js";
 
 /** The default filename. One file, no directory, nothing else to clean up. */
 export const SHARE_ARTIFACT = "mjolnir-trust-report.html";
-
-const GATE_COMMAND = "mjolnir ci install";
 
 /**
  * HTML-escape a text interpolation, and refuse anything that is not a text

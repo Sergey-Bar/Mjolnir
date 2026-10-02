@@ -11,6 +11,207 @@ once shipped, so this file is the record of what changed between versions.
 
 ## [Unreleased]
 
+### Added: agent skills, and the wiring that makes them load
+
+The repository had four agent skills under `.claude/skills/` and no way for
+Kilo to see them. Kilo reads that directory only when the user-level Claude
+Code Compatibility setting is on, so on a default install the committed skills
+were dead weight in that harness — and `.kilo/` cannot hold them instead,
+because `.gitignore` ignores it as machine-local agent state. `kilo.json` now
+carries a `skills.paths` entry pointing at `.claude/skills/`: one tracked copy,
+both harnesses, and the wiring visible in a diff. `docs/EXTERNAL-CONFIG.md`
+records what that file now declares.
+
+Nine skills were added alongside the existing four, all written against this
+repository's own gates rather than imported wholesale:
+
+- `rule-author` — the full rule lifecycle: ID allocation and non-reuse, the
+  must-fire and must-not-fire fixture firewall, the four quad legs, registry
+  registration, the gates a rule change invalidates, and the
+  deprecation/retirement path from `docs/RULE-LIFECYCLE.md`. The 19-line Copilot
+  agent in `.github/agents/` covered the first half of this and nothing else.
+- `change-gate` — a diff-to-checks map, because `npm run check` is ~8 minutes
+  and the lever that moves it is running the row that covers the change. Names
+  only scripts `package.json` defines, which
+  `tests/contract/docs-consistency.spec.ts` greps every tracked `.md` for.
+- `surface-law` — law 0 as a procedure: what counts as the governed surface,
+  the twelve-leaf ceiling, and the two legal ways to grow.
+- `evidence` — the agent safety contract, including the rule that
+  `INCONCLUSIVE` is a result and never laundered into a pass.
+- `skill-author`, `verification-before-completion` — adapted from
+  `obra/superpowers` (MIT), the parts that decide whether a skill gets opened
+  and whether a claim gets evidence.
+- `prose-honesty` — adapted from `blader/humanizer` (MIT), fenced so it cannot
+  touch a generated page, an asserted surface, or a registered claim.
+- `quarantine-remediation` — the 34 quarantined rules are capped to
+  `severity: info` and `evidence: E0`, so they cannot fail a build; 34 of 79
+  rules are in that state and seven measure 0.0 % FP. `doctor` reports that
+  **none** carries a `quarantinePromotion`, so none has an owner, a review date
+  or an exit condition — the mechanism exists on the `Rule` type and has never
+  been applied. The skill covers the ladder, the Wilson-interval criterion that
+  replaced the point estimate in 6.0, and the promote/rework/retire decision.
+- `skill-supply-chain` — the scan procedure for a skill before it is installed,
+  since a skill is code that runs with the agent's permissions.
+
+No npm script, CLI verb, gate or rule was added, so law 0's ratchet does not
+move.
+
+### Fixed: `check-cli-contract` and `docs-consistency` disagreed about one file
+
+`npm run check` was red on `main`: `check-cli-contract` failed on
+`docs/RELEASE-3.0.0-READINESS.md`, which names `npm run m26:audit` in its
+command table. `scripts/release-verify.ts` records that script as removed in
+6.0 with the M26 ledger, so the name was real when the report was written and
+the report is dated 2026-09-25.
+
+`tests/contract/docs-consistency.spec.ts` already exempted exactly that file, by
+name, with the reasoning written out: a readiness report for a version that
+shipped is a record, not an instruction. Two gates catch the same class of
+dangling name, and the file was exempt from one that still tripped the other —
+an exemption made by accident rather than by decision. `check-cli-contract.mjs`
+now carries the same entry in a named `FROZEN_REPORTS` list, mirroring the
+existing `CAPTURED_ARTEFACTS` shape, and skipping it in both the removed-verb
+pass and the dangling-name pass. The list is by name, not by pattern, so it can
+be argued with per file.
+
+`tests/contract/cli-contract-dangling-names.spec.ts` locks both halves, because
+an exemption nobody tests is a blind spot with a comment on it: a dangling name
+in a live surface still fails, the frozen report still passes, a live doc beside
+the frozen one still fails, and the real tree passes.
+
+### Decided against, on measurement: the 500-word skill budget
+
+`skill-author` carried an upstream rule of "under 500 words". Eight of eight new
+skills broke it on the first pass, from 721 to 1222 words — which is the shape
+of a target nobody measured rather than a target anybody met. The figure was
+wrong for this class of skill: most of the excess is procedure that only runs
+once, and in `prose-honesty` a 22-row lookup catalogue that nobody reads to fix
+one sentence.
+
+So the rule now sorts by shape — a procedure carries a word budget, a lookup
+table is always a sibling file — and the number is measured rather than
+guessed. Two lookup structures moved out: `prose-honesty`'s catalogue to
+`patterns.md` (body 126 → 85 lines), and `skill-author`'s failure-classification
+table plus its no-baseline-run fallback to `baseline-failure.md` (204 → 166
+lines). Both are cases the rule's own branch rule covers: a catalogue is
+scanned for one row, and the fallback is only read when there is no baseline to
+classify.
+
+The ceiling lives in `budget.md` rather than in `skill-author`'s body, and that
+placement is the part worth keeping. A meta-skill that states its own budget
+counts toward it: writing "1250 words" into the body made the body 1251. Moving
+the figure one file over removes the self-reference, so the ceiling can be
+1300 against a measured maximum of 1264 and stay checkable.
+
+The record that the number moved, when, and against what measurement sits in
+`budget.md`. A ceiling that moves silently is the arithmetic of law 0's
+`baselineCore` edit: the arithmetic reads zero and the law reads as satisfied.
+
+### The baseline-failure step: a discoverability audit, and its limit
+
+`skill-author` prescribes a RED step — watch an agent fail the task before
+writing the skill. That did not run; these skills were written from
+`docs/RULE-LIFECYCLE.md`, `CLAUDE.md` and the gate sources. The substitute that
+could run is a discoverability audit: for each load-bearing fact, is it
+reachable from the repository today?
+
+| Fact                       | Reachable from                                                   |
+| -------------------------- | ---------------------------------------------------------------- |
+| a path→gates map           | `docs/archive/` only — nothing live                              |
+| directory → rule-ID prefix | `src/rules/index.ts`; no live doc states the mapping             |
+| the four quad legs         | `src/v6/fixture-quad-probe.ts` and an archived plan              |
+| rule IDs are never reused  | `docs/RULE-LIFECYCLE.md`, `docs/ARCHITECTURE.md`, `src/types.ts` |
+
+So `change-gate`'s content was nowhere to be found, the prefix table and the
+quad vocabulary were reachable only from source, and the ID non-reuse rule was
+already documented — that line is a guardrail kept for cost, not for novelty.
+
+This proves the knowledge was not already available. It does not prove the
+skills work; only watching an agent use one answers that. `skill-author` now
+records the substitute and its limit, so the next author knows which of the two
+they actually ran.
+
+### Fixed: the quarantine report named a field that does not exist
+
+`CorePromotion` declares five fields — `rationale`, `owner`, `grantedAt`,
+`expiresOn`, `evidenceRefs`. There is no exit-condition field, and `rg` finds
+the phrase nowhere in `src/`, `docs/` or `tests/` except in two places that
+were both telling the reader to go looking for one: the `quarantinePromotion`
+doc comment in `src/rules/rule.ts`, and the detail message
+`checkQuarantineOwnership` prints about the largest open item in the tree.
+
+A report that describes a shape the contract does not define is the same
+defect class as a rule reporting a metric it never measured — the reader is
+sent to do work against a field that is not there. The message now names the
+three a backfilled record actually has to supply, and the expiry date is
+labelled as what it is, since it is the exit condition in substance.
+
+`tests/contract/quarantine-record-honesty.spec.ts` locks it by parsing the
+field list out of the type rather than restating it, so it fails if the type
+gains a field the message omits and if the message ever names a phantom one.
+Verified by mutation: all three arms fail against the previous wording.
+
+### Verification
+
+`npm run test` is 11,992 passing with zero failures across 493 files. `npm run
+lint`, `typecheck`, `check-version`, `claims:check`,
+`candidate:manifest:check`, `entry-points:check`, `config:consumers`,
+`scripts:reachable`, `gates:check`, `check-concepts`, `check-cli-contract`,
+`check-certification-surface`, `check-detector-hashes`, `check-fixture-quad`,
+`docs:provenance-drift`, `check-carve-manifest`, `qa-ir:parity` and
+`docs:roadmap:backlinks` all pass.
+
+### Corrected: what `npm run check` was actually red on
+
+The previous version of this entry named a coverage threshold and blamed
+`src/commands/share.ts`. Both halves were wrong, and neither was checked:
+
+- `frontier:contracts` is **not** a leaf of `check`. `package.json` has `check`
+  as nine terms (`build`, `typecheck`, `lint`, `test:coverage:ci`,
+  `check-version`, `gates:claim-integrity`, `docs:regen`, `self-scan`,
+  `doctor`); `frontier:contracts` (`vitest run tests/contract/`) is declared in
+  no chain at all, and `certify` invokes that command directly rather than
+  through the name.
+- A bare `vitest run tests/contract/` collects no coverage — `--coverage` is
+  what enables the provider — so `perFile: true` could not be the mechanism
+  either.
+
+What was actually red was two generated artifacts that had not been refreshed:
+
+- `docs/BLAST-RADIUS-AUDIT.md` recorded `src/commands` at 11,988 lines against
+  a live 11,990, because the `GATE_COMMAND` de-duplication in `share.ts`
+  removed two lines from a file the audit counts.
+- `candidate-trust-manifest.json` failed `workingTreeSha256 drift`, which is
+  what it is for: it hashes the tree it was stamped against.
+
+Both are the same failure mode as the exemption added above — an artifact that
+describes a state nobody refreshed — and `scripts/refresh-generated.mjs` is the
+tool that fixes them, in the one order that converges.
+
+### Fixed: the convergence tool could not converge
+
+`scripts/refresh-generated.mjs` ran `docs:translations:sync` and
+`docs:translations`, both deleted by the v6 positioning carve (#697) along with
+the 20 translated READMEs, and formatted `README.*.md`, a glob that has matched
+nothing since those READMEs went. Prettier exits 2 on a pattern with no files,
+so the refresh reported `FAIL` on three entries and exited non-zero: the tool
+whose entire job is "make the tree agree with its generators" could not be run
+to completion.
+
+Nothing caught it. `npm run check` does not run this file,
+`scripts:reachable` answers the opposite question — is a script reachable FROM
+a caller, not does every name it invokes resolve — and `check-cli-contract`'s
+dangling-name rule reads `.md`, workflows, the Action and the reviewer config,
+not `scripts/**`. Two gates, two different blind spots, one script that could
+not do the one thing it exists to do.
+
+The dead entries are removed and the glob is `README.md`. The `npm run <name>`
+inside a `.mjs` gap is **not** closed here: the shape a general fix would need
+was measured, and the placeholder convention this repository already uses —
+`scripts/check-ci-local-parity.mjs` writes `npm run X` chains and `npm run Y`
+prose — is indistinguishable from an invocation by regex alone. Recorded rather
+than shipped as a gate that reports its own source.
+
 ### Decided against, on measurement: the script-layer cut
 
 `npm run check` is ~8 minutes, and the test suite is 79 % of it. All 38 gates

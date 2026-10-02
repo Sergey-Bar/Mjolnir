@@ -86,6 +86,19 @@ describe("root action.yml (Marketplace surface) is locked", () => {
     expect(action.inputs["fail-on-partial"]?.default).toBe("true");
   });
 
+  it("says in the Marketplace description that v6 fails an inconclusive scan", () => {
+    // The Marketplace renders `description` and nothing else — there is no
+    // Action README, so a consumer pinning the v6 tag reads this string and
+    // never sees the CHANGELOG. The behaviour flip is the one change in 6.0
+    // that can turn a consumer's green job red, and "why did my pipeline
+    // start failing" is the first question they will have.
+    const description = String(action.description ?? "");
+    expect(description).toMatch(/breaking in v6/i);
+    expect(description).toMatch(/exit 2|not finish/i);
+    // And the way out, so the note is actionable rather than just alarming.
+    expect(description).toContain("fail-on-partial");
+  });
+
   it("defaults to the published stable version, never the working candidate", () => {
     // The action fetches an exact tarball from npm. Defaulting to the working
     // version made every consumer who pinned nothing 404 while the candidate
