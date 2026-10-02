@@ -184,8 +184,8 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p release-assets
-          node dist/cli.mjs release-trust --json > release-assets/release-trust.json
-          node dist/cli.mjs release-trust > release-assets/release-trust.txt
+          node dist/cli.mjs ci release-trust --json > release-assets/release-trust.json
+          node dist/cli.mjs ci release-trust > release-assets/release-trust.txt
           test -s release-assets/release-trust.json
           test -s release-assets/release-trust.txt
       # Sentry release + source maps. The ordering is load-bearing: this must
