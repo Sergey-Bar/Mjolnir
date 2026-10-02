@@ -11,6 +11,8 @@ once shipped, so this file is the record of what changed between versions.
 
 ## [Unreleased]
 
+## [5.1.0] — 2026-10-02
+
 ### Two subtractions declined, because the surface they would remove says something the replacement does not
 
 **`mjolnir capability`: delete the M0–M5 ladder, render the tier instead.** The
@@ -221,8 +223,6 @@ fixed; a scan of all 10,133 text files in the tree finds no others.
 - The anti-creep and unreleased-entry gates both anchored on "the first `## `
   heading", which stops describing anything the moment a version is cut. Both
   now scope to the current version's section.
-
-## [5.1.0] — 2026-10-01
 
 ### `ci verify` could never leave its no-baseline arm
 
@@ -1490,6 +1490,64 @@ failure names its gate instead of a step number. Also new: `workflow:scripts`,
   it has no rules, so registering it would trade one false claim for another.
   Admitting it means writing the three rules with fixtures, and it is gated by
   the same quad as everything else.
+
+### PR reports say what to do next (#698)
+
+`src/reporter/pr-report-actions.ts` turns a PR comment from a finding list into
+a handover: each band names the action it implies, so a reader who disagrees
+with a verdict can see which command contradicts it without reading the source.
+Six score badges (`assets/brand/pr-status/*.svg`) are generated from the brand
+tokens by `npm run brand:pr-status` and drift-locked by
+`tests/reporters/pr-report-actions.spec.ts`, which fails if a badge's stroke
+stops matching the token it came from. `brand:pr-status` is a deliberate brand
+change, so it is declared manual in `docs/MANUAL-SCRIPTS.md` rather than wired
+into a gate.
+
+### The website reading stack, and the palette it arrived with (#696)
+
+A quieter, cooler set of greys and a teal→violet accent rule for the landing and
+guide surfaces, plus `docs/AI-DISCOVERY.md`, `site/public/llms.txt`, the guided
+proof walkthrough, and vendored Nordic and Cascadia fonts.
+
+The palette arrived as raw hex inside the theme stylesheets, which is exactly
+what `brand-doctor` rule 6 exists to catch: a second palette no gate could see.
+It is now nine tokens in `BRAND` — `readingAccent`, `readingAccentAlt`,
+`readingFocus`, `readingAccentBright`, `readingAccentInk`, `readingUnworthy`,
+`readingMuted`, `readingDim`, `readingLede` — emitted as `--mj-reading-*` and
+referenced by the stylesheets that use them. Putting them in `BRAND` rather than
+a group of their own is deliberate: rule 8 computes WCAG AA for every foreground
+in `BRAND` against every surface, so the nine are held to the same floor as the
+terminal palette rather than escaping it. The weakest pairing is
+`readingAccentAlt` on `soft` at 5.75:1.
+
+These are scoped to the reading surfaces. `steelDim` and `heroMuted` keep their
+values for the terminal, the README artwork and every other surface — the POC
+never claimed otherwise.
+
+### Known open, deliberately
+
+**Publishing a package is not certifying it.** 5.1.0 is on npm; that is a
+statement about distribution, not about evidence. The candidate manifest remains
+`WORKING_CANDIDATE` / `NOT_CERTIFIED` / `NOT_AUTHORIZED`, and nothing in this
+release moves those states.
+
+Three gates report `BLOCKED` on `npm run release:verify` and did not gate this
+publish:
+
+- **`m26:audit`** — no consented external execution and no holdout proof.
+- **`candidate:readiness`** — no real-world, platform-matrix or
+  consumer-install evidence.
+- **`candidate:decision:release`** — the same, adjudicated as a release-stage
+  decision rather than an engineering one.
+
+All three still run and still print on every publish; they stopped blocking only
+because a person recorded `vars.STABLE_RELEASE_AUTHORIZED=true`
+(`stable-release.yml`, `Candidate evidence`). `npm run ci-local` passes, because
+`candidate:decision:engineering` clears every engineering blocker.
+
+This is the designed state for 5.x, not a workaround. The alternative — editing
+the manifest to claim `REMOTE_PROVEN`, `CERTIFIED` or `AUTHORIZED` — is the
+false-green this project exists to prevent.
 
 ## [5.0.0] — 2026-09-27
 
