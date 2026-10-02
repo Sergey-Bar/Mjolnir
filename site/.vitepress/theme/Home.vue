@@ -10,9 +10,12 @@ import {
 import { withBase } from "vitepress";
 import { TRUST_RUNGS } from "../../../src/brand/symbols";
 import AuroraSky from "./AuroraSky.vue";
+import GuidedProof from "./GuidedProof.vue";
 import CopyKey from "./CopyKey.vue";
 import StreamTerm from "./StreamTerm.vue";
 import Term from "./Term.vue";
+import ScoreBands from "./ScoreBands.vue";
+import ChapterNav from "./ChapterNav.vue";
 import { LOGOS } from "./logos";
 import { data } from "./home.data";
 import { MONOGRAM } from "./stack";
@@ -37,12 +40,6 @@ const OFF = [0, TITLE[0].length];
 /** Tools Simple Icons has no mark for get their initials, never a fake logo. */
 const monogram = (name: string) => MONOGRAM[name] ?? name.slice(0, 2);
 
-/** One strip, group labels inline, so the marquee keeps the grouping. */
-const STACK = data.stack.flatMap((g) => [
-  { key: `g-${g.label}`, label: g.label, name: "" },
-  ...g.items.map((name) => ({ key: `i-${g.label}-${name}`, label: "", name })),
-]);
-
 const CHAPTERS = [
   {
     id: "ch-ci",
@@ -57,7 +54,7 @@ const CHAPTERS = [
   {
     id: "ch-score",
     title: "Worthiness score",
-    body: "One number, with the arithmetic shown.",
+    body: "Four verdicts, and what to review next.",
   },
   {
     id: "ch-trust",
@@ -140,6 +137,11 @@ const hasWarn = SCAN.findings.some((f) => f.severity === "warning");
 // only rewinds once a client is there to drive it.
 const scanned = ref(N);
 const scanLive = ref(false);
+const readFull = ref(false);
+function toggleFull() {
+  readFull.value = !readFull.value;
+  if (readFull.value) scanned.value = N;
+}
 const tally = computed(() => {
   const t = { e: 0, w: 0, i: 0 };
   for (const f of SCAN.findings) {
@@ -184,6 +186,11 @@ const ANATOMY = [
   },
 ];
 const lit = ref("");
+const selectedPart = ref("");
+function selectPart(part: string) {
+  selectedPart.value = selectedPart.value === part ? "" : part;
+  holdPart(part);
+}
 let alive = true;
 let holding = false;
 const holdPart = (p: string) => {
@@ -193,19 +200,15 @@ const holdPart = (p: string) => {
 };
 const release = () => {
   if (!alive) return;
-  holding = false;
+  holding = !!selectedPart.value;
+  if (selectedPart.value) lit.value = selectedPart.value;
 };
 
 /* ---- 03: the score ---- */
 const s = data.score;
-const span = (b: { min: number; max: number }) =>
-  `${((b.max - b.min + 1) / (s.outOf + 1)) * 100}%`;
-const marker = `${((s.demo.score + 0.5) / (s.outOf + 1)) * 100}%`;
 const demoTone =
   s.bands.find((b) => s.demo.score >= b.min && s.demo.score <= b.max)?.tone ??
   "warning";
-const odoArmed = ref(false);
-const odoRolled = ref(false);
 
 /* ---- 04: trust ---- */
 const PLAIN: Record<string, { name: string; body: string }> = {
@@ -232,18 +235,25 @@ const PLAIN: Record<string, { name: string; body: string }> = {
   },
 };
 const levels = TRUST_RUNGS.map((r, i) => ({ ...r, ...PLAIN[r.level], i }));
-const boundary = Math.max(
-  0,
-  levels.findIndex((l) => l.runtime),
-);
-/** Ordinal, not a quantity: the step at the runtime boundary is the point. */
-const rungHeight = (i: number, runtime: boolean) =>
-  runtime ? 64 + (i - boundary) * 18 : 18 + i * 12;
+const trustGroups = [
+  {
+    title: "Read from code",
+    detail: "Static evidence · L0–L2",
+    runtime: false,
+    levels: levels.filter((l) => !l.runtime),
+  },
+  {
+    title: "Observed in a run",
+    detail: "Runtime evidence · L3–L5",
+    runtime: true,
+    levels: levels.filter((l) => l.runtime),
+  },
+];
 
 const EXIT_CODES = [
   { code: 0, meaning: "Clean at the gate" },
   { code: 1, meaning: "Findings at or above the gate" },
-  { code: 2, meaning: "Partial scan. Never blocks." },
+  { code: 2, meaning: "Partial scan. Inconclusive; investigate and rerun." },
   { code: 10, meaning: "Usage error" },
   { code: 20, meaning: "Internal error" },
 ];
@@ -276,7 +286,7 @@ const viewEl = ref<HTMLElement>();
 const innerEl = ref<HTMLElement>();
 const beamEl = ref<HTMLElement>();
 const anatEl = ref<HTMLElement>();
-const scoreEl = ref<HTMLElement>();
+
 const glOn = ref(false);
 const counts = reactive<Record<string, number>>({});
 const shown = (k: string, v: number) => counts[k] ?? v;
@@ -304,7 +314,6 @@ function onReveal(el: HTMLElement) {
   el.setAttribute("data-in", "");
   for (const c of el.querySelectorAll<HTMLElement>("[data-ck]"))
     countUp(c.dataset.ck ?? "", Number(c.dataset.to));
-  if (scoreEl.value && el.contains(scoreEl.value)) odoRolled.value = true;
 }
 
 /** Spotlight: every card in the grid tracks the pointer, not just the hovered one. */
@@ -336,15 +345,25 @@ function startScan() {
   let raf = 0;
   let active = false;
   let camY = 0;
-  const frame = () => {
+  let elapsed = 0;
+  let last = 0;
+  const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
+  const frame = (now: number) => {
     raf = 0;
     if (!active) return;
-    const total = sec.offsetHeight - (window.innerHeight || 0);
-    const raw =
-      total > 0
-        ? Math.min(1, Math.max(0, -sec.getBoundingClientRect().top / total))
-        : 1;
-    const p = Math.min(1, Math.max(0, (raw - 0.05) / 0.82));
+    const delta = last ? Math.min(now - last, 100) : 0;
+    last = now;
+    if (readFull.value) {
+      inner.style.transform = "none";
+      scanned.value = N;
+      raf = requestAnimationFrame(frame);
+      return;
+    }
+    // Keep the preview looping during hover and keyboard focus.
+    // Reading the full file remains an explicit, stable reading mode.
+    if (!document.hidden && !reducedMotion.matches)
+      elapsed = (elapsed + delta) % 24000;
+    const p = Math.min(1, Math.max(0, (elapsed - 1000) / 18000));
     const at = p * N;
     const idx = Math.floor(at);
     const y =
@@ -368,6 +387,7 @@ function startScan() {
   };
   const io = new IntersectionObserver((es) => {
     active = es.some((e) => e.isIntersecting);
+    last = 0;
     if (active && !raf) raf = requestAnimationFrame(frame);
   });
   io.observe(sec);
@@ -401,7 +421,6 @@ onMounted(async () => {
     for (const c of el.querySelectorAll<HTMLElement>("[data-ck]"))
       if (Number.isInteger(Number(c.dataset.to)))
         counts[c.dataset.ck ?? ""] = 0;
-    odoArmed.value = true;
   }
   if (!motion || !("IntersectionObserver" in window)) {
     targets.forEach(onReveal);
@@ -478,75 +497,106 @@ onBeforeUnmount(() => {
 
     <!-- ============ HERO ============ -->
     <section class="hero-band" :class="{ gl: glOn }" aria-labelledby="mj-title">
-      <div class="sky" aria-hidden="true" />
-      <AuroraSky @ready="glOn = true" />
       <div class="hero wrap">
-        <h1 id="mj-title" class="title">
-          <template v-for="(line, li) in TITLE" :key="li"
-            ><span class="line" :class="{ was: li === 0 }"
-              ><template v-for="(w, wi) in line" :key="wi"
-                ><span class="w" :style="{ '--d': OFF[li] + wi }">{{ w }}</span
-                >{{ " " }}</template
-              ></span
-            >{{ " " }}</template
-          >
-        </h1>
+        <div class="hero-heading">
+          <div class="heading-sky" aria-hidden="true">
+            <div class="sky" />
+            <AuroraSky @ready="glOn = true" />
+          </div>
+          <p class="product-category">
+            Static analysis for test code and CI workflows.
+          </p>
+          <h1 id="mj-title" class="title">
+            <template v-for="(line, li) in TITLE" :key="li"
+              ><span class="line" :class="{ was: li === 0 }"
+                ><template v-for="(w, wi) in line" :key="wi"
+                  ><span class="w" :style="{ '--d': OFF[li] + wi }">{{
+                    w
+                  }}</span
+                  >{{ " " }}</template
+                ></span
+              >{{ " " }}</template
+            >
+          </h1>
+        </div>
         <div class="hero-grid">
           <div>
             <p class="lede">
-              Mjölnir finds tests that cannot fail and pipelines that cannot go
-              red, then scores how far you can trust the result.
+              Scan your test code and CI workflows for hidden failures. Get
+              prioritized findings with the exact location, evidence, and a
+              suggested fix.
             </p>
             <div class="actions">
-              <CopyKey :command="COMMAND" />
-              <a class="more" :href="withBase('/guide/getting-started')"
-                >Read the guide</a
-              >
+              <div class="install-row"><CopyKey :command="COMMAND" /></div>
             </div>
+            <p class="start-context">
+              Run from your repository root · Node.js 22.18+
+            </p>
+            <p class="start-expectation">
+              You get a scan report. Mjölnir does not run your tests or
+              automatically apply the suggested fixes.
+            </p>
+            <a
+              class="example-report-link"
+              :href="withBase('/guide/example-report')"
+              >See an example report <span aria-hidden="true">→</span></a
+            >
           </div>
           <div>
+            <p class="terminal-summary">
+              <strong>What a finding looks like</strong
+              ><span
+                >This example flags test failures hidden by CI commands. The
+                report shows where to look first.</span
+              >
+            </p>
             <StreamTerm
               :command="data.stream.command"
               :lines="data.stream.lines"
-              title="demo-repo"
+              title="Your Repo"
             />
-            <p class="fine">A real scan of the demo repo, replayed.</p>
+            <p class="fine">
+              Original output from a saved demo scan, replayed.
+              <a :href="withBase('/guide/example-report')"
+                >Read the full report</a
+              >.
+            </p>
           </div>
         </div>
       </div>
     </section>
 
+    <ChapterNav :chapters="CHAPTERS" />
+    <GuidedProof />
+
     <!-- ============ WORKS WITH ============ -->
-    <section class="wrap" aria-labelledby="mj-stack">
+    <section id="stack-section" class="wrap" aria-labelledby="mj-stack">
       <div class="stack">
         <h2 id="mj-stack" class="stack-title">Works with your stack</h2>
-        <div class="marquee">
-          <ul class="track">
-            <template v-for="copy in 2" :key="copy">
-              <li
-                v-for="item in STACK"
-                :key="`${copy}-${item.key}`"
-                :class="[item.label ? 'group' : 'logo', { dup: copy === 2 }]"
-                :aria-hidden="copy === 2 ? 'true' : undefined"
-              >
-                <template v-if="item.label">{{ item.label }}</template>
-                <template v-else>
-                  <svg
-                    v-if="LOGOS[item.name]"
-                    viewBox="0 0 24 24"
-                    aria-hidden="true"
-                    focusable="false"
-                  >
-                    <path :d="LOGOS[item.name]" fill="currentColor" />
-                  </svg>
-                  <span v-else class="mono" aria-hidden="true">{{
-                    monogram(item.name)
-                  }}</span>
-                  <span>{{ item.name }}</span>
-                </template>
+        <div class="stack-groups">
+          <div
+            v-for="group in data.stack"
+            :key="group.label"
+            class="stack-group"
+          >
+            <h3>{{ group.label }}</h3>
+            <ul class="stack-items">
+              <li v-for="name in group.items" :key="name" class="logo">
+                <svg
+                  v-if="LOGOS[name]"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                  focusable="false"
+                >
+                  <path :d="LOGOS[name]" fill="currentColor" />
+                </svg>
+                <span v-else class="mono" aria-hidden="true">{{
+                  monogram(name)
+                }}</span>
+                <span>{{ name }}</span>
               </li>
-            </template>
-          </ul>
+            </ul>
+          </div>
         </div>
       </div>
     </section>
@@ -566,7 +616,6 @@ onBeforeUnmount(() => {
             <span class="toc-n">{{ num(i) }}</span>
             <span class="toc-text">
               <span class="toc-title">{{ c.title }}</span>
-              <span class="toc-body">{{ c.body }}</span>
             </span>
             <svg class="toc-go" viewBox="0 0 16 16" aria-hidden="true">
               <path
@@ -586,7 +635,7 @@ onBeforeUnmount(() => {
       id="ch-ci"
       ref="scanEl"
       class="scan"
-      :class="{ live: scanLive }"
+      :class="{ live: scanLive && !readFull, reading: readFull }"
       :style="chStyle('ch-ci')"
       aria-labelledby="mj-ci"
     >
@@ -596,12 +645,10 @@ onBeforeUnmount(() => {
             <span>{{ chapter("ch-ci").n }}</span
             >{{ chapter("ch-ci").title }}
           </p>
-          <h2 id="mj-ci">
-            Catches the CI tricks that keep a failed run green.
-          </h2>
+          <h2 id="mj-ci">Read the workflow. Locate the finding.</h2>
           <p class="scan-lede">
-            Each of these lines looks deliberate in review. Mjölnir reads the
-            workflow and flags each one with its rule and a fix.
+            Follow the scan through a real workflow. Each highlighted line
+            connects the command to its finding, rule, and evidence.
           </p>
           <div class="tally">
             <div class="t-err">
@@ -641,7 +688,17 @@ onBeforeUnmount(() => {
         <figure class="file">
           <figcaption class="file-head">
             <span>{{ SCAN.file }}</span
-            ><span class="pos">{{ posLabel }}</span>
+            ><span class="file-actions"
+              ><span class="pos">{{ posLabel }}</span
+              ><button
+                type="button"
+                class="read-file"
+                :aria-pressed="readFull"
+                @click="toggleFull"
+              >
+                {{ readFull ? "Animated scan" : "Read the full file" }}
+              </button></span
+            >
           </figcaption>
           <div ref="viewEl" class="file-view">
             <div ref="innerEl" class="file-inner">
@@ -692,10 +749,8 @@ onBeforeUnmount(() => {
         </figure>
       </div>
     </section>
-    <div class="wrap masks-band" :style="chStyle('ch-ci')">
-      <h3 class="masks-title" data-reveal>
-        Lines that look deliberate in review
-      </h3>
+    <details class="wrap masks-band more-patterns" :style="chStyle('ch-ci')">
+      <summary>Explore four more patterns that can hide failures</summary>
       <ul class="masks">
         <li
           v-for="(m, i) in data.masks"
@@ -717,7 +772,7 @@ onBeforeUnmount(() => {
         <code class="ic">mjolnir --format github-summary</code>, this is how
         pull request.
       </p>
-    </div>
+    </details>
 
     <!-- ============ 02 FINDINGS ============ -->
     <section
@@ -754,7 +809,10 @@ onBeforeUnmount(() => {
             tabindex="0"
           ><span v-for="(l, i) in data.anatomy" :key="i" class="tl"><span v-for="(sp, j) in l" :key="j" :class="{ tb: sp.b, part: !!sp.part, lit: !!sp.part && sp.part === lit }" :style="sp.c ? { color: sp.c } : undefined">{{ sp.t }}</span></span></pre>
         </figure>
-        <article
+        <button
+          type="button"
+          :aria-pressed="selectedPart === p.part"
+          @click="selectPart(p.part)"
           v-for="(p, i) in ANATOMY"
           :key="p.part"
           class="card"
@@ -766,10 +824,10 @@ onBeforeUnmount(() => {
           @focus="holdPart(p.part)"
           @blur="release"
         >
-          <h3 class="card-k">{{ p.title }}</h3>
+          <span class="card-k">{{ p.title }}</span>
           <code class="tok">{{ p.token }}</code>
           <p>{{ p.body }}</p>
-        </article>
+        </button>
       </div>
     </section>
 
@@ -785,116 +843,17 @@ onBeforeUnmount(() => {
           <span>{{ chapter("ch-score").n }}</span
           >{{ chapter("ch-score").title }}
         </p>
-        <h2 id="mj-score">One score, with the arithmetic shown.</h2>
+        <h2 id="mj-score">Understand what your score means.</h2>
         <p>
-          The score measures the test suite, not your product. Every point it
-          takes off is listed, and the formula has no hidden second model.
+          See which findings need attention. The score describes your test
+          suite; it does not certify your product.
         </p>
         <a class="more" :href="withBase('/guide/scoring')"
           >Read how the score works</a
         >
       </header>
       <div class="ch-main">
-        <div ref="scoreEl" class="score-top" data-reveal>
-          <p class="odo">
-            <span class="sr">{{ s.demo.score }}</span
-            ><span
-              v-for="(d, i) in String(s.demo.score)"
-              :key="i"
-              class="odo-d"
-              aria-hidden="true"
-              ><span
-                class="odo-col"
-                :class="{ roll: odoRolled }"
-                :style="{
-                  transform: `translateY(-${odoArmed && !odoRolled ? 0 : 10 + Number(d)}em)`,
-                  transitionDelay: `${i * 160}ms`,
-                }"
-                ><span v-for="k in 20" :key="k">{{ (k - 1) % 10 }}</span></span
-              ></span
-            >
-          </p>
-          <p class="score-meta">
-            <span class="outof">/{{ s.outOf }}</span
-            ><span class="verdict" :class="`tone-${demoTone}`">{{
-              s.demo.verdict
-            }}</span>
-          </p>
-        </div>
-        <figure class="scale" data-reveal :style="{ '--i': 1 }">
-          <div class="scale-bar">
-            <span
-              v-for="b in s.bands"
-              :key="b.min"
-              class="scale-seg"
-              :class="`tone-${b.tone}`"
-              :style="{ width: span(b) }"
-            />
-            <span class="scale-mark" :style="{ left: marker }">
-              <span class="scale-pin" />
-              <span class="scale-read">{{ s.demo.score }}</span>
-            </span>
-          </div>
-          <div class="scale-legend">
-            <span
-              v-for="b in s.bands"
-              :key="b.min"
-              class="scale-key"
-              :style="{ width: span(b) }"
-            >
-              <span class="scale-verdict" :class="`tone-${b.tone}`">{{
-                b.verdict
-              }}</span>
-              <span class="scale-range">{{
-                b.min === b.max ? b.min : `${b.min}–${b.max}`
-              }}</span>
-            </span>
-          </div>
-        </figure>
-
-        <div class="math" data-reveal :style="{ '--i': 2 }">
-          <p class="math-title">Step by step</p>
-          <dl>
-            <div>
-              <dt>Deductions</dt>
-              <dd>
-                <b data-ck="raw" :data-to="s.demo.raw">{{
-                  shown("raw", s.demo.raw)
-                }}</b>
-                points across
-                <b data-ck="decl" :data-to="s.demo.declarations">{{
-                  shown("decl", s.demo.declarations)
-                }}</b>
-                test declarations
-              </dd>
-            </div>
-            <div>
-              <dt>Rate</dt>
-              <dd>
-                {{ s.demo.raw }} ÷ ({{ s.demo.declarations }} +
-                {{ s.demo.smoothing }}) = <b>{{ s.demo.rate }}</b>
-              </dd>
-            </div>
-            <div>
-              <dt>Score</dt>
-              <dd>
-                {{ s.outOf }} − min({{ s.outOf }}, {{ s.demo.rate }} ×
-                {{ s.demo.k }}) =
-                <b data-ck="final" :data-to="s.outOf - s.demo.cut">{{
-                  shown("final", s.outOf - s.demo.cut)
-                }}</b>
-                <span class="verdict-inline" :class="`tone-${demoTone}`">{{
-                  s.demo.verdict
-                }}</span>
-              </dd>
-            </div>
-          </dl>
-          <p class="fine">
-            Dividing by test declarations means adding empty spec files cannot
-            raise the score. Three ceilings then cap it, and the scoring guide
-            lists them.
-          </p>
-        </div>
+        <ScoreBands :score="s.demo.score" :out-of="s.outOf" :bands="s.bands" />
       </div>
     </section>
 
@@ -937,31 +896,52 @@ onBeforeUnmount(() => {
           </p>
         </div>
       </div>
-      <ol
-        class="ladder"
+      <div
+        class="evidence-path"
         data-reveal
-        :style="{ '--n': levels.length, '--b': boundary }"
+        aria-label="Trust levels from L0 to L5"
       >
-        <li
-          v-for="l in levels"
-          :key="l.level"
-          class="rung"
-          :class="{ run: l.runtime }"
-          :style="{
-            '--h': `${rungHeight(l.i, l.runtime)}%`,
-            '--c': l.color,
-            '--i': l.i,
-          }"
+        <section
+          v-for="group in trustGroups"
+          :key="group.title"
+          class="trust-group"
+          :class="{ runtime: group.runtime }"
+          :aria-label="group.title"
         >
-          <span class="bar-box" aria-hidden="true"><span class="bar" /></span>
-          <span class="lv-code">{{ l.level }}</span>
-          <span class="lv-name">{{ l.name }}</span>
-          <span class="lv-body">{{ l.body }}</span>
-        </li>
-        <li class="runline" aria-hidden="true">
-          <span>A real run starts here</span>
-        </li>
-      </ol>
+          <header class="trust-group-head">
+            <span class="trust-group-symbol" aria-hidden="true">
+              <svg v-if="group.runtime" viewBox="0 0 24 24">
+                <path d="M3 12h4l3-7 4 14 3-7h4" />
+              </svg>
+              <svg v-else viewBox="0 0 24 24">
+                <path d="M9 7 4 12l5 5m6-10 5 5-5 5" />
+              </svg>
+            </span>
+            <div>
+              <h3>{{ group.title }}</h3>
+              <p>{{ group.detail }}</p>
+            </div>
+          </header>
+          <ol class="trust-nodes">
+            <li
+              v-for="level in group.levels"
+              :key="level.level"
+              class="trust-node"
+              :style="{ '--i': level.i }"
+            >
+              <span class="trust-level">{{ level.level }}</span>
+              <div>
+                <h4>{{ level.name }}</h4>
+                <p>{{ level.body }}</p>
+              </div>
+            </li>
+          </ol>
+        </section>
+        <p class="trust-boundary">
+          <span aria-hidden="true">↳</span> L3 is the boundary: a real run is
+          required from here.
+        </p>
+      </div>
     </section>
 
     <!-- ============ 05 RUNTIME ============ -->
@@ -1353,6 +1333,24 @@ onBeforeUnmount(() => {
   overflow: hidden;
   background: var(--vp-c-bg);
 }
+.hero-heading {
+  position: relative;
+  isolation: isolate;
+}
+.heading-sky {
+  background: var(--vp-c-bg);
+}
+.heading-sky {
+  position: absolute;
+  top: calc(-1 * (var(--vp-nav-height) + clamp(24px, 4vw, 56px)));
+  bottom: -28px;
+  left: calc(50% - 50vw);
+  width: 100vw;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+  mask-image: linear-gradient(to bottom, #000 75%, transparent);
+}
 .sky {
   position: absolute;
   inset: 0;
@@ -1398,8 +1396,8 @@ onBeforeUnmount(() => {
     color-mix(in srgb, var(--mj-aurora-cyan) 30%, transparent);
 }
 .hero {
-  padding-top: calc(var(--vp-nav-height) + clamp(48px, 7vw, 104px));
-  padding-bottom: clamp(72px, 9vw, 128px);
+  padding-top: calc(var(--vp-nav-height) + clamp(24px, 4vw, 56px));
+  padding-bottom: clamp(48px, 6vw, 80px);
 }
 .title {
   font-size: clamp(36px, 4.9vw, 64px);
@@ -1439,10 +1437,10 @@ onBeforeUnmount(() => {
 }
 .hero-grid {
   display: grid;
-  grid-template-columns: minmax(0, 4fr) minmax(0, 6fr);
-  gap: clamp(32px, 5vw, 64px);
+  grid-template-columns: minmax(280px, 3fr) minmax(0, 7fr);
+  gap: clamp(24px, 3vw, 40px);
   align-items: start;
-  margin-top: clamp(36px, 5vw, 56px);
+  margin-top: clamp(28px, 3vw, 40px);
 }
 .lede {
   max-width: 34ch;
@@ -1455,68 +1453,50 @@ onBeforeUnmount(() => {
   flex-direction: column;
   align-items: flex-start;
   gap: 20px;
-  margin-top: 32px;
+  margin-top: 24px;
 }
 
-/* ---- works with: one strip, drifting ---- */
+/* ---- works with: every supported technology, always visible ---- */
 .stack {
-  display: flex;
-  align-items: center;
-  gap: 32px;
-  padding-block: 28px;
+  padding-block: 44px;
   border-bottom: 1px solid var(--line);
 }
 .mj .stack-title {
-  flex: none;
-  width: 10rem;
-  font-size: 15px;
+  font-size: 26px;
   font-weight: 500;
-  line-height: 1.4;
+  line-height: 1.3;
+  color: var(--t1);
+  margin-bottom: 28px;
+}
+.stack-groups {
+  display: grid;
+  gap: 24px;
+}
+.stack-group {
+  display: grid;
+  grid-template-columns: 145px minmax(0, 1fr);
+  align-items: start;
+  gap: 20px;
+}
+.mj .stack-group h3 {
+  padding-top: 10px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
   color: var(--t2);
 }
-.marquee {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  mask-image: linear-gradient(
-    90deg,
-    transparent,
-    #000 8%,
-    #000 92%,
-    transparent
-  );
-}
-.mj .track {
+.mj .stack-items {
   display: flex;
-  align-items: center;
-  width: max-content;
-  animation: marquee 80s linear infinite;
-}
-.marquee:hover .track {
-  animation-play-state: paused;
-}
-@keyframes marquee {
-  to {
-    transform: translateX(-50%);
-  }
-}
-.group {
-  margin-right: 14px;
-  padding-left: 22px;
-  border-left: 1px solid var(--line-2);
-  font-size: 11.5px;
-  font-weight: 500;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  white-space: nowrap;
-  color: var(--t3);
+  flex-wrap: wrap;
+  gap: 8px;
 }
 .logo {
   display: inline-flex;
   align-items: center;
   gap: 9px;
-  margin-right: 12px;
-  padding: 6px 12px 6px 8px;
+  margin: 0;
+  padding: 8px 12px;
   border: 1px solid transparent;
   border-radius: 8px;
   font-size: 14px;
@@ -1739,13 +1719,10 @@ onBeforeUnmount(() => {
   padding-block: clamp(64px, 8vw, 112px) 40px;
 }
 .scan.live {
-  height: 330vh;
+  height: auto;
 }
 .scan.live .scan-sticky {
-  position: sticky;
-  top: var(--vp-nav-height);
-  height: calc(100vh - var(--vp-nav-height));
-  height: calc(100svh - var(--vp-nav-height));
+  position: relative;
   align-items: center;
   padding-block: 24px;
 }
@@ -1866,7 +1843,7 @@ onBeforeUnmount(() => {
 }
 .ln {
   display: grid;
-  grid-template-columns: 4.5ch minmax(0, 1fr);
+  grid-template-columns: calc(2ch + 32px) minmax(0, 1fr);
   font-family: var(--vp-font-family-mono);
   font-size: 13px;
   line-height: 1.85;
@@ -1876,16 +1853,17 @@ onBeforeUnmount(() => {
     background-color 500ms var(--settle);
 }
 .ln .n {
-  padding-right: 16px;
+  padding-inline: 16px;
+  font-variant-numeric: tabular-nums;
   text-align: right;
   user-select: none;
   transition: color 400ms var(--settle);
 }
 .ln .s {
   padding-right: 18px;
-  white-space: pre;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  min-width: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 .ln.done {
   color: var(--t2);
@@ -2131,19 +2109,16 @@ onBeforeUnmount(() => {
   border-color: color-mix(in srgb, var(--mj-aurora-cyan) 55%, transparent);
   background: color-mix(in srgb, var(--mj-aurora-cyan) 10%, transparent);
 }
-/* A system monospace on purpose: the Geist Mono web subset has no
-   box-drawing glyphs, and this card must match the terminal exactly. */
 .anat-term {
   margin: 0;
   padding: 18px 22px;
   overflow-x: auto;
-  font-family:
-    ui-monospace, "SF Mono", "Cascadia Code", "Cascadia Mono", Consolas,
-    "DejaVu Sans Mono", Menlo, monospace;
-  font-size: clamp(10px, 2.4vw, 13px);
+  font-family: var(--vp-font-family-mono);
+  font-size: var(--mj-code-size);
   line-height: 1.6;
   color: var(--t2);
-  white-space: pre;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 .anat-term .tl {
   display: block;
@@ -2173,15 +2148,18 @@ onBeforeUnmount(() => {
 }
 .odo {
   display: inline-flex;
-  font-size: clamp(96px, 12vw, 168px);
+  font-size: clamp(81.6px, 10.2vw, 142.8px);
   font-weight: 500;
   line-height: 1;
-  letter-spacing: -0.06em;
+  letter-spacing: 0;
   font-variant-numeric: tabular-nums;
   color: var(--t1);
 }
 .odo-d {
   display: inline-block;
+  width: 0.72em;
+  flex: none;
+  text-align: center;
   height: 1em;
   overflow: hidden;
 }
@@ -2274,26 +2252,16 @@ onBeforeUnmount(() => {
   color: var(--t1);
 }
 .scale-legend {
-  position: relative;
-  display: flex;
-  margin-top: 14px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px 12px;
+  margin-top: 20px;
 }
 .scale-key {
   display: grid;
-  gap: 2px;
-  min-width: 6px;
-  padding-right: 8px;
-}
-.scale-key + .scale-key {
-  margin-left: 2px;
-}
-.scale-key:last-child {
-  position: absolute;
-  top: 0;
-  right: 0;
+  gap: 3px;
   width: auto !important;
-  justify-items: end;
-  padding-right: 0;
+  min-width: 0;
 }
 .scale-verdict {
   font-size: 12px;
@@ -2354,100 +2322,141 @@ onBeforeUnmount(() => {
   grid-template-columns: minmax(0, 1fr);
   gap: 24px;
 }
-.mj .ladder {
-  position: relative;
+.evidence-path {
   display: grid;
-  grid-template-columns: repeat(var(--n), minmax(0, 1fr));
-  gap: 14px;
-  padding: 28px 24px 24px;
-  border: 1px solid var(--line-2);
-  border-radius: 10px;
-  background: var(--well);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 32px 48px;
+  padding-top: 16px;
 }
-.rung {
-  display: grid;
-  grid-template-rows: 180px auto auto 1fr;
-  gap: 4px;
+.trust-group {
+  min-width: 0;
+  --trust-accent: var(--mj-steel);
 }
-.bar-box {
+.trust-group.runtime {
+  --trust-accent: var(--mj-aurora-cyan);
+}
+.trust-group-head {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
+  gap: 15px;
+  padding: 20px 0 26px;
+  border-top: 1px solid var(--line-2);
 }
-.bar {
-  position: relative;
-  display: block;
-  width: 100%;
-  height: var(--h);
-  overflow: hidden;
-  border-radius: 3px 3px 0 0;
-  background: linear-gradient(
-    to top,
-    color-mix(in srgb, var(--c) 45%, transparent),
-    var(--c)
-  );
-  transform-origin: bottom;
-  transition: transform 900ms var(--settle);
-  transition-delay: calc(var(--i) * 110ms + 150ms);
+.trust-group-symbol {
+  color: var(--trust-accent);
+  display: grid;
+  place-items: center;
+  width: 44px;
+  flex: none;
 }
-.mj-anim .ladder[data-reveal]:not([data-in]) .bar {
-  transform: scaleY(0);
+.trust-group-symbol svg {
+  width: 25px;
+  height: 25px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
-/* One pass of light up the rungs a real run reaches. Once, never looped. */
-.rung.run .bar::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    to top,
-    transparent,
-    color-mix(in srgb, var(--vp-c-text-1) 45%, transparent),
-    transparent
-  );
-  transform: translateY(100%);
-}
-.ladder[data-in] .rung.run .bar::after {
-  animation: sweep 1.3s var(--settle) both;
-  animation-delay: calc(var(--i) * 140ms + 900ms);
-}
-@keyframes sweep {
-  to {
-    transform: translateY(-100%);
-  }
-}
-.lv-code {
-  margin-top: 10px;
-  font-family: var(--vp-font-family-mono);
-  font-size: 13px;
-  color: var(--t3);
-}
-.rung.run .lv-code {
-  color: var(--c);
-}
-.lv-name {
-  font-size: 15px;
+.mj .trust-group-head h3 {
+  font-size: 22px;
   font-weight: 500;
   line-height: 1.3;
+}
+.trust-group-head p {
+  color: var(--t2);
+  font-size: 13px;
+  margin-top: 5px;
+}
+.mj .trust-nodes {
+  display: grid;
+  gap: 0;
+}
+.trust-node {
+  position: relative;
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  align-items: start;
+  gap: 16px;
+  padding-bottom: 30px;
+  transition:
+    opacity 0.5s var(--settle),
+    transform 0.5s var(--settle);
+  transition-delay: calc(var(--i) * 85ms);
+}
+.trust-node:last-child {
+  padding-bottom: 0;
+}
+.trust-node:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  width: 1px;
+  top: 44px;
+  bottom: 0;
+  left: 21.5px;
+  background: linear-gradient(var(--trust-accent), var(--line-2));
+  opacity: 0.4;
+}
+.trust-level {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid color-mix(in srgb, var(--trust-accent) 45%, transparent);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--trust-accent) 7%, var(--well));
+  font-family: var(--vp-font-family-mono);
+  font-size: 14px;
+  color: var(--trust-accent);
+}
+.mj .trust-node h4 {
+  margin: 0 0 7px;
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 1.35;
   color: var(--t1);
 }
-.lv-body {
-  font-size: 13px;
-  line-height: 1.5;
+.trust-node p {
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--t2);
+  max-width: 40ch;
+}
+.trust-boundary {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  border-top: 1px solid var(--line);
+  padding-top: 20px;
+  font-size: 14px;
   color: var(--t2);
 }
-.runline {
-  position: absolute;
-  top: 18px;
-  bottom: 18px;
-  left: calc(24px + var(--b) * (100% - 48px + 14px) / var(--n) - 7px);
-  border-left: 1px dashed color-mix(in srgb, var(--mj-aurora) 70%, transparent);
+.trust-boundary span {
+  color: var(--mj-aurora-cyan);
+  font-size: 23px;
 }
-.runline span {
-  position: absolute;
-  top: 0;
-  left: 10px;
-  font-size: 12px;
-  white-space: nowrap;
-  color: var(--mj-aurora-bright);
+.mj-anim .evidence-path[data-reveal]:not([data-in]) .trust-node {
+  opacity: 0;
+  transform: translateY(10px);
+}
+@media (max-width: 640px) {
+  .evidence-path {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 32px;
+  }
+  .stack-group {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .scale-legend {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .trust-node {
+    transition: none;
+  }
 }
 
 /* 05 ---- runtime: the output streams in ---- */
@@ -2482,6 +2491,7 @@ onBeforeUnmount(() => {
 .table-wrap {
   margin-top: 32px;
   overflow-x: auto;
+  padding: 20px 24px;
 }
 .mj .rules {
   display: table;
@@ -2580,6 +2590,9 @@ onBeforeUnmount(() => {
   padding-right: 0;
   color: var(--t3);
 }
+.rules thead th:last-child {
+  padding-right: 0;
+}
 
 /* 07 ---- ci and agents ---- */
 .flows {
@@ -2663,6 +2676,9 @@ onBeforeUnmount(() => {
   right: var(--edge);
   border-top: 1px solid var(--line);
 }
+.limits-box {
+  padding: clamp(24px, 4vw, 40px);
+}
 .mj .limits-box h2 {
   font-size: clamp(24px, 2.5vw, 30px);
   font-weight: 500;
@@ -2673,10 +2689,17 @@ onBeforeUnmount(() => {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 22px 40px;
   margin-top: 24px;
+  margin-bottom: 0;
+  padding: 0;
+  list-style: none;
 }
 .limits li {
+  min-width: 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
   font-size: 16px;
   line-height: 1.5;
+  overflow-wrap: anywhere;
   color: var(--t1);
 }
 .lim-detail {
@@ -2805,12 +2828,11 @@ onBeforeUnmount(() => {
   .scan.live .file {
     display: flex;
     flex-direction: column;
-    flex: 1;
+    width: 100%;
     min-height: 0;
   }
   .scan.live .file-view {
-    flex: 1;
-    height: auto;
+    height: 480px;
   }
   .ln {
     font-size: 11.5px;
@@ -2837,6 +2859,9 @@ onBeforeUnmount(() => {
   }
 }
 @media (max-width: 640px) {
+  .table-wrap {
+    padding: 16px;
+  }
   .stack {
     flex-direction: column;
     align-items: flex-start;
@@ -2895,6 +2920,56 @@ onBeforeUnmount(() => {
   }
   .marquee {
     mask-image: none;
+  }
+}
+
+.file-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.read-file {
+  padding: 7px 10px;
+  min-height: 36px;
+  border: 1px solid var(--line-2);
+  border-radius: 6px;
+  color: var(--t1);
+  font: 12px var(--vp-font-family-base);
+  cursor: pointer;
+}
+.read-file:hover {
+  background: var(--vp-c-bg-soft);
+}
+.read-file:focus-visible,
+.anatomy button:focus-visible {
+  outline: 2px solid var(--mj-aurora-cyan);
+  outline-offset: 3px;
+}
+.anatomy button.card {
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+}
+.scan.reading .file-inner {
+  transform: none !important;
+}
+.scan.reading .beam {
+  display: none;
+}
+.install-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  max-width: 100%;
+  min-width: 0;
+}
+.install-row > :last-child {
+  min-width: 0;
+}
+@media (max-width: 400px) {
+  .install-row {
+    gap: 8px;
   }
 }
 </style>

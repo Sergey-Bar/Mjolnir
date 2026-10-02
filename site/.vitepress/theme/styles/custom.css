@@ -4,8 +4,8 @@
 
 /* The metrics-matched "Inter Fallback" and "Cinzel Fallback" faces that
    lived here were declared but named in no stack once both faces were
-   retired: dead weight. CLS is held by the preloaded same-origin Geist
-   instead (config.mts). */
+   retired: dead weight. The active website faces are self-hosted and
+   preloaded in config.mts. */
 
 body {
   margin: 0;

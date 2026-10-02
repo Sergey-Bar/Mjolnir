@@ -211,15 +211,8 @@ async function copyReport() {
 /* The reporter's own ground (readme-svg.ts BG / TITLE_BAR_BG), kept in
    both themes — see the component comment. */
 .term {
-  /* The SAME stack scripts/readme-svg.ts declares on the SVG. The site's
-     usual mono is JetBrains Mono from Google Fonts, whose served subsets
-     do not carry U+2500 box-drawing or U+2580 block elements — those fell
-     back to another font with a different advance, so the deduction table
-     and the score bars came out up to 3.6 columns narrow against the rest
-     of the line. One font for every glyph keeps the columns true. */
-  --term-mono:
-    ui-monospace, "SF Mono", "Cascadia Code", "Cascadia Mono", Consolas,
-    "DejaVu Sans Mono", Menlo, monospace;
+  /* Full self-hosted font includes the box-drawing and block glyphs. */
+  --term-mono: var(--vp-font-family-mono);
 
   --term-bg: var(--mj-ink-950);
   --term-bar: var(--mj-ink-950);

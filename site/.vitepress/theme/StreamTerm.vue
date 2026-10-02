@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, onBeforeUnmount, onMounted, ref } from "vue";
+import { onBeforeUnmount, onMounted, ref } from "vue";
 import type { TermLine } from "./home.data";
 
 const props = defineProps<{
@@ -18,12 +18,6 @@ const body = ref<HTMLElement>();
 let timer = 0;
 let io: IntersectionObserver | undefined;
 
-function follow() {
-  nextTick(() => {
-    if (body.value) body.value.scrollTop = body.value.scrollHeight;
-  });
-}
-
 function play() {
   clearTimeout(timer);
   typed.value = 0;
@@ -36,7 +30,6 @@ function play() {
       timer = window.setTimeout(step, 45);
     } else if (shown.value < props.lines.length) {
       shown.value++;
-      follow();
       timer = window.setTimeout(step, shown.value === 1 ? 480 : 45);
     } else {
       playing.value = false;
@@ -55,7 +48,7 @@ onMounted(() => {
       io?.disconnect();
       play();
     },
-    { threshold: 0.35 },
+    { threshold: 0.05 },
   );
   if (body.value) io.observe(body.value);
 });
@@ -71,15 +64,25 @@ onBeforeUnmount(() => {
     <figcaption class="st-bar">
       <span class="st-dots" aria-hidden="true"><i /><i /><i /></span>
       <span class="st-title">{{ title }}</span>
-      <button type="button" class="st-replay" :disabled="playing" @click="play">
-        Replay
+      <button
+        type="button"
+        class="st-replay"
+        :disabled="playing"
+        aria-label="Replay scan"
+        title="Replay scan"
+        @click="play"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M3 10a9 9 0 1 1 2.5 8.3M3 4v6h6" />
+        </svg>
       </button>
     </figcaption>
     <pre
       ref="body"
       class="st-body"
       tabindex="0"
-    ><span class="tl"><span class="st-prompt">$ </span>{{ command.slice(0, typed) }}<span v-if="typed < command.length" class="st-caret" aria-hidden="true" /></span><span v-for="(l, i) in lines.slice(0, shown)" :key="i" class="tl"><span v-for="(s, j) in l" :key="j" :class="{ tb: s.b, bar: isBar(s.t) }" :style="s.c ? { color: s.c } : undefined">{{ s.t }}</span></span></pre>
+      aria-label="Original summary from a saved example scan."
+    ><span class="tl"><span class="st-prompt">$ </span>{{ command.slice(0, typed) }}<span v-if="typed < command.length" class="st-caret" aria-hidden="true" /></span><span v-for="(l, i) in lines" :key="i" class="tl" :class="{ 'terminal-box-line': /[╭╮╰╯│]/.test(l.map(s => s.t).join('')) }" :style="{ opacity: i < shown ? 1 : 0 }" :aria-hidden="i >= shown"><span v-for="(s, j) in l" :key="j" :class="{ tb: s.b, bar: isBar(s.t) }" :style="s.c ? { color: s.c } : undefined">{{ s.t }}</span></span></pre>
   </figure>
 </template>
 
@@ -131,8 +134,11 @@ onBeforeUnmount(() => {
   text-align: center;
 }
 .st-replay {
-  min-height: 30px;
-  padding: 0 12px;
+  min-height: 44px;
+  width: 44px;
+  display: grid;
+  place-items: center;
+  padding: 0;
   border: 1px solid var(--vp-c-border);
   border-radius: 6px;
   font-size: 12.5px;
@@ -148,21 +154,37 @@ onBeforeUnmount(() => {
   opacity: 0.45;
   cursor: default;
 }
-/* A system monospace on purpose: the Geist Mono web subset has no
-   box-drawing or block glyphs, and mixing faces breaks the columns. */
+.st-replay svg {
+  width: 19px;
+  height: 19px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.st-replay:focus-visible,
+.st-body:focus-visible {
+  outline: 2px solid var(--vp-c-brand-1);
+  outline-offset: -3px;
+}
 .st-body {
-  height: 400px;
+  height: auto;
   margin: 0;
   padding: 18px 20px;
-  font-family:
-    ui-monospace, "SF Mono", "Cascadia Code", "Cascadia Mono", Consolas,
-    "DejaVu Sans Mono", Menlo, monospace;
-  font-size: clamp(10px, 2.6vw, 13px);
+  font-family: var(--vp-font-family-mono);
+  font-size: var(--mj-code-size);
   line-height: 1.55;
   color: var(--mj-ink-100);
   background-color: var(--mj-ink-950);
-  white-space: pre;
-  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  overflow: visible;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.st-body::-webkit-scrollbar {
+  display: none;
 }
 .tl {
   display: block;
@@ -200,7 +222,7 @@ onBeforeUnmount(() => {
 }
 @media (max-width: 560px) {
   .st-body {
-    height: 340px;
+    height: auto;
   }
 }
 @media (prefers-reduced-motion: reduce) {

@@ -1,0 +1,221 @@
+{
+  "schemaVersion": 1,
+  "partial": false,
+  "scopeIntegrity": {
+    "discovered": 1,
+    "analyzed": 1,
+    "ignored": 0,
+    "unrecognized": 0,
+    "parseFailed": 0,
+    "truncated": 0,
+    "scopeVerdict": "PROVEN"
+  },
+  "runIdentity": {
+    "scanId": "ad66ce59a733902b7345ce6d504c50a3f4b4b92f68570a23cd6866c632d0ba33",
+    "inputFingerprint": "c6207cfe64f0d936f14f4e58b4d09180e0842955341db583abe732e83e641cef",
+    "rulesDigest": "2844bd53111df68947d1141082845b9564d2a210108c677c5fdfd311bf586ddc",
+    "configFingerprint": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+    "engineVersion": "5.0.0",
+    "boundLinks": ["input", "rules", "config", "engine"],
+    "trustModelVersion": "1.0.0",
+    "scoringModelVersion": "1.0.0",
+    "frameworkSupportMatrixVersion": "1.0.0"
+  },
+  "evidenceGraph": {
+    "chain": [
+      {
+        "link": "verdict"
+      },
+      {
+        "link": "evidence"
+      },
+      {
+        "link": "execution",
+        "ref": "ad66ce59a733902b7345ce6d504c50a3f4b4b92f68570a23cd6866c632d0ba33"
+      },
+      {
+        "link": "scope",
+        "ref": "c6207cfe64f0d936f14f4e58b4d09180e0842955341db583abe732e83e641cef"
+      },
+      {
+        "link": "source"
+      },
+      {
+        "link": "rule",
+        "ref": "2844bd53111df68947d1141082845b9564d2a210108c677c5fdfd311bf586ddc"
+      },
+      {
+        "link": "fixture"
+      },
+      {
+        "link": "reproduction"
+      }
+    ],
+    "runId": {
+      "scanId": "ad66ce59a733902b7345ce6d504c50a3f4b4b92f68570a23cd6866c632d0ba33",
+      "inputFingerprint": "c6207cfe64f0d936f14f4e58b4d09180e0842955341db583abe732e83e641cef",
+      "rulesDigest": "2844bd53111df68947d1141082845b9564d2a210108c677c5fdfd311bf586ddc",
+      "configFingerprint": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "engineVersion": "5.0.0",
+      "boundLinks": ["input", "rules", "config", "engine"],
+      "trustModelVersion": "1.0.0",
+      "scoringModelVersion": "1.0.0",
+      "frameworkSupportMatrixVersion": "1.0.0"
+    }
+  },
+  "evidence": {
+    "records": [],
+    "counts": {
+      "total": 0,
+      "failed": 0,
+      "flaky": 0,
+      "skipped": 0,
+      "timedOut": 0
+    },
+    "artifact": null
+  },
+  "score": null,
+  "reason": "no-tests-found",
+  "frameworks": [],
+  "frameworkDetectionUnknown": true,
+  "dimensions": [
+    {
+      "category": "QA-CI",
+      "score": 92,
+      "errors": 1,
+      "warnings": 0,
+      "infos": 0
+    }
+  ],
+  "findings": [
+    {
+      "severity": "error",
+      "confidence": "high",
+      "findingType": "deterministic-defect",
+      "file": ".github/workflows/ci.yml",
+      "line": 7,
+      "column": 23,
+      "message": "Command exit code is swallowed with `|| true`.",
+      "why": "A failing step becomes a passing one — the workflow checkmark no longer reflects reality.",
+      "fix": "Remove `|| true`. If the step is genuinely optional, mark it clearly and use `continue-on-error` on that step only.",
+      "qaImpact": "FALSE-GREEN",
+      "ruleId": "QA-CI-002",
+      "category": "QA-CI",
+      "evidenceLevel": "E2",
+      "measuredFpRate": 0.111,
+      "measuredFpN": 18,
+      "detectorRevision": 4,
+      "fixGroupId": "QA-CI-002"
+    }
+  ],
+  "testFileCount": 0,
+  "testDeclarationCount": 0,
+  "rawDeductions": 8,
+  "effectiveDeductions": 8,
+  "suppressionCount": 0,
+  "agenticProfile": {
+    "testFiles": 0,
+    "generatedMarkedFiles": 0,
+    "codegenLikeFiles": 0,
+    "shareMarkedGenerated": 0,
+    "findingsInGeneratedFiles": 0,
+    "findingsInUnmarkedFiles": 1,
+    "note": "Static provenance markers only (generated-file headers, Playwright codegen default titles). Absence of a marker does not prove human authorship; healed and MCP-edited files without markers are indistinguishable from hand-written ones. Provenance never changes scoring or evidence — authorship is metadata, not trust."
+  },
+  "analysisStatus": {
+    "discovery": "complete",
+    "rules": "complete",
+    "skippedFiles": 0,
+    "rulesCrashed": 0,
+    "parseFallbacks": 0,
+    "reasons": [],
+    "durationMs": 21
+  },
+  "scoringModelVersion": "1.0.0",
+  "trustSummary": {
+    "level": "L2",
+    "confidence": 0.63,
+    "evidenceCoverage": 0,
+    "inconclusiveRate": 0.5,
+    "measuredFpOfFiredRules": 0.111,
+    "provisionalRuleIds": [],
+    "confidenceCeiling": 0.9,
+    "ceilingReasons": ["framework-detection-unknown"]
+  },
+  "correlationConclusions": [],
+  "contract": {
+    "contractVersion": 1,
+    "summary": {
+      "digest": "sha256:17f23dab93fb8f383a96d3e7fdf3447f02b6b496359d75450b9aa2f814d0e19b",
+      "findings": 1,
+      "score": null,
+      "errors": 1,
+      "warnings": 0,
+      "infos": 0,
+      "advisory": 0
+    },
+    "annotations": [
+      {
+        "path": ".github/workflows/ci.yml",
+        "start_line": 7,
+        "annotation_level": "failure",
+        "message": "QA-CI-002: Command exit code is swallowed with `|| true`.",
+        "ruleId": "QA-CI-002",
+        "detectorRevision": 4,
+        "advisory": false
+      }
+    ],
+    "annotationsTruncated": false,
+    "completeness": {
+      "partial": false,
+      "discovery": "complete",
+      "rules": "complete",
+      "skippedFiles": 0,
+      "rulesCrashed": 0,
+      "parseFallbacks": 0,
+      "truncationReasons": [],
+      "reasons": [],
+      "frameworkDetectionUnknown": true,
+      "durationMs": 21,
+      "scopeIntegrity": {
+        "discovered": 1,
+        "analyzed": 1,
+        "ignored": 0,
+        "unrecognized": 0,
+        "parseFailed": 0,
+        "truncated": 0,
+        "scopeVerdict": "PROVEN"
+      },
+      "runIdentity": {
+        "scanId": "ad66ce59a733902b7345ce6d504c50a3f4b4b92f68570a23cd6866c632d0ba33",
+        "inputFingerprint": "c6207cfe64f0d936f14f4e58b4d09180e0842955341db583abe732e83e641cef",
+        "rulesDigest": "2844bd53111df68947d1141082845b9564d2a210108c677c5fdfd311bf586ddc",
+        "configFingerprint": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+        "engineVersion": "5.0.0",
+        "boundLinks": ["input", "rules", "config", "engine"],
+        "trustModelVersion": "1.0.0",
+        "scoringModelVersion": "1.0.0",
+        "frameworkSupportMatrixVersion": "1.0.0"
+      }
+    },
+    "trustSummary": {
+      "level": "L2",
+      "confidence": 0.63,
+      "evidenceCoverage": 0,
+      "inconclusiveRate": 0.5,
+      "measuredFpOfFiredRules": 0.111,
+      "provisionalRuleIds": [],
+      "confidenceCeiling": 0.9,
+      "ceilingReasons": ["framework-detection-unknown"]
+    },
+    "provenance": {
+      "testFiles": 0,
+      "generatedMarkedFiles": 0,
+      "codegenLikeFiles": 0,
+      "shareMarkedGenerated": 0,
+      "findingsInGeneratedFiles": 0,
+      "findingsInUnmarkedFiles": 1,
+      "note": "Static provenance markers only (generated-file headers, Playwright codegen default titles). Absence of a marker does not prove human authorship; healed and MCP-edited files without markers are indistinguishable from hand-written ones. Provenance never changes scoring or evidence — authorship is metadata, not trust."
+    }
+  }
+}

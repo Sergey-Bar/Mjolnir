@@ -88,6 +88,15 @@
   --mj-l3: #37abbd; /* trust L3 — runtime begins */
   --mj-l4: #45c1d4; /* trust L4 — runtime */
   --mj-l5: #5cc4e0; /* trust L5 — runtime verdict */
+  --mj-reading-accent: #73c4ca; /* reading accent rule, gradient near stop */
+  --mj-reading-accent-alt: #a596e5; /* reading accent rule, gradient far stop */
+  --mj-reading-focus: #8ce3ed; /* focus ring on reading surfaces */
+  --mj-reading-accent-bright: #85dbed; /* mark glyph, hover */
+  --mj-reading-accent-ink: #e5fcff; /* wordmark ink, hover */
+  --mj-reading-unworthy: #ff9790; /* UNWORTHY at reading contrast */
+  --mj-reading-muted: #c6cfdb; /* muted body ink, reading surfaces */
+  --mj-reading-dim: #acb9ca; /* dimmed ink, reading surfaces */
+  --mj-reading-lede: #e0e6ee; /* hero lede ink */
   --mj-critical: var(--mj-unworthy);
   --mj-warning: var(--mj-needswork);
   --mj-worthy: var(--mj-trusted);

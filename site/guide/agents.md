@@ -34,6 +34,28 @@ re-runs or reports honestly, exactly like CI does.
 
 ## MCP
 
+### Connect from Claude Code
+
+Run this command to register the local Mjölnir MCP server:
+
+```bash
+claude mcp add mjolnir -- npx -y mjolnir-qa@5.0.0 mcp
+```
+
+Use Node.js 22.18 or later. For another MCP client, configure
+`npx` as the command with arguments `-y mjolnir-qa@5.0.0 mcp`.
+Provide the repository path when requesting a scan.
+
+Ask the agent to inspect findings, explain their evidence, and compare the
+scan before and after a change. Run the affected tests separately.
+Mjölnir does not execute the test suite or automatically apply suggested fixes.
+
+For a concrete result shape, open the JSON tab in the
+[saved example report](./example-report). For machine-readable discovery,
+start with [llms.txt](/llms.txt).
+
+### Verification contract
+
 The same loop runs over the MCP transport: the `verify` tool is 1:1
 with the verb (scan + baseline diff → the digest as data), under the
 same guardrails as every tool — one scan in flight, parameter size

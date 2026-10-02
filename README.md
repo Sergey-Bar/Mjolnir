@@ -21,7 +21,7 @@ when verification isn't earning its keep.
 npx mjolnir-qa@5.1.0
 ```
 
-[See it work](#see-it-work) · [Quickstart](#quickstart) · [What it finds](#what-mjölnir-finds) · [Score](#the-worthiness-score) · [Evidence](#the-evidence-model) · [Forensics](#runtime-forensics) · [CI](#ci-integrity) · [Agents](#ai-agents) · [Security](#trust-and-security) · [Limits](#what-mjölnir-cannot-tell-you) · [Docs](#documentation)
+[**Interactive walkthrough**](https://sergey-bar.github.io/Mjolnir/) · [See it work](#see-it-work) · [Quickstart](#quickstart) · [What it finds](#what-mjölnir-finds) · [Score](#the-worthiness-score) · [Evidence](#the-evidence-model) · [Forensics](#runtime-forensics) · [CI](#ci-integrity) · [Agents](#ai-agents) · [Security](#trust-and-security) · [Limits](#what-mjölnir-cannot-tell-you) · [Docs](#documentation)
 
 <div>
 
@@ -140,6 +140,10 @@ manually via `npm run docs:video:render` and nothing checks that the `.mp4` has
 been re-encoded. Re-run it to bring the asset forward.</sub>
 
 </details>
+
+<sub>Prefer to click through it? [Explore the animated walkthrough on the
+website](https://sergey-bar.github.io/Mjolnir/), or read
+[the guide](https://sergey-bar.github.io/Mjolnir/guide/getting-started).</sub>
 
 ### One finding, up close
 
@@ -384,6 +388,7 @@ The full catalog is generated from the registry, never maintained by hand:
 | QA-CS-103    | C#         | Test method with no assertions                               | error    | extended   |
 | QA-CS-105    | C#         | `WaitForTimeoutAsync()` hard sleep                           | warning  | extended   |
 | QA-CS-106    | C#         | Brittle selector instead of role locator                     | warning  | quarantine |
+| QA-TEST-001  | Hygiene    | Focused test committed (`.only`, `fit`)                      | error    | quarantine |
 
 Python also ships QA-PY-001…012 (pytest hygiene) and QA-PY-101…108
 (Playwright for Python). Cypress and Selenium have starter sets of three

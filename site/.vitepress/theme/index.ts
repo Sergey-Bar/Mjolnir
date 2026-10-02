@@ -12,9 +12,16 @@ import EvidenceBadge from "./EvidenceBadge.vue";
 import FalseGreenChain from "./FalseGreenChain.vue";
 import ScoreExplainer from "./ScoreExplainer.vue";
 import NotFound from "./NotFound.vue";
+import LandingFooter from "./LandingFooter.vue";
+import DocsContext from "./DocsContext.vue";
 import "./styles/fonts.css";
 import "./styles/vars.css";
 import "./styles/custom.css";
+import "./styles/nordic-fonts.css";
+import "./styles/typography-poc.css";
+import "./styles/technical-text.css";
+import "./styles/reading-quality.css";
+import "./styles/documentation.css";
 
 export default {
   extends: DefaultTheme,
@@ -22,7 +29,11 @@ export default {
   // default Layout draws its own 404 and never consults that key, so
   // this page had been replaced by the stock one on every missing URL.
   Layout: () =>
-    h(DefaultTheme.Layout, null, { "not-found": () => h(NotFound) }),
+    h(DefaultTheme.Layout, null, {
+      "not-found": () => h(NotFound),
+      "layout-bottom": () => h(LandingFooter),
+      "doc-before": () => h(DocsContext),
+    }),
   enhanceApp({ app }) {
     app.component("Home", Home);
     app.component("RuneDivider", RuneDivider);

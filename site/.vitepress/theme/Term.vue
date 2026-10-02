@@ -30,23 +30,18 @@ defineProps<{ lines: TermLine[]; title?: string }>();
   font-size: 12.5px;
   line-height: 1.4;
   color: var(--vp-c-text-3);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
-/* A system monospace on purpose: the Geist Mono web subset has no
-   box-drawing or block glyphs, and mixing faces breaks the columns. */
 .term-body {
   margin: 0;
   padding: 18px 20px;
-  font-family:
-    ui-monospace, "SF Mono", "Cascadia Code", "Cascadia Mono", Consolas,
-    "DejaVu Sans Mono", Menlo, monospace;
-  font-size: clamp(10px, 2.6vw, 13px);
+  font-family: var(--vp-font-family-mono);
+  font-size: var(--mj-code-size);
   line-height: 1.55;
   color: var(--vp-c-text-2);
-  white-space: pre;
-  overflow-x: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 .tl {
   display: block;

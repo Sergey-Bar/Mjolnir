@@ -63,6 +63,42 @@ export const BRAND = {
   auroraViolet: "#9D8CF5",
   steel: "#C8CBCF",
   steelDim: "#8B939D",
+
+  /* ── Reading palette (site theme) ───────────────────────────────
+   *
+   * The website reading stack asked for a quieter, cooler set of greys
+   * and a teal→violet accent rule than the terminal's. It arrived as raw
+   * hex inside the theme stylesheets, which is exactly what rule 6
+   * exists to catch: a second palette that no gate could see. These are
+   * the same values, promoted to tokens so rule 8 computes their
+   * contrast like every other foreground in this file.
+   *
+   * They are NOT a convergence of `steelDim` / `heroMuted` — those keep
+   * their values for the terminal, the README artwork and every other
+   * surface. This ramp is scoped to the site's reading surfaces, which
+   * is what the stylesheets that use it are scoped to.
+   *
+   * The weakest pairing in this group is `readingAccentAlt` on `soft` at
+   * 5.75:1, so the whole group clears AA on every surface. */
+
+  /** The teal half of the accent rule, and the gradient's near stop. */
+  readingAccent: "#73C4CA",
+  /** The violet half of the accent rule, and the gradient's far stop. */
+  readingAccentAlt: "#A596E5",
+  /** The focus ring. A non-text affordance, held to the same AA floor. */
+  readingFocus: "#8CE3ED",
+  /** Hover state for the mark's monochrome glyph. */
+  readingAccentBright: "#85DBED",
+  /** Hover state for the wordmark's ink. */
+  readingAccentInk: "#E5FCFF",
+  /** UNWORTHY at reading contrast — a softer red than the terminal's. */
+  readingUnworthy: "#FF9790",
+  /** Muted body ink on the reading surfaces. */
+  readingMuted: "#C6CFDB",
+  /** Dimmed ink on the reading surfaces. */
+  readingDim: "#ACB9CA",
+  /** The hero lede: the brightest ink below `TEXT.primary`. */
+  readingLede: "#E0E6EE",
 } as const;
 
 /* ── Surfaces ────────────────────────────────────────────────── */
@@ -470,4 +506,37 @@ export const CSS_SEMANTIC: readonly (readonly [
   ["--mj-l3", TRUST.l3, "trust L3 — runtime begins"],
   ["--mj-l4", TRUST.l4, "trust L4 — runtime"],
   ["--mj-l5", TRUST.l5, "trust L5 — runtime verdict"],
+
+  /* Reading palette — the site theme's quieter greys and teal→violet
+     accent rule. Scoped to the reading surfaces; the terminal keeps
+     steelDim / the aurora ramp. */
+  [
+    "--mj-reading-accent",
+    BRAND.readingAccent,
+    "reading accent rule, gradient near stop",
+  ],
+  [
+    "--mj-reading-accent-alt",
+    BRAND.readingAccentAlt,
+    "reading accent rule, gradient far stop",
+  ],
+  ["--mj-reading-focus", BRAND.readingFocus, "focus ring on reading surfaces"],
+  [
+    "--mj-reading-accent-bright",
+    BRAND.readingAccentBright,
+    "mark glyph, hover",
+  ],
+  ["--mj-reading-accent-ink", BRAND.readingAccentInk, "wordmark ink, hover"],
+  [
+    "--mj-reading-unworthy",
+    BRAND.readingUnworthy,
+    "UNWORTHY at reading contrast",
+  ],
+  [
+    "--mj-reading-muted",
+    BRAND.readingMuted,
+    "muted body ink, reading surfaces",
+  ],
+  ["--mj-reading-dim", BRAND.readingDim, "dimmed ink, reading surfaces"],
+  ["--mj-reading-lede", BRAND.readingLede, "hero lede ink"],
 ] as const;
