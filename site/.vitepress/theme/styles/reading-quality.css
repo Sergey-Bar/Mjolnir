@@ -1,6 +1,6 @@
 /* Primary demos have depth; secondary explanations sit on quieter surfaces. */
 .mj {
-  --mj-unworthy: #ff9790;
+  --mj-unworthy: var(--mj-reading-unworthy);
 }
 .mj :is(.card, .trust-group, .limits-box, .snippet, .detail-command) {
   background: rgba(14, 23, 33, 0.82);
@@ -107,7 +107,7 @@
   margin-bottom: 20px;
 }
 .mj :is(button, a, summary, [tabindex="0"]):focus-visible {
-  outline: 2px solid #8ce3ed;
+  outline: 2px solid var(--mj-reading-focus);
   outline-offset: 4px;
 }
 .mj .anatomy .card-k {

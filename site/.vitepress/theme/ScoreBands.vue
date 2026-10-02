@@ -85,7 +85,7 @@ const descriptions: Record<string, string> = {
 .score-bands {
   margin: 28px 0 0;
   border: 1px solid var(--mj-glass-line);
-  border-top: 2px solid #73c4ca;
+  border-top: 2px solid var(--mj-reading-accent);
   border-radius: 12px;
   background: var(--mj-glass);
   overflow: hidden;

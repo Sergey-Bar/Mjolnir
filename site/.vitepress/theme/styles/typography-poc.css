@@ -8,10 +8,10 @@
     sans-serif;
   --vp-font-family-mono:
     "Cascadia Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
-  --vp-c-text-2: #c6cfdb;
-  --vp-c-text-3: #acb9ca;
-  --mj-hero-muted: #c6cfdb;
-  --mj-steel-dim: #acb9ca;
+  --vp-c-text-2: var(--mj-reading-muted);
+  --vp-c-text-3: var(--mj-reading-dim);
+  --mj-hero-muted: var(--mj-reading-muted);
+  --mj-steel-dim: var(--mj-reading-dim);
   --mj-display:
     "Space Grotesk", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
     sans-serif;
@@ -112,14 +112,14 @@ body {
   font-family: var(--mj-display);
 }
 .mj .hero .title .was {
-  color: #c6cfdb;
+  color: var(--mj-reading-muted);
 }
 .mj .hero .title {
   font-weight: 500;
   letter-spacing: -0.045em;
 }
 .mj .hero .lede {
-  color: #e0e6ee;
+  color: var(--mj-reading-lede);
 }
 .mj .logo {
   color: var(--vp-c-text-2);
@@ -181,7 +181,7 @@ body {
 .DocSearch-Modal,
 .VPLocalSearchBox .shell {
   border: 1px solid var(--mj-glass-line);
-  border-top: 2px solid #73c4ca;
+  border-top: 2px solid var(--mj-reading-accent);
   border-radius: 12px;
   background: var(--mj-glass);
   box-shadow:
@@ -197,21 +197,21 @@ body {
   border-top: 0;
 }
 .mj .st::before {
-  background: linear-gradient(90deg, #73c4ca, #a596e5);
+  background: linear-gradient(90deg, var(--mj-reading-accent), var(--mj-reading-accent-alt));
 }
 .mj .st-body {
   background: transparent;
 }
 .mj .logo:hover,
 .mj .logo:focus-within {
-  color: #e5fcff;
+  color: var(--mj-reading-accent-ink);
   border-color: var(--vp-c-brand-1);
   background: rgba(92, 189, 224, 0.1);
   box-shadow: 0 0 20px rgba(92, 189, 224, 0.16);
 }
 .mj .logo:hover svg,
 .mj .logo:hover .mono {
-  color: #85dbed;
+  color: var(--mj-reading-accent-bright);
   opacity: 1;
   filter: drop-shadow(0 0 6px rgba(92, 189, 224, 0.8));
 }

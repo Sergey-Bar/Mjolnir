@@ -50,7 +50,7 @@ const steps = [
     body: "Capture a baseline before editing. After the fix, run the affected tests with your runner and compare the current scan with that baseline.",
     detail:
       "Read resolved, new and unchanged findings. Missing baselines or incomplete scans remain inconclusive. A clean scan is not proof of application correctness.",
-    command: "npx mjolnir-qa@5.0.0 verify",
+    command: "npx mjolnir-qa@5.0.0 ci verify",
     outcome: "Compare the evidence",
     tone: "evidence",
   },
@@ -169,7 +169,7 @@ onBeforeUnmount(() => clearInterval(timer));
           >
             <span class="node-kicker">VERIFY</span
             ><strong>Run tests. Compare scans.</strong
-            ><code>mjolnir verify</code
+            ><code>mjolnir ci verify</code
             ><small
               >Check resolved and new findings against the baseline.</small
             >
