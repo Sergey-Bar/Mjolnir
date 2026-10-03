@@ -527,11 +527,12 @@ here is where the internal name and the reader's word are tied together.
 | **quarantine** | > 30% or explicitly declared | `WARN` — `--include-warn` only, never gates   |
 | _unmeasured_   | n < 10                       | Cannot reach `GATE` until measured            |
 
-`core` is empty at the corpus sample cap, and that is arithmetic rather than an
-oversight: a rule reaches it at `ciHigh ≤ 10%`, which at n ≤ 20 needs at least
-n = 35 classified verdicts with zero false positives. 6.0 removed it as an
-aspiration — the table is here to say which findings are `GATE`, not to imply
-that one of them has earned a rung nothing can reach today.
+`core` holds <!-- census:core-rules -->2<!-- /census:core-rules --> today, and
+reaching it is arithmetic rather than opinion: a rule earns it at
+`ciHigh ≤ 10%`, which with zero observed false positives needs n = 35
+classified verdicts. `QA-PW-117` and `QA-JV-101` cleared it on 2026-10-03,
+each row adjudicated by hand against a pinned corpus commit. The count is
+generated, so it cannot drift from the registry the way this paragraph did.
 
 FP bands can only demote a tier — they never promote a rule out of
 `quarantine` if it was explicitly declared there. An explicitly

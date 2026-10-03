@@ -600,11 +600,18 @@ export function measurementBlock(
   // measurement-dependently (plan §11.2 Step 2) — the census must agree
   // with the tier-enforcement check about who counts as quarantine.
   const quarantine = measured.filter((r) => effectiveTier(r) === "quarantine");
+  // Counted over ALL rules, not over `measured`: `core` is a tier, not a
+  // measurement state, and a rule that cannot be measured is barred from it
+  // by MAX_UNMEASURED_CORE rather than by being invisible here. Hiding an
+  // unmeasured core rule from its own census count would let the one failure
+  // this number exists to surface go unreported.
+  const core = rules.filter((r) => effectiveTier(r) === "core").length;
   return {
     measured: measured.length,
     unmeasured: rules.length - measured.length,
     total: rules.length,
     quarantine: quarantine.length,
+    core,
   };
 }
 
@@ -613,6 +620,7 @@ export interface MeasurementBlock {
   unmeasured: number;
   total: number;
   quarantine: number;
+  core: number;
 }
 
 /**
