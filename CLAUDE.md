@@ -35,10 +35,14 @@ ignore.
    tier: an unmeasured rule is shipped on an unverified assumption, and
    until it is measured it does not belong in core.
    Note the deliberate difference from law 1: this one governs the **core
-   tier**, which is currently empty, while law 1 governs the **shipped set**.
-   Applying this requirement to all 45 shipping rules would fail it
-   immediately; that is a policy decision about what the product may ship,
-   not a defect, and it is unresolved rather than settled by this file.
+   tier**, which holds 2 rules today (`QA-PW-117`, `QA-JV-101`, each at
+   n=35 with zero observed false positives), while law 1 governs the
+   **shipped set**. Applying this requirement to all 45 shipping rules would
+   fail it immediately; that is a policy decision about what the product may
+   ship, not a defect, and it is unresolved rather than settled by this file.
+   The tier a rule holds and the evidence that put it there are recorded in
+   `docs/RULE-CONSTITUTION.json` (P1), `docs/CORE-CERTIFICATION.json` (P2)
+   and `docs/TIER-HISTORY.json` (P3), all three gated.
 
 ## Provenance
 

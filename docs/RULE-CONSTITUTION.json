@@ -1,0 +1,114 @@
+{
+  "schemaVersion": 1,
+  "adoptedOn": "2026-10-03",
+  "purpose": "The principles a Mjölnir rule is expected to satisfy, written down so that a deviation has to be named, justified and dated rather than discovered later. A principle with no enforcement and no exemption path is a slogan; this file is neither. Every P-article below is backed by code named in `enforcedBy`, and every known departure is recorded in `exemptions` with the measurement that justifies it.",
+  "howToUse": "Adding a principle means adding the check that enforces it in the same change, and naming that check here. Adding an exemption means recording the measurement that justifies it. Silently departing from a principle is the one thing this file exists to prevent, because it is how `core` came to be described as empty for a release after two rules held it.",
+  "principles": [
+    {
+      "id": "P1",
+      "statement": "A rule's tier is DERIVED from its measured evidence, never asserted. `core` requires a Wilson upper bound at or below 10%, which with zero observed false positives needs n >= 35 classified verdicts adjudicated by a person.",
+      "enforcedBy": [
+        "src/rules/measurement.ts",
+        "tests/rules/core-tier-reachability.spec.ts",
+        "tests/rules/registry-ratchet.spec.ts",
+        "scripts/v6/check-promotion-throughput.mjs"
+      ],
+      "exemptions": []
+    },
+    {
+      "id": "P2",
+      "statement": "Holding `core` requires a certification record whose measurement matches the live registry field by field, so a certification expires when its evidence moves rather than when somebody remembers to revisit it.",
+      "enforcedBy": [
+        "docs/CORE-CERTIFICATION.json",
+        "scripts/v6/check-promotion-throughput.mjs"
+      ],
+      "exemptions": []
+    },
+    {
+      "id": "P3",
+      "statement": "Every tier transition — promotion and demotion alike — is recorded as data. A demotion that exists only in a source comment is a demotion the next reader can contradict.",
+      "enforcedBy": [
+        "docs/TIER-HISTORY.json",
+        "scripts/v6/check-promotion-throughput.mjs"
+      ],
+      "exemptions": []
+    },
+    {
+      "id": "P4",
+      "statement": "Both fixture classes are required, and a must-not-fire fixture must never be weakened to make a check pass. A negative fixture only evidences the PREDICATE when it is the positive fixture with the defect neutralised; otherwise it evidences only that the detector is directional, and the difference must not be papered over.",
+      "enforcedBy": [
+        "tests/rules/fixture-firewall-completeness.spec.ts",
+        "docs/SENSITIVITY-RATCHET.json",
+        "scripts/check-fixture-sensitivity.ts"
+      ],
+      "exemptions": []
+    },
+    {
+      "id": "P5",
+      "statement": "A rule declares what it can be trusted for and no more. `suiteInvalidating` and any score cap a rule declares about itself is a CLAIM about impact, and a claim that nothing verifies is decoration.",
+      "enforcedBy": [
+        "src/engine/tier-policy.ts",
+        "tests/rules/core-tier-reachability.spec.ts"
+      ],
+      "exemptions": []
+    },
+    {
+      "id": "P6",
+      "statement": "Numbers that describe the registry are generated, not written. A count stated in prose is a count that will be wrong, and a generator-owned count cannot drift.",
+      "enforcedBy": [
+        "tests/contract/census-drift.spec.ts",
+        "npm run docs:staleness"
+      ],
+      "exemptions": []
+    },
+    {
+      "id": "P7",
+      "statement": "A registry without zero network egress. Local-first, single-process, no `fetch`/`http`/`net`/`dns`/`WebSocket` anywhere in `src/`. An engine that phones home cannot be run against code a user cannot see.",
+      "enforcedBy": ["tests/contract/privacy-network-isolation.spec.ts"],
+      "exemptions": []
+    }
+  ],
+  "explicitNonPrinciples": [
+    {
+      "id": "N1",
+      "candidatePrinciple": "Lexical (regex) matching is the lowest-confidence strategy and should be migrated to AST.",
+      "rejected": true,
+      "measuredReason": "docs/DEPTH-ADJUDICATION.md classifies 19 of 79 rules as `exact-key-match` or `lexical-artifact`, where lexical is the CORRECT primitive — including QA-JV-101, one of only two core rules, on the grounds that the annotation identifiers are a closed token set where lexical and structural match coincide. A rule matching `@Disabled` exactly does not become more correct by parsing the AST. The same document defers AST migration absent measured FP-reduction evidence.",
+      "whatWouldChangeThis": "Measured false-positive reduction on a named rule after a migration, recorded as a verdict delta."
+    },
+    {
+      "id": "N2",
+      "candidatePrinciple": "`RuleMeta.tier` should be deleted, with the tier derived entirely from measurement.",
+      "rejected": true,
+      "measuredReason": "src/rules/rule.ts measures 79 rules with an explicit `tier` field in place. Removing the field would release 33 of the 34 quarantined rules into default scans, because the measurement that keeps them quarantined is the field itself. The declared tier is a decision; the measurement is evidence about it; deleting the decision does not delete the evidence, it discards the record of what was decided.",
+      "whatWouldChangeThis": "A measurement model that reproduces the current 34/79 split with the field absent. Until then `rule.tier` stays, and 'declared may only tighten' is the rule."
+    }
+  ],
+  "exemptions": {
+    "declared-tier-over-measured": {
+      "scope": "All 79 rules",
+      "reason": "`rule.tier` is retained deliberately, per N2. It is permitted to TIGHTEN a rule below what its measurement alone would imply (that is how the 34 quarantined rules are held) and may never LOosen one above it.",
+      "evidence": [
+        "docs/DEPTH-ADJUDICATION.md",
+        "src/rules/rule.ts",
+        "tests/rules/registry-ratchet.spec.ts"
+      ],
+      "expires": null,
+      "reviewBy": null
+    },
+    "lexical-strategy-where-closed-token-set": {
+      "scope": "19 rules classified `exact-key-match` or `lexical-artifact`",
+      "reason": "Lexical matching is the correct primitive for a closed token set, per N1. This is a measured position with a named falsifier, not a standing preference.",
+      "evidence": ["docs/DEPTH-ADJUDICATION.md"],
+      "expires": null,
+      "reviewBy": null
+    },
+    "suite-invalidating-unverified": {
+      "scope": "Rules declaring `suiteInvalidating`",
+      "reason": "P5 requires this claim to be verified and nothing verifies it today. The exemptions are recorded so the gap is a tracked item rather than an unremarked one; each entry must move to a measured basis or be removed.",
+      "evidence": ["src/rules/rule.ts", "src/scorer/scorer.ts"],
+      "expires": null,
+      "reviewBy": null
+    }
+  }
+}

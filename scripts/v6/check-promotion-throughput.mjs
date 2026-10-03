@@ -445,6 +445,117 @@ if (existsSync(TIER_HISTORY_PATH)) {
   };
 }
 
+/**
+ * The rule constitution: principles, and whether every departure from one is
+ * named.
+ *
+ * The failure this prevents is the one this repository already shipped. `core`
+ * was described as empty for a release after two rules held it, because the
+ * claim lived in prose and nothing compared it to the registry. The census
+ * sentinels fixed that instance; this generalises it. A principle with no
+ * enforcement path is a slogan, so every P-article must name the code that
+ * enforces it — and a known departure must be an exemption with a reason, not
+ * an absence.
+ *
+ * Note what is deliberately NOT here: two candidate principles that would have
+ * read well and would have been wrong. Both are recorded under
+ * `explicitNonPrinciples` with the measurement that refutes them, because a
+ * constitution that only lists things it agrees with is marketing.
+ */
+const CONSTITUTION_PATH = join(ARTIFACT_ROOT, "docs", "RULE-CONSTITUTION.json");
+let constitution = {
+  status: "SKIPPED",
+  reason: "no constitution",
+  problems: [],
+};
+if (existsSync(CONSTITUTION_PATH)) {
+  const problems = [];
+  let parsed;
+  try {
+    parsed = JSON.parse(readFileSync(CONSTITUTION_PATH, "utf8"));
+  } catch (err) {
+    failures.push(
+      `${CONSTITUTION_PATH} is unreadable: ${err.message}. An unreadable ` +
+        "constitution constrains nothing",
+    );
+    parsed = { principles: [], exemptions: {} };
+  }
+
+  const principles = parsed.principles ?? [];
+  if (principles.length === 0) {
+    problems.push("the constitution states no principles");
+  }
+  const ids = new Set();
+  for (const p of principles) {
+    if (!p.id || !p.statement) {
+      problems.push("a principle has no id or no statement");
+      continue;
+    }
+    if (ids.has(p.id)) problems.push(`duplicate principle id ${p.id}`);
+    ids.add(p.id);
+    // The load-bearing requirement: a principle nothing enforces is a wish.
+    if (!Array.isArray(p.enforcedBy) || p.enforcedBy.length === 0) {
+      problems.push(
+        `${p.id} names no enforcing check — a principle with no gate is a ` +
+          "slogan, and a slogan cannot be departed from deliberately",
+      );
+    }
+    for (const enforced of p.enforcedBy ?? []) {
+      // A command reference ("npm run docs:staleness") is checked by that
+      // command, not by a file on disk. Test for that BEFORE splitting, or
+      // "npm" is read as a filename and reported as a missing check.
+      if (enforced.startsWith("npm ")) continue;
+      const file = enforced.split(" ")[0];
+      if (file.includes("*")) continue;
+      if (!existsSync(join(ARTIFACT_ROOT, file))) {
+        problems.push(
+          `${p.id} claims enforcement by ${file}, which does not exist — a ` +
+            `principle resting on a check that is not there is worse than no ` +
+            `principle, because it reads as covered`,
+        );
+      }
+    }
+  }
+
+  for (const [name, exemption] of Object.entries(parsed.exemptions ?? {})) {
+    if (!exemption.reason || !Array.isArray(exemption.evidence)) {
+      problems.push(
+        `exemption "${name}" has no reason or no evidence list — an exemption ` +
+          "without a reason is just a hole with a label",
+      );
+    }
+    for (const path of exemption.evidence ?? []) {
+      const file = path.split("#")[0];
+      if (file.includes("*")) continue;
+      if (!existsSync(join(ARTIFACT_ROOT, file))) {
+        problems.push(
+          `exemption "${name}" cites ${file}, which does not exist`,
+        );
+      }
+    }
+  }
+
+  for (const n of parsed.explicitNonPrinciples ?? []) {
+    if (!n.rejected || !n.measuredReason || !n.whatWouldChangeThis) {
+      problems.push(
+        `non-principle ${n.id ?? "(unnamed)"} does not carry a measured ` +
+          "refutation and a falsifier — a rejected principle with no reason " +
+          "will be re-proposed by the next person who had the same idea",
+      );
+    }
+  }
+
+  failures.push(...problems);
+  constitution = {
+    status: problems.length === 0 ? "PASS" : "FAIL",
+    path: "docs/RULE-CONSTITUTION.json",
+    principles: principles.length,
+    nonPrinciples: (parsed.explicitNonPrinciples ?? []).length,
+    exemptions: Object.keys(parsed.exemptions ?? {}).length,
+    problems,
+  };
+}
+
 if (failures.length > 0) {
   console.error("Promotion ratchet failed:");
   for (const failure of failures) console.error(`  - ${failure}`);
@@ -457,6 +568,7 @@ console.log(
       status: "PASS",
       certification,
       tierHistory,
+      constitution,
       launchSet: {
         tier: "core",
         now: launchSet.length,
