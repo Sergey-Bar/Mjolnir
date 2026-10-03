@@ -500,14 +500,6 @@ export function holdoutBucket(repositoryId: string): number {
   return fnv1a(`${HOLDOUT_SALT}:${repositoryId}`) % 100;
 }
 
-/** The repositories the exclusion protects, and why each one is named. */
-export interface HoldoutProtected {
-  repositoryId: string;
-  /** Rule -> how many of its committed verdict rows this repository holds. */
-  rowsByRule: Record<string, number>;
-  reason: string;
-}
-
 /**
  * Repositories that MUST stay in measurement, named by the caller.
  *
