@@ -28,33 +28,19 @@
   "generatedAt": "2026-10-03",
   "identity": {
     "state": "WORKING_CANDIDATE",
-    "baseSha": "6fabcf6e691696d131c44847beb94af172fa7819",
+    "baseSha": "ca80f2fee77368710f6be0f18cc7e129382f1068",
     "candidateSha": null,
     "version": "6.0.0",
     "packageSha256": "06ee25aeec84a6024981055777df4c216c66c412ee479c6c31b94cf4c5552037",
     "lockfileSha256": "85e9845cb27e3e6394e01b88ba8d91ae947d579c00d0a2b50f5a244a0da0dfd5",
-    "workingTreeSha256": "56832f2c45fcb6b032ff55718c23c8b33ec688d566edc432f5bb04d74cba4dda",
-    "changedPathCount": 6,
+    "workingTreeSha256": "a39ce72b9ee0e4588acdee45dcb884dd953524e5fe4c41e81325499cb3290ab8",
+    "changedPathCount": 0,
     "supportEnvelope": "self-hosted; hosted services require explicit consent and separate proof",
     "worktreeInventory": {
-      "changedPaths": [
-        "CHANGELOG.md",
-        "capability-manifest.json",
-        "package-lock.json",
-        "package.json",
-        "site/.vitepress/theme/Home.vue",
-        "src/engine/version.ts"
-      ],
+      "changedPaths": [],
       "untrackedPaths": []
     },
-    "dirtyFiles": [
-      "CHANGELOG.md",
-      "capability-manifest.json",
-      "package-lock.json",
-      "package.json",
-      "site/.vitepress/theme/Home.vue",
-      "src/engine/version.ts"
-    ]
+    "dirtyFiles": []
   },
   "claimRegistry": {
     "path": "docs/claim-registry.json",
