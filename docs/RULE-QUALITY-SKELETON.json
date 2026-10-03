@@ -6,11 +6,12 @@
     "retiredRules": 22,
     "tiers": {
       "quarantine": 34,
-      "extended": 45
+      "extended": 43,
+      "core": 2
     },
     "measured": 73,
-    "measuredAtStaleRevision": 0,
-    "capabilities": 27,
+    "measuredAtStaleRevision": 2,
+    "capabilities": 14,
     "maxReachableMaturity": "M2_IMPLEMENTED",
     "unreachableLevels": [
       "M3_FIXTURE_VERIFIED",

@@ -53,7 +53,7 @@ It scores the result 0–100 (**Worthiness Score**) and **blocks releases** when
 ### Why It Works
 
 1. **Deterministic findings (E2)** = structural defects in verification, not heuristics
-2. **Measured false-positive rates** = 74 of 79 rules have empirical FP data from OSS corpus
+2. **Measured false-positive rates** = 73 of 79 rules have empirical FP data from OSS corpus
 3. **Trust ladder (L0–L5)** = runtime corroboration lifts findings from "looks like" to "proven"
 4. **Agent handoff** = AI writes the fix, Mjölnir re-scans to prove it landed
 5. **Self-verifying** = Mjölnir gates its own releases with the same tool

@@ -432,7 +432,7 @@ export function whatWouldChangeTheVerdict(r: QADoctorRule): string[] {
   );
   if (effectiveTier(r) === "quarantine") {
     changes.push(
-      "quarantine findings run only under --strict and are advisory (E0) — they can never gate CI",
+      "WARN-tier findings run only under --include-warn and never gate CI",
     );
   }
   return changes;

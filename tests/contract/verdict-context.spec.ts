@@ -76,17 +76,38 @@ describe("the verdict-context tool", () => {
 });
 
 describe("the unclassified verdict backlog", () => {
-  it("has no unclassified rows left", () => {
-    // The count this file asserted was 28, and it existed so the number
-    // could not go quietly stale in either direction. All 28 were classified
-    // on 2026-09-28 against the code at each corpus's pinned commit, so the
-    // assertion flips rather than being deleted — a removed assertion is
-    // how a backlog quietly refills.
+  it("is either empty or exactly the figure the ceiling records", () => {
+    // The count this file asserted was 28, and it existed so the number could
+    // not go quietly stale in either direction. All 28 were classified on
+    // 2026-09-28 against the code at each corpus's pinned commit, so the
+    // assertion flipped rather than being deleted — a removed assertion is how a
+    // backlog quietly refills.
     //
     // What the classification bought is larger than the number: three of the
     // four rules involved were QUARANTINED and one of them, QA-PY-007, had
-    // never been measured at all. It now measures 75% false positives at
-    // n=12.
+    // never been measured at all. It now measures 75% false positives at n=12.
+    //
+    // Then 2026-10-02 opened a reviewed backlog of its own: 23 rows for
+    // QA-PW-117 and QA-JV-101, sampled by `npm run corpus:sample --
+    // --core-candidates --core-target QA-PW-117 --core-target QA-JV-101` and
+    // recorded in `unclassified-ceiling.json` with the arithmetic in its note.
+    // A verdict is a human judgement with the code in front of it
+    // (`tests/corpus/verdicts/README.md`), so those rows stay blank until a
+    // person fills them in.
+    //
+    // Which makes "is the backlog zero" the wrong question here, because the
+    // answer is 23 for as long as the work takes and the assertion would be red
+    // for the entire time. The question that has an answer is whether every
+    // pending row has been EXPLICITLY RECORDED, and that is two-sided:
+    //
+    //   - greater than the recorded figure means the backlog grew without review,
+    //     which is the defect this arm exists to catch;
+    //   - less than it, but not zero, means classification is half done and the
+    //     commit captures a state nobody agreed to.
+    //
+    // `generate-fp-audit-table` enforces the same ceiling per FILE, so a second
+    // file's first row cannot hide inside a generous total. That is why the
+    // assertion here is on the total and the generator's is on the parts.
     const dir = join(ROOT, "tests", "corpus", "verdicts");
     let blank = 0;
     for (const file of readdirSync(dir).filter((f) => f.endsWith(".jsonl"))) {
@@ -97,9 +118,16 @@ describe("the unclassified verdict backlog", () => {
         if (row.verdict === "" || row.verdict === undefined) blank += 1;
       }
     }
+    const ceiling = JSON.parse(
+      readFileSync(join(dir, "unclassified-ceiling.json"), "utf8"),
+    ) as { total: number };
+
     expect(
       blank,
-      "unclassified verdict rows: run `npm run corpus:verdict-context` to see the code behind them",
-    ).toBe(0);
+      `unclassified verdict rows (ceiling records ${ceiling.total}): run ` +
+        "npm run corpus:verdict-context to see the code behind them. Either " +
+        "classify them, or record the new figure in unclassified-ceiling.json " +
+        "with the arithmetic that produced it",
+    ).toBe(ceiling.total);
   });
 });

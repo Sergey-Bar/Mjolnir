@@ -25,6 +25,8 @@ import {
   measurementBlock,
 } from "../../src/commands/doctor.js";
 import { isValidCategory } from "../../src/types.js";
+import { RULES } from "../../src/rules/index.js";
+import { effectiveTier } from "../../src/rules/measurement.js";
 import { minimalRules } from "../engine/helpers.js";
 
 let tmpDirs: string[] = [];
@@ -299,6 +301,7 @@ describe("measurementBlock (Phase 4.3)", () => {
       unmeasured: 1,
       total: 1,
       quarantine: 0,
+      core: 0,
     });
   });
 
@@ -327,5 +330,35 @@ describe("measurementBlock (Phase 4.3)", () => {
     expect(block.measured).toBe(2);
     expect(block.quarantine).toBe(1);
     expect(block.unmeasured).toBe(1);
+    // The core rule is MEASURED here, so this cannot tell measured-core from
+    // all-core. The next test is the one that pins that difference.
+    expect(block.core).toBe(1);
+  });
+
+  it("core counts UNMEASURED core rules too — that is the failure it exists to surface", () => {
+    // `MAX_UNMEASURED_CORE = 0` means a registry in this state cannot ship, so
+    // a census that hid the rule behind `measured` would report a clean
+    // `core: 0` at the exact moment the law was being broken. Counted over all
+    // rules on purpose; see measurementBlock().
+    const block = measurementBlock([
+      minimalRules.one({ id: "QA-CI-002", tier: "core" }), // unmeasured core
+      { ...minimalRules.one(), id: "QA-T-999", tier: "extended" },
+    ]);
+    expect(block.measured).toBe(0);
+    expect(block.unmeasured).toBe(2);
+    expect(block.core).toBe(1);
+  });
+
+  it("the real registry's core census equals the live core tier set", () => {
+    // The README states this number in prose beside the trust-tier table, so
+    // the census and the registry must agree or a reader is told one thing and
+    // shown another. Pinned by membership, not by count: a count passes again
+    // after two rules swap.
+    const block = measurementBlock();
+    const live = RULES.filter((r) => effectiveTier(r) === "core")
+      .map((r) => r.id)
+      .sort();
+    expect(block.core).toBe(live.length);
+    expect(live).toEqual(["QA-JV-101", "QA-PW-117"]);
   });
 });

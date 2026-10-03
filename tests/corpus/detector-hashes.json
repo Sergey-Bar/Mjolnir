@@ -84,7 +84,7 @@
     "detectorRevision": 4
   },
   "QA-JV-101": {
-    "logicHash": "6eb5107194b14c83179015e4aa193e184116958687f5f6b3b0ca3a843456e2d0",
+    "logicHash": "8ab879f39d9d6dc0d8c05d4443b6a4beaf1518b94b13c4c73ba8589b9f2aca55",
     "detectorRevision": 1
   },
   "QA-JV-102": {
@@ -152,7 +152,7 @@
     "detectorRevision": 1
   },
   "QA-PW-117": {
-    "logicHash": "561f5738c5a369f0f756cf1a373a62b9da245fc917947ca107b2480f837c680f",
+    "logicHash": "d87902fe0b17b781bd1fdb51209f909aa79ef49a4f7dadc407cd541ba63f3fd9",
     "detectorRevision": 1
   },
   "QA-PW-121": {

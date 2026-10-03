@@ -20,6 +20,18 @@ import { ENGINE_VERSION } from "../engine/version.js";
 const SCAN_COMMAND = `npx --yes mjolnir-qa@${ENGINE_VERSION} --blocking error`;
 
 /**
+ * Every provider this command can emit a template for.
+ *
+ * Exported because the v6 inventory publishes `counts.ciProviders` — "how
+ * many CI providers does Mjölnir support" is a question about this switch, and
+ * for 5.x it was answered by counting support-matrix cells whose id contained
+ * the string `CI`. Adding a cell could raise the number; deleting the code
+ * could not lower it.
+ */
+export const CI_PROVIDERS = ["github", "gitlab", "jenkins"] as const;
+export type CiProvider = (typeof CI_PROVIDERS)[number];
+
+/**
  * Least privilege for a read-only scan job.
  *
  * A workflow with no `permissions:` key inherits the repository's default
@@ -82,12 +94,12 @@ export function runCiAdapterCommand(
   io: { out: Output; err: Output },
 ): number {
   const adapter = argv[0] ?? "";
-  if (!["github", "gitlab", "jenkins"].includes(adapter)) {
-    io.err("Usage: mjolnir ci adapters <github|gitlab|jenkins> [target]");
+  if (!(CI_PROVIDERS as readonly string[]).includes(adapter)) {
+    io.err(`Usage: mjolnir ci adapters <${CI_PROVIDERS.join("|")}> [target]`);
     return EXIT_USAGE;
   }
   if (argv.length > 2 || argv.slice(1).some((arg) => arg.startsWith("-"))) {
-    io.err("Usage: mjolnir ci adapters <github|gitlab|jenkins> [target]");
+    io.err(`Usage: mjolnir ci adapters <${CI_PROVIDERS.join("|")}> [target]`);
     return EXIT_USAGE;
   }
   const target = resolve(argv[1] ?? ".");

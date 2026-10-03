@@ -313,9 +313,17 @@ export const TRUST_INVARIANTS: readonly TrustInvariant[] = [
     scope: "Exit",
     status: "CURRENT",
     severity: "CRITICAL",
-    verificationTest: "tests/contract/gate-exit-codes.spec.ts",
-    verificationCase:
-      "--check leaves the tracked artifact byte-identical and still reports red",
+    // 6.0 repointed this. It used to verify `--check leaves the tracked
+    // artifact byte-identical and still reports red` against the v6 archive
+    // reconciler, which read the deleted M26 GitHub snapshot and was deleted
+    // with it. The property did not go with the script: it is the shape of
+    // every gate in this repository, and it now has a gate of its own —
+    // `npm run entry-points:check` refuses an entry point that reaches a
+    // write-mode script. The spec asserts that gate by feeding it an entry
+    // point that does, which is the same proof the reconciler gave: a gate
+    // cannot rewrite what it asserts against because it is built not to.
+    verificationTest: "tests/contract/entry-points-budget.spec.ts",
+    verificationCase: "rejects an entry point that reaches a write-mode script",
   },
   {
     id: "TI-023",
@@ -324,9 +332,18 @@ export const TRUST_INVARIANTS: readonly TrustInvariant[] = [
     scope: "Exit",
     status: "CURRENT",
     severity: "CRITICAL",
-    verificationTest: "tests/contract/gate-exit-codes.spec.ts",
-    verificationCase:
-      "reports every release-blocker row that is not provably cleared",
+    // 6.0 repointed this. It used to verify
+    // "reports every release-blocker row that is not provably cleared" against
+    // `docs/M26-GAP-LEDGER.jsonl` and `src/ledger/m26-validators.ts` — both
+    // deleted with the M26 program, and what is left of the assertion would be
+    // a predicate with no input.
+    //
+    // The property is not the ledger; it is that an evidence-less dimension
+    // stays BLOCKED. That is now enforced where the remaining evidence lives:
+    // the candidate manifest, which holds every external readiness dimension
+    // and refuses to authorize a release while one of them is unproven.
+    verificationTest: "tests/certification/candidate-manifest.spec.ts",
+    verificationCase: "blocks every unproven external readiness dimension",
   },
   {
     id: "TI-024",

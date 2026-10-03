@@ -16,15 +16,8 @@ import {
   WAVE0_GAPS,
   collectRepoFacts,
   countFiles,
-  reconcileArchive,
   verifyRequirements,
 } from "../../scripts/v6/inventory.js";
-import { checkArchive } from "../../scripts/v6/reconcile-archive.js";
-import {
-  CANONICAL_DISPOSITIONS,
-  DISPOSITION_DEFINITIONS,
-  checkIssueDispositions,
-} from "../../scripts/v6/check-issue-disposition.js";
 import {
   GAP_ID_PATTERN,
   REQUIREMENT_STATES,
@@ -69,13 +62,30 @@ describe("Wave 0 deliverable 1 — the current-state inventory is real", () => {
     expect(facts.rulesMeasured).toBeLessThanOrEqual(facts.rulesLive);
   });
 
-  it("carries the real ledger state, including what is BLOCKED", () => {
-    expect(facts.supportMatrix.total).toBeGreaterThan(0);
-    expect(
-      Object.keys(facts.supportMatrix.byDisposition).length,
-    ).toBeGreaterThan(0);
-    expect(facts.externalValidation).toBeTruthy();
-    expect(facts.gapLedger.total).toBeGreaterThan(0);
+  it("carries no ledger-derived counts, because there are no ledgers left", () => {
+    // 6.0 deleted the M26 program's four ledgers. The inventory used to copy
+    // six numbers out of them and publish them under `counts:`, where a reader
+    // took them for measurements of this repository — they were transcriptions
+    // of a plan document. The fields are gone rather than zeroed, and this arm
+    // is the guard on the difference: `0` would have been a claim that there
+    // are no gaps, which is the one thing a retired ledger must not say.
+    const facts = collectRepoFacts(ROOT) as unknown as Record<string, unknown>;
+    for (const retired of [
+      "qaDomains",
+      "qaDomainCoverage",
+      "gapLedger",
+      "supportMatrix",
+      "issueDispositions",
+      "externalValidation",
+    ]) {
+      expect(
+        Object.hasOwn(facts, retired),
+        `${retired} is back: either the ledger came back, or the field was ` +
+          "zeroed rather than removed, and a zero reads as a measurement",
+      ).toBe(false);
+    }
+    // The count that replaced them is measured from the code.
+    expect(collectRepoFacts(ROOT).ciProviders).toBeGreaterThan(0);
   });
 
   it("surfaces the frozen exit codes, and the two the blueprint wants are missing", () => {
@@ -200,114 +210,6 @@ describe("Wave 0 deliverable 2 — the gap matrix is a ledger, not a wish list",
   });
 });
 
-describe("Wave 0 — the archive block is reconciled against data, not flipped", () => {
-  const archive = reconcileArchive(ROOT);
-  const check = checkArchive(ROOT);
-
-  it("parses every archive record out of ROADMAP.yaml", () => {
-    expect(archive.records).toHaveLength(8);
-    expect(archive.observedDesignRecordCount).toBe(108);
-  });
-
-  it("keeps each record's range consistent with its declared count", () => {
-    for (const record of archive.records) {
-      const [from, to] = record.githubRange;
-      expect(to - from + 1).toBe(record.designRecords);
-    }
-  });
-
-  it("reports the open issues that block reconciliation, and does not paper over them", () => {
-    // 18 of the 108 historical design-record issues are still open, so the
-    // block cannot honestly be marked RECONCILED. Flipping the flag would
-    // be a false proof produced by the reconciliation meant to establish
-    // the truth.
-    expect(archive.openIssuesInArchive.length).toBeGreaterThan(0);
-    expect(archive.status).toBe("UNRECONCILED");
-    expect(check.status).toBe("UNRECONCILED");
-    expect(check.errors.join(" ")).toMatch(/still open/);
-    for (const number of archive.openIssuesInArchive) {
-      expect(number).toBeGreaterThanOrEqual(539);
-      expect(number).toBeLessThanOrEqual(646);
-    }
-  });
-
-  it("distinguishes fully, partially and unreconciled records", () => {
-    const states = new Set(archive.records.map((r) => r.state));
-    for (const state of states) {
-      expect(["RECONCILED", "PARTIALLY_RECONCILED", "UNRECONCILED"]).toContain(
-        state,
-      );
-    }
-    // M25 is the only fully closed range in the snapshot.
-    const m25 = archive.records.find((r) => r.logicalMilestone === "M25");
-    expect(m25?.state).toBe("RECONCILED");
-  });
-
-  it("names the command that would close the block", () => {
-    expect(archive.closureCommand).toBe("npm run m26:github:sync");
-  });
-});
-
-describe("Wave 0 — the issue-disposition drift-lock", () => {
-  const check = checkIssueDispositions(ROOT);
-
-  it("describes the same issue set as the GitHub snapshot", () => {
-    expect(check.status).toBe("PASS");
-    expect(check.facts.dispositionRecords).toBe(check.facts.snapshotIssues);
-  });
-
-  it("counts the open set the blueprint names", () => {
-    expect(check.facts.openIssues).toBe(229);
-  });
-
-  it("has already dispositioned every open issue to a real decision", () => {
-    // Not `UNRECONCILED`: an open issue needs a decision, not a placeholder.
-    expect(check.errors.join(" ")).not.toMatch(/UNRECONCILED/);
-    expect(check.facts.byDisposition.UNRECONCILED).toBeUndefined();
-  });
-
-  it("declares a closed canonical vocabulary", () => {
-    expect(CANONICAL_DISPOSITIONS).toEqual([
-      "CARRY_FORWARD",
-      "CLOSED_NOT_PLANNED",
-      "CLOSED_UNVERIFIED",
-      "UNRECONCILED",
-      "FIX_IN_BITTERSWEET",
-      "CLOSED_WONT_FIX",
-      "CLOSED_SHIPPED",
-    ]);
-  });
-
-  it("defines every disposition, so the vocabulary cannot widen silently", () => {
-    // A controlled vocabulary is only controlled if every entry says what it
-    // claims. The three dispositions added for the M26 ledger each stand for a
-    // state none of the original four described, and CLOSED_SHIPPED in
-    // particular is the opposite of CLOSED_NOT_PLANNED.
-    for (const disposition of CANONICAL_DISPOSITIONS) {
-      expect(
-        DISPOSITION_DEFINITIONS[disposition],
-        `${disposition} has no definition`,
-      ).toBeTruthy();
-    }
-    expect(Object.keys(DISPOSITION_DEFINITIONS).sort()).toEqual(
-      [...CANONICAL_DISPOSITIONS].sort(),
-    );
-  });
-
-  it("fails if the open set grows past the recorded baseline", () => {
-    // The drift-lock proper: a regenerated ledger hides a growing backlog,
-    // so the count is pinned to a baseline that only moves deliberately.
-    const inventoryPath = join(ROOT, "docs", "v6-inventory.json");
-    if (!existsSync(inventoryPath)) return;
-    const inventory = JSON.parse(readFileSync(inventoryPath, "utf8")) as {
-      counts: { openIssues: number };
-    };
-    expect(check.facts.openIssues).toBeLessThanOrEqual(
-      inventory.counts.openIssues,
-    );
-  });
-});
-
 describe("ADR 0008 — the deployment mode is a declared state", () => {
   it("defaults to the safe mode when unset", () => {
     expect(DEFAULT_DEPLOYMENT_MODE).toBe("LOCAL_ONLY");
@@ -352,12 +254,11 @@ describe("ownership is checkable, not decorative", () => {
 });
 
 describe("the generated Wave 0 artifacts exist and are readable", () => {
-  it("writes the four artifacts the DoD names", () => {
+  it("writes the artifacts the DoD names", () => {
     for (const file of [
       "docs/v6-inventory.json",
       "docs/V6-CURRENT-STATE.md",
       "docs/V6-GAP-MATRIX.md",
-      "docs/V6-ARCHIVE-RECONCILIATION.json",
       "docs/ECOSYSTEM-CENSUS.json",
       "docs/ECOSYSTEM-GAPS.md",
       "docs/ECOSYSTEM-DISPOSITIONS.json",
@@ -366,6 +267,21 @@ describe("the generated Wave 0 artifacts exist and are readable", () => {
     ]) {
       expect(existsSync(join(ROOT, file))).toBe(true);
     }
+  });
+
+  it("keeps the retired reconciliation as an archive record, not a live artifact", () => {
+    // The fourth projection moved to `docs/archive/` in 6.0. Asserted in both
+    // directions on purpose: a file that came back under the live path would be
+    // regenerated by a gate that can no longer produce its input, and a record
+    // that vanished would be the retirement deleting its own reasoning.
+    expect(
+      existsSync(join(ROOT, "docs", "V6-ARCHIVE-RECONCILIATION.json")),
+    ).toBe(false);
+    expect(
+      existsSync(
+        join(ROOT, "docs", "archive", "V6-ARCHIVE-RECONCILIATION.json"),
+      ),
+    ).toBe(true);
   });
 
   it("writes the ADR set with all five sections per record", () => {

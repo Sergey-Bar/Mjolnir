@@ -4,7 +4,7 @@ The bus-factor program (product-gap-remediation master plan P9, plan
 1788853205786, decision 10): Mjölnir is maintained by a solo maintainer,
 and that is a stated risk, not a secret. This document makes the project
 operable by _more than one human_ — the governance stays per
-[GOVERNANCE](CONTRIBUTING.md#governance) and the normative lawbook stays
+[GOVERNANCE](../CONTRIBUTING.md#governance) and the normative lawbook stays
 [docs/CERTIFICATION-POLICY.md](CERTIFICATION-POLICY.md); what changes is
 who can execute the work.
 

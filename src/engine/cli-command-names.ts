@@ -8,6 +8,7 @@ export const CLI_COMMAND_NAMES = [
   "explain",
   "handoff",
   "install",
+  "share",
   "contract-verify",
   "suppression-gate",
   "evidence-graph",

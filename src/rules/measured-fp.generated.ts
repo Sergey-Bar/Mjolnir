@@ -159,10 +159,10 @@ export const MEASURED_FP: Readonly<Record<string, MeasuredFp>> = {
   },
   "QA-JV-101": {
     fpRate: 0,
-    n: 23,
+    n: 35,
     detectorRevision: 1,
     ciLow: 0,
-    ciHigh: 0.1431,
+    ciHigh: 0.0989,
   },
   "QA-JV-102": {
     fpRate: 0.261,
@@ -278,10 +278,10 @@ export const MEASURED_FP: Readonly<Record<string, MeasuredFp>> = {
   },
   "QA-PW-117": {
     fpRate: 0,
-    n: 24,
+    n: 35,
     detectorRevision: 1,
     ciLow: 0,
-    ciHigh: 0.138,
+    ciHigh: 0.0989,
   },
   "QA-PW-121": {
     fpRate: 0,
@@ -693,10 +693,10 @@ export const MEASURED_FP_RAW: Readonly<Record<string, MeasuredFp>> = {
   },
   "QA-JV-101": {
     fpRate: 0,
-    n: 23,
+    n: 35,
     detectorRevision: 1,
     ciLow: 0,
-    ciHigh: 0.1431,
+    ciHigh: 0.0989,
   },
   "QA-JV-102": {
     fpRate: 0.261,
@@ -812,10 +812,10 @@ export const MEASURED_FP_RAW: Readonly<Record<string, MeasuredFp>> = {
   },
   "QA-PW-117": {
     fpRate: 0,
-    n: 24,
+    n: 35,
     detectorRevision: 1,
     ciLow: 0,
-    ciHigh: 0.138,
+    ciHigh: 0.0989,
   },
   "QA-PW-121": {
     fpRate: 0,

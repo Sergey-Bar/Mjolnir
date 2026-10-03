@@ -66,12 +66,31 @@ export interface TrustClassification {
  * "complete". That is the whole point: a missing `analysisStatus` is not a
  * clean bill of health, a zero ceiling reason is not a claim, and treating
  * either as completeness is how an unmeasured run gets to say "trust them".
+ *
+ * 6.0 removed two clauses: `ceilingReasons.length > 0`, and the blanket
+ * `reasons.length === 0`. Neither meant "the analysis did not finish", and both
+ * fired on the PR tier's own self-scan target — scanning `src` examined every
+ * file, found nothing, and printed
+ *
+ *   The analysis did not finish — it proves nothing about the surface it did
+ *   not reach.
+ *
+ * because the framework was undetectable (a ceiling) and 34 rules sat in the
+ * WARN tier (a `coverage:quarantine:34` reason). A false "incomplete" is not
+ * the safe direction: it trains the reader to ignore the word, which is the one
+ * state where it was true.
+ *
+ * What replaces them is the work-not-done list below, named field by field
+ * rather than read off a free-text bag: the scan is partial, discovery or rule
+ * evaluation was truncated, a file was skipped, a parse fell back, a rule
+ * crashed, or the pipeline recorded a truncation reason. `analysisStatus.reasons`
+ * carries `ignored:` / `skipped:` / `degraded:` / `coverage:quarantine:` — a
+ * mixture of "a file went unread" and "a tier was deliberately held back" —
+ * so it describes the run rather than deciding it. Every reason it prints is
+ * still in `gaps`.
  */
-function isComplete(result: ScanResult, summary: TrustSummary): boolean {
+export function isComplete(result: ScanResult, summary: TrustSummary): boolean {
   if (result.partial) return false;
-  // A confidence ceiling means the measurement was capped — something bounded
-  // what this run could conclude, which is an incompleteness.
-  if (summary.ceilingReasons.length > 0) return false;
   const status = result.analysisStatus;
   // Absent status: the report says nothing about how far the scan got, so it
   // cannot be read as a complete scan.
@@ -79,8 +98,13 @@ function isComplete(result: ScanResult, summary: TrustSummary): boolean {
   if (status.discovery !== "complete" || status.rules !== "complete")
     return false;
   if ((status.skippedFiles ?? 0) > 0) return false;
+  if ((status.parseFallbacks ?? 0) > 0) return false;
   if ((status.rulesCrashed ?? 0) > 0) return false;
-  return (status.reasons ?? []).length === 0;
+  if ((status.truncationReasons?.length ?? 0) > 0) return false;
+  // A ceiling still bounds what this run can conclude — it just does not claim
+  // the analysis stopped. `licensesClean` reads it below.
+  void summary;
+  return true;
 }
 
 /**
@@ -167,11 +191,16 @@ export function classifyTrust(
       gaps,
     };
   }
+  // A confidence ceiling does not make the analysis incomplete, but it does
+  // bound what the run can conclude — so it must not license a CLEAN result
+  // either. `licensesClean` is the single answer to "may this run's emptiness
+  // be read as verified?", and a capped run has not earned it.
+  const licensesClean = summary.ceilingReasons.length === 0;
   if (confident) {
     return {
       claim: "DETERMINISTIC_STATIC",
       order: 3,
-      licensesClean: true,
+      licensesClean,
       reason:
         "deterministic static analysis, complete but uncorroborated by a run",
       gaps,
@@ -180,7 +209,7 @@ export function classifyTrust(
   return {
     claim: "THIN_STATIC_SIGNAL",
     order: 2,
-    licensesClean: true,
+    licensesClean,
     reason:
       "static analysis is complete but low-confidence — treat findings as leads",
     gaps,

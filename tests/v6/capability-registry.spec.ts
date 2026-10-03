@@ -391,18 +391,40 @@ describe("evidence is resolved per entry, not once for the registry", () => {
     // because `FRAMEWORK_FAMILY.selenium` named a family no rule belongs to.
     // The premise was false and the test enforced it.
     //
-    // So the control is now stated over EVERY zero-rule entry, and Selenium
-    // keeps the separate property it actually demonstrates (below: rules
-    // without an adapter).
-    const ruleLess = registry.entries.filter(
-      (entry) => (entry.rules ?? []).length === 0,
+    // So the control is stated as an INVARIANT rather than over a population:
+    // nothing above M1 may exist without something to cite. It used to
+    // enumerate the zero-rule entries and assert they were all M1 — and that
+    // population WAS the thirteen `qa.domain.*` entries, so deleting the support
+    // matrix they read emptied the control set and made the arm a red line for
+    // a reason unrelated to the property. Selenium keeps the separate property
+    // it actually demonstrates (below: rules without an adapter).
+    //
+    // The contrapositive form is the one that cannot be emptied: it is
+    // satisfied by every entry that exists, and it fails the moment evidence
+    // resolution goes global.
+    const aboveM1 = registry.entries.filter(
+      (entry) => entry.maturity !== "M1_DECLARED",
     );
-    expect(ruleLess.length).toBeGreaterThan(0);
-    for (const entry of ruleLess) {
+    expect(
+      aboveM1.length,
+      "no entry is above M1 — the registry proves nothing and this invariant " +
+        "cannot distinguish per-entry evidence from a global flag",
+    ).toBeGreaterThan(0);
+    for (const entry of aboveM1) {
+      const citable = (entry.rules ?? []).length > 0 || entry.adapter !== null;
       expect(
-        entry.adapter,
-        `${entry.id} has no rules and no adapter`,
-      ).toBeNull();
+        citable,
+        `${entry.id} is ${entry.maturity} with nothing to cite: ` +
+          `${(entry.rules ?? []).length} rule(s), adapter ${entry.adapter}. ` +
+          "Proof follows the entry's own evidence, never the registry's.",
+      ).toBe(true);
+    }
+    // And the specific shape that leaked once: no rules AND no adapter is
+    // M1/BLOCKED with no authority. Stated over the same population, which is
+    // empty today, because it is the case the invariant above is derived from.
+    for (const entry of registry.entries.filter(
+      (e) => (e.rules ?? []).length === 0 && e.adapter === null,
+    )) {
       expect(entry.maturity, `${entry.id} maturity`).toBe("M1_DECLARED");
       expect(entry.proof.status, `${entry.id} proof`).toBe("BLOCKED");
       expect(entry.proof.authority, `${entry.id} authority`).toBe("NONE");
@@ -571,10 +593,12 @@ describe("evidence is resolved per entry, not once for the registry", () => {
       // the caller's claim actually reaches.
       expect(entry.proven, entry.id).toBe("M2_IMPLEMENTED");
     }
-    // A domain has no rules at all, so even a caller's global claim leaves it
-    // without a rule to cite — and the proof follows the rules, not the flag.
-    const domain = withClaim.entries.find((e) => e.kind === "domain");
-    expect(domain?.proof.status, domain?.id).toBe("BLOCKED");
+    // 6.0 removed the second half of this arm. It used to pick a
+    // `kind === "domain"` entry to prove that a caller's global claim leaves a
+    // rule-less capability BLOCKED — and the thirteen domain entries it picked
+    // from read the deleted support matrix. The property it demonstrated is
+    // now demonstrated above, over a synthetic control that cannot be emptied
+    // by deleting an unrelated part of the registry.
   });
 });
 
@@ -938,13 +962,20 @@ describe("the capability verb — read-only by construction", () => {
       evidence: BLIND_REGISTRY_EVIDENCE,
       observedAt: OBSERVED_AT,
     });
-    const domains = selectCapabilities(registry.entries, {
-      kind: "domain",
+    // 6.0: this filtered on `kind: "domain"`, which had 13 entries until the
+    // support matrix they were read from was deleted. Filtering on a kind the
+    // registry happens to contain makes the arm a change detector for whatever
+    // else was removed; `ci-cd-provider` is derived from `CI_PROVIDERS`, which
+    // is a declared list rather than a projection of a retired ledger.
+    const providers = selectCapabilities(registry.entries, {
+      kind: "ci-cd-provider",
       maturity: null,
       id: null,
     });
-    expect(domains.length).toBeGreaterThan(0);
-    expect(domains.every((entry) => entry.kind === "domain")).toBe(true);
+    expect(providers.length).toBeGreaterThan(0);
+    expect(providers.every((entry) => entry.kind === "ci-cd-provider")).toBe(
+      true,
+    );
     expect(
       selectCapabilities(registry.entries, {
         kind: null,

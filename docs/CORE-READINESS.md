@@ -2,7 +2,7 @@
 
 **Generated — do not edit by hand.** Regenerate: `npm run docs:core-readiness`.
 
-The core tier holds 0 rule(s) that cleared
+The core tier holds 2 rule(s) that cleared
 the 10% Wilson ceiling by measurement. A rule
 observing ZERO false positives needs **n ≥ 35** to clear
 it, which is why a thin sample is not a verdict — see
@@ -10,14 +10,21 @@ it, which is why a thin sample is not a verdict — see
 
 | Verdict            | Rules | What it means                                                                              |
 | ------------------ | ----: | ------------------------------------------------------------------------------------------ |
-| EARNED             |     0 | A valid measurement whose 95% interval clears the ceiling                                  |
-| NEEDS-SAMPLES      |    54 | Sample too small at the observed rate; more data settles it as-is                          |
+| EARNED             |     2 | A valid measurement whose 95% interval clears the ceiling                                  |
+| NEEDS-SAMPLES      |    52 | Sample too small at the observed rate; more data settles it as-is                          |
 | NEEDS-FP-REDUCTION |    19 | Sample large enough, false-positive rate too high; the rule is wrong, not the corpus       |
 | NOT-MEASURED       |     6 | No measurement at the current detector revision                                            |
 | DECLARED           |     0 | In core on an unexpired `corePromotion` — a maintainer judgement the corpus cannot support |
 | EXPIRED            |     0 | The promotion lapsed; the rule resolves to `extended`                                      |
 
-## NEEDS-SAMPLES (54)
+## EARNED (2)
+
+| Rule      | Tier |   n | n required | ciHigh | Observed FP | FPs to remove | Note                |
+| --------- | ---- | --: | ---------: | -----: | ----------: | ------------: | ------------------- |
+| QA-JV-101 | core |  35 |         35 |   9.9% |        0.0% |          none | interval clears 10% |
+| QA-PW-117 | core |  35 |         35 |   9.9% |        0.0% |          none | interval clears 10% |
+
+## NEEDS-SAMPLES (52)
 
 | Rule       | Tier         |   n | n required | ciHigh | Observed FP | FPs to remove | Note                         |
 | ---------- | ------------ | --: | ---------: | -----: | ----------: | ------------: | ---------------------------- |
@@ -37,7 +44,6 @@ it, which is why a thin sample is not a verdict — see
 | QA-CYP-001 | extended     |  15 |         35 |  45.2% |       20.0% |             — | at this rate n=15, needs ≥35 |
 | QA-CYP-002 | quarantine   |  10 |         35 |  27.8% |        0.0% |             — | at this rate n=10, needs ≥35 |
 | QA-CYP-003 | quarantine   |  10 |         35 |  27.8% |        0.0% |             — | at this rate n=10, needs ≥35 |
-| QA-JV-101  | extended     |  23 |         35 |  14.3% |        0.0% |             — | at this rate n=23, needs ≥35 |
 | QA-JV-104  | extended     |  10 |         35 |  51.0% |       20.0% |             — | at this rate n=10, needs ≥35 |
 | QA-JV-105  | extended     |  20 |         35 |  30.1% |       10.0% |             — | at this rate n=20, needs ≥35 |
 | QA-JV-107  | extended     |  10 |         35 |  27.8% |        0.0% |             — | at this rate n=10, needs ≥35 |
@@ -49,7 +55,6 @@ it, which is why a thin sample is not a verdict — see
 | QA-PW-104  | extended     |  10 |         35 |  27.8% |        0.0% |             — | at this rate n=10, needs ≥35 |
 | QA-PW-113  | extended     |  11 |         35 |  25.9% |        0.0% |             — | at this rate n=11, needs ≥35 |
 | QA-PW-116  | (undeclared) |  10 |         35 |  27.8% |        0.0% |             — | at this rate n=10, needs ≥35 |
-| QA-PW-117  | extended     |  24 |         35 |  13.8% |        0.0% |             — | at this rate n=24, needs ≥35 |
 | QA-PW-121  | extended     |  12 |         35 |  24.3% |        0.0% |             — | at this rate n=12, needs ≥35 |
 | QA-PW-122  | extended     |  80 |         35 |  13.8% |        6.3% |            -3 | at this rate n=80, needs ≥35 |
 | QA-PW-124  | (undeclared) |  15 |         35 |  29.8% |        6.7% |             — | at this rate n=15, needs ≥35 |

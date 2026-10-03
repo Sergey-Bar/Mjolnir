@@ -19,18 +19,32 @@ Nothing here is marked closed. `EXTERNAL_PENDING` is a status, not a verdict.
 
 ## What this changes, and what it does not
 
-It does **not** lower the bar for 1.0. The 39 boxes in
-[`EXTERNAL-EVIDENCE-REQUEST.md`](EXTERNAL-EVIDENCE-REQUEST.md) remain open, and
-they are the definition of done for 1.0 rather than for 5.x. That is the
+It does **not** lower the bar for 1.0. The external-evidence items remain open,
+and they are the definition of done for 1.0 rather than for 5.x. That is the
 market position, and it is not a lowered bar — it is a bar attached to the
 right milestone. ESLint ran on the same footing for a decade: the rules were
 the product, and the evidence that they were right was a community complaint
 queue. What ESLint did _not_ do was put a "no external validation exists" box
 in its pre-release gate, which is where a naive reading of this ledger ends up.
 
-`npm run docs:external-evidence` prints the current count and fails if a box
-that IS obtainable in-repo is sitting in the external set. That is the check
-that makes the disposition falsifiable rather than a way to park work.
+**This runbook is the surviving record of those items.** They were written up in
+a separate request document, `docs/EXTERNAL-EVIDENCE-REQUEST.md`, which the 6.0
+M26-M50 retirement deleted along with the ledgers it named; its sections §1–§6
+are the six `EXTERNAL_PENDING` rows below.
+
+What that deletion left behind was the checker: `scripts/check-external-evidence.ts`
+read that document, so `npm run docs:external-evidence` exited 2 with a setup
+error and `npm run certify:integrity` could not complete. **The checker and its
+`certify:integrity` leaf have since been removed.** The rows below are untouched
+and are the whole surviving record.
+
+Lowering its ceiling was rejected — see [D-9](PRODUCT-DECISIONS.md#d-9--an-unobtainable-criterion-is-not-a-criterion)
+— and so was re-creating the document, which would resurrect retired scope. What
+settled it is D-9's own principle applied one level further: a criterion nobody
+can satisfy is not a criterion, and neither is a gate whose input was deleted on
+purpose. A gate that can never pass is worse than no gate, because it turns every
+release red for a reason nobody can fix in a diff — which is exactly how a gate
+gets switched off, and then the six rows lose even the visibility they kept.
 
 ## The release path, and who owns each step
 

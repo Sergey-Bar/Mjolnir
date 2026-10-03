@@ -2,7 +2,7 @@
  * The `capability` command's selection, serialisation and rendering.
  *
  * `tests/v6/capability-registry.spec.ts` pins the registry model and the one
- * property that matters most about this command Ã¢â‚¬” that it has no flag which can
+ * property that matters most about this command → that it has no flag which can
  * write a level back. These cover the rest of the surface: the filters it
  * applies, the two output shapes, and the exit codes.
  *

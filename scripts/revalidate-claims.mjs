@@ -4,14 +4,16 @@
  * Usage: node scripts/revalidate-claims.mjs [repo-root]
  *
  * BITTERSWEET `BW-003`, and the general form of the `sync-m26-github.mjs`
- * failure the plan calls the load-bearing discovery.
+ * failure the plan calls the load-bearing discovery. Both that script and the
+ * two M26 ledgers this file used to validate are deleted in 6.0; what is left
+ * is the rule they were the first case of.
  *
  * THE DEFECT THIS EXISTS TO MAKE IMPOSSIBLE
  *
  * A ledger row once read:
  *
  *   { "gap_id": "GAP-M26-002", "status": "fixed",
- *     "closure_evidence": { "command": "npm run m26:github:sync",
+ *     "closure_evidence": { "command": "the m26 github sync script",
  *                           "result": "PASS", "observed_at": "2026-09-25" } }
  *
  * and that script's entire disposition logic was
@@ -55,11 +57,6 @@ import { EVIDENCE_BEARING_STATUSES } from "./lib/proof-statuses.mjs";
 
 const root = process.argv[2] ?? process.cwd();
 const readJson = (rel) => JSON.parse(readFileSync(join(root, rel), "utf8"));
-const readJsonl = (rel) =>
-  readFileSync(join(root, rel), "utf8")
-    .split("\n")
-    .filter((line) => line.trim() !== "")
-    .map((line) => JSON.parse(line));
 
 const head = execFileSync("git", ["rev-parse", "HEAD"], {
   cwd: root,
@@ -169,42 +166,15 @@ function checkClaim({
   }
 }
 
-/* ── 1. the M26 gap ledger ──────────────────────────────────── */
-
-const gaps = readJsonl("docs/M26-GAP-LEDGER.jsonl");
-for (const row of gaps) {
-  const evidence = row.closure_evidence;
-  checkClaim({
-    id: row.gap_id,
-    source: "docs/M26-GAP-LEDGER.jsonl",
-    status: row.status,
-    verification: evidence?.command ?? evidence?.source_path ?? null,
-    baseSha: evidence?.observed_at_base_sha ?? null,
-    artifacts: evidence?.artifacts ?? [],
-    owner: row.owner,
-  });
-}
-
-/* ── 2. the support matrix ──────────────────────────────────── */
-
-const matrix = readJson("docs/M26-SUPPORT-MATRIX.json");
-const matrixCells = Array.isArray(matrix)
-  ? matrix
-  : (matrix.cells ?? matrix.records ?? []);
-for (const cell of matrixCells) {
-  if (cell?.disposition !== "SUPPORTED" && cell?.status !== "PROVEN") continue;
-  checkClaim({
-    id: cell.id ?? cell.cell ?? "UNKNOWN-CELL",
-    source: "docs/M26-SUPPORT-MATRIX.json",
-    status: "fixed",
-    verification: cell.verification ?? cell.proof_command ?? null,
-    baseSha: cell.observed_at_base_sha ?? null,
-    artifacts: cell.artifacts ?? [],
-    owner: cell.owner,
-  });
-}
-
-/* ── 3. the public claim registry ───────────────────────────── */
+/* ── 1. the public claim registry ──────────────────────────────────
+ *
+ * 6.0 removed the two M26 passes this script used to run first, over
+ * `docs/M26-GAP-LEDGER.jsonl` and `docs/M26-SUPPORT-MATRIX.json`. The rule
+ * below is unchanged; its two other inputs were deleted with the M26 program,
+ * and a revalidator whose inputs are gone can only ever report that they are
+ * gone. The claim-registry pass is the half that was still live — it is what
+ * `certify:claims` gates on — so it is what survived.
+ */
 
 const registry = readJson("docs/claim-registry.json");
 
@@ -289,7 +259,7 @@ const report = {
   status:
     downgraded.length === 0 && diagnostics.length === 0 ? "PASS" : "DOWNGRADED",
   head: head.slice(0, 12),
-  checked: gaps.length + matrixCells.length + (registry.claims ?? []).length,
+  checked: (registry.claims ?? []).length,
   verified: verified.length,
   downgraded: downgraded.length,
   /**

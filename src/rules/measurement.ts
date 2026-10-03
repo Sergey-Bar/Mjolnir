@@ -56,6 +56,7 @@ import type { QADoctorRule } from "./rule.js";
 import { MEASURED_FP, MEASURED_FP_RAW } from "./measured-fp.generated.js";
 import { RETIRED_RULE_IDS } from "./index.js";
 import { wilsonInterval, type WilsonInterval } from "../lib/wilson.js";
+import { compareCodePoints } from "../lib/compare.js";
 
 export type Tier = "core" | "extended" | "quarantine";
 
@@ -72,34 +73,41 @@ export type RuleStatus =
  * count as core. Applied to the Wilson UPPER bound, so a rule earns core by
  * proving its ceiling, not by reporting a point estimate under it.
  *
- * !! UNREACHABLE AT THE CURRENT CORPUS CAP — read this before trying to earn it.
+ * !! NEEDS n >= 35, AND THE SAMPLER NOW HAS A MODE THAT FUNDS IT — read this
+ * before trying to earn it.
  *
  * 10% on the upper bound needs **n >= 35 with ZERO false positives**, using
  * this file's own `wilsonInterval`: 0/20 reads 16.1%, 0/30 reads 11.3%, 0/35
- * reads 9.9%. The corpus samples at most 20 per rule
- * (`MAX_SAMPLES_PER_RULE`, scripts/corpus-sample.ts:87), so the best a rule can
- * look at that cap is 0/20 — and 16.1% is above this ceiling. Not "hard to
- * reach": unreachable, for every rule, at every sample size the sampler can
- * produce.
+ * reads 9.9%. `samplesForZeroFp` derives the threshold from the ceiling rather
+ * than hard-coding 35, and `docs/CORE-READINESS.md` names the work list.
  *
- * The cap is bounded by the ADJUDICATION budget, not by statistics. Raising it
- * to 40 previously produced 1,121 unadjudicated rows across 42 rules, which
- * the committed ceiling refused outright — correctly, because blank verdict
- * rows are dropped rather than counted, so a mostly-blank corpus reports a
- * rate measured on whatever subset happened to be adjudicated. Raising the cap
- * without the adjudication budget to fill it makes the gate stop complaining
- * without adding evidence.
+ * The DEFAULT corpus cap is still 20 (`MAX_SAMPLES_PER_RULE`,
+ * scripts/corpus-sample.ts), so a plain `npm run corpus:sample` cannot reach
+ * this ceiling for any rule — 0/20 is 16.1%, and no amount of re-running that
+ * command changes it. What changed is the ALLOCATION, not the arithmetic:
+ * `--core-candidates` spends the sample cap only on rules that can actually
+ * earn a tier by sampling more, and `--core-target` decides which of those a
+ * given pass funds. The predicate and the budget split are in
+ * `scripts/lib/core-candidates.ts`.
  *
- * So `MEASURED-CORE` in `RuleStatus` above, and `"core"` in `Rule.tier`, are
- * states this corpus cannot produce. `tests/rules/core-tier-reachability.spec.ts`
- * pins this with the arithmetic and fails LOUDLY the day it stops being true,
- * so that opening the core tier becomes a deliberate event with a diff rather
- * than something a future reader infers from a tier nobody holds.
+ * The adjudication budget is what bounds this, and it always did. A global
+ * raise to 40 previously produced 1,121 unadjudicated rows across 42 rules,
+ * which the committed ceiling refused outright — correctly, because blank
+ * verdict rows are dropped rather than counted, so a mostly-blank corpus
+ * reports a rate measured on whatever subset happened to be adjudicated.
+ * Sampling without the adjudication budget to fill it makes the gate stop
+ * complaining without adding evidence. So earning core is still a person's
+ * work, one classification at a time
+ * (`tests/corpus/verdicts/README.md`), and the sampled rows are only an ask.
  *
- * The two constants here were chosen independently and their product is
- * unreachable. That is a product call, not an oversight to be tidied away: it
- * is stated here so the next person does not spend a day earning a tier that
- * cannot be earned.
+ * `tests/rules/core-tier-reachability.spec.ts` pins both halves of that
+ * sentence and fails LOUDLY in either direction, so opening the core tier
+ * becomes a deliberate event with a diff rather than something a future reader
+ * infers from a tier nobody holds.
+ *
+ * The two constants here were chosen independently, and whether their product is
+ * reachable is a product call rather than an oversight to tidy away. The 10%
+ * ceiling is now decided on the record: `docs/adr/0013-the-core-ceiling-is-decided.md`.
  */
 export const CORE_FP_CEILING = 0.1;
 
@@ -403,4 +411,171 @@ export function isProvisional(rule: QADoctorRule): boolean {
  */
 export function isRetiredRule(ruleId: string): boolean {
   return RETIRED_RULE_IDS.includes(ruleId);
+}
+
+/* ------------------------------------------------------------------ *
+ * THE HELD-OUT SPLIT
+ *
+ * `docs/claim-registry.json` blocks the `rule-registry-census` claim with
+ * one sentence: "Promoting this needs a classifier that has never seen the
+ * verdicts it is scored against." This is that split.
+ *
+ * WHY IT IS BY REPOSITORY AND NEVER BY ROW
+ *
+ * Splitting by row is trivially re-drawable. Take any classifier, and a
+ * per-row split can be searched until the held-out half agrees with the
+ * measurement half — that is fitting the split to the answer, and it makes
+ * the number worse rather than the model better. A repository is the unit a
+ * verdict row actually comes from: rows in one file are findings from one
+ * codebase, one team, one idiom, one set of conventions. A per-row split
+ * puts the same file — often the same test — in both halves, which is
+ * leakage wearing a partition's clothes. So the unit is the corpus
+ * repository, whole.
+ *
+ * WHY THE ASSIGNMENT IS A HASH AND NOT A LIST
+ *
+ * A committed hand-written list can be re-drawn the moment it is
+ * inconvenient, and nothing in the tree would show it. A salted hash makes
+ * the split a pure function of the repository id: the same input always
+ * yields the same partition, forever, and re-deriving it is a check rather
+ * than an opinion. The salt is committed, which means changing it is a
+ * visible one-line diff that invalidates every published number — which is
+ * the correct cost for changing the split.
+ *
+ * WHY THERE IS ONE EXCLUSION, AND IT IS COMPUTED
+ *
+ * The obvious hazard: a repository can be the ONLY source of rows for the
+ * rules closest to earning core, and moving it to holdout would empty the
+ * measurement side of exactly the evidence 6.0 is waiting on. `keycloak`
+ * holds 22 of `QA-JV-101`'s rows and 30 of `QA-PW-117`'s.
+ *
+ * The exclusion is not a hand-kept list of those repositories — that is the
+ * failure mode above wearing a smaller hat. It is derived from
+ * `isCoreCandidate` by the caller, so it moves with the candidate set and
+ * cannot be edited into place. Everything the hash puts in holdout that is NOT
+ * a protected source goes to holdout.
+ *
+ * WHAT THE HOLDOUT DOES AND DOES NOT DO
+ *
+ * It VALIDATES; it does not GATE. Core promotion reads the measurement
+ * partition. Requiring n >= 35 clean holdout rows would consume whole
+ * repositories — the Java corpora are `appsmith` and `keycloak`, and moving
+ * one drops `QA-JV-101` into a partition that cannot replace them. A
+ * holdout that gates is a holdout sized by the corpus rather than by the
+ * question, and the honest way to say "this generalises" is to report the
+ * holdout number beside the measurement number and let a reader see both.
+ */
+
+export type HoldoutPartition = "measurement" | "holdout";
+
+/**
+ * Committed salt. Changing this re-draws the entire split and therefore
+ * invalidates every published rate; it is a one-line diff on purpose.
+ */
+export const HOLDOUT_SALT = "mjolnir-holdout-v1";
+
+/** Buckets the hash is reduced to. Holdout is the lowest `HOLDOUT_BUCKETS_PERCENT`. */
+export const HOLDOUT_PERCENT = 25;
+
+/**
+ * FNV-1a, 32-bit. Not a security primitive and does not need to be: the
+ * requirement is a STABLE partition, and any deterministic hash gives one.
+ * Rolling crypto here would be the dependency this file is trying to avoid.
+ */
+function fnv1a(input: string): number {
+  let hash = 0x811c9dc5;
+  for (let i = 0; i < input.length; i++) {
+    hash ^= input.charCodeAt(i);
+    hash = Math.imul(hash, 0x01000193) >>> 0;
+  }
+  return hash >>> 0;
+}
+
+/**
+ * The raw bucket for a repository id, before any exclusion. Exposed so the
+ * split can be explained: a reader who disagrees with an assignment can see
+ * whether it came from the hash or from the protection rule.
+ */
+export function holdoutBucket(repositoryId: string): number {
+  return fnv1a(`${HOLDOUT_SALT}:${repositoryId}`) % 100;
+}
+
+/**
+ * Repositories that MUST stay in measurement, named by the caller.
+ *
+ * This function does not DERIVE the protected set, and that is a layering
+ * decision rather than a gap. The predicate that decides it — `isCoreCandidate`
+ * — lives in `scripts/lib/core-candidates.ts`, and `src/` importing from
+ * `scripts/` would invert the dependency the whole repository is built to keep
+ * (`scripts/check-unimported-modules.mjs` exists to hold that line). So the
+ * caller computes the set and passes it in; everything here stays a pure
+ * function of committed data.
+ *
+ * The point of the rule is that the set must not be HAND-MAINTAINED, because a
+ * hand-kept list of "repositories we must not move" is exactly the thing a
+ * re-drawn split would use to justify itself. Deriving it from
+ * `isCoreCandidate` means it moves with the candidate set and cannot be edited
+ * into place — see `scripts/v6/check-holdout-split.ts`, which is the caller
+ * that does the deriving.
+ */
+export interface HoldoutProtected {
+  repositoryId: string;
+  /** Rule -> how many of its committed verdict rows this repository holds. */
+  rowsByRule: Record<string, number>;
+}
+
+/** Which partition a repository's verdicts belong to. */
+export function holdoutPartitionFor(
+  repositoryId: string,
+  protectedIds: ReadonlySet<string>,
+): HoldoutPartition {
+  if (protectedIds.has(repositoryId)) return "measurement";
+  return holdoutBucket(repositoryId) < HOLDOUT_PERCENT
+    ? "holdout"
+    : "measurement";
+}
+
+export interface HoldoutSplit {
+  holdout: string[];
+  measurement: string[];
+  protected: HoldoutProtected[];
+  /** Bucket per repository, so an assignment can be explained or disputed. */
+  buckets: Record<string, number>;
+}
+
+/**
+ * The whole split, from the committed verdict files.
+ *
+ * `rowsByRepository` maps repository id -> (rule id -> committed row count).
+ * `protectedList` is the caller's derived exclusion (above).
+ *
+ * Rows are counted, never moved: the partition is a LABEL on a repository, and
+ * a repository in the holdout keeps its rows exactly where they are. The label
+ * is what a consumer filters on, which is why splitting by repository is a
+ * partition of the FILES and not of the corpus.
+ */
+export function computeHoldoutSplit(
+  rowsByRepository: ReadonlyMap<string, ReadonlyMap<string, number>>,
+  protectedList: readonly HoldoutProtected[] = [],
+): HoldoutSplit {
+  const protectedIds = new Set(protectedList.map((p) => p.repositoryId));
+  const holdout: string[] = [];
+  const measurement: string[] = [];
+  const buckets: Record<string, number> = {};
+  for (const repositoryId of [...rowsByRepository.keys()].sort()) {
+    buckets[repositoryId] = holdoutBucket(repositoryId);
+    if (holdoutPartitionFor(repositoryId, protectedIds) === "holdout") {
+      holdout.push(repositoryId);
+    } else {
+      measurement.push(repositoryId);
+    }
+  }
+  return {
+    holdout,
+    measurement,
+    protected: [...protectedList].sort((a, b) =>
+      compareCodePoints(a.repositoryId, b.repositoryId),
+    ),
+    buckets,
+  };
 }

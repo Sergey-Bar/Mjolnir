@@ -198,12 +198,16 @@ describe("rule mode — WI-7 additions keep the original explanation intact", ()
     }
   });
 
-  it("quarantine rules disclose the --strict-only advisory semantics", () => {
+  it("quarantine rules disclose the --include-warn-only advisory semantics", () => {
     const q = RULES.find((r) => effectiveTier(r) === "quarantine");
     expect(q).toBeDefined();
     if (q) {
+      // `--include-warn`, not `--strict`: the rename landed in 6.0 and the
+      // disclosure is the sentence a user acts on, so pointing it at the
+      // deprecated spelling would be pointing it at a flag with a removal
+      // date on it.
       expect(
-        whatWouldChangeTheVerdict(q).some((c) => c.includes("--strict")),
+        whatWouldChangeTheVerdict(q).some((c) => c.includes("--include-warn")),
       ).toBe(true);
     }
   });

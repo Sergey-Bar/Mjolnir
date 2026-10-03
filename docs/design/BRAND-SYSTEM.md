@@ -220,7 +220,7 @@ surface drawing this ladder must draw the break, which is why
 ### Runes — beside a state, never as ornament
 
 The band runes come from
-[`score-state.ts`](../../src/reporter/score-state.ts) and belong beside
+[`presentation.ts`](../../src/reporter/presentation.ts) and belong beside
 the verdict they name:
 
 | Band       | Rune |                                        |

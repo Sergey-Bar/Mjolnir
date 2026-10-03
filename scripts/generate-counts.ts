@@ -43,6 +43,7 @@ export interface Census {
   unmeasured: number;
   total: number;
   quarantine: number;
+  core: number;
 }
 
 /**
@@ -60,6 +61,12 @@ export function censusValues(census: Census): Record<string, string> {
     "measured-of-total": `${census.measured} of ${census.total}`,
     "unmeasured-of-total": `${census.unmeasured} of ${census.total}`,
     "total-rules": `${census.total} rules`,
+    core: String(census.core),
+    // The core tier's occupancy, as a number rather than a sentence. This
+    // paragraph in README.md said "core is empty" for a whole release after
+    // two rules had earned it: the claim was prose, so nothing could check
+    // it. A sentinel makes the count generator-owned and drift-locked.
+    "core-rules": String(census.core),
     // The CERTIFICATION-POLICY §2 compact form: measured/unmeasured/total,
     // quarantine — the census block's exact key order.
     census: `${census.measured}/${census.unmeasured}/${census.total}, ${census.quarantine}`,
@@ -130,6 +137,7 @@ export const CENSUS_SURFACES = [
   "README.md",
   "docs/README.md",
   "docs/CERTIFICATION-POLICY.md",
+  "docs/MEASUREMENT-CLOSEOUT.md",
   "site/reference/roadmap.md",
 ];
 

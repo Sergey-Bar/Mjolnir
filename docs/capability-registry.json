@@ -3,15 +3,14 @@
   "artifact": "capability-registry",
   "generatedBy": "npm run docs:capability",
   "registryId": "mjolnir-capability-registry",
-  "observedAt": "2026-10-02",
-  "baseSha": "a5368a0aa63bd25d48b6acd4db57469e289498a5",
+  "observedAt": "2026-10-03",
+  "baseSha": "8d889b511ef5930eceda354e7253a16c8a3ef2e0",
   "counts": {
-    "entries": 27,
+    "entries": 14,
     "kind:ci-cd-provider": 4,
     "maturity:M2": 9,
-    "kind:domain": 13,
-    "maturity:M1": 17,
     "kind:test-framework": 9,
+    "maturity:M1": 4,
     "maturity:M3": 1,
     "kind:test-runner": 1
   },
@@ -52,7 +51,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-CI-001",
         "digest": null,
-        "observedAt": "2026-10-02",
+        "observedAt": "2026-10-03",
         "authority": "provider-capability-contract"
       }
     },
@@ -92,7 +91,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-CI-001",
         "digest": null,
-        "observedAt": "2026-10-02",
+        "observedAt": "2026-10-03",
         "authority": "provider-capability-contract"
       }
     },
@@ -132,7 +131,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-CI-001",
         "digest": null,
-        "observedAt": "2026-10-02",
+        "observedAt": "2026-10-03",
         "authority": "provider-capability-contract"
       }
     },
@@ -172,450 +171,8 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-CI-001",
         "digest": null,
-        "observedAt": "2026-10-02",
+        "observedAt": "2026-10-03",
         "authority": "provider-capability-contract"
-      }
-    },
-    {
-      "id": "qa.domain.accessibility",
-      "name": "Accessibility domain",
-      "kind": "domain",
-      "owner": "qa-owner",
-      "rules": [],
-      "censusId": "qa.domain.accessibility",
-      "frameworkId": null,
-      "domains": ["ACCESSIBILITY"],
-      "blocksAxes": ["Domain Coverage"],
-      "observedUpstreamMajor": null,
-      "adapter": null,
-      "declaredDisposition": "BLOCKED",
-      "blockedReason": "No accessibility scanner/adapter, keyboard/screen-reader corpus, assistive-technology run, or independent human/automated certification exists.",
-      "revisitTrigger": "Accessibility adapter, real repository corpus, and candidate-bound assistive-technology validation are available.",
-      "proven": "M1_DECLARED",
-      "maturity": "M1_DECLARED",
-      "nextLevelGap": {
-        "target": "M2_IMPLEMENTED",
-        "missing": [
-          "implementation exists",
-          "unit tests for the implementation"
-        ],
-        "owner": "qa-owner",
-        "revisitTrigger": "capability qa.domain.accessibility gains evidence for its next level"
-      },
-      "proof": {
-        "status": "BLOCKED",
-        "artifact": null,
-        "digest": null,
-        "observedAt": null,
-        "authority": "NONE"
-      }
-    },
-    {
-      "id": "qa.domain.api",
-      "name": "API contracts",
-      "kind": "domain",
-      "owner": "qa-owner",
-      "rules": [],
-      "censusId": "qa.domain.api",
-      "frameworkId": null,
-      "domains": ["API"],
-      "blocksAxes": ["Domain Coverage"],
-      "observedUpstreamMajor": null,
-      "adapter": null,
-      "declaredDisposition": "BLOCKED",
-      "blockedReason": "The provisional model can represent API evidence, but no OpenAPI/AsyncAPI adapter, schema corpus, contract generation, or independent API certification exists.",
-      "revisitTrigger": "API adapter, real schema corpus, and external contract certification are integrated.",
-      "proven": "M1_DECLARED",
-      "maturity": "M1_DECLARED",
-      "nextLevelGap": {
-        "target": "M2_IMPLEMENTED",
-        "missing": [
-          "implementation exists",
-          "unit tests for the implementation"
-        ],
-        "owner": "qa-owner",
-        "revisitTrigger": "capability qa.domain.api gains evidence for its next level"
-      },
-      "proof": {
-        "status": "BLOCKED",
-        "artifact": null,
-        "digest": null,
-        "observedAt": null,
-        "authority": "NONE"
-      }
-    },
-    {
-      "id": "qa.domain.browser",
-      "name": "Browser domain",
-      "kind": "domain",
-      "owner": "qa-owner",
-      "rules": [],
-      "censusId": "qa.domain.browser",
-      "frameworkId": null,
-      "domains": ["BROWSER"],
-      "blocksAxes": ["Domain Coverage"],
-      "observedUpstreamMajor": null,
-      "adapter": null,
-      "declaredDisposition": "TESTED",
-      "blockedReason": null,
-      "revisitTrigger": null,
-      "proven": "M1_DECLARED",
-      "maturity": "M1_DECLARED",
-      "nextLevelGap": {
-        "target": "M2_IMPLEMENTED",
-        "missing": [
-          "implementation exists",
-          "unit tests for the implementation"
-        ],
-        "owner": "qa-owner",
-        "revisitTrigger": "capability qa.domain.browser gains evidence for its next level"
-      },
-      "proof": {
-        "status": "BLOCKED",
-        "artifact": null,
-        "digest": null,
-        "observedAt": null,
-        "authority": "NONE"
-      }
-    },
-    {
-      "id": "qa.domain.exploratory-observability",
-      "name": "Exploratory testing and observability",
-      "kind": "domain",
-      "owner": "qa-owner",
-      "rules": [],
-      "censusId": "qa.domain.exploratory-observability",
-      "frameworkId": null,
-      "domains": ["EXPLORATORY-OBSERVABILITY"],
-      "blocksAxes": ["Domain Coverage"],
-      "observedUpstreamMajor": null,
-      "adapter": null,
-      "declaredDisposition": "BLOCKED",
-      "blockedReason": "No exploratory-session, trace, log, or observability adapter integrates into the QA domain model, and no external practitioner validation exists.",
-      "revisitTrigger": "Privacy-reviewed observability adapter and reviewed exploratory-session corpus are integrated.",
-      "proven": "M1_DECLARED",
-      "maturity": "M1_DECLARED",
-      "nextLevelGap": {
-        "target": "M2_IMPLEMENTED",
-        "missing": [
-          "implementation exists",
-          "unit tests for the implementation"
-        ],
-        "owner": "qa-owner",
-        "revisitTrigger": "capability qa.domain.exploratory-observability gains evidence for its next level"
-      },
-      "proof": {
-        "status": "BLOCKED",
-        "artifact": null,
-        "digest": null,
-        "observedAt": null,
-        "authority": "NONE"
-      }
-    },
-    {
-      "id": "qa.domain.integration",
-      "name": "Integration-test domain",
-      "kind": "domain",
-      "owner": "qa-owner",
-      "rules": [],
-      "censusId": "qa.domain.integration",
-      "frameworkId": null,
-      "domains": ["INTEGRATION"],
-      "blocksAxes": ["Domain Coverage"],
-      "observedUpstreamMajor": null,
-      "adapter": null,
-      "declaredDisposition": "TESTED",
-      "blockedReason": null,
-      "revisitTrigger": null,
-      "proven": "M1_DECLARED",
-      "maturity": "M1_DECLARED",
-      "nextLevelGap": {
-        "target": "M2_IMPLEMENTED",
-        "missing": [
-          "implementation exists",
-          "unit tests for the implementation"
-        ],
-        "owner": "qa-owner",
-        "revisitTrigger": "capability qa.domain.integration gains evidence for its next level"
-      },
-      "proof": {
-        "status": "BLOCKED",
-        "artifact": null,
-        "digest": null,
-        "observedAt": null,
-        "authority": "NONE"
-      }
-    },
-    {
-      "id": "qa.domain.mobile",
-      "name": "Mobile domain",
-      "kind": "domain",
-      "owner": "qa-owner",
-      "rules": [],
-      "censusId": "qa.domain.mobile",
-      "frameworkId": null,
-      "domains": ["MOBILE"],
-      "blocksAxes": ["Domain Coverage"],
-      "observedUpstreamMajor": null,
-      "adapter": null,
-      "declaredDisposition": "BLOCKED",
-      "blockedReason": "The model has a mobile record kind, but no mobile framework inventory, adapter, real device/emulator corpus, or independent mobile certification exists.",
-      "revisitTrigger": "Mobile adapter, framework/device matrix, and independently reviewed corpus are integrated.",
-      "proven": "M1_DECLARED",
-      "maturity": "M1_DECLARED",
-      "nextLevelGap": {
-        "target": "M2_IMPLEMENTED",
-        "missing": [
-          "implementation exists",
-          "unit tests for the implementation"
-        ],
-        "owner": "qa-owner",
-        "revisitTrigger": "capability qa.domain.mobile gains evidence for its next level"
-      },
-      "proof": {
-        "status": "BLOCKED",
-        "artifact": null,
-        "digest": null,
-        "observedAt": null,
-        "authority": "NONE"
-      }
-    },
-    {
-      "id": "qa.domain.performance",
-      "name": "Performance domain",
-      "kind": "domain",
-      "owner": "qa-owner",
-      "rules": [],
-      "censusId": "qa.domain.performance",
-      "frameworkId": null,
-      "domains": ["PERFORMANCE"],
-      "blocksAxes": ["Domain Coverage"],
-      "observedUpstreamMajor": null,
-      "adapter": null,
-      "declaredDisposition": "BLOCKED",
-      "blockedReason": "Internal timing and memory budgets are tested, but no independent variance dataset, external performance adapter, or candidate-bound comparative result exists.",
-      "revisitTrigger": "Versioned independent performance corpus, variance methodology, and accepted result are attached.",
-      "proven": "M1_DECLARED",
-      "maturity": "M1_DECLARED",
-      "nextLevelGap": {
-        "target": "M2_IMPLEMENTED",
-        "missing": [
-          "implementation exists",
-          "unit tests for the implementation"
-        ],
-        "owner": "qa-owner",
-        "revisitTrigger": "capability qa.domain.performance gains evidence for its next level"
-      },
-      "proof": {
-        "status": "BLOCKED",
-        "artifact": null,
-        "digest": null,
-        "observedAt": null,
-        "authority": "NONE"
-      }
-    },
-    {
-      "id": "qa.domain.release-evidence",
-      "name": "Release evidence",
-      "kind": "domain",
-      "owner": "qa-owner",
-      "rules": [],
-      "censusId": "qa.domain.release-evidence",
-      "frameworkId": null,
-      "domains": ["RELEASE-EVIDENCE"],
-      "blocksAxes": ["Domain Coverage"],
-      "observedUpstreamMajor": null,
-      "adapter": null,
-      "declaredDisposition": "BLOCKED",
-      "blockedReason": "The evidence this row cited no longer exists.",
-      "revisitTrigger": "A runnable test is written for this capability.",
-      "proven": "M1_DECLARED",
-      "maturity": "M1_DECLARED",
-      "nextLevelGap": {
-        "target": "M2_IMPLEMENTED",
-        "missing": [
-          "implementation exists",
-          "unit tests for the implementation"
-        ],
-        "owner": "qa-owner",
-        "revisitTrigger": "capability qa.domain.release-evidence gains evidence for its next level"
-      },
-      "proof": {
-        "status": "BLOCKED",
-        "artifact": null,
-        "digest": null,
-        "observedAt": null,
-        "authority": "NONE"
-      }
-    },
-    {
-      "id": "qa.domain.requirements",
-      "name": "Requirements intelligence",
-      "kind": "domain",
-      "owner": "qa-owner",
-      "rules": [],
-      "censusId": "qa.domain.requirements",
-      "frameworkId": null,
-      "domains": ["REQUIREMENTS"],
-      "blocksAxes": ["Domain Coverage"],
-      "observedUpstreamMajor": null,
-      "adapter": null,
-      "declaredDisposition": "BLOCKED",
-      "blockedReason": "The provisional model can represent requirements, but no requirements adapter, trace corpus, traceability generation, or independent certification exists.",
-      "revisitTrigger": "Requirements adapter, traceable fixture, external reviewer, and saturation evidence are integrated.",
-      "proven": "M1_DECLARED",
-      "maturity": "M1_DECLARED",
-      "nextLevelGap": {
-        "target": "M2_IMPLEMENTED",
-        "missing": [
-          "implementation exists",
-          "unit tests for the implementation"
-        ],
-        "owner": "qa-owner",
-        "revisitTrigger": "capability qa.domain.requirements gains evidence for its next level"
-      },
-      "proof": {
-        "status": "BLOCKED",
-        "artifact": null,
-        "digest": null,
-        "observedAt": null,
-        "authority": "NONE"
-      }
-    },
-    {
-      "id": "qa.domain.risk",
-      "name": "Risk intelligence",
-      "kind": "domain",
-      "owner": "qa-owner",
-      "rules": [],
-      "censusId": "qa.domain.risk",
-      "frameworkId": null,
-      "domains": ["RISK"],
-      "blocksAxes": ["Domain Coverage"],
-      "observedUpstreamMajor": null,
-      "adapter": null,
-      "declaredDisposition": "BLOCKED",
-      "blockedReason": "The provisional model can represent risk, but no risk-ingestion adapter, independent risk corpus, reviewer saturation, or operational risk decision is certified.",
-      "revisitTrigger": "Risk adapter and independently reviewed risk corpus are integrated.",
-      "proven": "M1_DECLARED",
-      "maturity": "M1_DECLARED",
-      "nextLevelGap": {
-        "target": "M2_IMPLEMENTED",
-        "missing": [
-          "implementation exists",
-          "unit tests for the implementation"
-        ],
-        "owner": "qa-owner",
-        "revisitTrigger": "capability qa.domain.risk gains evidence for its next level"
-      },
-      "proof": {
-        "status": "BLOCKED",
-        "artifact": null,
-        "digest": null,
-        "observedAt": null,
-        "authority": "NONE"
-      }
-    },
-    {
-      "id": "qa.domain.security",
-      "name": "Security testing domain",
-      "kind": "domain",
-      "owner": "qa-owner",
-      "rules": [],
-      "censusId": "qa.domain.security",
-      "frameworkId": null,
-      "domains": ["SECURITY"],
-      "blocksAxes": ["Domain Coverage"],
-      "observedUpstreamMajor": null,
-      "adapter": null,
-      "declaredDisposition": "BLOCKED",
-      "blockedReason": "The product's own security tests do not certify a security-testing domain. No scanner inventory, normalized security adapter, independent corpus, or external security review exists.",
-      "revisitTrigger": "Security-domain adapter, scanner inventory, real-corpus validation, and independent claim review are integrated.",
-      "proven": "M1_DECLARED",
-      "maturity": "M1_DECLARED",
-      "nextLevelGap": {
-        "target": "M2_IMPLEMENTED",
-        "missing": [
-          "implementation exists",
-          "unit tests for the implementation"
-        ],
-        "owner": "qa-owner",
-        "revisitTrigger": "capability qa.domain.security gains evidence for its next level"
-      },
-      "proof": {
-        "status": "BLOCKED",
-        "artifact": null,
-        "digest": null,
-        "observedAt": null,
-        "authority": "NONE"
-      }
-    },
-    {
-      "id": "qa.domain.test-design",
-      "name": "Test-design intelligence",
-      "kind": "domain",
-      "owner": "qa-owner",
-      "rules": [],
-      "censusId": "qa.domain.test-design",
-      "frameworkId": null,
-      "domains": ["TEST-DESIGN"],
-      "blocksAxes": ["Domain Coverage"],
-      "observedUpstreamMajor": null,
-      "adapter": null,
-      "declaredDisposition": "BLOCKED",
-      "blockedReason": "Rule scaffolding and framework detection exist, but no integrated test-design adapter or independent certification selects and justifies tests across domains.",
-      "revisitTrigger": "Test-design adapter and reviewed requirements-to-tests corpus are integrated.",
-      "proven": "M1_DECLARED",
-      "maturity": "M1_DECLARED",
-      "nextLevelGap": {
-        "target": "M2_IMPLEMENTED",
-        "missing": [
-          "implementation exists",
-          "unit tests for the implementation"
-        ],
-        "owner": "qa-owner",
-        "revisitTrigger": "capability qa.domain.test-design gains evidence for its next level"
-      },
-      "proof": {
-        "status": "BLOCKED",
-        "artifact": null,
-        "digest": null,
-        "observedAt": null,
-        "authority": "NONE"
-      }
-    },
-    {
-      "id": "qa.domain.unit",
-      "name": "Unit-test domain",
-      "kind": "domain",
-      "owner": "qa-owner",
-      "rules": [],
-      "censusId": "qa.domain.unit",
-      "frameworkId": null,
-      "domains": ["UNIT"],
-      "blocksAxes": ["Domain Coverage"],
-      "observedUpstreamMajor": null,
-      "adapter": null,
-      "declaredDisposition": "TESTED",
-      "blockedReason": null,
-      "revisitTrigger": null,
-      "proven": "M1_DECLARED",
-      "maturity": "M1_DECLARED",
-      "nextLevelGap": {
-        "target": "M2_IMPLEMENTED",
-        "missing": [
-          "implementation exists",
-          "unit tests for the implementation"
-        ],
-        "owner": "qa-owner",
-        "revisitTrigger": "capability qa.domain.unit gains evidence for its next level"
-      },
-      "proof": {
-        "status": "BLOCKED",
-        "artifact": null,
-        "digest": null,
-        "observedAt": null,
-        "authority": "NONE"
       }
     },
     {
@@ -645,7 +202,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-CYP-001",
         "digest": null,
-        "observedAt": "2026-10-02",
+        "observedAt": "2026-10-03",
         "authority": "framework-inventory"
       }
     },
@@ -685,7 +242,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-JV-104",
         "digest": null,
-        "observedAt": "2026-10-02",
+        "observedAt": "2026-10-03",
         "authority": "framework-inventory"
       }
     },
@@ -723,7 +280,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-TEST-001",
         "digest": null,
-        "observedAt": "2026-10-02",
+        "observedAt": "2026-10-03",
         "authority": "framework-inventory"
       }
     },
@@ -761,7 +318,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-TEST-001",
         "digest": null,
-        "observedAt": "2026-10-02",
+        "observedAt": "2026-10-03",
         "authority": "framework-inventory"
       }
     },
@@ -815,7 +372,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-PW-002",
         "digest": null,
-        "observedAt": "2026-10-02",
+        "observedAt": "2026-10-03",
         "authority": "framework-inventory"
       }
     },
@@ -863,7 +420,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-PY-003",
         "digest": null,
-        "observedAt": "2026-10-02",
+        "observedAt": "2026-10-03",
         "authority": "framework-inventory"
       }
     },
@@ -898,7 +455,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-SE-001",
         "digest": null,
-        "observedAt": "2026-10-02",
+        "observedAt": "2026-10-03",
         "authority": "framework-inventory"
       }
     },
@@ -936,7 +493,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-TEST-001",
         "digest": null,
-        "observedAt": "2026-10-02",
+        "observedAt": "2026-10-03",
         "authority": "framework-inventory"
       }
     },
@@ -976,7 +533,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-JV-104",
         "digest": null,
-        "observedAt": "2026-10-02",
+        "observedAt": "2026-10-03",
         "authority": "framework-inventory"
       }
     },
@@ -1014,7 +571,7 @@
         "status": "LOCAL_PROVEN",
         "artifact": "docs/FP-AUDIT.md#QA-TEST-001",
         "digest": null,
-        "observedAt": "2026-10-02",
+        "observedAt": "2026-10-03",
         "authority": "framework-inventory"
       }
     }

@@ -29,28 +29,41 @@ const STATE = existsSync(join(ROOT, ".planning", "STATE.md"))
   : null;
 
 /**
- * Extracts `| QA-XXX-000 | ... | severity [| tier] |` rows from a
- * markdown table row. The trailing Tier column (certification F4) is
- * optional; severity is anchored to the closed severity vocabulary so
- * rule names containing escaped pipes (`\|\| true`) cannot shift the
- * column, and a tier cell can never be misread as a severity.
+ * Extracts `| QA-XXX-000 | ... | severity [| default-scan] |` rows from a
+ * markdown table row. The trailing Default-scan column is optional;
+ * severity is anchored to the closed severity vocabulary so rule names
+ * containing escaped pipes (`\|\| true`) cannot shift the column, and a
+ * default-scan cell can never be misread as a severity.
+ *
+ * The column reads `default` / `warn-only`, not `core` / `extended` /
+ * `quarantine`. 6.0 made the tiers internal and the report's own vocabulary
+ * GATE/WARN, so the README states the fact a reader acts on — "does this run
+ * unless I ask, and can it ever gate" — while the gate still pins it to the
+ * registry. A README that named the internal tiers would be the same drift
+ * class this file exists to catch, one release earlier.
  */
 const SEVERITY_WORDS = "error|warning|info";
-const TIER_WORDS = "core|extended|quarantine";
+const DEFAULT_SCAN_WORDS = "default|warn-only";
+
+/** Does the registry say this rule runs only under `--include-warn`? */
+function isWarnOnly(tier: string | undefined): boolean {
+  return tier === "quarantine";
+}
 
 function extractRuleTableRows(
   markdown: string,
-): Array<{ id: string; severity: string; tier?: string }> {
-  const rows: Array<{ id: string; severity: string; tier?: string }> = [];
+): Array<{ id: string; severity: string; defaultScan?: string }> {
+  const rows: Array<{ id: string; severity: string; defaultScan?: string }> =
+    [];
   const lineRe = new RegExp(
-    `^\\|\\s*(QA-[A-Z]+-\\d{3})\\s*\\|.*\\|\\s*(${SEVERITY_WORDS})\\s*(?:\\|\\s*(${TIER_WORDS})\\s*)?\\|\\s*$`,
+    `^\\|\\s*(QA-[A-Z]+-\\d{3})\\s*\\|.*\\|\\s*(${SEVERITY_WORDS})\\s*(?:\\|\\s*(${DEFAULT_SCAN_WORDS})\\s*)?\\|\\s*$`,
     "gm",
   );
   for (const m of markdown.matchAll(lineRe)) {
     const id = m[1];
     const severity = m[2];
     if (id && severity)
-      rows.push({ id, severity, ...(m[3] ? { tier: m[3] } : {}) });
+      rows.push({ id, severity, ...(m[3] ? { defaultScan: m[3] } : {}) });
   }
   return rows;
 }
@@ -102,16 +115,19 @@ describe("README.md rule tables match the actual registry", () => {
   );
 
   it.each(rows)(
-    "$id: README tier matches the registry (certification F4 tier honesty)",
-    ({ id, tier }) => {
+    "$id: the README's default-scan column matches the registry (certification F4 tier honesty)",
+    ({ id, defaultScan }) => {
       const rule = byId.get(id);
-      if (!rule || tier === undefined) return;
+      if (!rule || defaultScan === undefined) return;
+      const expected = isWarnOnly(rule.tier) ? "warn-only" : "default";
       expect(
-        tier,
-        `README.md lists "${id}" with tier "${tier}", but the registry ` +
-          `declares "${rule.tier}" — the tier column must mirror ` +
-          `docs/RULE-CAPABILITY-MATRIX.md (regenerate with npm run docs:capability).`,
-      ).toBe(rule.tier);
+        defaultScan,
+        `README.md lists "${id}" as "${defaultScan}" in the default scan, but ` +
+          `the registry puts it in the ${rule.tier} tier — a reader deciding ` +
+          `whether this rule needs --include-warn is reading a false claim. The ` +
+          `internal tier also appears in docs/RULE-CAPABILITY-MATRIX.md ` +
+          `(regenerate with npm run docs:capability).`,
+      ).toBe(expected);
     },
   );
 });
@@ -361,7 +377,11 @@ describe("public version and install docs match the current package line", () =>
     version: string;
     publishedStable?: string;
   };
-  const major = pkg.version.split(".")[0];
+  /** The line a reader installs, which is not the line this tree builds. */
+  const published = pkg.publishedStable ?? pkg.version;
+  /** Versions are interpolated into RegExps, so they are escaped as a whole. */
+  const escapeRegExp = (value: string): string =>
+    value.replace(/[.*+?^${}()|[\]\\/-]/g, "\\$&");
   const publishing = readFileSync(join(ROOT, "docs", "PUBLISHING.md"), "utf8");
   const distribution = readFileSync(
     join(ROOT, "docs", "DISTRIBUTION-KIT.md"),
@@ -378,13 +398,22 @@ describe("public version and install docs match the current package line", () =>
 
   it("docs/PUBLISHING.md names the published stable and current prerelease", () => {
     if (pkg.version.includes("-")) {
-      expect(publishing).toMatch(/npm `latest` is \*\*3\.0\.0\*\*/);
+      // The published line, not a literal. This assertion used to require the
+      // words "npm `latest` is **3.0.0**", so the runbook kept asserting a line
+      // that stopped being published two majors ago and no gate noticed.
+      expect(publishing).toMatch(
+        new RegExp(
+          "npm `latest` is \\*\\*" + escapeRegExp(published) + "\\*\\*",
+        ),
+      );
       expect(publishing).toContain(
-        `current working candidate: \`${pkg.version}\``,
+        `current working version: \`${pkg.version}\``,
       );
     } else {
       expect(publishing).toMatch(
-        new RegExp("`?latest`?\\s+is\\s+\\*\\*" + pkg.version + "\\*\\*"),
+        new RegExp(
+          "`?latest`?\\s+is\\s+\\*\\*" + escapeRegExp(pkg.version) + "\\*\\*",
+        ),
       );
     }
     expect(publishing).not.toMatch(/`?latest`?\s+is\s+\*\*(?:0|1)\./);
@@ -406,7 +435,13 @@ describe("public version and install docs match the current package line", () =>
     // Pinning is still a legitimate choice and is still documented; a reader
     // who wants reproducibility writes the version out. What must not happen
     // is the *default* instruction naming a version at all.
-    const actionMajor = pkg.version.includes("-") ? "3" : major;
+    //
+    // The install surfaces name a version that EXISTS on the registry, so
+    // the action major follows `publishedStable` — not the working candidate,
+    // and not a hardcoded one. It was literally `3` while the published line
+    // was 5.1.0: the same "a number nobody owns" defect as the README's
+    // `3.0.0`, one file over, and it made the gate enforce the wrong thing.
+    const actionMajor = (pkg.publishedStable ?? pkg.version).split(".")[0];
     const installVersion = pkg.publishedStable ?? pkg.version;
     for (const [name, text] of [
       ["docs/DISTRIBUTION-KIT.md", distribution],
@@ -441,6 +476,77 @@ describe("public version and install docs match the current package line", () =>
     expect(roadmap).toContain(currentLabel);
     expect(roadmap).not.toMatch(/v1\.0\.x\s+—\s+stable/);
     expect(publishing).toContain("a tag alone is not an installable release");
+  });
+});
+
+describe("README's own version claims are the real ones", () => {
+  // The 6.0 defect this was written for: the README's release-status section
+  // declared "the published line is `3.0.0`; this working tree is the
+  // `4.0.0-rc.1` candidate" while `package.json` was `5.1.0` and published,
+  // and the same file's Status heading read "**Version 3.0.0.**" — both
+  // shipped, through the release that fixed `docs/VERSIONING.md`. A docs
+  // gate that only checks the *law prose* cannot see a version claim, because
+  // a version claim is not law prose. So the version is asserted here, on the
+  // one surface a reader sees first.
+  const pkg = JSON.parse(readFileSync(join(ROOT, "package.json"), "utf8")) as {
+    version: string;
+    publishedStable?: string;
+  };
+  const published = pkg.publishedStable ?? pkg.version;
+  const releaseStatus =
+    README.split("## Release status")[1]?.split("\n## ")[0] ?? "";
+  const statusSection = README.split("### Status")[1]?.split("\n### ")[0] ?? "";
+
+  it("README carries a release-status section (sanity)", () => {
+    expect(releaseStatus.length).toBeGreaterThan(0);
+  });
+
+  it("names the published stable line and no other", () => {
+    const claimed = [
+      ...releaseStatus.matchAll(/The published line is `([^`]+)`/g),
+    ].map((m) => m[1]);
+    expect(
+      claimed,
+      `README.md must name the published stable line exactly once, and ` +
+        `package.json says that is ${published}`,
+    ).toEqual([published]);
+  });
+
+  it("names the working candidate whenever the tree is not the published line", () => {
+    if (pkg.version === published) return; // one line, already asserted above
+    // Whitespace-collapsed: the paragraph is hand-wrapped prose, so the
+    // sentence this looks for is split across two lines in the file. Asserting
+    // the wrapped form would make the gate fail on a rewrap — training whoever
+    // hits it to move the version number somewhere the regex cannot see it.
+    const flat = releaseStatus.replace(/\s+/g, " ");
+    expect(
+      flat,
+      `package.json is at ${pkg.version} but the README does not say so — a ` +
+        `reader is told about a line that is not what they would install`,
+    ).toContain(`this working tree is the \`${pkg.version}\` candidate`);
+  });
+
+  it("the Status heading does not present a retired line as *the* version", () => {
+    const bold = statusSection.match(/\*\*Version ([^*]+)\*\*/);
+    expect(
+      bold,
+      "README.md's Status heading no longer states a version — this is the " +
+        "line that read '**Version 3.0.0.**' while the package was 5.1.0",
+    ).not.toBeNull();
+    const named = [
+      ...(bold?.[1] ?? "").matchAll(/\b\d+\.\d+\.\d+(?:-[\w.]+)?/g),
+    ].map((m) => m[0]);
+    expect(
+      named.length,
+      "the Status heading states no semver to check",
+    ).toBeGreaterThan(0);
+    for (const v of named) {
+      expect(
+        [published, pkg.version],
+        `README.md's Status heading names ${v}, which is neither the ` +
+          `published line (${published}) nor the working tree (${pkg.version})`,
+      ).toContain(v);
+    }
   });
 });
 
@@ -548,6 +654,15 @@ describe("every documented `npm run` command actually exists", () => {
     "tests/corpus/positive-fixtures/",
     "tests/corpus/negative-fixtures/",
     "docs/archive/",
+    // CHANGELOG.md is the record of what every release said, including the
+    // releases that shipped scripts this one deleted. A historical entry that
+    // names `m26:audit` is not an instruction to a reader — it is the reason
+    // the reader can see the script existed. Rewriting history to satisfy this
+    // gate would make the changelog a second thing it was never meant to be,
+    // and `6.0.0-rc.1`'s own entry has to be able to name what it deleted.
+    "CHANGELOG.md",
+    // The same, in frozen form: a readiness report for a version that shipped.
+    "docs/RELEASE-3.0.0-READINESS.md",
     "node_modules/",
     "dist/",
     "coverage/",

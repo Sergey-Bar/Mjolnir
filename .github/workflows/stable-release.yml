@@ -135,11 +135,14 @@ jobs:
           # repository variable. Deleting the step would have produced the same
           # outcome with no trace of who decided it, which is the failure this
           # project keeps having to undo elsewhere.
-          npm run m26:audit || true
+          # 6.0 removed the `m26:audit` half of this pair: it read four ledgers
+          # of the retired M26 program, so it was reporting BLOCKED cells
+          # against evidence that was never going to arrive, on a workflow
+          # whose job is to decide whether a release may be cut.
           npm run candidate:readiness || true
           if [[ "$STABLE_RELEASE_AUTHORIZED" != "true" ]]; then
             echo "::error::A stable release requires vars.STABLE_RELEASE_AUTHORIZED=true."
-            echo "::error::The evidence checks above are reported, not enforced, on a stable release."
+            echo "::error::The evidence check above is reported, not enforced, on a stable release."
             echo "::error::Set that variable to record the decision, or cut a prerelease instead."
             exit 1
           fi
@@ -150,8 +153,8 @@ jobs:
           {
             echo "### Candidate evidence — NOT ENFORCED"
             echo ""
-            echo "A stable release. \`m26:audit\` and \`candidate:readiness\` ran and are"
-            echo "recorded above as unsatisfied; they were not treated as blocking because"
+            echo "A stable release. \`candidate:readiness\` ran and is"
+            echo "recorded above as unsatisfied; it was not treated as blocking because"
             echo "\`vars.STABLE_RELEASE_AUTHORIZED\` is \`true\`. That is a decision someone"
             echo "made and recorded, not a check that passed."
             echo ""
@@ -170,6 +173,10 @@ jobs:
         run: |
           set -euo pipefail
           npm run docs:regen
+          # Was `git diff --exit-code -- docs/` only, which cannot see an
+          # UNTRACKED generated file. One implementation, shared with the
+          # other three workflows.
+          npm run docs:staleness
           if ! git diff --exit-code -- docs/; then
             echo "::error::generated docs are stale — run 'npm run docs:regen' and commit the result"
             git --no-pager diff --stat -- docs/
@@ -184,8 +191,8 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p release-assets
-          node dist/cli.mjs release-trust --json > release-assets/release-trust.json
-          node dist/cli.mjs release-trust > release-assets/release-trust.txt
+          node dist/cli.mjs ci release-trust --json > release-assets/release-trust.json
+          node dist/cli.mjs ci release-trust > release-assets/release-trust.txt
           test -s release-assets/release-trust.json
           test -s release-assets/release-trust.txt
       # Sentry release + source maps. The ordering is load-bearing: this must
@@ -222,7 +229,12 @@ jobs:
           sha256sum "$GITHUB_WORKSPACE/release-artifact/$SBOM" > "$GITHUB_WORKSPACE/release-artifact/$SBOM.sha256"
           SMOKE_DIR=$(mktemp -d)
           npm install --prefix "$SMOKE_DIR" --ignore-scripts --no-audit --no-fund "$GITHUB_WORKSPACE/release-artifact/$TARBALL"
-          test "$(node "$SMOKE_DIR/node_modules/mjolnir-qa/dist/cli.mjs" --version)" = "mjolnir-qa $VERSION"
+          # `--version` answers "what should I install" AND "what exactly ran"
+          # (src/cli.ts), so a built package reports `mjolnir-qa <v> (build <id>)`.
+          # Strip that documented suffix, then compare exactly — the version is
+          # still the thing being asserted, and a wrong one still fails.
+          SMOKE_BANNER="$(node "$SMOKE_DIR/node_modules/mjolnir-qa/dist/cli.mjs" --version)"
+          test "${SMOKE_BANNER%% (build *}" = "mjolnir-qa $VERSION"
           rm -rf "$SMOKE_DIR"
           {
             echo "artifact_name=stable-release-$VERSION"

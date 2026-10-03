@@ -32,13 +32,31 @@ export const pwSerialNoJustification = defineRule({
       "tokens — the semantics are scheduling, not syntax",
   },
   introduced: "0.3.0",
-  // 6.0: was "core". Demoted because the measurement does not support the
-  // claim — 0% observed over n=10..25 is a 95% Wilson interval of
-  // [0, 13.8%] to [0, 40.4%], which does not clear the 10% core ceiling. Only
-  // `quarantine` is enforced, so this is behaviour-neutral: the rule still
-  // runs on every scan. A re-sample at the raised MAX_SAMPLES_PER_RULE can
-  // earn it back; src/rules/tier-evidence.ts ratchets that.
-  tier: "extended",
+  // 6.0: was "core", demoted to "extended" because the measurement did not
+  // support the claim — 0% observed over n=10..25 is a 95% Wilson interval of
+  // [0, 13.8%] to [0, 40.4%], which clears nothing. src/rules/tier-evidence.ts
+  // ratcheted that, and listed this rule as "the most likely of the nineteen to
+  // clear on a re-sample".
+  //
+  // It cleared. `--core-candidates --core-target QA-PW-117` funded a
+  // corpus-wide pass; twenty rows were adjudicated TP against pinned source and
+  // four orphans retracted, taking n from 24 to 34, and a final sampling sweep
+  // over all 37 corpus repositories found exactly one remaining finding
+  // (sveltejs-kit `test.describe.serial('Errors')` — six fully independent
+  // tests, so `.serial` is pure cascade cost) which is also a TP. n = 35, zero
+  // observed false positives, Wilson upper bound 9.89% — at or below the 10%
+  // core ceiling for the first time in this registry's history.
+  //
+  // So this is a MEASURED promotion, not a declared one: `measurementTier`
+  // returns "core" for this rule on its own evidence, and `declaredCoreWithoutEvidence`
+  // is null. Restoring the declaration records the decision the measurement
+  // already reached.
+  //
+  // Not behaviour-neutral this time, which is the point. ADR 0014 gives core an
+  // evidence FLOOR, so a finding from this rule is now stamped at least E1 and
+  // deducts `floor(base/2)` instead of 0. Reaching core finally costs something
+  // a consumer can see.
+  tier: "core",
 
   run(ctx) {
     const text = ctx.codeText ?? ctx.text;

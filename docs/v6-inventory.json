@@ -3,24 +3,19 @@
   "artifact": "v6-inventory",
   "generatedBy": "npm run docs:v6-inventory",
   "wave": "0",
-  "baseSha": "a5368a0aa63bd25d48b6acd4db57469e289498a5",
-  "version": "5.1.0",
+  "baseSha": "8d889b511ef5930eceda354e7253a16c8a3ef2e0",
+  "version": "6.0.0-rc.1",
   "publishedStable": "5.1.0",
   "counts": {
-    "srcFiles": 295,
-    "testSpecs": 670,
+    "srcFiles": 296,
+    "testSpecs": 686,
     "rulesLive": 79,
     "rulesRetired": 22,
     "rulesMeasured": 73,
     "adapters": 11,
-    "commands": 33,
+    "commands": 34,
     "frameworks": 14,
-    "ciProviders": 6,
-    "qaDomains": 13,
-    "gapLedgerRecords": 17,
-    "supportMatrixCells": 136,
-    "issueDispositions": 429,
-    "openIssues": 229,
+    "ciProviders": 3,
     "censusEntries": 33
   },
   "maturity": {
@@ -43,10 +38,6 @@
       "F2": 5,
       "F1": 2,
       "F0": 1
-    },
-    "qaDomainCoverage": {
-      "BLOCKED": 10,
-      "TESTED": 3
     }
   },
   "ruleRegistry": {
@@ -55,56 +46,19 @@
     "measured": 73,
     "byTier": {
       "quarantine": 34,
-      "extended": 45
+      "extended": 43,
+      "core": 2
     }
   },
   "ledgers": {
-    "gapLedger": {
-      "total": 17,
-      "byStatus": {
-        "CONFIRMED_STILL_OPEN": 7,
-        "STALE_UNVERIFIABLE": 1,
-        "EXTERNAL_PENDING": 7,
-        "ALREADY_FIXED": 1,
-        "CLOSED_DECISION_RECORDED": 1
-      },
-      "bySeverity": {
-        "high": 6,
-        "release-blocker": 11
-      },
-      "openReleaseBlockers": [
-        "GAP-M26-002",
-        "GAP-M26-003",
-        "GAP-M26-004",
-        "GAP-M26-005",
-        "GAP-M26-008",
-        "GAP-M26-009",
-        "GAP-M26-010",
-        "GAP-M26-012",
-        "GAP-M26-013",
-        "GAP-M26-015",
-        "GAP-M26-016"
-      ]
-    },
-    "supportMatrix": {
-      "total": 136,
-      "byDisposition": {
-        "TESTED": 65,
-        "BLOCKED": 69,
-        "NOT_APPLICABLE": 2
-      }
-    },
-    "issueDispositions": {
-      "total": 429,
-      "byDisposition": {
-        "CARRY_FORWARD": 417,
-        "FIX_IN_BITTERSWEET": 1,
-        "CLOSED_WONT_FIX": 8,
-        "CLOSED_SHIPPED": 3
-      },
-      "openIssues": 229
-    },
-    "externalValidation": "BLOCKED"
+    "retired": [
+      "M26-GAP-LEDGER.jsonl",
+      "M26-SUPPORT-MATRIX.json",
+      "M26-ISSUE-DISPOSITIONS.jsonl",
+      "M26-EXTERNAL-VALIDATION.json"
+    ],
+    "retiredIn": "6.0.0",
+    "seeAlso": "docs/archive/ROADMAP-M26-M50.yaml"
   },
   "surfaces": {
     "cli": "PRESENT",
@@ -417,7 +371,7 @@
         "area": "Security verification QA",
         "state": "BLOCKED",
         "wave": "8",
-        "evidence": ["docs/M26-SUPPORT-MATRIX.json"],
+        "evidence": ["capability-manifest.json"],
         "unverifiedEvidence": [],
         "note": "Requires external scanners; zero-network default."
       },
@@ -919,7 +873,7 @@
         "area": "Language matrix",
         "state": "PARTIALLY_COMPLETE",
         "wave": "1",
-        "evidence": ["docs/M26-SUPPORT-MATRIX.json"],
+        "evidence": ["docs/RULE-CAPABILITY-MATRIX.md"],
         "unverifiedEvidence": [],
         "note": "2 cells only."
       },
@@ -928,7 +882,7 @@
         "area": "CI matrix",
         "state": "PARTIALLY_COMPLETE",
         "wave": "1",
-        "evidence": ["docs/M26-SUPPORT-MATRIX.json"],
+        "evidence": ["docs/RULE-CAPABILITY-MATRIX.md"],
         "unverifiedEvidence": [],
         "note": "4 cells only."
       },
@@ -1177,81 +1131,11 @@
       }
     ]
   },
-  "archiveReconciliation": {
-    "status": "UNRECONCILED",
-    "expectedDesignRecordCount": 108,
-    "observedDesignRecordCount": 108,
-    "openIssuesInArchive": [
-      539, 546, 547, 551, 553, 556, 561, 565, 575, 588, 589, 590, 593, 594, 595,
-      597, 602, 617
-    ],
-    "records": [
-      {
-        "logicalMilestone": "M18",
-        "githubRange": [539, 549],
-        "designRecords": 11,
-        "disposition": "HISTORICAL_DESIGN_ONLY",
-        "openIssues": [539, 546, 547],
-        "state": "PARTIALLY_RECONCILED"
-      },
-      {
-        "logicalMilestone": "M19",
-        "githubRange": [550, 560],
-        "designRecords": 11,
-        "disposition": "HISTORICAL_DESIGN_ONLY",
-        "openIssues": [551, 553, 556],
-        "state": "PARTIALLY_RECONCILED"
-      },
-      {
-        "logicalMilestone": "M20",
-        "githubRange": [561, 573],
-        "designRecords": 13,
-        "disposition": "HISTORICAL_DESIGN_ONLY",
-        "openIssues": [561, 565],
-        "state": "PARTIALLY_RECONCILED"
-      },
-      {
-        "logicalMilestone": "M21",
-        "githubRange": [574, 586],
-        "designRecords": 13,
-        "disposition": "HISTORICAL_DESIGN_ONLY",
-        "openIssues": [575],
-        "state": "PARTIALLY_RECONCILED"
-      },
-      {
-        "logicalMilestone": "M22",
-        "githubRange": [587, 600],
-        "designRecords": 14,
-        "disposition": "HISTORICAL_DESIGN_ONLY",
-        "openIssues": [588, 589, 590, 593, 594, 595, 597],
-        "state": "PARTIALLY_RECONCILED"
-      },
-      {
-        "logicalMilestone": "M23",
-        "githubRange": [601, 615],
-        "designRecords": 15,
-        "disposition": "HISTORICAL_DESIGN_ONLY",
-        "openIssues": [602],
-        "state": "PARTIALLY_RECONCILED"
-      },
-      {
-        "logicalMilestone": "M24",
-        "githubRange": [616, 631],
-        "designRecords": 16,
-        "disposition": "HISTORICAL_DESIGN_ONLY",
-        "openIssues": [617],
-        "state": "PARTIALLY_RECONCILED"
-      },
-      {
-        "logicalMilestone": "M25",
-        "githubRange": [632, 646],
-        "designRecords": 15,
-        "disposition": "HISTORICAL_NOT_PLANNED",
-        "openIssues": [],
-        "state": "RECONCILED"
-      }
-    ],
-    "closureCommand": "npm run m26:github:sync"
+  "archiveReconciliationRetired": {
+    "retiredIn": "6.0.0",
+    "reason": "read docs/M26-GITHUB-SNAPSHOT.json, which is deleted with the M26 program and cannot be regenerated",
+    "record": "docs/archive/V6-ARCHIVE-RECONCILIATION.json",
+    "gap": "GAP-V6-005"
   },
   "v6Wave0Gaps": [
     {

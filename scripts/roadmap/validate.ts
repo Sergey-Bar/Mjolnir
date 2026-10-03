@@ -2,60 +2,58 @@ type Roadmap = {
   [key: string]: unknown;
   schemaVersion?: unknown;
   program?: unknown;
-  source?: unknown;
-  archive?: unknown;
-  issueLedger?: unknown;
-  gapLedger?: unknown;
-  supportMatrix?: unknown;
-  externalValidation?: unknown;
-  trains?: unknown;
+  status?: unknown;
+  retiredProgram?: unknown;
+  versions?: unknown;
 };
 
 /**
- * The live ledgers the roadmap claims to track, already read and summarised.
- * The validator never opens files itself — the caller supplies the summaries so
- * a pure structural check and a ledger-backed check are the same code path.
+ * The live version ladder, as read from disk.
+ *
+ * The caller supplies the resolved paths, so a pure structural check and a
+ * filesystem-backed check are the same code path — the same arrangement the
+ * M26–M50 validator used, minus the four ledgers it read.
  */
-export type RoadmapLedgerFacts = {
+export type RoadmapFacts = {
   /** Paths the roadmap references that do not resolve in this checkout. */
   missingSources?: string[];
   /**
-   * Paths that resolve on the authoring machine but are not tracked by git.
-   * A reference nobody else can resolve is not an authority.
+   * Paths that resolve on the authoring machine but are not tracked by git. A
+   * reference nobody else can resolve is not an authority.
    */
   untrackedSources?: string[];
-  /**
-   * Untracked paths recorded as the origin of a past decision. Reported, not
-   * blocked: provenance of a decision is history, not authority.
-   */
-  untrackedProvenance?: string[];
-  /** Open release-blocking gap ids. */
-  openReleaseBlockers?: string[];
-  /** Support-matrix cell ids explicitly BLOCKED. */
-  blockedCells?: string[];
-  /** Support-matrix cells whose `last_candidate` is null or absent. */
-  unboundCells?: string[];
-  externalValidationStatus?: string | undefined;
-  githubSnapshotUnreconciled?: number;
 };
 
-const TRAIN_IDS = Array.from({ length: 25 }, (_, index) => `M${index + 26}`);
-const LEGACY_IDS = new Set(["M12", "M19"]);
-const STATUSES = new Set([
-  "in-progress",
-  "deferred",
-  "blocked",
-  "candidate",
-  "proven",
-]);
+const VERSIONS = ["6.0", "7.0", "8.0", "9.0", "10.0"] as const;
+const STATUSES = new Set(["shipped", "in-progress", "deferred", "blocked"]);
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
+/** A non-empty string, which is what every free-text field here has to be. */
+function isFilled(value: unknown): value is string {
+  return typeof value === "string" && value.trim().length > 0;
+}
+
+/**
+ * What this file asserts about the ladder, and why each rule exists.
+ *
+ * The M26 program validated a 25-train registry with ~160 workstream ids, four
+ * ledgers and an archive table of 108 design records. Every one of those rules
+ * existed because a reader had been misled by something in that file. The
+ * rules that survive are the ones that can still mislead:
+ *
+ *  - one promise per row, in one sentence. Two promises is two versions, and
+ *    a version nobody can state cannot be abandoned at its kill criterion.
+ *  - a kill criterion on every row. A promise with no way to stop is a
+ *    commitment, and this project has a single maintainer.
+ *  - exactly one row in progress. Two rows in progress is a plan with no
+ *    next step, which is what the retired program was.
+ */
 export function validateRoadmap(
   value: unknown,
-  facts: RoadmapLedgerFacts = {},
+  facts: RoadmapFacts = {},
 ): {
   errors: string[];
   blockers: string[];
@@ -64,151 +62,98 @@ export function validateRoadmap(
   const blockers: string[] = [];
   if (!isRecord(value)) return { errors: ["roadmap: not an object"], blockers };
   const roadmap = value as Roadmap;
-  if (roadmap.schemaVersion !== 1) errors.push("schemaVersion must be 1");
-  if (roadmap.program !== "M26-M50") errors.push("program must be M26-M50");
-  if (!isRecord(roadmap.archive)) {
-    errors.push("archive must be an object");
+  if (roadmap.schemaVersion !== 2) errors.push("schemaVersion must be 2");
+  if (roadmap.program !== "6.0-10.0") errors.push("program must be 6.0-10.0");
+  if (!STATUSES.has(String(roadmap.status))) {
+    errors.push("program has invalid status");
+  }
+
+  const retired = roadmap.retiredProgram;
+  if (!isRecord(retired)) {
+    errors.push("retiredProgram must be an object");
   } else {
-    const records = roadmap.archive.records;
-    if (!Array.isArray(records)) {
-      errors.push("archive.records must be an array");
-    } else {
-      let total = 0;
-      for (const record of records) {
-        if (!isRecord(record)) {
-          errors.push("archive record must be an object");
-          continue;
-        }
-        const range = record.githubRange;
-        if (
-          !Array.isArray(range) ||
-          range.length !== 2 ||
-          !Number.isInteger(range[0]) ||
-          !Number.isInteger(range[1]) ||
-          Number(range[0]) > Number(range[1])
-        ) {
-          errors.push("archive githubRange must be an ordered pair");
-          continue;
-        }
-        const count = Number(record.designRecords);
-        if (count !== Number(range[1]) - Number(range[0]) + 1) {
-          errors.push(
-            `archive ${String(record.logicalMilestone)} count does not match range`,
-          );
-        }
-        total += count;
-      }
-      if (total !== 108) {
-        errors.push(`archive must contain 108 design records; found ${total}`);
-      }
+    if (retired.status !== "RETIRED") {
+      errors.push("retiredProgram.status must be RETIRED");
+    }
+    if (!isFilled(retired.archive)) {
+      errors.push("retiredProgram.archive must name the archived program");
+    } else if (facts.missingSources?.includes(retired.archive)) {
+      // The archive is the record. If it is not in the tree, the retirement
+      // has deleted the reasoning and kept only the assertion that there was
+      // some — which is the exact shape of a tombstone with nothing in it.
+      errors.push(
+        `retiredProgram.archive does not resolve: ${retired.archive} — a ` +
+          "retirement with no archived text is a deletion, not a retirement",
+      );
+    }
+    if (
+      !Array.isArray(retired.deletedLedgers) ||
+      retired.deletedLedgers.length === 0
+    ) {
+      errors.push(
+        "retiredProgram.deletedLedgers must list what the retirement removed",
+      );
     }
   }
-  // A referenced ledger that is merely NAMED is not a reconciled ledger. The
-  // previous version of this check tested only for a non-null value, so a
-  // roadmap pointing at a blocked matrix reported zero blockers — a rubber
-  // stamp. Reconciliation is now computed from the ledger contents.
-  for (const key of [
-    "issueLedger",
-    "gapLedger",
-    "supportMatrix",
-    "externalValidation",
-  ]) {
-    const reference = roadmap[key];
-    if (reference === null || reference === undefined) {
-      blockers.push(`${key} is not reconciled: not referenced`);
-      continue;
-    }
-    if (typeof reference !== "string" || reference.length === 0) {
-      errors.push(`${key} must be a repository-relative path`);
-      continue;
-    }
-    if (facts.missingSources?.includes(reference)) {
-      blockers.push(`${key} reference does not resolve: ${reference}`);
-    }
-  }
+
   for (const source of facts.missingSources ?? []) {
-    const role =
-      typeof roadmap.source === "string" && source === roadmap.source
-        ? "source authority"
-        : "referenced source";
-    blockers.push(`${role} does not resolve: ${source}`);
+    if (
+      retired !== undefined &&
+      isRecord(retired) &&
+      retired.archive === source
+    )
+      continue; // already reported above, with the reason it matters
+    blockers.push(`referenced source does not resolve: ${source}`);
   }
   for (const source of facts.untrackedSources ?? []) {
-    const role =
-      typeof roadmap.source === "string" && source === roadmap.source
-        ? "source authority"
-        : "referenced source";
     blockers.push(
-      `${role} is not tracked by git: ${source}. A document only the authoring machine can read cannot be the source of truth.`,
+      `referenced source is not tracked by git: ${source}. A document only ` +
+        "the authoring machine can read cannot be the source of truth.",
     );
   }
-  const openGaps = facts.openReleaseBlockers ?? [];
-  if (openGaps.length > 0) {
-    blockers.push(
-      `${openGaps.length} open release-blocking gap(s) in the tracked ledger: ${openGaps.join(", ")}`,
-    );
-  }
-  const blocked = facts.blockedCells ?? [];
-  if (blocked.length > 0) {
-    blockers.push(
-      `${blocked.length} explicitly BLOCKED support-matrix cell(s): ${blocked.join(", ")}`,
-    );
-  }
-  const unbound = facts.unboundCells ?? [];
-  if (unbound.length > 0) {
-    blockers.push(
-      `${unbound.length} support-matrix cell(s) are not bound to a candidate: ${unbound.slice(0, 5).join(", ")}${unbound.length > 5 ? ", …" : ""}`,
-    );
-  }
-  if (
-    facts.externalValidationStatus !== undefined &&
-    facts.externalValidationStatus !== "COMPLETE"
-  ) {
-    blockers.push(
-      `external validation is ${facts.externalValidationStatus}, not COMPLETE`,
-    );
-  }
-  const unreconciled = facts.githubSnapshotUnreconciled ?? 0;
-  if (unreconciled > 0) {
-    blockers.push(`${unreconciled} GitHub snapshot item(s) are not reconciled`);
-  }
-  if (!Array.isArray(roadmap.trains)) {
-    errors.push("trains must be an array");
+
+  if (!Array.isArray(roadmap.versions)) {
+    errors.push("versions must be an array");
     return { errors, blockers };
   }
-  const ids = new Set<string>();
-  for (const train of roadmap.trains) {
-    if (!isRecord(train)) {
-      errors.push("train must be an object");
+  const seen = new Set<string>();
+  let inProgress = 0;
+  for (const row of roadmap.versions) {
+    if (!isRecord(row)) {
+      errors.push("version row must be an object");
       continue;
     }
-    const id = typeof train.id === "string" ? train.id : "";
-    if (TRAIN_IDS.includes(id) === false) errors.push(`unexpected train ${id}`);
-    if (ids.has(id)) errors.push(`duplicate train ${id}`);
-    ids.add(id);
-    if (!STATUSES.has(String(train.status))) {
-      errors.push(`${id} has invalid status`);
+    const version = isFilled(row.version) ? row.version : "";
+    if (!(VERSIONS as readonly string[]).includes(version)) {
+      errors.push(`unexpected version ${version}`);
     }
-    if (!Array.isArray(train.workstreams) || train.workstreams.length === 0) {
-      errors.push(`${id} must declare workstreams`);
+    if (seen.has(version)) errors.push(`duplicate version ${version}`);
+    seen.add(version);
+    if (!STATUSES.has(String(row.status))) {
+      errors.push(`${version} has invalid status`);
     }
-    if (
-      !Array.isArray(train.dependsOn) ||
-      train.dependsOn.some(
-        (dep) =>
-          !TRAIN_IDS.includes(String(dep)) && !LEGACY_IDS.has(String(dep)),
-      )
-    ) {
-      errors.push(`${id} has invalid dependencies`);
-    }
-    if (
-      train.status === "proven" &&
-      (!Array.isArray(train.evidence) || train.evidence.length === 0)
-    ) {
-      errors.push(`${id} cannot be proven without evidence`);
+    if (row.status === "in-progress") inProgress++;
+    for (const field of [
+      "theme",
+      "promise",
+      "moves",
+      "killCriterion",
+    ] as const) {
+      if (!isFilled(row[field])) {
+        errors.push(
+          `${version} has no ${field} — a version with no kill criterion is a ` +
+            "commitment, and a version with no promise is a guess",
+        );
+      }
     }
   }
-  for (const id of TRAIN_IDS)
-    if (!ids.has(id)) errors.push(`missing train ${id}`);
+  for (const version of VERSIONS)
+    if (!seen.has(version)) errors.push(`missing version ${version}`);
+  if (inProgress > 1) {
+    errors.push(
+      `${inProgress} versions are in progress — the ladder is ordered, and two ` +
+        "rows in progress is a plan with no next step",
+    );
+  }
   return { errors, blockers };
 }

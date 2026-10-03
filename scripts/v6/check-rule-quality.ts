@@ -31,10 +31,9 @@ import { prettify } from "../lib/prettify.js";
 import { isMainModule } from "../lib/is-main-module.js";
 import { ROOT } from "./inventory.js";
 import { RULES, RETIRED_RULE_IDS } from "../../src/rules/index.js";
-import { MEASURED_FP } from "../../src/rules/measured-fp.generated.js";
 import {
-  declaredDetectorRevision,
   effectiveTier,
+  hasStaleMeasurement,
   hasValidMeasurement,
 } from "../../src/rules/measurement.js";
 import {
@@ -152,13 +151,15 @@ export function checkRuleQuality(): QualityCheck {
   //    number, one definition: `hasValidMeasurement` is what the doctor's
   //    census, the tier ratchets and `docs/FP-AUDIT.md` all mean by
   //    "measured", so this is what this reports.
-  const stale = RULES.filter((rule) => {
-    const measurement = MEASURED_FP[rule.id];
-    return (
-      measurement !== undefined &&
-      measurement.detectorRevision !== declaredDetectorRevision(rule)
-    );
-  });
+  //
+  //    `stale` then had the mirror defect, and it was the same shape as the one
+  //    `hasStaleMeasurement` documents: the predicate re-derived from
+  //    `MEASURED_FP`, the revision-filtered map, so a stale row was never in it
+  //    and this loop could not select anything. `measuredAtStaleRevision` read 0
+  //    while two rules (`QA-PY-004`, `QA-PY-007`) carried hand-classified
+  //    verdicts taken against an earlier detector. It now asks the shared
+  //    helper, which reads the RAW map for exactly this reason.
+  const stale = RULES.filter((rule) => hasStaleMeasurement(rule));
   const measured = RULES.filter((rule) => hasValidMeasurement(rule));
 
   return {

@@ -62,7 +62,7 @@ Tools: `scan`, `explain`, `diff`, `verify`, `forensics`, `triage`, `pw-report`. 
 - **E1:** heuristic evidence requiring contextual review.
 - **E0:** observation/advisory evidence.
 - **L0–L2:** static evidence. **L3–L5:** require corroboration from an existing run report.
-- Quarantine rules require `--strict` and remain advisory.
+- WARN-tier rules require `--include-warn` and remain advisory.
 - Missing baselines and incomplete analysis must not be treated as successful verification.
 - Never improve the reported result by weakening tests, hiding findings or changing the detector instead of addressing the underlying issue.
 

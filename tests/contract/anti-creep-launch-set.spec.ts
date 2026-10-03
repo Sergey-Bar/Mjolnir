@@ -68,9 +68,19 @@ describe("the launch set is what ships, not the empty core tier", () => {
   it("the two sets genuinely differ in this repository", () => {
     // Without this the rest of the file passes vacuously. It is the fact that
     // made the old predicate wrong.
+    //
+    // `core` was 0 when this was written and is 1 as of 2026-10-03, when
+    // `QA-PW-117` was promoted. The arm still has teeth, and MORE of them: it
+    // now has to check the core set is a genuine SUBSET rather than the whole
+    // shipped set wearing a different name. A predicate that silently widened
+    // until both sets were equal would make every cap in this file vacuous
+    // again, and that is the exact failure this file was written to prevent.
     expect(shipped.length).toBeGreaterThan(0);
-    expect(core.length).toBe(0);
+    expect(core.length).toBeGreaterThan(0);
     expect(shipped.length).toBeGreaterThan(core.length);
+    for (const rule of core) {
+      expect(shipped, `${rule.id} is core but not shipped`).toContain(rule);
+    }
   });
 
   it("the ratchet counts the shipped set", () => {
@@ -157,9 +167,6 @@ describe("the recorded baseline matches the governed set", () => {
 });
 
 describe("the redefinition was declared, not slipped in", () => {
-  const pkg = JSON.parse(readFileSync(join(ROOT, "package.json"), "utf8")) as {
-    version: string;
-  };
   const baseline = JSON.parse(
     readFileSync(join(ROOT, "docs", "ANTI-CREEP-BASELINE.json"), "utf8"),
   ) as { baselineCore: number; previousBaselineCore: number; why?: string };
@@ -204,20 +211,18 @@ describe("the redefinition was declared, not slipped in", () => {
   });
 
   it("the 5.1.0 entry carries the original declaration with a reason", () => {
-    // The historical record stays. Scoped to the version that shipped it, not
-    // to "the first `## ` heading" — those are the same thing only while
-    // `[Unreleased]` is non-empty, and anchoring on position meant the
-    // assertion silently stopped describing anything the moment a release was
-    // cut.
+    // The historical record stays. Anchored on the version that shipped the
+    // declaration, NOT on `pkg.version` — this assertion used to read
+    // "the entry for the current version" and pin `pkg.version` to `5.1.0` so
+    // the two could not drift apart, which meant the next version bump broke a
+    // statement about the past. A record of what 5.1.0 declared is still true
+    // in 9.0; "the entry for the current version" stops being true every time
+    // the version moves, and the fix was always "update the string".
     const changelog = readFileSync(join(ROOT, "CHANGELOG.md"), "utf8");
-    // Escaped as a whole rather than by replacing dots. A partial escape is
-    // the shape that survives review: a prerelease suffix carries no
-    // metacharacter and looks fine, and anything with `+` or `(` silently
-    // changes what the pattern matches. CodeQL flagged the dot-only form.
-    const start = new RegExp(
-      `^## \\[${pkg.version.replace(/[.*+?^${}()|[\]\\/-]/g, "\\$&")}\\]`,
-      "m",
-    ).exec(changelog);
+    // A literal pattern, not a constructor: the version is fixed at 5.1.0 in
+    // this arm — that is the version whose entry carried the declaration — so
+    // there is nothing left to interpolate.
+    const start = /^## \[5\.1\.0\]/m.exec(changelog);
     expect(start, "the 5.1.0 entry is missing").not.toBeNull();
     if (start === null) return;
     const rest = changelog.slice(start.index);
@@ -229,8 +234,6 @@ describe("the redefinition was declared, not slipped in", () => {
     expect(entry).toContain(ANTI_CREEP_EXCEPTION_MARKER);
     expect(entry).toContain("45");
     expect(entry).toMatch(/already shipped|moved nothing|was not counting/);
-    // The version in the heading is the one the declaration belongs to.
-    expect(pkg.version).toBe("5.1.0");
   });
 });
 

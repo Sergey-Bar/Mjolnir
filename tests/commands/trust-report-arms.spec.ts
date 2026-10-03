@@ -219,14 +219,18 @@ describe("terminal reporter ranking and label arms", () => {
     expect(nextAction(withRisk)).toContain("mjolnir explain QA-PW-009");
   });
 
-  it("renderTrustReport: bare result ⇒ L2 fallback label, none-fired arm, unmeasured counts", () => {
+  it("renderTrustReport: bare result ⇒ the two-word counts, none-fired arm, unmeasured counts", () => {
     const text = renderTrustReport(bareResult(), {
       isTTY: false,
       verbose: false,
       width: 80,
       ascii: true,
     });
-    expect(text).toContain("L2 ·");
+    // 6.0: the `L0–L5` rung left the default report — the fallback label this
+    // arm used to assert is no longer rendered at all, and the number that
+    // replaced it has to render on a result with nothing in it.
+    expect(text).toContain("0 GATE · 0 WARN");
+    expect(text).not.toMatch(/\bL\d\b/);
     expect(text).toContain("none fired — nothing to weight");
     // BW-103: a bare result never measured a declaration, so it says so.
     // "0 declaration(s) in 0 file(s)" claimed the count was taken.
@@ -260,7 +264,13 @@ describe("terminal reporter ranking and label arms", () => {
     expect(text).toContain("runtime: file executed");
   });
 
-  it("renderTrustReport: an out-of-table level renders its raw value (label fallback)", () => {
+  it("renderTrustReport: an out-of-table level renders without throwing", () => {
+    // The arm this replaces asserted the label table's `?? level` fallback
+    // printed "L9". 6.0 deleted that table along with the rung line, so the
+    // fallback no longer has a surface — but the crash-safety intent behind
+    // the arm does not go with it: an unexpected level in the summary must
+    // still produce a complete report, not a thrown TypeError on the reader's
+    // first run. Asserted as "renders every section", not as a label.
     const odd = bareResult({
       trustSummary: {
         level: "L9",
@@ -271,9 +281,17 @@ describe("terminal reporter ranking and label arms", () => {
         ceilingReasons: [],
       },
     });
-    expect(renderTrustReport(odd, { isTTY: false, ascii: true })).toContain(
-      "L9",
-    );
+    const text = renderTrustReport(odd, { isTTY: false, ascii: true });
+    for (const section of [
+      "TRUST VERDICT",
+      "CONFIDENCE",
+      "WHY THIS VERDICT",
+      "TOP TRUST RISKS",
+      "NEXT ACTION",
+    ]) {
+      expect(text).toContain(section);
+    }
+    expect(text).toContain("0 GATE · 0 WARN");
   });
 });
 

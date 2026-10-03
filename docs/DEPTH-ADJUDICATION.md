@@ -50,7 +50,7 @@ evidence supported it:
 ### `exact-key-match` — exact, unambiguous runner/API token — lexical precision equals structural (10 rules)
 
 - **QA-CS-101** (0% FP at n=20): [Ignore]/[Fact(Skip=…)] are exact xUnit/NUnit/MSTest attribute tokens; the detector matches the attribute identifiers — closed token sets where lexical precision equals structural
-- **QA-JV-101** (0% FP at n=23): @Disabled/@Ignore are exact JUnit/TestNG annotation tokens; the detector matches the annotation identifier — annotation shapes are closed token sets where lexical and structural match coincide
+- **QA-JV-101** (0% FP at n=35): @Disabled/@Ignore are exact JUnit/TestNG annotation tokens; the detector matches the annotation identifier — annotation shapes are closed token sets where lexical and structural match coincide
 - **QA-PW-003** (10% FP at n=10): page.pause() and test.only() are exact Playwright runner tokens; the detector matches the member-call identifiers on the code-only text — closed token set, unique to the defect
 - **QA-PW-102** (10% FP at n=10): waitForLoadState('load') is an exact Playwright token plus a closed argument enum; the detector matches the call plus its argument — the AST re-derives the same call shape
 - **QA-PW-104** (0% FP at n=10): the trial-click shape is an exact Playwright API token pair; the detector matches the call identifier on the code-only text — the token is closed and unique to the defect
@@ -90,7 +90,7 @@ evidence supported it:
 - **QA-JV-107** (0% FP at n=10): the network-idle family's variants (QA-JV-107/QA-CS-107/QA-PY-107): networkidle waits are runner timing semantics; the detector matches the runner's wait tokens — exact keys
 - **QA-JV-109** (0% FP at n=18): the retry-masking family's variants (QA-JV-109/QA-CS-109): retry masking is the runner's retry contract; the detector matches the runner's retry tokens on the code-only text
 - **QA-PW-115** (56% FP at n=16): page reuse across tests is runner fixture-lifecycle semantics; the detector matches the page-consumption shapes against the test boundaries — the lifecycle is runner behavior
-- **QA-PW-117** (0% FP at n=24): fullyParallel/serial are runner scheduling keys on the config and describe blocks; the detector matches the runner's exact API tokens — the semantics are scheduling, not syntax
+- **QA-PW-117** (0% FP at n=35): fullyParallel/serial are runner scheduling keys on the config and describe blocks; the detector matches the runner's exact API tokens — the semantics are scheduling, not syntax
 - **QA-PW-121** (0% FP at n=12): retries in playwright.config.* is a runner top-level option, not a syntax node; the detector reads the config surface whose statements are object-literal keys — exact-key precision
 - **QA-PW-122** (6% FP at n=80): trace/reporter capture is runner lifecycle state set in the config file; the detector reads the config surface's keys and enum values, which are exact matches — a syntax tree adds no semantic the config text lacks
 - **QA-PW-124** (7% FP at n=15): project split is a runner config concept (projects array arrangement); the detector reads playwright.config.* keys (adapter-gated), whose object-literal shape is exact-match text

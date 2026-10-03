@@ -65,7 +65,10 @@ export const LANGUAGE_MANIFEST: readonly LanguageCapability[] = [
       sampleSize: 240,
       runner: "mjolnir-scan",
       verifiedBy: "false-green corpus + negative controls",
-      source: "docs/M26-EXTERNAL-VALIDATION.json",
+      // Was `docs/M26-EXTERNAL-VALIDATION.json`, which 6.0 deleted with the
+      // M26 program. That file recorded that external validation had NOT been
+      // run; the `verifiedBy` line above is what this entry actually rests on,
+      // and a source that pointed at a deleted record was pointing at nothing.
     },
   },
   {
@@ -191,13 +194,16 @@ export const ECOSYSTEM_MANIFEST: readonly LanguageCapability[] = [
     ],
     notCertified: [
       // Was "the plan counts 156 cells across the four adapters". 156 is a
-      // plan-era figure that no longer matches anything: the matrix carries
+      // plan-era figure that no longer matched anything: the matrix carried
       // 136 cells in total and 6 on the language-framework axis, so the
-      // number was both stale and measuring the wrong set. It also cannot be
-      // fixed by regenerating, because it is hand-written in source — the
-      // count now lives only in docs/M26-SUPPORT-MATRIX.json, which the
-      // certification matrix renders.
-      "the concept set has rules, but the language-framework certification surface is not certified — see docs/M26-SUPPORT-MATRIX.json for the current cell count",
+      // number was both stale and measuring the wrong set.
+      //
+      // 6.0 removed the cell count entirely, with the ledger it came from.
+      // The sentence now says the thing that is still true and does not
+      // depend on a count that a regeneration would invalidate: the surface is
+      // not certified, and the certification matrix next to this manifest is
+      // where a reader can see exactly which capabilities are covered.
+      "the concept set has rules, but the language-framework certification surface is not certified — see the certification matrix for the covered capabilities",
       "no runner evidence, so the state ladder stops at DISCOVERED",
     ],
     evidence: {

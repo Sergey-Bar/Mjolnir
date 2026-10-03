@@ -1,5 +1,109 @@
 import { defineConfig } from "vitest/config";
 
+/**
+ * The SLOW suites: those that spawn real processes or drive the whole tree.
+ *
+ * Membership is decided by what a suite DOES, not by how long it was measured
+ * to take. A duration threshold would re-shuffle on every machine and every CI
+ * runner, which is the same mistake as a timeout used as a budget — the thing
+ * the `testTimeout` comment below is written about. These six directories
+ * share one property that is visible in their source: they spawn `node`, run an
+ * npm script, read or write the checkout, or compile TypeScript.
+ *
+ * This list is the SOURCE OF TRUTH for `npm run test:slow` and for the
+ * complement `npm run test:fast`. The two scripts partition every directory in
+ * `tests/` exactly once, and `tests/contract/entry-points.spec.ts` asserts that
+ * partition still covers the tree — so a new test directory cannot fall through
+ * the gap between two hand-maintained lists and never run in either half.
+ */
+export const SLOW_SUITES = [
+  "audit",
+  "cli",
+  "commands",
+  "contract",
+  "e2e",
+  "integrations",
+];
+
+/**
+ * Directories that are in NEITHER half, and why.
+ *
+ * A third list is the honest shape: `tests/stress` has its own invocation
+ * because its 3,000-file synthetic scan contends with everything, and
+ * `tests/golden/repo` plus `tests/helpers` hold data and shared fixtures. A
+ * two-list partition would have to quietly omit them, and "quietly omit" is
+ * exactly the failure `tests/contract/test-split-partition.spec.ts` exists to
+ * catch — so they are declared, and the test asserts every declared directory
+ * still justifies itself.
+ */
+export const NEITHER_HALF = {
+  stress: "has its own `npm run test:stress` — contends with the whole pool",
+  golden: "holds the golden repo, which is DATA, not suites",
+  helpers: "shared test fixtures and helpers, no suites of its own",
+} as const;
+
+/**
+ * WHY THERE ARE NO `test.projects` HERE
+ *
+ * The plan called for splitting this config into `fast` and `slow` vitest
+ * projects. It was implemented, measured, and removed, because on THIS suite it
+ * is a 4x regression rather than an optimisation:
+ *
+ *     one project, all 503 files ......... 108s
+ *     `--project slow`, same 503 files ... 433s
+ *
+ * Same file set, same tests (12,148), four times the wall clock. The reason is
+ * scheduling: the suite's cost is dominated by process-spawning suites, and the
+ * ~8,000 unit tests are what keep every worker busy while those run. Partitioning
+ * throws away the interleaving that makes the run fast — the slow project runs
+ * its files with nothing to co-schedule against.
+ *
+ * So the split is delivered as PATH FILTERS instead. `npm run test:fast` gets
+ * the inner loop, `npm run test:slow` gets the gates, `npm test` is unchanged
+ * and still runs everything in one pool — which is also the fastest shape,
+ * because it is the one that measures 108s.
+ *
+ * A second, smaller reason: a project-level `include` REPLACES the root
+ * `include` rather than narrowing it, so `include: ["tests/contract/**"]`
+ * collects `scan-result.v1.json`, `__snapshots__/*.snap` and shared helper
+ * modules and fails every one of them as an unparseable suite. Getting that
+ * right needs a derived spec-file glob per entry — real maintenance surface
+ * for a filter `vitest run <paths>` already expresses with no code.
+ */
+
+/**
+ * Paths that are DATA, not tests, plus the suites with their own invocation.
+ *
+ * Held as a constant because the two projects below both need it, and a copy
+ * per project is a list that will drift — a file added to one and not the other
+ * is either collected by our own runner (a fixture corpus executing as a test)
+ * or dropped from a suite that used to run. Neither is a failure you want to
+ * discover in CI.
+ */
+const BASE_EXCLUDE = [
+  "**/node_modules/**",
+  "**/dist/**",
+  "tests/fixtures/**",
+  "tests/golden/repo/**",
+  // Cloned OSS repos for the corpus audit — their own *.spec.ts are
+  // test DATA, never ours to run. Normally absent during `npm test`;
+  // this guards against a stale clone left by a killed audit run.
+  // M-04: widened to any .cache* clone dir (e.g. a rogue .cache-kit).
+  "tests/corpus/.cache*/**",
+  // Committed §08 class-B/C fixture corpora are DATA too — their
+  // .spec.ts files deliberately contain anti-patterns.
+  "tests/corpus/positive-fixtures/**",
+  "tests/corpus/negative-fixtures/**",
+  "tests/scope/property-invariants.spec.ts",
+  // Stress/performance gates (tests/stress/**) spin up a synthetic
+  // 3,000-file scan. Run as part of the parallel `npm test` it
+  // contends with ~8k other tests across workers and the wall-clock
+  // budget trips on machine load, not on a real superlinear blowup.
+  // They run in their own `npm run test:stress` invocation where the
+  // machine is free — the regression gate stays meaningful.
+  "tests/stress/**",
+];
+
 export default defineConfig({
   test: {
     include: ["tests/**/*.spec.ts", "tests/enterprise/**/*.test.ts"],
@@ -38,30 +142,10 @@ export default defineConfig({
     // that stops exiting — still fails rather than being absorbed.
     testTimeout: 300_000,
     // Fixture files and the golden repo are DATA, not tests — they must
-    // never be executed by our own runner.
-    exclude: [
-      "**/node_modules/**",
-      "**/dist/**",
-      "tests/fixtures/**",
-      "tests/golden/repo/**",
-      // Cloned OSS repos for the corpus audit — their own *.spec.ts are
-      // test DATA, never ours to run. Normally absent during `npm test`;
-      // this guards against a stale clone left by a killed audit run.
-      // M-04: widened to any .cache* clone dir (e.g. a rogue .cache-kit).
-      "tests/corpus/.cache*/**",
-      // Committed §08 class-B/C fixture corpora are DATA too — their
-      // .spec.ts files deliberately contain anti-patterns.
-      "tests/corpus/positive-fixtures/**",
-      "tests/corpus/negative-fixtures/**",
-      "tests/scope/property-invariants.spec.ts",
-      // Stress/performance gates (tests/stress/**) spin up a synthetic
-      // 3,000-file scan. Run as part of the parallel `npm test` it
-      // contends with ~8k other tests across workers and the wall-clock
-      // budget trips on machine load, not on a real superlinear blowup.
-      // They run in their own `npm run test:stress` invocation where the
-      // machine is free — the regression gate stays meaningful.
-      "tests/stress/**",
-    ],
+    // never be executed by our own runner. Named so both projects below can
+    // inherit one copy: restating it per project is how the fast project ends
+    // up collecting a file the slow project correctly ignores.
+    exclude: BASE_EXCLUDE,
     coverage: {
       // Istanbul (not v8): the v8 provider's cross-worker merge
       // under-attributes branches for files loaded by several workers,
@@ -93,7 +177,6 @@ export default defineConfig({
         "src/commands/ci-adapter.ts",
         "src/commands/policy.ts",
         "src/change-intelligence.ts",
-        "src/ledger/m26-validators.ts",
         "src/release/version-surface.ts",
         "src/forensics/triage.ts",
         "src/cli.ts",

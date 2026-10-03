@@ -36,10 +36,12 @@ import {
   evaluateAntiCreep,
   type AntiCreepBaseline,
 } from "../../src/commands/doctor.js";
-import { hasValidMeasurement } from "../../src/rules/measurement.js";
 import type { CorePromotion, QADoctorRule } from "../../src/rules/rule.js";
 import { RULES } from "../../src/rules/index.js";
-import { effectiveTier } from "../../src/rules/measurement.js";
+import {
+  effectiveTier,
+  hasValidMeasurement,
+} from "../../src/rules/measurement.js";
 
 const SOUND_PROMOTION: CorePromotion = {
   rationale:
@@ -615,11 +617,32 @@ describe("a declared core rule on a thin measurement needs the record", () => {
     expect(hasValidMeasurement(rule)).toBe(false);
   });
 
-  it("no registry rule is in core, so the registry check has nothing to demand", () => {
-    // The counterpart to the demotion ratchet: 6.0 demoted the nineteen, and
-    // this asserts the tier is still empty so a future promotion cannot arrive
-    // without tripping `checkRegistry`'s corePromotion requirement.
-    expect(RULES.filter((r) => r.tier === "core")).toEqual([]);
+  it("the one core rule is owned by its measurement, not by a hand record", () => {
+    // Was "no registry rule is in core, so the registry check has nothing to
+    // demand" — an assertion that the tier stayed empty. It stopped being empty
+    // on 2026-10-03, when `QA-PW-117` reached n=35 and was promoted.
+    //
+    // The obligation `checkRegistry` enforces did NOT change: a core rule with
+    // no valid measurement must carry a `corePromotion`. A core rule whose
+    // measurement independently derives core is owned by the corpus, and
+    // requiring an expiring note on top of that would fail the registry on the
+    // note's expiry while the measurement still cleared the ceiling.
+    //
+    // So this now pins WHICH rule is core and WHY it needs no record, and the
+    // synthetic arms below still prove the obligation is real.
+    const core = RULES.filter((r) => r.tier === "core");
+    expect(
+      core.map((r) => r.id),
+      "the declared-core set changed - a rule left it because its measurement " +
+        "moved, or one joined because it earned the way QA-PW-117 did",
+    ).toEqual(["QA-PW-117", "QA-JV-101"]);
+    for (const rule of core) {
+      expect(
+        hasValidMeasurement(rule),
+        `${rule.id} declares core with no valid measurement, so checkRegistry ` +
+          "now requires a corePromotion - and this arm would be lying",
+      ).toBe(true);
+    }
   });
 
   it("the registry check reports a core rule carrying no promotion", () => {
@@ -691,11 +714,17 @@ describe("the quarantine tier has the same owner/date/exit obligation", () => {
     const result = checkQuarantineOwnership();
     expect(result.status, result.details.join("\n")).toBe("pass");
     const summary = result.details[0] ?? "";
-    expect(summary).toMatch(/quarantine rules carry no quarantinePromotion/);
-    // The failure direction: a count that FALLS must not be a failure. If it
-    // were, the check could only be satisfied by filling the field in, and
-    // filling a field in is not the same as deciding a rule's fate.
-    expect(summary).toContain("permanent by default");
+    // Updated with the check (A8): the backlog is no longer REPORTED as a
+    // count, because a count can only ratchet and the defect was silence. Every
+    // quarantined rule must now be accounted for by a promotion or a recorded
+    // disposition, and the summary says which of those two things it is looking
+    // for — so a maintainer reading one line knows what to do.
+    expect(summary).toMatch(/rule\(s\) in quarantine/);
+    expect(summary).toContain("quarantinePromotion");
+    // The failure direction, restated for the new vocabulary: carrying a record
+    // is not a failure. If it were, the check could only be satisfied by adding
+    // records, which is not the same as deciding a rule's fate.
+    expect(summary).toContain("silence is the failure");
   });
 
   it("a quarantine rule that DOES carry a defective promotion is blocking", () => {
@@ -722,7 +751,10 @@ describe("the quarantine tier has the same owner/date/exit obligation", () => {
     expect(result.status).toBe("fail");
     const text = result.details.join("\n");
     expect(text).toContain("quarantinePromotion");
-    expect(text).toContain("no owner");
+    // The field the validator actually rejects, named as the type spells it.
+    // `checkCorePromotion` reads `owner`, so a message that said "reviewer"
+    // would send the reader looking for a field the contract does not have.
+    expect(text).toContain("owner");
   });
 
   it("an unexpired, owned quarantine promotion is accepted", () => {
@@ -736,14 +768,14 @@ describe("the quarantine tier has the same owner/date/exit obligation", () => {
       },
     ]);
     expect(result.status, result.details.join("\n")).toBe("pass");
-    // The backlog line now reads 0/1, which is the check's whole point: a
-    // rule WITH a record stops being counted. Asserted on the count rather
-    // than the absence of a word, because the summary always mentions the
-    // field.
-    expect(
-      result.details[0],
-      "the backlog line did not fall to zero",
-    ).toContain("0/1 quarantine rules");
+    // A rule that CARRIES a promotion is not asked for a disposition, which is
+    // the whole point: carrying a record is an acceptable way to discharge the
+    // obligation, so adding one cannot be a failure. Asserted by passing the
+    // planted rule ALONE — with no other quarantined rule in the list, there is
+    // no disposition register entry for it either, so a check that demanded a
+    // disposition regardless of the promotion would fail here.
+    expect(result.details[0]).toContain("1 rule(s) in quarantine");
+    expect(result.details.join("\n")).not.toContain("NO disposition");
   });
 });
 
@@ -755,11 +787,18 @@ describe("the Law #3 ratchet is not vacuous on an empty tier", () => {
   // measurement OR by an unexpired `corePromotion`; anything else counts.
   const VERDICTS = join(import.meta.dirname, "..", "corpus", "verdicts");
 
-  it("the shipped tree has no core rules, and says so rather than claiming a pass", () => {
+  it("the shipped tree's one core rule is accounted for, not vacuous", () => {
+    // Was "the shipped tree has no core rules ... Vacuous by construction" —
+    // an honest report of a check that could not fail. As of 2026-10-03 the
+    // tier holds `QA-PW-117`, so the check is no longer vacuous and says so.
+    //
+    // This is the arm that matters most for the change: a check that reports
+    // "vacuous" forever is indistinguishable from a check that was switched off,
+    // and that is exactly how the tier stayed empty for a release.
     const result = checkTierEnforcement(VERDICTS);
     expect(result.status).toBe("pass");
-    expect(result.details[0]).toContain("0 core rules");
-    expect(result.details[0]).toContain("Vacuous by construction");
+    expect(result.details[0]).toContain("2 core rules");
+    expect(result.details[0]).not.toContain("Vacuous by construction");
   });
 
   it("a core rule with neither a measurement nor a promotion is unaccounted", () => {

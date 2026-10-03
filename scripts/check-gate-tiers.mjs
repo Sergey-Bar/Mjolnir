@@ -225,13 +225,35 @@ for (let i = 0; i + 1 < TIERS.length; i += 1) {
 // A gate id declared twice in one tier is ambiguous: the second entry can
 // disagree with the first and the relation check will read whichever it
 // happens to see.
+//
+// A gate COMMAND declared twice in one tier is the same ambiguity wearing a
+// different hat, and it is the one that survived. `gates/nightly.json` carried
+// both `qa-ir-parity` and `gate:qa-ir-parity` (same command) and both
+// `scripts-unimported` and `gate:unimported-modules` (same command) for a
+// whole release: four gate ids, two checks, each run twice a night, and the
+// nightly cost report reading double. The id check above cannot see it, which
+// is why it is a second loop rather than a second clause in the first.
 for (const [tier, parsed] of tiers) {
-  const seen = new Set();
+  const seenIds = new Set();
+  const seenCommands = new Map();
   for (const gate of parsed.gates) {
-    if (seen.has(gate.id)) {
+    if (seenIds.has(gate.id)) {
       fail(`gates/${tier}.json: duplicate gate id "${gate.id}"`);
     }
-    seen.add(gate.id);
+    seenIds.add(gate.id);
+    // Flags are part of what a gate runs: `corpus:audit` and
+    // `corpus:audit --resample` are two different gates that share a command.
+    // The key is the whole command string.
+    const command = String(gate.command ?? "");
+    const first = seenCommands.get(command);
+    if (first !== undefined) {
+      fail(
+        `gates/${tier}.json: gates "${first}" and "${gate.id}" run the same ` +
+          `command (${command}) under different ids — one of them is a second ` +
+          "nightly run of the same check, and the nightly cost double-counts it",
+      );
+    }
+    seenCommands.set(command, gate.id);
   }
 }
 

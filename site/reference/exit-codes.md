@@ -54,7 +54,7 @@ are immutable once shipped and never reused.
 - **Partial honesty** — if analysis was cut short, the output says so, and the
   exit code is `2`. Honesty that still exits `0` is not honesty.
 - **FP firewall** — detection runs on a comment/string-free view of the code.
-- **Measured, not asserted** — 74 of 79 active rules carry a real OSS
-  false-positive rate; the other 5 are explicitly unmeasured.
+- **Measured, not asserted** — 73 of 79 active rules carry a real OSS
+  false-positive rate; the other 6 are explicitly unmeasured.
 - **Plugin trust** — plugins are npm packages with no sandbox; they run with
   full Node privileges, the same trust model as ESLint or Vitest plugins.

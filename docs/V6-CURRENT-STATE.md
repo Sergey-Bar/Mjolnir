@@ -2,7 +2,7 @@
 
 **Generated — do not edit by hand.** Regenerate: `npm run docs:v6-inventory`.
 
-Baseline commit `a5368a0aa63bd25d48b6acd4db57469e289498a5` · package version `5.1.0` · published stable `5.1.0`.
+Baseline commit `8d889b511ef5930eceda354e7253a16c8a3ef2e0` · package version `6.0.0-rc.1` · published stable `5.1.0`.
 
 This is the truth baseline v6 is built on. It is deliberately blunt: the
 interesting part of a current-state inventory is what the product _cannot_
@@ -26,32 +26,35 @@ demonstrate, not what it contains.
 
 ## 2. Repository facts
 
-| Fact                            | Value                                                                                                                                   | Source                                  |
-| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------- |
-| Package version                 | `5.1.0`                                                                                                                                 | `package.json`                          |
-| Published stable                | `5.1.0`                                                                                                                                 | `package.json`                          |
-| Source files (`src/**.ts`)      | 295                                                                                                                                     | derived                                 |
-| Test specs (`tests/**.spec.ts`) | 670                                                                                                                                     | derived                                 |
-| Live rules                      | 79                                                                                                                                      | `src/rules/index.ts`                    |
-| Retired rule ids (preserved)    | 22                                                                                                                                      | `RETIRED_RULE_IDS`                      |
-| Rules with a valid measurement  | 73                                                                                                                                      | `MEASURED_FP` + `detectorRev`           |
-| Rule tiers                      | **extended** 45 · **quarantine** 34                                                                                                     | `effectiveTier`                         |
-| Adapters                        | 11 (azure-pipelines, csharp, exit-code-integrity, github-actions, gitlab-ci, index, java, jenkins, python, typescript, workflow-bypass) | `src/adapters`                          |
-| Commands                        | 33                                                                                                                                      | `src/commands`                          |
-| Frameworks in the inventory     | 14                                                                                                                                      | `FRAMEWORK_INVENTORY`                   |
-| CI providers                    | 6                                                                                                                                       | `CI_PROVIDER_IDS`                       |
-| QA domain records               | 13                                                                                                                                      | cells of `docs/M26-SUPPORT-MATRIX.json` |
-| Gap-ledger records              | 17                                                                                                                                      | `docs/M26-GAP-LEDGER.jsonl`             |
-| Support-matrix cells            | 136                                                                                                                                     | `docs/M26-SUPPORT-MATRIX.json`          |
-| Issue dispositions              | 429                                                                                                                                     | `docs/M26-ISSUE-DISPOSITIONS.jsonl`     |
-| Open issues                     | 229                                                                                                                                     | same                                    |
-| External validation             | **BLOCKED**                                                                                                                             | `docs/M26-EXTERNAL-VALIDATION.json`     |
+| Fact                            | Value                                                                                                                                   | Source                                       |
+| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| Package version                 | `6.0.0-rc.1`                                                                                                                            | `package.json`                               |
+| Published stable                | `5.1.0`                                                                                                                                 | `package.json`                               |
+| Source files (`src/**.ts`)      | 296                                                                                                                                     | derived                                      |
+| Test specs (`tests/**.spec.ts`) | 686                                                                                                                                     | derived                                      |
+| Live rules                      | 79                                                                                                                                      | `src/rules/index.ts`                         |
+| Retired rule ids (preserved)    | 22                                                                                                                                      | `RETIRED_RULE_IDS`                           |
+| Rules with a valid measurement  | 73                                                                                                                                      | `MEASURED_FP` + `detectorRev`                |
+| Rule tiers                      | **core** 2 · **extended** 43 · **quarantine** 34                                                                                        | `effectiveTier`                              |
+| Adapters                        | 11 (azure-pipelines, csharp, exit-code-integrity, github-actions, gitlab-ci, index, java, jenkins, python, typescript, workflow-bypass) | `src/adapters`                               |
+| Commands                        | 34                                                                                                                                      | `src/commands`                               |
+| Frameworks in the inventory     | 14                                                                                                                                      | `FRAMEWORK_INVENTORY`                        |
+| CI providers                    | 3                                                                                                                                       | `CI_PROVIDERS` (measured from the generator) |
+
+### Ledgers
+
+The M26–M50 program's four ledgers were retired in 6.0. They were
+transcriptions of a plan document rather than measurements of this tree,
+and an inventory that published them under `counts:` was reporting its own
+reading of a roadmap as a fact about the repository. The record of what they
+contained is `docs/archive/ROADMAP-M26-M50.yaml`; the live ladder is
+`docs/ROADMAP.yaml`.
 
 ### Largest source areas
 
-- `src/rules/` — 86
+- `src/rules/` — 87
 - `src/engine/` — 44
-- `src/commands/` — 33
+- `src/commands/` — 34
 - `src/forensics/` — 17
 - `src/reporter/` — 14
 - `src/adapters/` — 11
@@ -61,13 +64,6 @@ demonstrate, not what it contains.
 - `src/integrations/` — 7
 - `src/certification/` — 6
 - `src/frameworks/` — 5
-
-### Ledgers
-
-- Gap ledger: **ALREADY_FIXED** 1 · **CLOSED_DECISION_RECORDED** 1 · **CONFIRMED_STILL_OPEN** 7 · **EXTERNAL_PENDING** 7 · **STALE_UNVERIFIABLE** 1 · severities **high** 6 · **release-blocker** 11
-- Open release-blocking gaps: **11** (GAP-M26-002, GAP-M26-003, GAP-M26-004, GAP-M26-005, GAP-M26-008, GAP-M26-009, GAP-M26-010, GAP-M26-012, GAP-M26-013, GAP-M26-015, GAP-M26-016)
-- Support matrix: **BLOCKED** 69 · **NOT_APPLICABLE** 2 · **TESTED** 65 — **69 cells are explicitly BLOCKED**
-- Issue dispositions: **CARRY_FORWARD** 417 · **CLOSED_SHIPPED** 3 · **CLOSED_WONT_FIX** 8 · **FIX_IN_BITTERSWEET** 1
 
 ## 3. Vocabulary collisions found by this wave
 
@@ -136,7 +132,7 @@ Two surfaces are absent and must not be advertised at any maturity.
 | §28    | Cross-browser / device     | **PARTIALLY_COMPLETE** | 8    | src/rules/index.ts                                                                  | Some rules retired for a false premise.                                                                                                                                                                                                                                                                                          |
 | §29    | i18n / RTL                 | **MISSING**            | 8    | —                                                                                   | No pack.                                                                                                                                                                                                                                                                                                                         |
 | §30    | Performance QA             | **MISSING**            | 8    | src/bench                                                                           | src/bench measures the tool, not load tests.                                                                                                                                                                                                                                                                                     |
-| §31    | Security verification QA   | **BLOCKED**            | 8    | docs/M26-SUPPORT-MATRIX.json                                                        | Requires external scanners; zero-network default.                                                                                                                                                                                                                                                                                |
+| §31    | Security verification QA   | **BLOCKED**            | 8    | capability-manifest.json                                                            | Requires external scanners; zero-network default.                                                                                                                                                                                                                                                                                |
 | §32    | AI / LLM QA                | **MISSING**            | 8    | src/rules/index.ts                                                                  | No LLM-application QA surface exists. The agent surface that stood in for one was unwired and is deleted; an LLM rule set would live in the registry beside every other rule.                                                                                                                                                    |
 | §33    | Data / ETL QA              | **MISSING**            | 8    | —                                                                                   | No pack.                                                                                                                                                                                                                                                                                                                         |
 | §34    | Chaos / resilience QA      | **MISSING**            | 8    | —                                                                                   | No pack.                                                                                                                                                                                                                                                                                                                         |
@@ -190,8 +186,8 @@ Two surfaces are absent and must not be advertised at any maturity.
 | §82    | policy                     | **ALREADY_COMPLETE**   | 10   | src/commands/policy.ts                                                              | policy ships as a command.                                                                                                                                                                                                                                                                                                       |
 | §83    | Surface parity             | **PARTIALLY_COMPLETE** | 10   | scripts/check-ci-local-parity.mjs                                                   | CI↔local only.                                                                                                                                                                                                                                                                                                                   |
 | §84    | Framework matrix           | **PARTIALLY_COMPLETE** | 1    | docs/RULE-CAPABILITY-MATRIX.md                                                      | Generated; not a census projection yet.                                                                                                                                                                                                                                                                                          |
-| §85    | Language matrix            | **PARTIALLY_COMPLETE** | 1    | docs/M26-SUPPORT-MATRIX.json                                                        | 2 cells only.                                                                                                                                                                                                                                                                                                                    |
-| §86    | CI matrix                  | **PARTIALLY_COMPLETE** | 1    | docs/M26-SUPPORT-MATRIX.json                                                        | 4 cells only.                                                                                                                                                                                                                                                                                                                    |
+| §85    | Language matrix            | **PARTIALLY_COMPLETE** | 1    | docs/RULE-CAPABILITY-MATRIX.md                                                      | 2 cells only.                                                                                                                                                                                                                                                                                                                    |
+| §86    | CI matrix                  | **PARTIALLY_COMPLETE** | 1    | docs/RULE-CAPABILITY-MATRIX.md                                                      | 4 cells only.                                                                                                                                                                                                                                                                                                                    |
 | §87    | Performance / scale proof  | **ALREADY_COMPLETE**   | 11   | src/bench, tests/stress                                                             | src/bench and tests/stress both cover scale; the gap is scale _proof_, not scale coverage.                                                                                                                                                                                                                                       |
 | §88    | Reliability SLOs           | **MISSING**            | 11   | —                                                                                   | Not a shipped artifact.                                                                                                                                                                                                                                                                                                          |
 | §89    | Reproducibility            | **PARTIALLY_COMPLETE** | 11   | src/engine/scan-cache.ts                                                            | Digest proven; byte-replay gate absent.                                                                                                                                                                                                                                                                                          |
@@ -224,19 +220,17 @@ Two surfaces are absent and must not be advertised at any maturity.
 
 Every cited path in the classification resolves in this checkout.
 
-## 6. Archive reconciliation
+## 6. Archive reconciliation — retired in 6.0
 
-The `archive` block of `docs/ROADMAP.yaml` covers 108 historical design-record issues (M18–M25, GitHub #539–#646). Status: **UNRECONCILED**.
+The historical M18–M25 design records (108 issues, GitHub #539–#646) were
+reconciled against the M26 GitHub issue snapshot. That snapshot was deleted
+with the M26 program in 6.0 and cannot be regenerated without `gh`, so the
+reconciliation is a dated record rather than a gate:
+`docs/archive/V6-ARCHIVE-RECONCILIATION.json`.
 
-- Records reconciled: 1 of 8
-- Records partially reconciled: 7
-- **Issues inside the historical ranges that are still open: 18** (539, 546, 547, 551, 553, 556, 561, 565, 575, 588, 589, 590, 593, 594, 595, 597, 602, 617)
-- Closure command: `npm run m26:github:sync`
-
-The block **cannot** honestly be flipped to `RECONCILED` while those issues
-are open. Flipping it would be a false proof produced by the very act meant
-to establish the truth, so the gate records the open issues instead. See
-`docs/V6-GAP-MATRIX.md` (`GAP-V6-005`) and `docs/V6-ARCHIVE-RECONCILIATION.json`.
+The finding is unchanged and still open — `GAP-V6-005` in
+`docs/V6-GAP-MATRIX.md`. It was never closed by this section; the section
+only ever measured it, and the measurement's input is gone.
 
 ## 7. The six orthogonal claim axes (ADR 0011)
 
@@ -253,13 +247,15 @@ None of these is derivable from another, and no renderer may merge them.
 
 ## 8. What this wave did not do, and will not pretend
 
-- It did **not** make any gate green that was red before it. `m26:audit`
-  and `docs:roadmap:check` are still red, for the same honest reasons:
-  11 open release-blocking gaps, 69 BLOCKED matrix cells, and external validation still `BLOCKED`.
+- It did **not** make any gate green that was red before it.
 - It did **not** promote any capability. Promotion is a machine transition
   and no criterion for it is satisfied yet.
-- It did **not** dispose of the 229 open issues. Dispositions are
-  bookkeeping; they prove nothing about capability.
+- The M26–M50 program it originally reported against is retired. Its
+  ledgers recorded BLOCKED cells and UNRECONCILED issues for evidence that
+  was never going to arrive, and a gate that regenerates them forever is a
+  gate that reports the same blocked thing every night. The record is
+  `docs/archive/ROADMAP-M26-M50.yaml`; the live ladder is
+  `docs/ROADMAP.yaml`.
 
 See `docs/V6-GAP-MATRIX.md` for what is missing and `docs/adr/README.md` for
 the decisions that constrain how it may be built.

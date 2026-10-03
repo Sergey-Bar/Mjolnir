@@ -43,13 +43,20 @@
     },
     { "id": "cli-contract", "command": "npm run check-cli-contract" },
     { "id": "detector-hashes", "command": "npm run check-detector-hashes" },
+    {
+      "id": "gate:rule-quality",
+      "command": "npm run rules:quality:check"
+    },
     { "id": "qa-ir-parity", "command": "npm run qa-ir:parity" },
     { "id": "workflow-scripts", "command": "npm run workflow:scripts" },
     { "id": "config-consumers", "command": "npm run config:consumers" },
     { "id": "script-reachability", "command": "npm run scripts:reachable" },
     { "id": "quad-verified", "command": "npm run check-fixture-quad" },
+    { "id": "holdout-split", "command": "npm run holdout:split" },
     { "id": "promotion-ratchet", "command": "npm run rules:promotion:check" },
     { "id": "provenance-drift", "command": "npm run docs:provenance-drift" },
+    { "id": "entry-points", "command": "npm run entry-points:check" },
+    { "id": "gate-tiers", "command": "npm run gates:check" },
     { "id": "claim-integrity", "command": "npm run gates:claim-integrity" }
   ]
 }

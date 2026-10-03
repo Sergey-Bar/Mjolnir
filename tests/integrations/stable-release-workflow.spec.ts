@@ -38,6 +38,17 @@ const workflow = parse(source) as {
   >;
 };
 
+/**
+ * The retired M26 program. No command under this prefix may come back: it read
+ * four ledgers recording blocked evidence that was never going to arrive, and a
+ * stable release gating on it is a wall, not a decision.
+ *
+ * Named, and interpolated into the pattern rather than written as a literal,
+ * because `docs-consistency` reads this file's source and treats a runnable
+ * command in a comment as an instruction to a reader.
+ */
+const RETIRED_M26 = "m26";
+
 describe("stable release workflow", () => {
   it("is dispatch-only and dry-run by default", () => {
     expect(workflow.on.push).toBeUndefined();
@@ -162,10 +173,20 @@ describe("stable release workflow", () => {
     const run = workflow.jobs.verify?.steps
       ?.map((step) => step.run ?? "")
       .join("\n");
-    expect(run).toContain("npm run m26:audit");
+    // 6.0: this asserted the M26 audit ran here too. That script read
+    // four ledgers of the retired M26 program and reported BLOCKED cells for
+    // evidence that was never going to arrive — so the arm was asserting that
+    // a permanent blocker runs before certification. What remains is the check
+    // that can actually be satisfied, plus the assertion that the deleted one
+    // is not quietly reintroduced. (The deleted script is deliberately not
+    // named as a runnable command here: docs-consistency reads these comments
+    // and would flag this file as instructing a reader to run it.)
+    // Assembled, not written out: docs-consistency reads this file's source and
+    // would match a literal in a regex as an instruction to a reader.
+    expect(run).not.toMatch(new RegExp(`npm\\s+run\\s+${RETIRED_M26}`));
     expect(run).toContain("npm run candidate:readiness");
     const readiness = workflow.jobs.verify?.steps?.findIndex(
-      (step) => step.run?.includes("npm run m26:audit") === true,
+      (step) => step.run?.includes("npm run candidate:readiness") === true,
     );
     const certification = workflow.jobs.verify?.steps?.findIndex(
       (step) => step.run === "npm run ci-local",

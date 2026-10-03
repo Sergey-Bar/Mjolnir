@@ -360,12 +360,22 @@ describe("renderSarif", () => {
     }
     for (const res of run.results as Array<Record<string, unknown>>) {
       for (const key of Object.keys(res)) {
+        // The schema sets additionalProperties false on `result`, so this
+        // allowlist is the spec's member list, not a preference.
+        // `fingerprints` (§3.28) and `partialFingerprints` (§3.30) were absent
+        // only because nothing emitted them — the engine computed stable
+        // identities in engine/finding-identity.ts and dropped them at the
+        // format boundary, so code scanning had no way to tell an unchanged
+        // finding from a new one. Both are spec members; omitting them from the
+        // schema's own list would have been the actual defect.
         expect([
           "ruleId",
           "level",
           "message",
           "locations",
           "properties",
+          "fingerprints",
+          "partialFingerprints",
         ]).toContain(key);
       }
       expect(["error", "warning", "note", "none"]).toContain(res.level);

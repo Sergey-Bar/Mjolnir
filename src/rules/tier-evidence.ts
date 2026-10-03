@@ -172,11 +172,6 @@ const DEMOTED_ROWS: ReadonlyArray<{
       "n=24, 2 observed FPs. Expect-without-locator is structural; the rate is not established.",
   },
   {
-    ruleId: "QA-PW-117",
-    justification:
-      "n=20, 0% observed. Closest to the boundary of the nineteen, and the most likely of them to clear on a re-sample.",
-  },
-  {
     ruleId: "QA-PW-121",
     justification:
       "n=12, 0% observed. A thin sample: the rate is not established, and nothing about the rule argues it down.",
@@ -195,11 +190,6 @@ const DEMOTED_ROWS: ReadonlyArray<{
     ruleId: "QA-PY-103",
     justification:
       "n=25, 2 observed FPs. Wait-for-timeout is structural; the rate is not established.",
-  },
-  {
-    ruleId: "QA-JV-101",
-    justification:
-      "n=20, 0% observed. Static mutable shared across tests is structural, and a structural premise does not measure its own false-positive rate.",
   },
   {
     ruleId: "QA-CS-102",

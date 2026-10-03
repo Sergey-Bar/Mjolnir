@@ -11,7 +11,15 @@ import { ENGINE_VERSION } from "./version.js";
 import { SCHEMA_VERSION } from "../types.js";
 
 export const TRUST_MODEL_VERSION = "1.0.0" as const;
-export const SCORING_MODEL_VERSION = "1.0.0" as const;
+/**
+ * 2.0.0 (ADR 0014): the core tier carries an evidence FLOOR. A core rule's
+ * finding is now stamped to at least E1, which changes `deductionFor` for
+ * every core finding from 0 (E0) to `floor(base/2)`. The E0→E1→E2 ladder
+ * itself is unchanged; what changed is which rung a core finding is allowed
+ * to sit on, and therefore what it costs. Major, per the `semver + ADR
+ * required` policy on the entry below.
+ */
+export const SCORING_MODEL_VERSION = "2.0.0" as const;
 export const FRAMEWORK_SUPPORT_MATRIX_VERSION = "1.0.0" as const;
 export const EVIDENCE_SCHEMA_VERSION = 1 as const;
 export const FORENSICS_SCHEMA_VERSION = 1 as const;

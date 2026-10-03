@@ -1,0 +1,320 @@
+{
+  "schemaVersion": 1,
+  "generatedBy": "scripts/generate-quarantine-ledger.ts — regenerate with `npm run docs:quarantine-ledger`",
+  "note": "One entry per LIVE quarantine rule. The point of this file is that a\nquarantined rule is never silent: it either carries a `quarantinePromotion`\non the rule itself (the path to a tier) or a typed disposition here (the\nrecord of why it is still held).\n\n`disposition` is derived from the measured rate and the evidence notes in\ndocs/QUARANTINE-REMEDIATION.md, not asserted by hand. `rationale` is the\nargument; `expiresOn` is the date a person has to renew it by, because a\ndisposition with no date is the open-ended promise this file replaces.\n\n`src/commands/doctor.ts::checkQuarantineOwnership` FAILS when a quarantined\nrule appears in neither place. That is the difference from the count it used\nto report: a count can only ratchet, a disposition can be decided.",
+  "count": 34,
+  "byKind": {
+    "pending-samples": 26,
+    "pending-measurement": 3,
+    "pending-remeasure": 4,
+    "structural": 1
+  },
+  "entries": [
+    {
+      "ruleId": "QA-CI-001",
+      "disposition": "pending-samples",
+      "rationale": "95% interval [2.9%, 31.4%] spans the core ceiling, so the measurement neither confirms nor refutes the rule at n=19. Exit is more clean samples — about 16 of them if the rule is observed clean throughout",
+      "measured": "10.5% (n=19)",
+      "owner": "mjolnir maintainer (docs/MAINTAINERS.md)",
+      "expiresOn": "2026-11-01",
+      "evidenceRefs": ["docs/QUARANTINE-REMEDIATION.md"]
+    },
+    {
+      "ruleId": "QA-CI-005",
+      "disposition": "pending-samples",
+      "rationale": "95% interval [1.4%, 33.3%] spans the core ceiling, so the measurement neither confirms nor refutes the rule at n=13. Exit is more clean samples — about 22 of them if the rule is observed clean throughout",
+      "measured": "7.7% (n=13)",
+      "owner": "mjolnir maintainer (docs/MAINTAINERS.md)",
+      "expiresOn": "2026-11-01",
+      "evidenceRefs": ["docs/QUARANTINE-REMEDIATION.md"]
+    },
+    {
+      "ruleId": "QA-CI-008",
+      "disposition": "pending-samples",
+      "rationale": "95% interval [1.8%, 40.4%] spans the core ceiling, so the measurement neither confirms nor refutes the rule at n=10. Exit is more clean samples — about 25 of them if the rule is observed clean throughout",
+      "measured": "10.0% (n=10)",
+      "owner": "mjolnir maintainer (docs/MAINTAINERS.md)",
+      "expiresOn": "2026-11-01",
+      "evidenceRefs": ["docs/QUARANTINE-REMEDIATION.md"]
+    },
+    {
+      "ruleId": "QA-CI-010",
+      "disposition": "pending-samples",
+      "rationale": "95% interval [1.8%, 40.4%] spans the core ceiling, so the measurement neither confirms nor refutes the rule at n=10. Exit is more clean samples — about 25 of them if the rule is observed clean throughout",
+      "measured": "10.0% (n=10)",
+      "owner": "mjolnir maintainer (docs/MAINTAINERS.md)",
+      "expiresOn": "2026-11-01",
+      "evidenceRefs": ["docs/QUARANTINE-REMEDIATION.md"]
+    },
+    {
+      "ruleId": "QA-CI-013",
+      "disposition": "pending-measurement",
+      "rationale": "no corpus evidence has been collected for this rule, so quarantine is the correct resting place and the exit is arithmetic: re-sample, and the ladder in docs/QUARANTINE-REMEDIATION.md decides the tier from the interval",
+      "measured": "unmeasured",
+      "owner": "mjolnir maintainer (docs/MAINTAINERS.md)",
+      "expiresOn": "2026-11-01",
+      "evidenceRefs": ["docs/QUARANTINE-REMEDIATION.md"]
+    },
+    {
+      "ruleId": "QA-CI-014",
+      "disposition": "pending-measurement",
+      "rationale": "no corpus evidence has been collected for this rule, so quarantine is the correct resting place and the exit is arithmetic: re-sample, and the ladder in docs/QUARANTINE-REMEDIATION.md decides the tier from the interval",
+      "measured": "unmeasured",
+      "owner": "mjolnir maintainer (docs/MAINTAINERS.md)",
+      "expiresOn": "2026-11-01",
+      "evidenceRefs": ["docs/QUARANTINE-REMEDIATION.md"]
+    },
+    {
+      "ruleId": "QA-CS-106",
+      "disposition": "pending-samples",
+      "rationale": "95% interval [13.8%, 60.9%] spans the core ceiling, so the measurement neither confirms nor refutes the rule at n=12. Exit is more clean samples — about 23 of them if the rule is observed clean throughout",
+      "measured": "33.3% (n=12)",
+      "owner": "mjolnir maintainer (docs/MAINTAINERS.md)",
+      "expiresOn": "2026-11-01",
+      "evidenceRefs": ["docs/QUARANTINE-REMEDIATION.md"]
+    },
+    {
+      "ruleId": "QA-CYP-002",
+      "disposition": "pending-samples",
+      "rationale": "95% interval [0.0%, 27.8%] spans the core ceiling, so the measurement neither confirms nor refutes the rule at n=10. Exit is more clean samples — about 25 of them if the rule is observed clean throughout",
+      "measured": "0.0% (n=10)",
+      "owner": "mjolnir maintainer (docs/MAINTAINERS.md)",
+      "expiresOn": "2026-11-01",
+      "evidenceRefs": ["docs/QUARANTINE-REMEDIATION.md"]
+    },
+    {
+      "ruleId": "QA-CYP-003",
+      "disposition": "pending-samples",
+      "rationale": "95% interval [0.0%, 27.8%] spans the core ceiling, so the measurement neither confirms nor refutes the rule at n=10. Exit is more clean samples — about 25 of them if the rule is observed clean throughout",
+      "measured": "0.0% (n=10)",
+      "owner": "mjolnir maintainer (docs/MAINTAINERS.md)",
+      "expiresOn": "2026-11-01",
+      "evidenceRefs": ["docs/QUARANTINE-REMEDIATION.md"]
+    },
+    {
+      "ruleId": "QA-ENV-001",
+      "disposition": "pending-remeasure",
+      "rationale": "a detector rework has shipped and the committed verdict predates it, so the measurement is stale by construction; only a corpus re-run plus owner re-adjudication of the surviving findings can decide the tier",
+      "measured": "100.0% (n=20)",
+      "owner": "mjolnir maintainer (docs/MAINTAINERS.md)",
+      "expiresOn": "2026-11-01",
+      "evidenceRefs": ["docs/QUARANTINE-REMEDIATION.md"]
+    },
+    {
+      "ruleId": "QA-JV-106",
+      "disposition": "pending-samples",
+      "rationale": "95% interval [13.8%, 60.9%] spans the core ceiling, so the measurement neither confirms nor refutes the rule at n=12. Exit is more clean samples — about 23 of them if the rule is observed clean throughout",
+      "measured": "33.3% (n=12)",
+      "owner": "mjolnir maintainer (docs/MAINTAINERS.md)",
+      "expiresOn": "2026-11-01",
+      "evidenceRefs": ["docs/QUARANTINE-REMEDIATION.md"]
+    },
+    {
+      "ruleId": "QA-PW-004",
+      "disposition": "pending-samples",
+      "rationale": "95% interval [21.4%, 67.4%] spans the core ceiling, so the measurement neither confirms nor refutes the rule at n=14. Exit is more clean samples — about 21 of them if the rule is observed clean throughout",
+      "measured": "42.9% (n=14)",
+      "owner": "mjolnir maintainer (docs/MAINTAINERS.md)",
+      "expiresOn": "2026-11-01",
+      "evidenceRefs": ["docs/QUARANTINE-REMEDIATION.md"]
+    },
+    {
+      "ruleId": "QA-PW-102",
+      "disposition": "pending-samples",
+      "rationale": "95% interval [1.8%, 40.4%] spans the core ceiling, so the measurement neither confirms nor refutes the rule at n=10. Exit is more clean samples — about 25 of them if the rule is observed clean throughout",
+      "measured": "10.0% (n=10)",
+      "owner": "mjolnir maintainer (docs/MAINTAINERS.md)",
+      "expiresOn": "2026-11-01",
+      "evidenceRefs": ["docs/QUARANTINE-REMEDIATION.md"]
+    },
+    {
+      "ruleId": "QA-PW-115",
+      "disposition": "pending-samples",
+      "rationale": "95% interval [33.2%, 76.9%] spans the core ceiling, so the measurement neither confirms nor refutes the rule at n=16. Exit is more clean samples — about 19 of them if the rule is observed clean throughout",
+      "measured": "56.3% (n=16)",
+      "owner": "mjolnir maintainer (docs/MAINTAINERS.md)",
+      "expiresOn": "2026-11-01",
+      "evidenceRefs": ["docs/QUARANTINE-REMEDIATION.md"]
+    },
+    {
+      "ruleId": "QA-PW-123",
+      "disposition": "pending-samples",
+      "rationale": "95% interval [21.3%, 72.0%] spans the core ceiling, so the measurement neither confirms nor refutes the rule at n=11. Exit is more clean samples — about 24 of them if the rule is observed clean throughout",
+      "measured": "45.5% (n=11)",
+      "owner": "mjolnir maintainer (docs/MAINTAINERS.md)",
+      "expiresOn": "2026-11-01",
+      "evidenceRefs": ["docs/QUARANTINE-REMEDIATION.md"]
+    },
+    {
+      "ruleId": "QA-PW-146",
+      "disposition": "pending-samples",
+      "rationale": "95% interval [3.3%, 34.3%] spans the core ceiling, so the measurement neither confirms nor refutes the rule at n=17. Exit is more clean samples — about 18 of them if the rule is observed clean throughout",
+      "measured": "11.8% (n=17)",
+      "owner": "mjolnir maintainer (docs/MAINTAINERS.md)",
+      "expiresOn": "2026-11-01",
+      "evidenceRefs": ["docs/QUARANTINE-REMEDIATION.md"]
+    },
+    {
+      "ruleId": "QA-PW-147",
+      "disposition": "pending-remeasure",
+      "rationale": "a detector rework has shipped and the committed verdict predates it, so the measurement is stale by construction; only a corpus re-run plus owner re-adjudication of the surviving findings can decide the tier",
+      "measured": "unmeasured",
+      "owner": "mjolnir maintainer (docs/MAINTAINERS.md)",
+      "expiresOn": "2026-11-01",
+      "evidenceRefs": ["docs/QUARANTINE-REMEDIATION.md"]
+    },
+    {
+      "ruleId": "QA-PY-003",
+      "disposition": "pending-samples",
+      "rationale": "95% interval [35.2%, 67.5%] spans the core ceiling, so the measurement neither confirms nor refutes the rule at n=33. Exit is more clean samples — about 2 of them if the rule is observed clean throughout",
+      "measured": "51.5% (n=33)",
+      "owner": "mjolnir maintainer (docs/MAINTAINERS.md)",
+      "expiresOn": "2026-11-01",
+      "evidenceRefs": ["docs/QUARANTINE-REMEDIATION.md"]
+    },
+    {
+      "ruleId": "QA-PY-004",
+      "disposition": "pending-measurement",
+      "rationale": "no corpus evidence has been collected for this rule, so quarantine is the correct resting place and the exit is arithmetic: re-sample, and the ladder in docs/QUARANTINE-REMEDIATION.md decides the tier from the interval",
+      "measured": "unmeasured",
+      "owner": "mjolnir maintainer (docs/MAINTAINERS.md)",
+      "expiresOn": "2026-11-01",
+      "evidenceRefs": ["docs/QUARANTINE-REMEDIATION.md"]
+    },
+    {
+      "ruleId": "QA-PY-007",
+      "disposition": "pending-remeasure",
+      "rationale": "a detector rework has shipped and the committed verdict predates it, so the measurement is stale by construction; only a corpus re-run plus owner re-adjudication of the surviving findings can decide the tier",
+      "measured": "unmeasured",
+      "owner": "mjolnir maintainer (docs/MAINTAINERS.md)",
+      "expiresOn": "2026-11-01",
+      "evidenceRefs": ["docs/QUARANTINE-REMEDIATION.md"]
+    },
+    {
+      "ruleId": "QA-PY-012",
+      "disposition": "pending-samples",
+      "rationale": "95% interval [24.6%, 57.7%] spans the core ceiling, so the measurement neither confirms nor refutes the rule at n=30. Exit is more clean samples — about 5 of them if the rule is observed clean throughout",
+      "measured": "40.0% (n=30)",
+      "owner": "mjolnir maintainer (docs/MAINTAINERS.md)",
+      "expiresOn": "2026-11-01",
+      "evidenceRefs": ["docs/QUARANTINE-REMEDIATION.md"]
+    },
+    {
+      "ruleId": "QA-PY-104",
+      "disposition": "pending-samples",
+      "rationale": "95% interval [0.0%, 27.8%] spans the core ceiling, so the measurement neither confirms nor refutes the rule at n=10. Exit is more clean samples — about 25 of them if the rule is observed clean throughout",
+      "measured": "0.0% (n=10)",
+      "owner": "mjolnir maintainer (docs/MAINTAINERS.md)",
+      "expiresOn": "2026-11-01",
+      "evidenceRefs": ["docs/QUARANTINE-REMEDIATION.md"]
+    },
+    {
+      "ruleId": "QA-PY-105",
+      "disposition": "pending-samples",
+      "rationale": "95% interval [0.0%, 24.3%] spans the core ceiling, so the measurement neither confirms nor refutes the rule at n=12. Exit is more clean samples — about 23 of them if the rule is observed clean throughout",
+      "measured": "0.0% (n=12)",
+      "owner": "mjolnir maintainer (docs/MAINTAINERS.md)",
+      "expiresOn": "2026-11-01",
+      "evidenceRefs": ["docs/QUARANTINE-REMEDIATION.md"]
+    },
+    {
+      "ruleId": "QA-PY-108",
+      "disposition": "pending-samples",
+      "rationale": "95% interval [0.0%, 19.4%] spans the core ceiling, so the measurement neither confirms nor refutes the rule at n=16. Exit is more clean samples — about 19 of them if the rule is observed clean throughout",
+      "measured": "0.0% (n=16)",
+      "owner": "mjolnir maintainer (docs/MAINTAINERS.md)",
+      "expiresOn": "2026-11-01",
+      "evidenceRefs": ["docs/QUARANTINE-REMEDIATION.md"]
+    },
+    {
+      "ruleId": "QA-SE-001",
+      "disposition": "pending-samples",
+      "rationale": "95% interval [0.0%, 27.8%] spans the core ceiling, so the measurement neither confirms nor refutes the rule at n=10. Exit is more clean samples — about 25 of them if the rule is observed clean throughout",
+      "measured": "0.0% (n=10)",
+      "owner": "mjolnir maintainer (docs/MAINTAINERS.md)",
+      "expiresOn": "2026-11-01",
+      "evidenceRefs": ["docs/QUARANTINE-REMEDIATION.md"]
+    },
+    {
+      "ruleId": "QA-SE-002",
+      "disposition": "pending-samples",
+      "rationale": "95% interval [1.4%, 33.3%] spans the core ceiling, so the measurement neither confirms nor refutes the rule at n=13. Exit is more clean samples — about 22 of them if the rule is observed clean throughout",
+      "measured": "7.7% (n=13)",
+      "owner": "mjolnir maintainer (docs/MAINTAINERS.md)",
+      "expiresOn": "2026-11-01",
+      "evidenceRefs": ["docs/QUARANTINE-REMEDIATION.md"]
+    },
+    {
+      "ruleId": "QA-SE-003",
+      "disposition": "pending-samples",
+      "rationale": "95% interval [0.0%, 25.9%] spans the core ceiling, so the measurement neither confirms nor refutes the rule at n=11. Exit is more clean samples — about 24 of them if the rule is observed clean throughout",
+      "measured": "0.0% (n=11)",
+      "owner": "mjolnir maintainer (docs/MAINTAINERS.md)",
+      "expiresOn": "2026-11-01",
+      "evidenceRefs": ["docs/QUARANTINE-REMEDIATION.md"]
+    },
+    {
+      "ruleId": "QA-TEST-001",
+      "disposition": "pending-samples",
+      "rationale": "95% interval [38.7%, 78.1%] spans the core ceiling, so the measurement neither confirms nor refutes the rule at n=20. Exit is more clean samples — about 15 of them if the rule is observed clean throughout",
+      "measured": "60.0% (n=20)",
+      "owner": "mjolnir maintainer (docs/MAINTAINERS.md)",
+      "expiresOn": "2026-11-01",
+      "evidenceRefs": ["docs/QUARANTINE-REMEDIATION.md"]
+    },
+    {
+      "ruleId": "QA-TEST-002",
+      "disposition": "pending-samples",
+      "rationale": "95% interval [40.9%, 79.3%] spans the core ceiling, so the measurement neither confirms nor refutes the rule at n=21. Exit is more clean samples — about 14 of them if the rule is observed clean throughout",
+      "measured": "61.9% (n=21)",
+      "owner": "mjolnir maintainer (docs/MAINTAINERS.md)",
+      "expiresOn": "2026-11-01",
+      "evidenceRefs": ["docs/QUARANTINE-REMEDIATION.md"]
+    },
+    {
+      "ruleId": "QA-TEST-003",
+      "disposition": "structural",
+      "rationale": "the proposed `families/no-assertions.ts` fix was implemented, measured and DELETED on 2026-10-01: diffed against the rule's own predicate over 15 representative test bodies it changed 2, in BOTH directions (suppressing `expect.extend(...)`, which defines a matcher, and reintroducing a false positive on `should(x).be.ok`). The cause is a framework-vocabulary gap that is not lexically decidable, so no detector revision reaches it. Exit is retire-or-narrow under RULE-LIFECYCLE, not another tuning pass.",
+      "measured": "21.8% (n=78)",
+      "owner": "mjolnir maintainer (docs/MAINTAINERS.md)",
+      "expiresOn": "2026-11-01",
+      "evidenceRefs": ["docs/QUARANTINE-REMEDIATION.md"]
+    },
+    {
+      "ruleId": "QA-TEST-006",
+      "disposition": "pending-samples",
+      "rationale": "95% interval [15.2%, 64.6%] spans the core ceiling, so the measurement neither confirms nor refutes the rule at n=11. Exit is more clean samples — about 24 of them if the rule is observed clean throughout",
+      "measured": "36.4% (n=11)",
+      "owner": "mjolnir maintainer (docs/MAINTAINERS.md)",
+      "expiresOn": "2026-11-01",
+      "evidenceRefs": ["docs/QUARANTINE-REMEDIATION.md"]
+    },
+    {
+      "ruleId": "QA-TEST-010",
+      "disposition": "pending-samples",
+      "rationale": "95% interval [40.8%, 73.6%] spans the core ceiling, so the measurement neither confirms nor refutes the rule at n=31. Exit is more clean samples — about 4 of them if the rule is observed clean throughout",
+      "measured": "58.1% (n=31)",
+      "owner": "mjolnir maintainer (docs/MAINTAINERS.md)",
+      "expiresOn": "2026-11-01",
+      "evidenceRefs": ["docs/QUARANTINE-REMEDIATION.md"]
+    },
+    {
+      "ruleId": "QA-TQUAL-002",
+      "disposition": "pending-samples",
+      "rationale": "95% interval [36.4%, 69.1%] spans the core ceiling, so the measurement neither confirms nor refutes the rule at n=32. Exit is more clean samples — about 3 of them if the rule is observed clean throughout",
+      "measured": "53.1% (n=32)",
+      "owner": "mjolnir maintainer (docs/MAINTAINERS.md)",
+      "expiresOn": "2026-11-01",
+      "evidenceRefs": ["docs/QUARANTINE-REMEDIATION.md"]
+    },
+    {
+      "ruleId": "QA-TQUAL-009",
+      "disposition": "pending-remeasure",
+      "rationale": "a detector rework has shipped and the committed verdict predates it, so the measurement is stale by construction; only a corpus re-run plus owner re-adjudication of the surviving findings can decide the tier",
+      "measured": "unmeasured",
+      "owner": "mjolnir maintainer (docs/MAINTAINERS.md)",
+      "expiresOn": "2026-11-01",
+      "evidenceRefs": ["docs/QUARANTINE-REMEDIATION.md"]
+    }
+  ]
+}

@@ -86,6 +86,17 @@ function fixtureTree(): string {
   const dir = mkdtempSync(join(tmpdir(), "mjolnir-workflow-scripts-"));
   scratch.push(dir);
   cpSync(join(ROOT, "package.json"), join(dir, "package.json"));
+  // `scripts/` and the stress generators, because the file-reference axis
+  // resolves every `node <file>` a step names, and a fixture without them would
+  // report all 27 as missing — which is a test measuring the fixture.
+  cpSync(join(ROOT, "scripts"), join(dir, "scripts"), { recursive: true });
+  mkdirSync(join(dir, "tests", "stress"), { recursive: true });
+  for (const name of readdirSync(join(ROOT, "tests", "stress"))) {
+    cpSync(
+      join(ROOT, "tests", "stress", name),
+      join(dir, "tests", "stress", name),
+    );
+  }
   mkdirSync(join(dir, ".github", "workflows"), { recursive: true });
   for (const name of readdirSync(join(ROOT, ".github", "workflows"))) {
     cpSync(
@@ -288,6 +299,195 @@ describe("every workflow step's npm script resolves where it runs", () => {
     expect(
       readFileSync(join(ROOT, ".github", "workflows", "pages.yml"), "utf8"),
     ).toBe(before);
+  });
+});
+
+describe("every workflow step's file argument resolves", () => {
+  // The shipped defect this axis exists for: a `ci.yml` step naming
+  // `scripts/diff-detector-hashes.ts`, a file the v6 positioning carve deleted
+  // while the step kept its name. The capability was present the whole time —
+  // `scripts/check-detector-hashes.ts` documents `--base <manifest>` — and the
+  // step has been corrected to name it. A corrected line is not an invariant,
+  // and nothing said so.
+  //
+  // Verified the same way on the real tree before it was codified here: plant
+  // the typo in `.github/workflows/ci.yml`, the gate reports the file and the
+  // job, revert, the gate passes. This block is the durable version of that
+  // evidence.
+
+  it("the committed workflows pass, and their file arguments resolve", () => {
+    const { code, output } = runChecker(ROOT);
+    expect(code, output).toBe(0);
+    const checked = Number(
+      /"fileReferencesVerified": (\d+)/.exec(output)?.[1] ?? "0",
+    );
+    // A resolver that resolves nothing also passes, so the count is asserted:
+    // it is the difference between "no missing file" and "no file was read".
+    expect(checked).toBeGreaterThan(10);
+  });
+
+  it("a step naming a file that does not exist is a failure", () => {
+    const dir = fixtureTree();
+    writeFileSync(
+      join(dir, ".github", "workflows", "probe.yml"),
+      [
+        "name: probe",
+        "on:",
+        "  workflow_dispatch:",
+        "jobs:",
+        "  run:",
+        "    runs-on: ubuntu-latest",
+        "    steps:",
+        "      - run: node scripts/diff-detector-hashes.mjs",
+        "",
+      ].join("\n"),
+      "utf8",
+    );
+    const { code, output } = runChecker(dir);
+    expect(code).toBe(1);
+    expect(output).toContain("scripts/diff-detector-hashes.mjs");
+    expect(output).toContain("does not exist");
+    // The job is named, so a maintainer is not left guessing which of forty
+    // steps to look at.
+    expect(output).toContain("(run)");
+  });
+
+  it("a file argument resolves against the step's working-directory", () => {
+    const dir = fixtureTree();
+    mkdirSync(join(dir, "site", "scripts"), { recursive: true });
+    writeFileSync(join(dir, "site", "scripts", "probe.mjs"), "//\n", "utf8");
+    writeFileSync(
+      join(dir, ".github", "workflows", "probe.yml"),
+      [
+        "name: probe",
+        "on:",
+        "  workflow_dispatch:",
+        "jobs:",
+        "  run:",
+        "    runs-on: ubuntu-latest",
+        "    steps:",
+        "      - working-directory: site",
+        "        run: node scripts/probe.mjs",
+        "",
+      ].join("\n"),
+      "utf8",
+    );
+    expect(runChecker(dir).code).toBe(0);
+  });
+
+  it("a file that exists in the root but not in the working-directory fails", () => {
+    // The other direction: `working-directory` has to mean something for files
+    // too, or the step is reported green while pointing at the wrong tree.
+    const dir = fixtureTree();
+    mkdirSync(join(dir, "scripts"), { recursive: true });
+    writeFileSync(join(dir, "scripts", "probe.mjs"), "//\n", "utf8");
+    writeFileSync(
+      join(dir, ".github", "workflows", "probe.yml"),
+      [
+        "name: probe",
+        "on:",
+        "  workflow_dispatch:",
+        "jobs:",
+        "  run:",
+        "    runs-on: ubuntu-latest",
+        "    steps:",
+        "      - working-directory: site",
+        "        run: node scripts/probe.mjs",
+        "",
+      ].join("\n"),
+      "utf8",
+    );
+    const { code, output } = runChecker(dir);
+    expect(code).toBe(1);
+    expect(output).toContain("scripts/probe.mjs");
+  });
+
+  it("a tree with no `dist/` still passes, which is the control that matters", () => {
+    // `ci.yml`, `release.yml` and four other workflows run `node dist/cli.mjs`,
+    // and `dist/` is a BUILD OUTPUT produced by the `npm run build` step earlier
+    // in the same job. `fixtureTree()` does not copy it, so this arm is a clean
+    // checkout — the state `npm run certify:fast` and a bare
+    // `npm run workflow:scripts` see. Without the build-output exclusion this
+    // gate would be red there, and the fix would be an exemption rather than a
+    // build, which is how a gate becomes decoration.
+    const { code, output } = runChecker(fixtureTree());
+    expect(code, output).toBe(0);
+    expect(output).not.toContain("dist/cli.mjs");
+  });
+
+  it("a downloaded artifact with no extension is not a repository file", () => {
+    // `./actionlint` is downloaded by the step before it runs. A prefix rule
+    // would report it missing on every run, forever, and the fix would be an
+    // exemption — which is how a gate becomes decoration.
+    const dir = fixtureTree();
+    writeFileSync(
+      join(dir, ".github", "workflows", "probe.yml"),
+      [
+        "name: probe",
+        "on:",
+        "  workflow_dispatch:",
+        "jobs:",
+        "  run:",
+        "    runs-on: ubuntu-latest",
+        "    steps:",
+        "      - run: ./actionlint -color",
+        "      - run: python3 -m compileall -q tests/fixtures",
+        '      - run: \'node -e "require(\\"./package.json\\")"\'',
+        "",
+      ].join("\n"),
+      "utf8",
+    );
+    expect(runChecker(dir).code).toBe(0);
+  });
+
+  it("a `cd` step is already reported, and its files are not reported twice", () => {
+    // A step that moves with `cd` cannot have its file arguments resolved, so
+    // the file pass skips it. Two reports for one mistake is how the real one
+    // gets missed in the noise.
+    const dir = fixtureTree();
+    writeFileSync(
+      join(dir, ".github", "workflows", "probe.yml"),
+      [
+        "name: probe",
+        "on:",
+        "  workflow_dispatch:",
+        "jobs:",
+        "  run:",
+        "    runs-on: ubuntu-latest",
+        "    steps:",
+        "      - run: |",
+        "          cd packages/thing",
+        "          node scripts/gone.mjs",
+        "",
+      ].join("\n"),
+      "utf8",
+    );
+    const { code, output } = runChecker(dir);
+    expect(code).toBe(1);
+    expect(output).toContain("changes directory");
+    expect(output).not.toContain("scripts/gone.mjs");
+  });
+
+  it("the exempt workflow is exempt of this axis too, for the stated reason", () => {
+    // `release-smoke.yml` installs a published tarball and runs ITS scripts, so
+    // its file arguments belong to the installed package and cannot be resolved
+    // against this repository. Reusing `EXEMPT_FROM_SCRIPT_CHECK` rather than
+    // adding a second list is the point: a file exempt from one axis and not the
+    // other is an exemption made by accident.
+    const dir = fixtureTree();
+    const path = join(dir, ".github", "workflows", "release-smoke.yml");
+    const workflow = parse(readFileSync(path, "utf8")) as {
+      jobs: Record<
+        string,
+        { runs?: string; steps: Array<Record<string, unknown>> }
+      >;
+    };
+    workflow.jobs["probe"] = {
+      runs: "ubuntu-latest",
+      steps: [{ run: "node node_modules/mjolnir-qa/dist/gone.mjs" }],
+    };
+    writeFileSync(path, stringify(workflow), "utf8");
+    expect(runChecker(dir).code).toBe(0);
   });
 });
 

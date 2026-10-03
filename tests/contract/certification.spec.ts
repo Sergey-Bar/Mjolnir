@@ -143,7 +143,13 @@ describe("certification artifact claims vs live files", () => {
   it("docs/ARCHITECTURE.md census agrees with the live registry", () => {
     const arch = readFileSync(join(ROOT, "docs", "ARCHITECTURE.md"), "utf8");
     expect(arch).toContain("79 active rules");
-    expect(arch).toContain("74 measured");
-    expect(arch).toContain("5 explicitly");
+    // Pinned to the registry, not to a remembered figure: 73 measured /
+    // 6 unmeasured is what `hasValidMeasurement` counts. This doc said 74/5
+    // while the skeleton, doctor and the census all said 73/6 — the same
+    // divergence A1 fixed in the code. Note the trap: 74 is ALSO the number of
+    // rules that declare a tier explicitly (79 - 5 omitted), so "74" was
+    // accidentally right about a different population.
+    expect(arch).toContain("73 measured");
+    expect(arch).toContain("6 explicitly");
   });
 });

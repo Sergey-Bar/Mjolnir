@@ -26,6 +26,7 @@ vi.mock("../../src/engine/tier-policy.js", async (importOriginal) => {
 
 import {
   checkAntiCreep,
+  checkCoreFloorDeclaration,
   checkEvidenceHonesty,
   checkFixtureIntegrity,
   checkQuarantineEnforcement,
@@ -63,6 +64,73 @@ describe("checkEvidenceHonesty", () => {
     const result = checkEvidenceHonesty([honest]);
     expect(result.ok).toBe(true);
     expect(result.details).toEqual([]);
+  });
+});
+
+/**
+ * The honesty interlock for the core floor (ADR 0014).
+ *
+ * The floor itself cannot fire today — no rule is core — so this check is what
+ * carries the safety of the whole mechanism. It is armed with a PLANTED
+ * violation rather than asserted against the real registry, because a check
+ * that only ever sees a passing registry cannot be shown to fail.
+ */
+describe("checkCoreFloorDeclaration", () => {
+  it("fails a core rule that declares E0, and names it", () => {
+    const offender = minimalRule({
+      id: "QA-TEST-902",
+      tier: "core",
+      evidenceLevel: "E0",
+      findingType: "observation",
+      confidence: "low",
+    });
+    const result = checkCoreFloorDeclaration([offender]);
+    expect(result.ok).toBe(false);
+    expect(result.details.join("\n")).toContain("QA-TEST-902");
+    expect(result.details.join("\n")).toContain("E0");
+  });
+
+  it("passes a core rule that declares E1 or E2", () => {
+    const result = checkCoreFloorDeclaration([
+      minimalRule({ id: "QA-TEST-903", tier: "core", evidenceLevel: "E1" }),
+      minimalRule({ id: "QA-TEST-904", tier: "core", evidenceLevel: "E2" }),
+    ]);
+    expect(result.ok).toBe(true);
+  });
+
+  it("does NOT fail an extended rule for declaring E0", () => {
+    // E0 is the bottom of the ladder, so an extended rule declaring it is
+    // never "too strong" and `checkEvidenceHonesty` cannot see it. Failing it
+    // here would make the interlock a general evidence floor wearing a core
+    // hat, and would outlaw the one declaration extended exists to allow.
+    const result = checkCoreFloorDeclaration([
+      minimalRule({
+        id: "QA-TEST-905",
+        tier: "extended",
+        evidenceLevel: "E0",
+        findingType: "observation",
+        confidence: "low",
+      }),
+    ]);
+    expect(result.ok).toBe(true);
+  });
+
+  it("passes a core rule that declares nothing at all", () => {
+    // An omitted level is derived per finding and the floor applies to the
+    // derived value. There is no published declaration to contradict.
+    const result = checkCoreFloorDeclaration([
+      minimalRule({ id: "QA-TEST-906", tier: "core" }),
+    ]);
+    expect(result.ok).toBe(true);
+  });
+
+  it("passes the real registry today, and says the floor is inert", () => {
+    const result = checkCoreFloorDeclaration();
+    expect(result.ok).toBe(true);
+    // 0 core rules is the current state, and the check reports it rather than
+    // passing silently — an interlock nobody can see firing is the failure
+    // mode `registry-ratchet.spec.ts` already warns about for floors.
+    expect(result.details[0]).toContain("core rule");
   });
 });
 

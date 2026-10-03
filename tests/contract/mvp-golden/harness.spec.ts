@@ -150,16 +150,19 @@ describe("golden harness stage 1 — same evidence, same verdict", () => {
   }
 
   it("CLI/JSON parity: the Trust Report renders exactly the JSON summary", () => {
-    const out = renderTrustReport(result, {
-      isTTY: false,
-      width: 80,
-      ascii: true,
-    });
+    const opts = { isTTY: false, width: 80, ascii: true } as const;
+    const out = renderTrustReport(result, opts);
     const s = result.trustSummary;
     if (s) {
       expect(out).toContain(`${Math.round(s.confidence * 100)}%`);
       expect(out).toContain(`${Math.round(s.evidenceCoverage * 100)}%`);
-      expect(out).toContain(s.level);
+      // 6.0 moved the `L0–L5` rung out of the default report and behind
+      // `--verbose`. Parity is still parity — the level a reader sees has to
+      // be the level JSON carries — it is just not on the first screen.
+      expect(out).not.toContain(s.level);
+      expect(renderTrustReport(result, { ...opts, verbose: true })).toContain(
+        s.level,
+      );
     }
     // The rendered report must never invent a level absent from JSON:
     expect(TRUST_ORDER as readonly string[]).toContain(s?.level ?? "L0");

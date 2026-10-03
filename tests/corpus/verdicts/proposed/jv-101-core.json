@@ -1,0 +1,13 @@
+{
+  "_meta": {
+    "stagedAt": "2026-10-03",
+    "method": "Read at the corpus PINNED commit (keycloak @ 421c23f5221d) via `npm run corpus:verdict-context`, and the cited file independently re-verified by enumerating every @Disabled/@Ignore in the pinned file rather than trusting the +/-6 window. The sweep that produced this row ran AFTER scripts/corpus-sample.ts was fixed to clone repo.ref instead of the default branch, so the tree scanned and the tree the verdict describes are the same tree.",
+    "projected": "QA-JV-101 n=34 -> 35. ciHigh 10.15% -> 9.89%, at or below the 10% core ceiling."
+  },
+  "keycloak-keycloak": {
+    "QA-JV-101|rest/admin-v2/tests/src/test/java/org/keycloak/tests/admin/client/v2/validation/PatchClientValidationTest.java|101": {
+      "verdict": "TP",
+      "note": "adjudicated 2026-10-03 from source PatchClientValidationTest.java:99-103 at keycloak @ 421c23f5221d. Enumerating every @Disabled in the pinned file returns three, on lines 101, 107 and 113; line 101 holds the annotation itself, so unlike the JWETest rows this citation is sound. @Disabled(\"Only for PUT/POST\") on validSAMLClientSucceeds() - and the method body is EMPTY. It is a subclass override of a base-class validation test, it overrides @Test as well as the base method, asserts nothing, and never runs. So the PATCH path for SAML-client validation is verified by nothing: the test that would check it is disabled, and the neighbouring validSAMLClientSucceeds overrides at :107 and :113 are disabled for the same stated reason. This is the purest instance of the rule's diagnosis in the corpus - a disabled test with no assertions cannot hide a defect, because it could not have detected one. A stated reason does not rescue it: @Disabled('slow, run manually') and @Ignore('keep for reference') are both already adjudicated TP in this file for the same reason."
+    }
+  }
+}

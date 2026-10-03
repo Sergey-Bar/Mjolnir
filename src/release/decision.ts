@@ -2,7 +2,6 @@ export type ReleaseDecisionInput = {
   currentVersion: string;
   publishedVersion: string;
   candidateStatus: "PASS" | "BLOCKED" | "FAIL";
-  m26Status: "PASS" | "BLOCKED" | "FAIL";
   versionStatus: "PASS" | "FAIL";
   claimsStatus: "PASS" | "FAIL";
   roadmapStatus: "PASS" | "FAIL";
@@ -26,9 +25,11 @@ export function decideRelease(input: ReleaseDecisionInput): ReleaseDecision {
   if (input.candidateStatus !== "PASS") {
     blockers.push("candidate readiness is not PASS");
   }
-  if (input.m26Status !== "PASS") {
-    blockers.push("M26 audit is not PASS");
-  }
+  // 6.0 removed `m26Status` from this input. The release decision gated on an
+  // M26 audit, and that audit read four ledgers recording blocked evidence
+  // that was never going to arrive — so a gate that could only ever say NO_GO
+  // was one of the reasons the release decision was never actually exercised.
+  // A gate nobody can satisfy is not a gate; it is a wall.
   if (input.versionStatus !== "PASS") {
     blockers.push("version surface check is not PASS");
   }

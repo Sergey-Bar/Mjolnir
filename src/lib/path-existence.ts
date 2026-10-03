@@ -1,14 +1,15 @@
 /**
- * One existence check, three callers.
+ * One existence check, several callers.
  *
- * Every artifact claim in this repository is a path in a file: a `provisional
- * artifact` in `ROADMAP.yaml`, an `evidence` citation in the v6 inventory, a
- * `regression_test` / `evidence_artifact` on an M26 ledger entry. Three
- * checkers read those claims and three of them were written independently,
- * which is how the same class of defect survived in three places: each
- * validator asked "is this field a non-empty string?" and none asked whether
- * the path exists. A ledger entry citing `src/commands/debt.ts` — a file the
- * carve deleted — validated clean, because the string was a string.
+ * Every artifact claim in this repository is a path in a file: a
+ * `dependencyResolution` citation in the archived program, an `evidence`
+ * citation in the v6 inventory, a `regression_test` / `evidence_artifact` on a
+ * ledger entry. Three checkers read those claims and all three were written
+ * independently, which is how the same class of defect survived in three
+ * places: each validator asked "is this field a non-empty string?" and none
+ * asked whether the path exists. A ledger entry citing
+ * `src/commands/debt.ts` — a file the carve deleted — validated clean, because
+ * the string was a string.
  *
  * This module is the shared answer so the next caller cannot re-derive it
  * more weakly. It is deliberately narrow: it answers "does this path resolve

@@ -37,20 +37,21 @@ const jsonStatus = (result: CommandResult) => {
 const simpleStatus = (result: CommandResult) =>
   result.status === 0 ? "PASS" : "FAIL";
 const candidate = run("candidate:readiness");
-const m26 = run("m26:audit");
 const version = run("check-version");
 const claims = run("claims:check");
 const roadmap = run("docs:roadmap:check");
-const currentVersion = (
-  JSON.parse(readFileSync(join(process.cwd(), "package.json"), "utf8")) as {
-    version: string;
-  }
-).version;
+const { version: currentVersion, publishedStable } = JSON.parse(
+  readFileSync(join(process.cwd(), "package.json"), "utf8"),
+) as { version: string; publishedStable?: string };
 const decision = decideRelease({
   currentVersion,
-  publishedVersion: "3.0.0",
+  // `publishedStable`, read from the package rather than written here. It was
+  // the literal `"3.0.0"` while the published line was 5.1.0, which made the
+  // release decision ask "are you republishing 3.0.0?" on every run and get
+  // a clean answer — the same class of defect as the README's version claims,
+  // in the one file whose whole job is deciding whether a release is legal.
+  publishedVersion: publishedStable ?? currentVersion,
   candidateStatus: jsonStatus(candidate),
-  m26Status: jsonStatus(m26),
   versionStatus: simpleStatus(version),
   claimsStatus: simpleStatus(claims),
   roadmapStatus: simpleStatus(roadmap),

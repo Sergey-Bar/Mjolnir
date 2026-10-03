@@ -7,11 +7,15 @@
  *  - `docs/v6-inventory.json`               — machine-readable facts
  *  - `docs/V6-CURRENT-STATE.md`             — the readable current state
  *  - `docs/V6-GAP-MATRIX.md`                — the gap matrix
- *  - `docs/V6-ARCHIVE-RECONCILIATION.json`  — the archive reconciliation
  *
- * They are four projections of one collection, so they cannot disagree
+ * They are three projections of one collection, so they cannot disagree
  * with each other. A Wave 0 baseline whose documents quote four different
  * counts is not a baseline.
+ *
+ * The fourth projection, `docs/V6-ARCHIVE-RECONCILIATION.json`, was removed in
+ * 6.0 with the M26 GitHub snapshot it read. It is kept as a dated record at
+ * `docs/archive/V6-ARCHIVE-RECONCILIATION.json`, and the finding it measured
+ * (`GAP-V6-005`) is still open.
  *
  * The central claim of this file is negative, and that is the honest
  * shape of the current state: **no capability is advertised above the
@@ -30,9 +34,7 @@ import {
   ROOT,
   WAVE0_GAPS,
   collectRepoFacts,
-  reconcileArchive,
   verifyRequirements,
-  type ArchiveReconciliation,
   type RepoFacts,
   type VerifiedRequirement,
 } from "./inventory.js";
@@ -47,7 +49,6 @@ import {
 const INVENTORY_JSON = join(ROOT, "docs", "v6-inventory.json");
 const CURRENT_STATE_MD = join(ROOT, "docs", "V6-CURRENT-STATE.md");
 const GAP_MATRIX_MD = join(ROOT, "docs", "V6-GAP-MATRIX.md");
-const ARCHIVE_JSON = join(ROOT, "docs", "V6-ARCHIVE-RECONCILIATION.json");
 
 function gitSha(root: string): string {
   try {
@@ -79,7 +80,6 @@ function tallyText(record: Record<string, number>): string {
 export function renderInventoryJson(
   facts: RepoFacts,
   requirements: readonly VerifiedRequirement[],
-  archive: ArchiveReconciliation,
   baseSha: string,
 ): string {
   return (
@@ -102,18 +102,12 @@ export function renderInventoryJson(
           commands: facts.commands,
           frameworks: facts.frameworks,
           ciProviders: facts.ciProviders,
-          qaDomains: facts.qaDomains,
-          gapLedgerRecords: facts.gapLedger.total,
-          supportMatrixCells: facts.supportMatrix.total,
-          issueDispositions: facts.issueDispositions.total,
-          openIssues: facts.issueDispositions.openIssues,
           censusEntries: facts.census.entries,
         },
         maturity: {
           axis: MATURITY_LEVELS,
           census: facts.census.byMaturity,
           frameworkInventoryLadder: facts.frameworkMaturity,
-          qaDomainCoverage: facts.qaDomainCoverage,
         },
         ruleRegistry: {
           live: facts.rulesLive,
@@ -122,13 +116,21 @@ export function renderInventoryJson(
           byTier: facts.rulesByTier,
         },
         ledgers: {
-          gapLedger: facts.gapLedger,
-          supportMatrix: {
-            total: facts.supportMatrix.total,
-            byDisposition: facts.supportMatrix.byDisposition,
-          },
-          issueDispositions: facts.issueDispositions,
-          externalValidation: facts.externalValidation,
+          // 6.0 retired the M26 program. `gapLedger`, `supportMatrix`,
+          // `issueDispositions` and `externalValidation` were six counts
+          // transcribed out of four ledgers and published here as though the
+          // inventory had measured them. The honest entry is the retirement
+          // itself — a reader who diffs this artifact against 5.x sees exactly
+          // which numbers stopped existing and why, instead of seeing them go
+          // to zero.
+          retired: [
+            "M26-GAP-LEDGER.jsonl",
+            "M26-SUPPORT-MATRIX.json",
+            "M26-ISSUE-DISPOSITIONS.jsonl",
+            "M26-EXTERNAL-VALIDATION.json",
+          ],
+          retiredIn: "6.0.0",
+          seeAlso: "docs/archive/ROADMAP-M26-M50.yaml",
         },
         surfaces: facts.surfaces,
         exitCodes: facts.exitCodes,
@@ -146,7 +148,14 @@ export function renderInventoryJson(
             note: entry.note,
           })),
         },
-        archiveReconciliation: archive,
+        archiveReconciliationRetired: {
+          retiredIn: "6.0.0",
+          reason:
+            "read docs/M26-GITHUB-SNAPSHOT.json, which is deleted with the M26 " +
+            "program and cannot be regenerated",
+          record: "docs/archive/V6-ARCHIVE-RECONCILIATION.json",
+          gap: "GAP-V6-005",
+        },
         v6Wave0Gaps: WAVE0_GAPS,
         orthogonalAxes: ORTHOGONAL_AXES.map((axis) => ({
           id: axis.id,
@@ -166,7 +175,6 @@ export function renderInventoryJson(
 export function renderCurrentStateMd(
   facts: RepoFacts,
   requirements: readonly VerifiedRequirement[],
-  archive: ArchiveReconciliation,
   baseSha: string,
 ): string {
   const byState = new Map<RequirementState, number>();
@@ -220,26 +228,22 @@ export function renderCurrentStateMd(
     `| Adapters | ${facts.adapters.length} (${facts.adapters.join(", ")}) | \`src/adapters\` |`,
     `| Commands | ${facts.commands} | \`src/commands\` |`,
     `| Frameworks in the inventory | ${facts.frameworks} | \`FRAMEWORK_INVENTORY\` |`,
-    `| CI providers | ${facts.ciProviders} | \`CI_PROVIDER_IDS\` |`,
-    `| QA domain records | ${facts.qaDomains} | cells of \`docs/M26-SUPPORT-MATRIX.json\` |`,
-    `| Gap-ledger records | ${facts.gapLedger.total} | \`docs/M26-GAP-LEDGER.jsonl\` |`,
-    `| Support-matrix cells | ${facts.supportMatrix.total} | \`docs/M26-SUPPORT-MATRIX.json\` |`,
-    `| Issue dispositions | ${facts.issueDispositions.total} | \`docs/M26-ISSUE-DISPOSITIONS.jsonl\` |`,
-    `| Open issues | ${facts.issueDispositions.openIssues} | same |`,
-    `| External validation | **${facts.externalValidation}** | \`docs/M26-EXTERNAL-VALIDATION.json\` |`,
+    `| CI providers | ${facts.ciProviders} | \`CI_PROVIDERS\` (measured from the generator) |`,
+    "",
+    "### Ledgers",
+    "",
+    "The M26–M50 program's four ledgers were retired in 6.0. They were",
+    "transcriptions of a plan document rather than measurements of this tree,",
+    "and an inventory that published them under `counts:` was reporting its own",
+    "reading of a roadmap as a fact about the repository. The record of what they",
+    "contained is `docs/archive/ROADMAP-M26-M50.yaml`; the live ladder is",
+    "`docs/ROADMAP.yaml`.",
     "",
     "### Largest source areas",
     "",
     ...areas
       .slice(0, 12)
       .map(([area, count]) => `- \`src/${area}/\` — ${count}`),
-    "",
-    "### Ledgers",
-    "",
-    `- Gap ledger: ${tallyText(facts.gapLedger.byStatus)} · severities ${tallyText(facts.gapLedger.bySeverity)}`,
-    `- Open release-blocking gaps: **${facts.gapLedger.openReleaseBlockers.length}** (${facts.gapLedger.openReleaseBlockers.join(", ") || "none"})`,
-    `- Support matrix: ${tallyText(facts.supportMatrix.byDisposition)} — **${facts.supportMatrix.blockedCells.length} cells are explicitly BLOCKED**`,
-    `- Issue dispositions: ${tallyText(facts.issueDispositions.byDisposition)}`,
     "",
     "## 3. Vocabulary collisions found by this wave",
     "",
@@ -293,19 +297,17 @@ export function renderCurrentStateMd(
           ),
         )),
     "",
-    "## 6. Archive reconciliation",
+    "## 6. Archive reconciliation — retired in 6.0",
     "",
-    `The \`archive\` block of \`docs/ROADMAP.yaml\` covers 108 historical design-record issues (M18–M25, GitHub #539–#646). Status: **${archive.status}**.`,
+    "The historical M18–M25 design records (108 issues, GitHub #539–#646) were",
+    "reconciled against the M26 GitHub issue snapshot. That snapshot was deleted",
+    "with the M26 program in 6.0 and cannot be regenerated without `gh`, so the",
+    "reconciliation is a dated record rather than a gate:",
+    "`docs/archive/V6-ARCHIVE-RECONCILIATION.json`.",
     "",
-    `- Records reconciled: ${archive.records.filter((r) => r.state === "RECONCILED").length} of ${archive.records.length}`,
-    `- Records partially reconciled: ${archive.records.filter((r) => r.state === "PARTIALLY_RECONCILED").length}`,
-    `- **Issues inside the historical ranges that are still open: ${archive.openIssuesInArchive.length}** (${archive.openIssuesInArchive.join(", ")})`,
-    `- Closure command: \`${archive.closureCommand}\``,
-    "",
-    "The block **cannot** honestly be flipped to `RECONCILED` while those issues",
-    "are open. Flipping it would be a false proof produced by the very act meant",
-    "to establish the truth, so the gate records the open issues instead. See",
-    "`docs/V6-GAP-MATRIX.md` (`GAP-V6-005`) and `docs/V6-ARCHIVE-RECONCILIATION.json`.",
+    "The finding is unchanged and still open — `GAP-V6-005` in",
+    "`docs/V6-GAP-MATRIX.md`. It was never closed by this section; the section",
+    "only ever measured it, and the measurement's input is gone.",
     "",
     "## 7. The six orthogonal claim axes (ADR 0011)",
     "",
@@ -320,13 +322,15 @@ export function renderCurrentStateMd(
     "",
     "## 8. What this wave did not do, and will not pretend",
     "",
-    "- It did **not** make any gate green that was red before it. `m26:audit`",
-    "  and `docs:roadmap:check` are still red, for the same honest reasons:",
-    `  ${facts.gapLedger.openReleaseBlockers.length} open release-blocking gaps, ${facts.supportMatrix.blockedCells.length} BLOCKED matrix cells, and external validation still \`${facts.externalValidation}\`.`,
+    "- It did **not** make any gate green that was red before it.",
     "- It did **not** promote any capability. Promotion is a machine transition",
     "  and no criterion for it is satisfied yet.",
-    "- It did **not** dispose of the 229 open issues. Dispositions are",
-    "  bookkeeping; they prove nothing about capability.",
+    "- The M26–M50 program it originally reported against is retired. Its",
+    "  ledgers recorded BLOCKED cells and UNRECONCILED issues for evidence that",
+    "  was never going to arrive, and a gate that regenerates them forever is a",
+    "  gate that reports the same blocked thing every night. The record is",
+    "  `docs/archive/ROADMAP-M26-M50.yaml`; the live ladder is",
+    "  `docs/ROADMAP.yaml`.",
     "",
     "See `docs/V6-GAP-MATRIX.md` for what is missing and `docs/adr/README.md` for",
     "the decisions that constrain how it may be built.",
@@ -339,27 +343,19 @@ export function renderCurrentStateMd(
 export function renderGapMatrixMd(
   facts: RepoFacts,
   requirements: readonly VerifiedRequirement[],
-  archive: ArchiveReconciliation,
   baseSha: string,
 ): string {
-  const m26Gaps: V6Gap[] = facts.gapLedger.openReleaseBlockers.map((id) => ({
-    gap_id: id,
-    severity: "release-blocker",
-    status: "open",
-    category: "m26-ledger",
-    summary: `Carried from the M26 gap ledger; see \`docs/M26-GAP-LEDGER.jsonl\` for the full record.`,
-    owner: "gap-ledger",
-    targetWave: "1",
-    maturityImpact: [],
-    revalidationCommand: "npm run m26:audit",
-    revisitTrigger: "closure evidence recorded in the M26 gap ledger",
-    closureEvidence: null,
-  }));
-
-  const all: Array<{ gap: V6Gap; origin: "M26 ledger" | "Wave 0" }> = [
-    ...WAVE0_GAPS.map((gap) => ({ gap, origin: "Wave 0" as const })),
-    ...m26Gaps.map((gap) => ({ gap, origin: "M26 ledger" as const })),
-  ];
+  // 6.0 removed the second source. This matrix used to carry Wave 0 gaps AND
+  // the M26 ledger's open release-blockers "so the two cannot be read as one
+  // number" — which is exactly what happened: they were summed into one table
+  // and one count. The ledger's rows recorded blockers against evidence that
+  // was never going to arrive, so they blocked nothing and dated nothing.
+  const all: Array<{ gap: V6Gap; origin: "Wave 0" }> = WAVE0_GAPS.map(
+    (gap) => ({
+      gap,
+      origin: "Wave 0" as const,
+    }),
+  );
   const byWave = new Map<string, typeof all>();
   for (const item of all) {
     const bucket = byWave.get(item.gap.targetWave) ?? [];
@@ -374,17 +370,13 @@ export function renderGapMatrixMd(
     "",
     `Baseline commit \`${baseSha}\`.`,
     "",
-    "Two sources, one table. Rows marked **Wave 0** were found by this",
-    "inventory and were carried by no ledger before; rows marked **M26",
-    "ledger** are pre-existing open release-blockers, restated so the two",
-    "cannot be read as one number.",
+    "One source: gaps this inventory found by measuring the tree. The M26",
+    "ledger's open release-blockers were removed in 6.0 with the program that",
+    "owned them (`docs/archive/ROADMAP-M26-M50.yaml` keeps the record).",
     "",
     "## Summary",
     "",
     `- Wave 0 gaps found: **${WAVE0_GAPS.length}**`,
-    `- Open M26 release-blockers carried forward: **${facts.gapLedger.openReleaseBlockers.length}**`,
-    `- Support-matrix cells explicitly BLOCKED (not rows here, but the same class of truth): **${facts.supportMatrix.blockedCells.length}**`,
-    `- Archive issues blocking reconciliation: **${archive.openIssuesInArchive.length}**`,
     "",
     "## Gaps by target wave",
     "",
@@ -457,56 +449,41 @@ export function renderGapMatrixMd(
 export interface RenderedArtifacts {
   facts: RepoFacts;
   requirements: readonly VerifiedRequirement[];
-  archive: ArchiveReconciliation;
   inventory: string;
   currentState: string;
   gapMatrix: string;
-  archiveJson: string;
 }
 
 export function renderArtifacts(root: string = ROOT): RenderedArtifacts {
   const facts = collectRepoFacts(root);
   const requirements = verifyRequirements(root);
-  const archive = reconcileArchive(root);
   const baseSha = gitSha(root);
   return {
     facts,
     requirements,
-    archive,
-    inventory: renderInventoryJson(facts, requirements, archive, baseSha),
-    currentState: renderCurrentStateMd(facts, requirements, archive, baseSha),
-    gapMatrix: renderGapMatrixMd(facts, requirements, archive, baseSha),
-    archiveJson: JSON.stringify(archive, null, 2) + "\n",
+    inventory: renderInventoryJson(facts, requirements, baseSha),
+    currentState: renderCurrentStateMd(facts, requirements, baseSha),
+    gapMatrix: renderGapMatrixMd(facts, requirements, baseSha),
   };
 }
 
 async function main(): Promise<void> {
-  const {
-    facts,
-    requirements,
-    archive,
-    inventory,
-    currentState,
-    gapMatrix,
-    archiveJson,
-  } = renderArtifacts(ROOT);
+  const { facts, requirements, inventory, currentState, gapMatrix } =
+    renderArtifacts(ROOT);
   writeFileSync(INVENTORY_JSON, inventory);
   writeFileSync(CURRENT_STATE_MD, currentState);
   writeFileSync(GAP_MATRIX_MD, gapMatrix);
-  writeFileSync(ARCHIVE_JSON, archiveJson);
 
   await prettify(INVENTORY_JSON);
   await prettify(CURRENT_STATE_MD);
   await prettify(GAP_MATRIX_MD);
-  await prettify(ARCHIVE_JSON);
 
   const unverified = requirements.filter(
     (entry) => entry.unverified.length > 0,
   );
   console.log(
-    `Wrote 4 Wave 0 artifacts: ${facts.srcFiles} src files, ${facts.rulesLive} live rules, ` +
-      `${requirements.length} spec sections classified, ${WAVE0_GAPS.length} Wave 0 gaps, ` +
-      `archive ${archive.status} with ${archive.openIssuesInArchive.length} open issues` +
+    `Wrote 3 Wave 0 artifacts: ${facts.srcFiles} src files, ${facts.rulesLive} live rules, ` +
+      `${requirements.length} spec sections classified, ${WAVE0_GAPS.length} Wave 0 gaps` +
       (unverified.length > 0
         ? `, ${unverified.length} unverified citation(s) — see docs/V6-CURRENT-STATE.md`
         : ""),

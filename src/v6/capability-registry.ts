@@ -681,54 +681,16 @@ export function buildCapabilityRegistry(
       ),
     );
   }
-
-  // 3. Domains, read from the **support matrix** rather than from
-  //    `src/qa/domain-model.ts`.
+  // 3. QA DOMAINS: no longer read from anywhere.
   //
-  //    Two reasons, and the second was decisive even while that file
-  //    existed. First, the matrix is the ledger of record and
-  //    `m26:integrity` gates it, so a domain claim sourced from it is
-  //    already checked. Second — and this is the one that mattered —
-  //    `src/qa/domain-model.ts` was classified `CONTRACT_ONLY` in
-  //    `docs/COVERAGE-EXEMPTIONS.json` with a removal plan to retire it,
-  //    and the v6 carve deleted it. Importing it would have given a file
-  //    declared to have no production importer a production importer, and
-  //    coupled the registry to a module scheduled for deletion. The matrix
-  //    also carries the disposition, the blocked reason and the revisit
-  //    trigger, so the entry is richer than an id ever was.
-  for (const domain of readDomainCells(root)) {
-    const id = domainCapabilityId(domain.id);
-    if (byId.has(id)) continue;
-    byId.set(
-      id,
-      finalize(
-        {
-          id,
-          name: domain.label,
-          kind: "domain",
-          owner: domain.owner,
-          rules: [],
-          censusId: censusIdFor(id),
-          frameworkId: null,
-          domains: [domain.id],
-          blocksAxes: ["Domain Coverage"],
-          observedUpstreamMajor: null,
-          adapter: null,
-          // The matrix's own disposition is the axis's honest state. A
-          // BLOCKED domain is not M1 "declared" — it is declared AND known
-          // to be blocked, and the reason travels with it.
-          declaredDisposition: domain.disposition,
-          blockedReason: domain.blockedReason,
-          revisitTrigger: domain.revisitTrigger,
-        },
-        { registry: BLIND_EVIDENCE, files: evidence.files },
-        observedAt,
-        facts,
-        census,
-      ),
-    );
-  }
-
+  //    They came from docs/M26-SUPPORT-MATRIX.json, which 6.0 deleted with the
+  //    rest of the M26 program. Thirteen qa.domain.* entries went with it.
+  //
+  //    That is the honest shape: a domain entry carried a disposition, an
+  //    owner, a blocked reason and a revisit trigger from a ledger whose only
+  //    writer was a maintainer with no evidence to update it, so every one of
+  //    them was a claim about a plan rather than about the code. Nothing
+  //    derives them now, and the registry says so by not containing them.
   return {
     schemaVersion: 1,
     registryId: "mjolnir-capability-registry",
@@ -788,58 +750,7 @@ function kindForFramework(entityType: string): CapabilityKind {
   }
 }
 
-// ─── Domain cells, read from the support matrix ─────────────────────
-
-export interface DomainCell {
-  /** `REQUIREMENTS`, from `MATRIX-DOMAIN-REQUIREMENTS`. */
-  id: string;
-  label: string;
-  disposition: string;
-  owner: string;
-  blockedReason: string | null;
-  revisitTrigger: string | null;
-}
-
-/**
- * Read the `MATRIX-DOMAIN-*` cells from the support matrix.
- *
- * Returns an empty list when the matrix is absent rather than throwing: a
- * missing ledger means "no domain claims are derivable", which is a gap the
- * gate reports — not a crash in the middle of building a registry.
- */
-export function readDomainCells(root: string = process.cwd()): DomainCell[] {
-  const path = join(root, "docs", "M26-SUPPORT-MATRIX.json");
-  if (!existsSync(path)) return [];
-  let cells: Array<Record<string, unknown>>;
-  try {
-    const raw = JSON.parse(readFileSync(path, "utf8")) as {
-      cells?: Array<Record<string, unknown>>;
-    };
-    cells = raw.cells ?? [];
-  } catch {
-    return [];
-  }
-  const out: DomainCell[] = [];
-  for (const cell of cells) {
-    const cellId = typeof cell.cell_id === "string" ? cell.cell_id : "";
-    if (!cellId.startsWith("MATRIX-DOMAIN-")) continue;
-    const id = cellId.slice("MATRIX-DOMAIN-".length);
-    if (id === "") continue;
-    out.push({
-      id,
-      label: typeof cell.cell === "string" ? cell.cell : id,
-      disposition:
-        typeof cell.disposition === "string" ? cell.disposition : "UNKNOWN",
-      owner: typeof cell.owner === "string" ? cell.owner : "unowned",
-      blockedReason:
-        typeof cell.blocked_reason === "string" ? cell.blocked_reason : null,
-      revisitTrigger:
-        typeof cell.revisit_trigger === "string" ? cell.revisit_trigger : null,
-    });
-  }
-  return out.sort((a, b) => compareCodePoints(a.id, b.id));
-}
-
+// ─── The checkout's own evidence ─────────────────────────────────────
 // ─── The checkout's own evidence ─────────────────────────────────────
 
 /**

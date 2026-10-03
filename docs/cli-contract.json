@@ -4,7 +4,16 @@
   "sourceOfTruth": "src/engine/cli-command-names.ts",
   "enforcedBy": "scripts/check-cli-contract.mjs",
   "note": "One disposition per verb, enforced. `action` is what the tree DOES today and is the only field the gate fails on, so this file is always true of the code it sits next to. `plannedAction`/`plannedTarget` are the v6 collapse from .kilo/plans/1790774061183-mjolnir-final-version.md §3 — informational until the move that carries it out lands, at which point `action` is rewritten to match and the diff IS the review.\n\nTHIRTY VERBS ARE RETIRED. Three of the plan's arrows are recorded as NOT YET rather than done, with the reason on the row: `contract-verify → ci verify`, `analyze → explain`, and `handoff → install agent-rules` are not renames, and a contract that claims a capability has moved when it has not is the same defect this file exists to catch.",
-  "publicVerbs": ["scan", "explain", "fix", "doctor", "install", "ci", "mcp"],
+  "publicVerbs": [
+    "scan",
+    "explain",
+    "fix",
+    "doctor",
+    "install",
+    "share",
+    "ci",
+    "mcp"
+  ],
   "dispositions": {
     "scan": {
       "action": "KEEP"
@@ -44,6 +53,11 @@
     },
     "install": {
       "action": "KEEP"
+    },
+    "share": {
+      "action": "KEEP",
+      "addedIn": "6.0",
+      "note": "ADDED, and it is the only verb this tree has added in two majors. React Doctor's proof loop is a hosted `--score` API plus a share URL; this is the same loop with no server: one scan, one self-contained HTML file, no upload and no identity. It is NOT a mode of `scan --format`, because the artifact's contract is narrower than the Trust Artifact's — the bound artifact names the repo, the commit and the scanId precisely so a consumer can tell which run produced it, and those are exactly the facts that must not travel when the file is handed to a third party. Two renderers, two contracts, one canonical scan result underneath."
     },
     "suppression-gate": {
       "action": "KEEP",

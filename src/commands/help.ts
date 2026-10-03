@@ -122,6 +122,13 @@ export const HELP_ENTRIES: HelpEntry[] = [
     examples: ["mjolnir install --dry-run", "mjolnir install --staged-hook"],
   },
   {
+    verb: "share",
+    summary:
+      "write one self-contained HTML trust report (no server, no upload, no network)",
+    usage: "mjolnir share [target] [--out <file>]",
+    examples: ["mjolnir share", "mjolnir share --out ./trust.html"],
+  },
+  {
     verb: "mcp",
     summary:
       "run as a read-only MCP server over stdio (scan / explain / ci verify)",
@@ -184,11 +191,11 @@ export const HELP_FLAGS: Array<{ flag: string; summary: string }> = [
   { flag: "--width <cols>", summary: "override terminal width" },
   { flag: "--ascii / --no-ascii", summary: "force glyph mode" },
   {
-    flag: "--strict",
+    flag: "--include-warn",
     // D-2: a trust tier is a CLAIM about this repository, not a
     // configuration choice, so it does not gate — and saying only "include
     // quarantine-tier rules" invites the opposite reading. A user who reaches
-    // for `--strict` expecting more enforcement should learn here that a
+    // for this flag expecting more enforcement should learn here that a
     // quarantined detector is advisory BY DESIGN, and that the path to changing
     // that is a `corePromotion` or a re-measure — both reviewable edits to this
     // repository, not a flag.
@@ -196,6 +203,11 @@ export const HELP_FLAGS: Array<{ flag: string; summary: string }> = [
     // The market agrees: in ESLint, Ruff and golangci-lint what fails a build
     // is the user's SEVERITY configuration. Severity is user-controlled and
     // gates. Trust is tool-controlled and does not.
+    //
+    // Renamed from `--strict` in 6.0. The old spelling still works and warns;
+    // it is removed at 7.0 per the cycle in docs/VERSIONING.md. The new name
+    // says what the flag does — it includes the WARN-tier rules — instead of
+    // claiming an enforcement strength it never had.
     summary:
       "include quarantine-tier rules (advisory only — a quarantined detector never gates; see docs/PRODUCT-DECISIONS.md D-2)",
   },
@@ -323,7 +335,7 @@ const GROUPS: Array<{ title: string; verbs: string[] }> = [
   },
   {
     title: "Meta",
-    verbs: ["explain", "handover", "handoff", "install", "mcp"],
+    verbs: ["explain", "handover", "handoff", "install", "share", "mcp"],
   },
   {
     title: "Deep analysis",

@@ -36,19 +36,23 @@ or a doc-example string is documentation, not a finding.
 
 ## Tiers — and what they actually mean
 
-Every rule is `core`, `extended`, or `quarantine`, assigned from its
+The tiers are internal. What you see on a finding is `GATE` (it counts against
+your gate and can fail CI) or `WARN` (reported, never gating), assigned from the
 **measured** false-positive rate, not from how confident the author feels:
 
-| Tier         | Meaning                                  | Default scan | `--strict` |
-| ------------ | ---------------------------------------- | :----------: | :--------: |
-| `core`       | ≤ 10 % measured FP                       |      ✅      |     ✅     |
-| `extended`   | ≤ 30 % measured FP                       |      ✅      |     ✅     |
-| `quarantine` | above 30 %, or not yet measured (n < 10) |      ❌      |     ✅     |
+| Tier         | Meaning                                  | Default scan | `--include-warn` |
+| ------------ | ---------------------------------------- | :----------: | :--------------: |
+| `core`       | ≤ 10 % measured FP                       |      ✅      |        ✅        |
+| `extended`   | ≤ 30 % measured FP                       |      ✅      |        ✅        |
+| `quarantine` | above 30 %, or not yet measured (n < 10) |      ❌      |        ✅        |
+
+`--include-warn` was `--strict` until 6.0. The old name is deprecated and warns;
+it widens what the scan _sees_, never what _fails_.
 
 ## How much of this is measured
 
-74 of the 79 active rules carry a false-positive rate measured against real
-OSS code; the remaining 5 are explicitly unmeasured and non-core:
+73 of the 79 active rules carry a false-positive rate measured against real
+OSS code; the remaining 6 are explicitly unmeasured and non-core:
 
 - The [rule catalog](/rules/) marks every rule either with its measured
   rate or as _on assumption_ — filter with **Measured only** to see the

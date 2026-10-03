@@ -30,7 +30,7 @@ never changes detection semantics.
 
 - **`.mjolnirignore`** — a plain gitignore-style file for path exclusions,
   same dialect as `exclude`.
-- **CLI overrides** — `--strict` (include quarantine rules), `--width <cols>`
+- **CLI overrides** — `--include-warn` (include WARN-tier rules), `--width <cols>`
   and `--ascii` / `--no-ascii` (terminal rendering), `--tone blunt`
   (blunter messages), `--max-duration <sec>` (bounded partial scan).
 - Rule suppression and deprecation lifecycle: [Rule lifecycle](/reference/rule-lifecycle).

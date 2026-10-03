@@ -29,8 +29,29 @@
  * A missing `package.json` under a declared working directory is a failure
  * too, not a skip: the step would fail for the same reason.
  *
+ * THE SAME QUESTION, ASKED OF FILES
+ *
+ * `npm run <name>` answers "does this NAME resolve". The other half of a step
+ * is "does this FILE resolve", and `.github/workflows/ci.yml` shipped a step
+ * naming `scripts/diff-detector-hashes.ts` — a file the v6 positioning carve
+ * deleted while the step kept its name. The capability was present the whole
+ * time: `scripts/check-detector-hashes.ts` documents `--base <manifest>`, and
+ * the step has been corrected to name it. But a corrected line is not an
+ * invariant, and nothing would have said so.
+ *
+ * So every step's file argument is resolved too, against the same
+ * `working-directory` resolution the name check uses and the same exemption
+ * list. The shape of a reference is deliberately narrow — an interpreter, some
+ * flags, then a token that is a plain relative path with a code extension —
+ * because the alternative (every `\S+` in a `run:` block) reads shell
+ * arguments, redirections and inline scripts as file paths and reports the
+ * workflow's own commands back at it. `./actionlint` is the case that decides
+ * it: a downloaded artifact with no extension, which a prefix rule would have
+ * reported as a missing file forever.
+ *
  * Usage: node scripts/check-workflow-scripts.mjs [--root=<dir>]
- * Exit codes: 0 = every referenced script resolves, 1 = one or more do not.
+ * Exit codes: 0 = every referenced script and file resolves, 1 = one or more
+ * do not.
  */
 
 import { existsSync, readFileSync, readdirSync } from "node:fs";
@@ -51,6 +72,54 @@ const WORKFLOW_DIR = join(ROOT, ".github", "workflows");
 /** `npm run <name>` in a step body, including inside a shell block. */
 const SCRIPT_REF = /\bnpm\s+run\s+([A-Za-z][\w:.-]*)/g;
 const PREFIX_REF = /\bnpm\s+--prefix\s+(\S+)\s+run\s+([A-Za-z][\w:.-]*)/g;
+
+/**
+ * An interpreter, its flags, and the file it is handed.
+ *
+ * The flag group is consumed before the path, so a step written as
+ * `--timeout 30 scripts/check-managed-surfaces.mjs` does not read `30` as the
+ * file. `node -e "<inline program>"` reads the program as the file, and
+ * `PLAIN_PATH` rejects it because it carries quotes — which is the right answer,
+ * since an inline program is not a path, and resolving it would mean parsing
+ * JavaScript to find out whether it mentions a filename.
+ */
+const FILE_REF =
+  /(?:^|[\s;&|(])(?:node|npx\s+tsx|tsx|bash|sh|python3?|pwsh)\s+((?:--?[\w-]+(?:=[^\s]+)?\s+)*)([^\s;&|)]+)/g;
+
+/** A bare relative path, with a code extension this repository can execute. */
+const PLAIN_PATH = /^\.{0,2}\/?[\w.@\-/]+\.(?:mjs|cjs|js|mts|ts|tsx|sh|bash)$/;
+
+/**
+ * A BUILD OUTPUT is not a repository file.
+ *
+ * `node dist/cli.mjs` is how every gate step invokes the CLI, and `dist/` is
+ * produced by the `npm run build` step that precedes those steps in the same
+ * job. Checking it would make this gate red on a clean checkout run before the
+ * build — `npm run certify:fast` and a bare `npm run workflow:scripts` both do
+ * that — and the fix would be an exemption, which is how a gate becomes
+ * decoration. `walk()` in `check-cli-contract.mjs` already skips `dist/` for
+ * the same reason.
+ */
+function isBuildOutput(arg) {
+  return arg === "dist" || arg.startsWith("dist/") || arg.startsWith("./dist/");
+}
+
+/** The file arguments one step's body names, in order. */
+function fileArgsIn(run) {
+  const out = [];
+  for (const m of String(run).matchAll(FILE_REF)) {
+    // Two capture groups: the flag run, then the candidate. Both
+    // alternatives before them are non-capturing, so the path is group 2 — a
+    // third group here reads as "there is another one" and silently resolves to
+    // `undefined`, which fails closed to "nothing checked".
+    const candidate = m[2] ?? "";
+    if (candidate.startsWith("-")) continue;
+    if (!PLAIN_PATH.test(candidate)) continue;
+    if (isBuildOutput(candidate)) continue;
+    out.push(candidate);
+  }
+  return out;
+}
 
 function scriptsIn(dir) {
   const manifest = join(dir, "package.json");
@@ -114,6 +183,7 @@ function scriptsFor(dir) {
 }
 
 let referenced = 0;
+let fileRefs = 0;
 const files = readdirSync(WORKFLOW_DIR)
   .filter((name) => name.endsWith(".yml") || name.endsWith(".yaml"))
   .sort();
@@ -144,6 +214,8 @@ for (const name of files) {
       const stepDir = step["working-directory"]
         ? join(ROOT, step["working-directory"])
         : jobDir;
+      const base = stepDir ?? ROOT;
+      if (exemption) continue;
       for (const ref of referencesIn(step.run)) {
         if (ref.isCd) {
           failures.push(
@@ -153,13 +225,12 @@ for (const name of files) {
           );
           continue;
         }
-        const dir = ref.dir ?? stepDir ?? ROOT;
+        const dir = ref.dir ?? base;
         const scripts = scriptsFor(dir);
         const where =
           dir === ROOT
             ? "package.json"
             : `${dir.slice(ROOT.length + 1)}/package.json`;
-        if (exemption) continue;
         if (scripts === null) {
           failures.push(
             `${relative} (${jobId}): runs \`npm run ${ref.script}\` but ${where} does not exist`,
@@ -180,6 +251,20 @@ for (const name of files) {
           );
         }
       }
+      // A step that moves with `cd` has already been reported above, and its
+      // file arguments would resolve against the wrong directory. Reporting them
+      // as well would bury the one line that says what to change.
+      if (/(?:^|[\s;&|(])cd\s+\S/.test(step.run)) continue;
+      for (const arg of fileArgsIn(step.run)) {
+        fileRefs += 1;
+        if (!existsSync(join(base, arg))) {
+          failures.push(
+            `${relative} (${jobId}): runs \`${arg}\`, which does not exist under ` +
+              `${base === ROOT ? "the repository root" : base.slice(ROOT.length + 1)}. ` +
+              `A step that names a file it cannot execute fails at the step, not at the gate that would have said so.`,
+          );
+        }
+      }
     }
   }
 }
@@ -196,6 +281,7 @@ console.log(
       status: "PASS",
       workflows: files.length,
       scriptInvocationsVerified: referenced,
+      fileReferencesVerified: fileRefs,
       exemptWorkflows: [...EXEMPT_FROM_SCRIPT_CHECK.keys()],
     },
     null,

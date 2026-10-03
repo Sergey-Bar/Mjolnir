@@ -33,15 +33,21 @@ const VERDICTS_DIR = join(ROOT, "tests", "corpus", "verdicts");
 
 function loadVerdicts(): Verdict[] {
   const all: Verdict[] = [];
-  for (const f of readdirSync(VERDICTS_DIR).filter((n) =>
-    n.endsWith(".jsonl"),
+  // `retracted.jsonl` is excluded twice over, on purpose: by name, because it
+  // holds tombstones rather than verdicts, and by the `ruleId` guard below,
+  // because a row without a rule is not a verdict whichever file it sits in.
+  // Without either, a tombstone lands in the per-rule map under `undefined` and
+  // the sort throws — which is the failure this file's own assertions surface
+  // as "regenerate if this fails", pointing at the wrong thing entirely.
+  for (const f of readdirSync(VERDICTS_DIR).filter(
+    (n) => n.endsWith(".jsonl") && n !== "retracted.jsonl",
   )) {
     for (const line of readFileSync(join(VERDICTS_DIR, f), "utf8")
       .split("\n")
       .filter((l) => l.trim())) {
       try {
         const v = JSON.parse(line) as Verdict;
-        if (v.verdict) all.push(v);
+        if (v.verdict && typeof v.ruleId === "string") all.push(v);
       } catch {
         /* skip malformed */
       }

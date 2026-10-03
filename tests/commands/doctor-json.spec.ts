@@ -41,7 +41,13 @@ describe("doctor --json machine contract (Phase 5)", () => {
     const report: DoctorReport = {
       checks: [],
       healthy: true,
-      measurement: { measured: 0, unmeasured: 0, total: 0, quarantine: 0 },
+      measurement: {
+        measured: 0,
+        unmeasured: 0,
+        total: 0,
+        quarantine: 0,
+        core: 0,
+      },
     };
     const json = stripNonDeterministicFields(doctorReportJson(report));
     expect(Object.keys(json)).toContain("measurement");
@@ -116,7 +122,13 @@ describe("doctor --json machine contract (Phase 5)", () => {
         },
       ],
       healthy: false,
-      measurement: { measured: 0, unmeasured: 0, total: 0, quarantine: 0 },
+      measurement: {
+        measured: 0,
+        unmeasured: 0,
+        total: 0,
+        quarantine: 0,
+        core: 0,
+      },
     };
     const json = doctorReportJson(report);
     const rev = json.checks.find((c) => c.name === "revision-integrity");

@@ -502,26 +502,36 @@ describe("declaredCoreWithoutEvidence", () => {
   });
 
   it("exempts a core rule whose interval already clears the ceiling", () => {
-    // The promotion path. Unreachable from live data TODAY, and deliberately
-    // not faked: it requires a core rule whose measurement clears the
-    // ceiling, and the demotion removed the only such candidates because
-    // none existed. Re-earning core is what makes this branch reachable
-    // again, and `declaredCoreWithoutEvidence` then flips to reporting a
-    // rule that has NOT earned it — which is the regression this function
-    // exists to catch.
+    // The promotion path, and it is LIVE as of 2026-10-03.
     //
-    // Asserted as a documented unreachability rather than simulated by
-    // mutating `CORE_FP_CEILING`, which is a const and would need a test
-    // seam added to production code purely to reach a branch.
+    // This arm was written as a documented unreachability — deliberately not
+    // faked by mutating `CORE_FP_CEILING`, because that is a const and
+    // reaching the branch by loosening production code would have proved
+    // nothing. The branch was made reachable the honest way instead:
+    // `QA-PW-117` was adjudicated up to n=35, its interval fell to 9.89%, and
+    // it was promoted.
+    //
+    // So the arm now asserts the exemption is EXERCISED, and that
+    // `declaredCoreWithoutEvidence` — the function that exists to catch a core
+    // claim the evidence does not support — stays null for the rule that
+    // earned it. An unsubstantiated future promotion shows up here.
     const earning = RULES.filter((rule) => {
       const interval = measurementInterval(rule);
       return interval !== undefined && interval.ciHigh <= CORE_FP_CEILING;
     });
     expect(
       earning.map((rule) => rule.id),
-      "a rule now clears the ceiling; this branch is live again and the function " +
-        "must be re-read to confirm it still reports one that does not",
-    ).toEqual([]);
+      "the set of rules clearing the ceiling changed - QA-PW-117 earned it on " +
+        "2026-10-03, and a second promotion would land here",
+    ).toEqual(["QA-PW-117", "QA-JV-101"]);
+
+    for (const rule of earning) {
+      expect(
+        declaredCoreWithoutEvidence(rule),
+        `${rule.id} clears the ceiling, so it must not be reported as an ` +
+          "unsubstantiated core claim",
+      ).toBeNull();
+    }
   });
 });
 describe("registry ratchet: evidence-state monotonicity (§20.1)", () => {

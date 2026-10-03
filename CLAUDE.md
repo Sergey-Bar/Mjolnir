@@ -7,6 +7,22 @@ ignore.
 
 ## The laws
 
+0. **Surface law (6.0).** The governed surface is every capability the
+   product claims, not only the rule set. Adding a CLI verb, an npm script, a
+   gate, a generator or a documented format requires an equal-size removal or a
+   recorded `ANTI-CREEP-EXCEPTION` in `CHANGELOG.md` with the reason.
+   `npm run entry-points:check` is what enforces _part_ of this — it verifies
+   the two entry points name real scripts, that `check` is at most 12 commands,
+   that `certify` is a superset of `check`, and that neither reaches a
+   write-mode script. It counts **no** CLI verbs, no npm scripts outside
+   `check`, no gate ids and no generators; those are governed by
+   `npm run verbs:budget`, `npm run gates:check` and the rule-side ratchets
+   (`rules:promotion:check`, `docs/ANTI-CREEP-BASELINE.json`). "The surface
+   grew" is therefore measurable, but not by one command and not completely by
+   one — read this as the union, not as `entry-points:check` alone.
+   `CLAUDE.md`, `README.md`, `docs/ROADMAP.yaml`, `gates/*.json` and
+   `package.json` are the surfaces this applies to. Law 1 is the rule-set arm
+   of this law, not the whole of it.
 1. **Anti-creep law.** Every addition to the launch set requires an
    equal-size removal. The launch set is the rules that ship in the default
    report — every rule whose effective tier is not `quarantine`, which is 45 of
@@ -26,10 +42,14 @@ ignore.
    tier: an unmeasured rule is shipped on an unverified assumption, and
    until it is measured it does not belong in core.
    Note the deliberate difference from law 1: this one governs the **core
-   tier**, which is currently empty, while law 1 governs the **shipped set**.
-   Applying this requirement to all 45 shipping rules would fail it
-   immediately; that is a policy decision about what the product may ship,
-   not a defect, and it is unresolved rather than settled by this file.
+   tier**, which holds 2 rules today (`QA-PW-117`, `QA-JV-101`, each at
+   n=35 with zero observed false positives), while law 1 governs the
+   **shipped set**. Applying this requirement to all 45 shipping rules would
+   fail it immediately; that is a policy decision about what the product may
+   ship, not a defect, and it is unresolved rather than settled by this file.
+   The tier a rule holds and the evidence that put it there are recorded in
+   `docs/RULE-CONSTITUTION.json` (P1), `docs/CORE-CERTIFICATION.json` (P2)
+   and `docs/TIER-HISTORY.json` (P3), all three gated.
 
 ## Provenance
 
@@ -46,3 +66,20 @@ Law 1 was amended 2026-10-01 to name the shipped set rather than the core
 tier, which is what it always described. The quoting sites updated with it:
 `docs/ANTI-CREEP.md`, `docs/ANTI-CREEP-BASELINE.json`, `.github/copilot-instructions.md`,
 `tests/contract/docs-consistency.spec.ts`, and `src/commands/doctor.ts`.
+
+Law 0 was added 2026-10-02 (6.0). Law 1 was scoped to the shipped rule set,
+and a rule set is the easiest surface to measure — so every other surface grew
+unchecked: 139 npm scripts, 137 script files, 16 verbs and three overlapping
+capability registries, all with drift gates that caught none of it. The law now
+names the surface rather than the one part of it that was easy to count.
+`tests/contract/docs-consistency.spec.ts` reads this file, so widening the law
+is itself gated on the quoting sites being updated in the same commit.
+
+**The cut the law prompted was measured and declined.** `npm run check` is ~8
+minutes: the test suite is 79 % of it and all 38 gates together are 100 seconds.
+Cutting the gate surface from 39 to 12 would save under 15 % of the wait, by
+deleting checks that caught six real defects during 6.0. The numbers and the
+arithmetic are in the 6.0.0-rc.1 CHANGELOG entry, so the question does not have
+to be re-argued from counts. The lever that would move the wait is splitting
+the suite so the slow e2e tail runs beside the fast tests — CI work, not a
+surface cut.

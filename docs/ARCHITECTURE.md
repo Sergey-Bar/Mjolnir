@@ -76,8 +76,11 @@ they never re-derive semantics (plan §18 parity law).
 - M36–M50 evidence contracts (mutation sensitivity, simulation, research,
   benchmark, scale, UX parity, and Trust OS) are not enabled by the default
   scan/release path; they are tracked in `docs/ROADMAP.yaml`.
-- The current registry contains 79 active rules: 74 measured and 5 explicitly
-  unmeasured. Five active unmeasured rules do not enter effective core.
+- The current registry contains 79 active rules: 73 measured and 6 explicitly
+  unmeasured. Five active unmeasured rules do not enter effective core. A
+  separate 5 rules declare no tier at all and resolve through the
+  measurement-dependent default — the same number, a different population, so
+  read them apart.
 - External Trust certification, protected-holdout, real-world, platform,
   consumer, and remote-workflow evidence is not synthesized by local tests.
 

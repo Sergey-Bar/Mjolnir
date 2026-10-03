@@ -2,10 +2,9 @@
   "schemaVersion": 1,
   "manifestId": "mjolnir-carve-manifest-001",
   "generatedBy": "scripts/v6/carve-manifest.mjs",
-  "note": "FACTS are generated; DISPOSITIONS are hand-written and preserved across regeneration. Phase 0 admits every file with KEEP. A DELETE disposition names the evidence that made deletion safe and the commit that carries it — directory names are not evidence.",
+  "note": "FACTS are generated; DISPOSITIONS are hand-written and preserved across regeneration. Phase 0 admits every file with KEEP. A DELETE disposition names the evidence that made deletion safe and the commit that carries it — directory names are not evidence. A DELETE row is itself ephemeral: the next regeneration drops it, because the file it describes is gone and this manifest only ever described files that exist. That is why a deletion's record lives in CHANGELOG.md — the run prints `already removed`, but the file stops being able to say why.",
   "scope": {
     "dirs": [
-      "src/ledger",
       "src/gaps",
       "src/traceability",
       "src/benchmark",
@@ -68,11 +67,13 @@
       }
     },
     "src/claim-evidence.ts": {
-      "lines": 200,
-      "exports": 8,
+      "lines": 221,
+      "exports": 9,
       "importedBy": [
         "src/cli-handlers.ts",
-        "src/cli.ts"
+        "src/cli.ts",
+        "src/commands/share.ts",
+        "src/reporter/trust-report.ts"
       ],
       "imported": true,
       "shipped": true,
@@ -80,7 +81,8 @@
         "tests/commands/fabricated-claims.spec.ts",
         "tests/contract/carve-manifest.spec.ts",
         "tests/contract/coverage-state.spec.ts",
-        "tests/contract/exit-matrix.spec.ts"
+        "tests/contract/exit-matrix.spec.ts",
+        "tests/reporters/trust-report.spec.ts"
       ],
       "disposition": {
         "action": "KEEP",
@@ -115,29 +117,8 @@
         "reason": "Not yet adjudicated. The facts beside it are the evidence; the decision is a reviewable edit to this file."
       }
     },
-    "src/ledger/m26-validators.ts": {
-      "lines": 2923,
-      "exports": 43,
-      "importedBy": [
-        "scripts/check-m26-ledgers.ts",
-        "scripts/v6/inventory.ts"
-      ],
-      "imported": true,
-      "shipped": true,
-      "testedBy": [
-        "tests/config/coverage-exclusion-guard.spec.ts",
-        "tests/contract/gate-exit-codes.spec.ts",
-        "tests/ledger/m26-validator-reject-arms.spec.ts",
-        "tests/ledger/m26-validators.spec.ts",
-        "tests/lib/path-existence.spec.ts"
-      ],
-      "disposition": {
-        "action": "KEEP",
-        "reason": "Not yet adjudicated. The facts beside it are the evidence; the decision is a reviewable edit to this file."
-      }
-    },
     "src/release/decision.ts": {
-      "lines": 49,
+      "lines": 50,
       "exports": 3,
       "importedBy": [
         "scripts/release-decision.ts",
@@ -200,7 +181,7 @@
       }
     },
     "src/release/version-surface.ts": {
-      "lines": 402,
+      "lines": 406,
       "exports": 8,
       "importedBy": [
         "scripts/check-version-surface.ts",
@@ -211,7 +192,6 @@
       "testedBy": [
         "tests/config/coverage-exclusion-guard.spec.ts",
         "tests/contract/version-surface.spec.ts",
-        "tests/ledger/m26-validator-reject-arms.spec.ts",
         "tests/release/version-surface-drift-arms.spec.ts"
       ],
       "disposition": {
@@ -263,8 +243,8 @@
       }
     },
     "src/v6/capability-registry.ts": {
-      "lines": 1055,
-      "exports": 29,
+      "lines": 966,
+      "exports": 27,
       "importedBy": [
         "scripts/v6/check-capability-registry.ts",
         "scripts/v6/check-fixture-quad.ts",
@@ -372,6 +352,7 @@
       "importedBy": [
         "scripts/corpus/quad-verdicts.ts",
         "scripts/v6/check-fixture-quad.ts",
+        "src/rules/conformity.ts",
         "src/v6/capability-registry.ts",
         "src/v6/ecosystem-probe.ts"
       ],
