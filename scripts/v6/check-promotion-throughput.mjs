@@ -342,6 +342,109 @@ if (existsSync(CERTIFICATION_PATH)) {
   failures.push(...certProblems);
 }
 
+/**
+ * Tier transitions as state, checked against the live registry.
+ *
+ * The lesson this encodes: QA-JV-101 was promoted, demoted, and re-promoted,
+ * and the only place that history could live was three stacked and mutually
+ * contradictory comments in the rule file — which is how a later audit read a
+ * single batch of its verdicts, concluded the promotion was fabricated, and
+ * nearly reverted a rule that had earned the tier.
+ *
+ * The obvious fix was new `Tier` values (`demoted`, `deprecated`,
+ * `experimental`). Rejected on blast radius: `tier` is read in ~15 non-rule
+ * modules, and a value that falls through unhandled in any of them changes
+ * finding behaviour silently. Recording history touches none of that.
+ *
+ * So this checks a claim, not a permission. A record whose last transition says
+ * `core` does not make a rule core; the registry does. This only fails when the
+ * file and the registry disagree — which is the one error worth failing on.
+ */
+const TIER_HISTORY_PATH = join(ARTIFACT_ROOT, "docs", "TIER-HISTORY.json");
+let tierHistory = { status: "SKIPPED", reason: "no ledger", problems: [] };
+if (existsSync(TIER_HISTORY_PATH)) {
+  const problems = [];
+  let parsed;
+  try {
+    parsed = JSON.parse(readFileSync(TIER_HISTORY_PATH, "utf8"));
+  } catch (err) {
+    failures.push(
+      `${TIER_HISTORY_PATH} is unreadable: ${err.message}. A ledger that ` +
+        "cannot be parsed records nothing",
+    );
+    parsed = { records: {} };
+  }
+  const records = parsed.records ?? {};
+
+  for (const claim of DEMOTED_FOR_UNSUBSTANTIATED_CORE) {
+    if (records[claim.ruleId] === undefined) {
+      problems.push(
+        `${claim.ruleId} was demoted from core and has no entry in ` +
+          `docs/TIER-HISTORY.json — a demotion recorded only in a source ` +
+          `comment is a demotion the next reader can contradict`,
+      );
+    }
+  }
+
+  for (const [id, record] of Object.entries(records)) {
+    const rule = RULES.find((r) => r.id === id);
+    if (rule === undefined) {
+      problems.push(`${id} has tier history but is not a live rule`);
+      continue;
+    }
+    const transitions = record.transitions;
+    if (!Array.isArray(transitions) || transitions.length === 0) {
+      problems.push(`${id} has a tier-history record with no transitions`);
+      continue;
+    }
+    for (const t of transitions) {
+      if (!t.date || !t.from || !t.to || !t.reason) {
+        problems.push(
+          `${id} has an incomplete transition — a tier change with no date, ` +
+            `direction or reason is not a record`,
+        );
+      }
+    }
+    // The load-bearing check: the ledger's last word must be the registry's.
+    const last = transitions[transitions.length - 1];
+    const live = effectiveTier(rule);
+    if (last.to !== live) {
+      problems.push(
+        `${id} history ends at "${last.to}" but the rule is "${live}" — the ` +
+          `ledger and the registry disagree, so one of them is a false claim`,
+      );
+    }
+    // And the chain must be continuous: a gap means an unrecorded transition.
+    for (let i = 1; i < transitions.length; i++) {
+      if (transitions[i].from !== transitions[i - 1].to) {
+        problems.push(
+          `${id} history has a gap: "${transitions[i - 1].to}" -> ` +
+            `"${transitions[i].from}" is not a transition anyone made`,
+        );
+      }
+    }
+    for (const path of record.evidence ?? []) {
+      const file = path.split("#")[0];
+      if (file.includes("*")) continue;
+      if (!existsSync(join(ARTIFACT_ROOT, file))) {
+        problems.push(
+          `${id} cites ${file}, which does not exist — history may not rest ` +
+            `on evidence that is not in the tree`,
+        );
+      }
+    }
+  }
+
+  failures.push(...problems);
+  tierHistory = {
+    status: problems.length === 0 ? "PASS" : "FAIL",
+    path: "docs/TIER-HISTORY.json",
+    rulesRecorded: Object.keys(records).length,
+    demotionsRequired: DEMOTED_FOR_UNSUBSTANTIATED_CORE.length,
+    problems,
+  };
+}
+
 if (failures.length > 0) {
   console.error("Promotion ratchet failed:");
   for (const failure of failures) console.error(`  - ${failure}`);
@@ -353,6 +456,7 @@ console.log(
     {
       status: "PASS",
       certification,
+      tierHistory,
       launchSet: {
         tier: "core",
         now: launchSet.length,

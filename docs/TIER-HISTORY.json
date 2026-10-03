@@ -1,0 +1,211 @@
+{
+  "schemaVersion": 1,
+  "purpose": "Tier transitions as machine-readable state. A rule that claimed a tier and lost it used to be able to record that only as prose in its source comment, which is how QA-JV-101 came to carry three stacked and mutually contradictory provenance notes. A transition that is not in this file did not happen, and one that is in this file must end at the rule's LIVE tier — checked field by field on every `npm run rules:promotion:check`.",
+  "whyNotNewTierValues": "The obvious fix — adding `demoted` / `deprecated` / `experimental` to the `Tier` union — was rejected on blast radius, not taste. `tier` is read in roughly fifteen non-rule modules (tier-policy score caps, scan-pipeline filters, explain, catalog, triage, plugins, doctor, conformity, registry-census). A new value that falls through unhandled in any of them changes finding behaviour silently, which in a tool whose entire claim is measured trust is the one failure mode that must not ship. Recording history does not touch the tier algebra, so nothing about what a scan reports can move.",
+  "whatThisIsNot": "Not an authority to promote. A record whose final transition says `core` does not make a rule core — the registry and `docs/CORE-CERTIFICATION.json` do that. This file is checked AGAINST the live registry, so it cannot grant a tier; it can only fail when it disagrees with one.",
+  "records": {
+    "QA-PW-117": {
+      "transitions": [
+        {
+          "date": "2026-10-03",
+          "from": "extended",
+          "to": "core",
+          "reason": "n=35 with zero observed false positives clears the 10% Wilson ceiling at 9.89%. Adjudicated row by row against pinned corpus commits; four candidate rows were retracted as orphans citing a line one above the annotation rather than quietly dropped.",
+          "evidence": ["docs/CORE-CERTIFICATION.json"]
+        }
+      ]
+    },
+    "QA-JV-101": {
+      "transitions": [
+        {
+          "date": "2026-09-30",
+          "from": "core",
+          "to": "extended",
+          "reason": "Demoted for an unsubstantiated claim. 0% observed over a thin sample is a wide interval, not a small one, and a rule cannot be core on a premise. Per-rule interval is re-derived live in src/rules/tier-evidence.ts rather than committed here.",
+          "evidence": ["src/rules/tier-evidence.ts"]
+        },
+        {
+          "date": "2026-10-03",
+          "from": "extended",
+          "to": "core",
+          "reason": "Re-earned in two batches, and the sequence is the point: 32 (10.72%) -> 34 (10.15%) -> 35 (9.89%). The first batch's verdict file reads as a refusal on its own; the second, from a sweep run after corpus-sample.ts was corrected to clone the pinned ref instead of the default branch, is what cleared the ceiling. Reading only the first batch is how this promotion was wrongly reported as fabricated.",
+          "evidence": [
+            "docs/CORE-CERTIFICATION.json",
+            "tests/corpus/verdicts/proposed/jv-101-final.json",
+            "tests/corpus/verdicts/proposed/jv-101-core.json"
+          ]
+        }
+      ]
+    },
+    "QA-PW-002": {
+      "transitions": [
+        {
+          "date": "2026-09-30",
+          "from": "core",
+          "to": "extended",
+          "reason": "n=10, 0% observed. The sample is too thin to call core and too clean to quarantine."
+        }
+      ]
+    },
+    "QA-PW-003": {
+      "transitions": [
+        {
+          "date": "2026-09-30",
+          "from": "core",
+          "to": "extended",
+          "reason": "n=10 with 1 observed FP — the widest interval in the registry. 40.4% is not a 10% ceiling."
+        }
+      ]
+    },
+    "QA-PY-001": {
+      "transitions": [
+        {
+          "date": "2026-09-30",
+          "from": "core",
+          "to": "extended",
+          "reason": "n=20, 0% observed. Module-level mutable state is structural; the sample does not establish the rate."
+        }
+      ]
+    },
+    "QA-PY-002": {
+      "transitions": [
+        {
+          "date": "2026-09-30",
+          "from": "core",
+          "to": "extended",
+          "reason": "n=23, 2 observed FPs. The largest sample on an observed-nonzero Python rule here, and still short of the ceiling."
+        }
+      ]
+    },
+    "QA-PY-009": {
+      "transitions": [
+        {
+          "date": "2026-09-30",
+          "from": "core",
+          "to": "extended",
+          "reason": "n=20, 0% observed. The premise was reviewed by hand and holds; twenty clean samples still do not establish the rate, and nothing argues the rule down either."
+        }
+      ]
+    },
+    "QA-PY-011": {
+      "transitions": [
+        {
+          "date": "2026-09-30",
+          "from": "core",
+          "to": "extended",
+          "reason": "n=10, 1 observed FP. Neither the point estimate nor the interval could place it in either direction."
+        }
+      ]
+    },
+    "QA-PW-101": {
+      "transitions": [
+        {
+          "date": "2026-09-30",
+          "from": "core",
+          "to": "extended",
+          "reason": "n=20, 0% observed. A selector race is structural; the measurement is thin."
+        }
+      ]
+    },
+    "QA-PW-113": {
+      "transitions": [
+        {
+          "date": "2026-09-30",
+          "from": "core",
+          "to": "extended",
+          "reason": "n=24, 2 observed FPs. Expect-without-locator is structural; the rate is not established."
+        }
+      ]
+    },
+    "QA-PW-121": {
+      "transitions": [
+        {
+          "date": "2026-09-30",
+          "from": "core",
+          "to": "extended",
+          "reason": "n=12, 0% observed. A thin sample: the rate is not established, and nothing about the rule argues it down."
+        }
+      ]
+    },
+    "QA-PW-104": {
+      "transitions": [
+        {
+          "date": "2026-09-30",
+          "from": "core",
+          "to": "extended",
+          "reason": "n=20, 0% observed. A clean run of twenty is not a 10% ceiling, and the rule has no argument of its own either way."
+        }
+      ]
+    },
+    "QA-PW-140": {
+      "transitions": [
+        {
+          "date": "2026-09-30",
+          "from": "core",
+          "to": "extended",
+          "reason": "n=20, 0% observed. Same shape as QA-PW-104: twenty clean samples, no ceiling established, nothing arguing the other way."
+        }
+      ]
+    },
+    "QA-PY-103": {
+      "transitions": [
+        {
+          "date": "2026-09-30",
+          "from": "core",
+          "to": "extended",
+          "reason": "n=25, 2 observed FPs. Wait-for-timeout is structural; the rate is not established."
+        }
+      ]
+    },
+    "QA-CS-102": {
+      "transitions": [
+        {
+          "date": "2026-09-30",
+          "from": "core",
+          "to": "extended",
+          "reason": "n=24, 2 observed FPs — the largest C# sample in this group, and 15.0% is still above a 10% ceiling."
+        }
+      ]
+    },
+    "QA-JV-105": {
+      "transitions": [
+        {
+          "date": "2026-09-30",
+          "from": "core",
+          "to": "extended",
+          "reason": "n=20, 2 observed FPs. Ten percent of twenty is two findings; the interval cannot distinguish that from anything better."
+        }
+      ]
+    },
+    "QA-JV-109": {
+      "transitions": [
+        {
+          "date": "2026-09-30",
+          "from": "core",
+          "to": "extended",
+          "reason": "n=20, 2 observed FPs. waitForLoadState(networkidle) is structural; the rate is not established."
+        }
+      ]
+    },
+    "QA-CS-101": {
+      "transitions": [
+        {
+          "date": "2026-09-30",
+          "from": "core",
+          "to": "extended",
+          "reason": "n=20, 0% observed. A thin sample; the premise holds but the rate does not follow from it."
+        }
+      ]
+    },
+    "QA-CS-103": {
+      "transitions": [
+        {
+          "date": "2026-09-30",
+          "from": "core",
+          "to": "extended",
+          "reason": "n=23, 2 observed FPs. The interval cannot distinguish this from anything better."
+        }
+      ]
+    }
+  }
+}
