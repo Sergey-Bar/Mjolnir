@@ -9,6 +9,125 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [6.0.0] — 2026-10-03
+
+The verification trust engine, measured. A tier you can only reach with
+evidence, a promotion that cannot land unreviewed, and generated documentation
+that cannot quietly go stale behind the code. Carries the 6.0.0-rc.1 line below.
+
+### Measured twice: the core promotions, and what they rest on
+
+Two rules hold `core`, and this release is where the arithmetic behind them was
+checked rather than asserted. Both sit at **n=35, zero observed false positives,
+Wilson upper bound 9.89%** against a 10% ceiling — reproduced by hand from
+`src/lib/wilson.ts` before either was believed.
+
+`QA-JV-101` earned it in two batches, and the sequence matters:
+**32 (10.72%) → 34 (10.15%) → 35 (9.89%)**. The first batch's verdict file reads
+as a refusal on its own — "STILL SHORT, NOT promoted" — and the second, from a
+sweep run after `corpus-sample.ts` was corrected to clone the pinned ref, is
+what cleared the ceiling. Read one batch and you conclude the promotion was
+fabricated; read both and it is earned. Both verdict files are cited in the
+certification record for exactly that reason.
+
+The sampler fix that made batch 2 trustworthy works _against_ inflation: it
+clones `repo.ref` instead of the default branch and makes retractions stick, so
+an orphan row cannot resurrect as fresh evidence. Three false rows (JWETest
+74/114/203) were retracted rather than judged.
+
+### The tree told a different story than the code
+
+Both promotions landed in the registry, the tier evidence and this file while
+their generated documentation went on reporting `extended` at n=23 and n=24.
+Nothing failed, because nothing asked.
+
+- **A rule count nobody can check is a claim, so generate it.** `README.md` said
+  "`core` is empty" for a whole release after two rules had earned it.
+  `measurementBlock()` now returns `core` and `docs:counts` stamps it into the
+  census surfaces, so `tests/contract/census-drift.spec.ts` fails if prose and
+  registry disagree. It counts UNMEASURED core rules deliberately:
+  `MAX_UNMEASURED_CORE` is 0, so a registry in that state cannot ship, and a
+  census filtered on `measured` would report a clean `core: 0` at the exact
+  moment the law broke.
+- **`docs:staleness` — one staleness assertion, runnable locally.** Four
+  workflows each asserted it by hand and three could not see an untracked file:
+  with clean tracked `docs/` and one new untracked file in it,
+  `git diff --exit-code -- docs/` exits **0**. That is how a new rule's docs page
+  shipped silently. The replacement reads `git status`, is read-only by
+  construction so it can never cost a tree its adjudication records, and is
+  deliberately absent from `npm run check` — asserting after regenerating is
+  checking the generator against itself.
+- **`docs/MEASUREMENT-CLOSEOUT.md` corrected to 73/6** (it read 74/5), gained
+  the missing `QA-PY-004` row, and now separates **stale** from unmeasured:
+  `QA-PY-004` (revision 4) and `QA-PY-007` (revision 5) have verdict sets that no
+  longer describe the shipped detector and need re-measurement at the current
+  revision — a different job from classifying new rows.
+
+### A promotion can no longer land with no artifact
+
+- **`docs/CORE-CERTIFICATION.json` — a record is required to hold `core`,** and
+  the record expires with its evidence. The measurement block is compared field
+  by field against the live `MEASURED_FP` row on every run: move the detector
+  revision, change n, or introduce an observed false positive and the gate fails
+  until someone re-certifies and writes down why. Every cited path must exist,
+  and cited corpus rows must sum to exactly `n` — self-derived quad verdicts are
+  excluded, which is why both records sum to exactly 35 (29+2+4, 20+10+2+3).
+- **QA-JV-101's record states its known weakness rather than omitting it.** Its
+  must-not-fire fixture is a hand-written different program, not the must-fire
+  fixture with `@Disabled` neutralised, so it shows the detector is directional
+  and does **not** show the predicate is sensitive to the annotation.
+- **No new gate and no new npm script.** Both are arms of existing gates —
+  `rules:promotion:check` and `check-fixture-quad` — because Law 0 charges for
+  surface growth.
+
+### The detector set is wired. It is not yet shown to have teeth.
+
+`docs/PRECISION-RATCHET.json` records 32 rules as holding a PRECISION leg and
+calls itself "a wiring proof, not an accuracy proof, and a self-derived one".
+That caveat now has a number, and it is not comfortable.
+
+A must-not-fire fixture is evidence that a rule is _sensitive_ only when it is
+the must-fire fixture with the defect neutralised. When it is a different program
+that merely does not trigger, the pair shows the detector is directional and
+nothing about the predicate. The quad counts presence, so both read alike.
+
+**Of the 40 live rules carrying both legs, 2 hold a negative fixture that is
+plausibly the positive fixture with the defect removed** (`QA-PW-144`, one changed
+line of nine; `QA-PW-116`, one of seven). The other **38** are a different
+program — the next nearest diverges by 0.55, the furthest by more lines than
+either file contains. Leashed at the true floor of 2, so it fails on a rule
+_regressing_ out of that set and not on the 38 that were always like this;
+`--update` only ever raises the floor, so a regression cannot be absorbed by
+re-running a command. Closing the gap needs a per-rule recipe for what the defect
+_is_, and that work is named rather than assumed away.
+
+### What a consumer may rely on
+
+- **`docs/ENGINE-FREEZE.md`** records the compatibility promise and points at
+  `CONTRACT_REGISTRY` rather than copying version numbers. `scoringModelVersion`
+  2.0.0 is a _semantic_ change (ADR 0014's evidence floor), so a consumer
+  comparing scores across it is comparing different things; and
+  `frameworkSupportMatrixVersion` is written by the engine and read by nothing
+  but a test — a version stamp on a fact, not a negotiated protocol.
+- **The delta loop is in the Quickstart.** Steps 1–3 report the _state_ of your
+  tests; `mjolnir ci verify` reports the _change_, the only question a reviewer
+  has about a diff. `--save-baseline` writes `.mjolnir/baseline.json`; `ci
+verify` reports RESOLVED (of which only `VERIFIED-RESOLVED` is a fix claim) and
+  NEW, under a `0`/`1`/`2` exit contract. Agents were taught this at
+  `src/commands/install-agents.ts:58`; humans had no way to find it.
+- **Governing prose that had gone stale behind the code** was corrected:
+  `rule-author` and `surface-law` both asserted the core tier was empty, and the
+  archived `RULE_CERTIFICATION.md` now carries a SUPERSEDED banner marking its
+  `core` column a fossil of the deleted `registry-census` predicate.
+
+### Not claimed
+
+The five `REMOTE_PROVEN` requirements in `candidate-trust-manifest.json` —
+protected holdout, real-world repositories, platform matrix, consumer install,
+remote workflow — are **not** satisfied, and `releaseAuthorizationState` remains
+`NOT_AUTHORIZED`. `npm run candidate:readiness` reports exactly what is missing.
+That gate exists so "measured" cannot be upgraded by assertion.
+
 ## [Unreleased]
 
 ### Two core rules, measured: QA-PW-117 and QA-JV-101 - `ANTI-CREEP-EXCEPTION`
