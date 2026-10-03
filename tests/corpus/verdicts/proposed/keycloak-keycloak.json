@@ -1,0 +1,117 @@
+{
+  "_meta": {
+    "stagedAt": "2026-10-03",
+    "status": "STAGED — NOT APPLIED. Apply with `npm run corpus:apply-verdicts tests/corpus/verdicts/proposed/keycloak-keycloak.json` after a person ratifies.",
+    "whyStaged": "tests/corpus/verdicts/README.md:191 — a committed verdict is immutable. Staging is the only reversible form; apply-verdicts is the irreversible act and needs a human.",
+    "method": "Every row was read at the corpus PINNED commit (keycloak @ 421c23f5221d) via `npm run corpus:verdict-context`, not judged from the rule's metadata. The convention followed is the one the 10 already-committed QA-JV-101 rows and 19 already-committed QA-PW-117 rows in this same file establish.",
+    "projected": {
+      "QA-PW-117": {
+        "n": "24 -> 34",
+        "fp": "0 -> 0",
+        "ciHigh": "13.80% -> 10.15%",
+        "clearsCoreCeiling": false
+      },
+      "QA-JV-101": {
+        "n": "23 -> 32",
+        "fp": "0 -> 0",
+        "ciHigh": "14.31% -> 10.72%",
+        "clearsCoreCeiling": false
+      }
+    },
+    "verdict": "NEITHER RULE EARNS CORE FROM THIS PASS. The 10% core ceiling is cleared at n=35 with zero false positives (Wilson: z^2/(n+z^2) = 9.89%); 34 gives 10.15% and 32 gives 10.72%. 6.0 stays open, and the shortfall is arithmetic, not judgement — see the four RETRACT rows below, which are why the count is 19 usable rows rather than 23."
+  },
+  "keycloak-keycloak": {
+    "QA-PW-117|js/apps/admin-ui/test/clients/saml.spec.ts|87": {
+      "verdict": "TP",
+      "note": "adjudicated 2026-10-03 from source saml.spec.ts:87-116: serial suite over a shared SAML client — `let clientId` created in beforeEach and deleted in afterEach, and each test mutates that one client's settings (clickPostBinding/saveSamlSettings, then the signature path). A failure in the settings test cascades to every test after it. No justification comment in the rule's window."
+    },
+    "QA-PW-117|js/apps/admin-ui/test/clients/scope.spec.ts|52": {
+      "verdict": "TP",
+      "note": "adjudicated 2026-10-03 from source scope.spec.ts:52-97: serial suite sharing a realm and client created in beforeAll, with seven client scopes created there and the realm deleted in afterAll. The suite adds and removes scope mappings against exactly that finite scope list, so the tests consume state the suite set up and a failure leaves the rest working on a half-mutated realm. No justification comment."
+    },
+    "QA-PW-117|js/apps/admin-ui/test/clients/scope.spec.ts|202": {
+      "verdict": "TP",
+      "note": "adjudicated 2026-10-03 from source scope.spec.ts:202-234: nested serial suite over a realm, client and two users created in beforeAll; the evaluate tests read effective protocol mappers and generated id tokens that earlier tests grant. No justification comment."
+    },
+    "QA-PW-117|js/apps/admin-ui/test/clients/ssf-receiver.spec.ts|14": {
+      "verdict": "TP",
+      "note": "adjudicated 2026-10-03 from source ssf-receiver.spec.ts:14-46: serial suite over a realm and SSF client created in beforeAll, deleted in afterAll; the tests drive the receiver form's Save/Revert against that one client. The file's comment explains why the SSF tab is asserted rather than skipped, which is a different question from why the block is serial. No justification comment."
+    },
+    "QA-PW-117|js/apps/admin-ui/test/clients/ssf-stream.spec.ts|13": {
+      "verdict": "TP",
+      "note": "adjudicated 2026-10-03 from source ssf-stream.spec.ts:13-43: serial suite over a realm and SSF client whose push allowlist is seeded in beforeAll precisely so create-stream is accepted; the stream-creation tests depend on that seeded client. No justification comment."
+    },
+    "QA-PW-117|js/apps/admin-ui/test/clients/ssf-subjects.spec.ts|15": {
+      "verdict": "TP",
+      "note": "adjudicated 2026-10-03 from source ssf-subjects.spec.ts:15-49: serial suite over a realm, client and real user created in beforeAll — the user exists because the subject endpoints resolve the value to a Keycloak user and 404 on an unknown one. Tests POST subject actions against that shared setup. No justification comment."
+    },
+    "QA-PW-117|js/apps/admin-ui/test/clients/ssf.spec.ts|18": {
+      "verdict": "TP",
+      "note": "adjudicated 2026-10-03 from source ssf.spec.ts:18-58: serial suite over a realm holding two clients created in beforeAll (one SSF-enabled, one plain) — the tests assert the SSF tab is shown for one and hidden for the other, so they share the realm whose transmitter opt-in the beforeAll sets. No justification comment."
+    },
+    "QA-PW-117|js/apps/admin-ui/test/events/list.spec.ts|24": {
+      "verdict": "TP",
+      "note": "adjudicated 2026-10-03 from source list.spec.ts:24-55: outer serial suite creating the realm and the realm-admin user in beforeAll and deleting the realm in afterAll. Both nested serial blocks below it depend on exactly that realm and user, so the outer serial is what gives them a shared, reproducible fixture. No justification comment."
+    },
+    "QA-PW-117|js/apps/admin-ui/test/events/list.spec.ts|57": {
+      "verdict": "TP",
+      "note": "adjudicated 2026-10-03 from source list.spec.ts:57-69: `test.describe.serial(\"User events list empty\")` asserts the events table is EMPTY. That assertion is only true before the sibling block at :71 runs — its beforeAll calls enableSaveEvents on the shared realm. The block is order-dependent on a sibling and declares no justification for it, which is the precise claim the rule makes."
+    },
+    "QA-PW-117|js/apps/admin-ui/test/events/list.spec.ts|71": {
+      "verdict": "TP",
+      "note": "adjudicated 2026-10-03 from source list.spec.ts:71-116: `test.describe.serial(\"User events with events\")` flips a server-wide setting (enableSaveEvents) in beforeAll and then reads the events table, with `expandRow(page, tableName, 0)` addressing row 0 — the row order is produced by the logins the sibling tests perform. Serial is load-bearing and undocumented."
+    },
+    "QA-JV-101|model/infinispan/src/test/java/org/keycloak/jgroups/protocol/JdbcPing2Test.java|75": {
+      "verdict": "TP",
+      "note": "adjudicated 2026-10-03 from source JdbcPing2Test.java:70-81: @Ignore on testConcurrentStartupMultipleTimes, documented as ~8 minutes for 100 iterations. The concurrent-convergence path is excluded from every run, so a convergence regression ships green. The inline timing comment states WHY it is slow and not that the coupling is intended — the same shape as the committed TP at :63 for the 8-minute stress test."
+    },
+    "QA-JV-101|model/infinispan/src/test/java/org/keycloak/models/sessions/infinispan/initializer/ConcurrencyVersioningTest.java|49": {
+      "verdict": "TP",
+      "note": "adjudicated 2026-10-03 from source ConcurrencyVersioningTest.java:43-52: class-level @Ignore on the whole class, whose stated purpose is 'make sure our model caching concurrency model will work'. The entire concurrency-model suite is unverified in runs. Matches the committed class-level @Ignore TPs (CryptoPerfTest, FIPS1402JWKTest)."
+    },
+    "QA-JV-101|quarkus/runtime/src/test/java/org/keycloak/quarkus/runtime/cli/PicocliTest.java|580": {
+      "verdict": "TP",
+      "note": "adjudicated 2026-10-03 from source PicocliTest.java:580-586: @Ignore(\"Not valid until db is required for production\") on testDBRequiredAutoBuild. The 'export requires an explicit db' requirement is asserted nowhere in any run, which is the finding the rule makes. The reason explains why the test fails today; it does not make the requirement verified. Consistent with the committed TP for @Disabled('slow, run manually') — a stated reason does not rescue a disabled assertion under this rule."
+    },
+    "QA-JV-101|rest/admin-v2/tests/src/test/java/org/keycloak/tests/admin/client/v2/ClientApiV2Test.java|1028": {
+      "verdict": "TP",
+      "note": "adjudicated 2026-10-03 from source ClientApiV2Test.java:1027-1034: @Disabled(\"Root URL fragment validation not yet implemented in V2 API\") — the test asserts create-client REJECTS a root URL carrying a fragment, and it is disabled because the V2 API does not implement that validation. The unvalidated input is real and the server accepts it in every run."
+    },
+    "QA-JV-101|rest/admin-v2/tests/src/test/java/org/keycloak/tests/admin/client/v2/ClientApiV2Test.java|1056": {
+      "verdict": "TP",
+      "note": "adjudicated 2026-10-03 from source ClientApiV2Test.java:1055-1059: same disabled SAML-client root-URL-fragment validation as :1028."
+    },
+    "QA-JV-101|rest/admin-v2/tests/src/test/java/org/keycloak/tests/admin/client/v2/ClientApiV2Test.java|1084": {
+      "verdict": "TP",
+      "note": "adjudicated 2026-10-03 from source ClientApiV2Test.java:1083-1090: same disabled root-URL-fragment validation, update path — client-update accepts a fragment and is never checked in a run."
+    },
+    "QA-JV-101|rest/admin-v2/tests/src/test/java/org/keycloak/tests/admin/client/v2/ClientApiV2Test.java|1112": {
+      "verdict": "TP",
+      "note": "adjudicated 2026-10-03 from source ClientApiV2Test.java:1111-1118: same disabled root-URL-fragment validation, SAML update path."
+    },
+    "QA-JV-101|rest/admin-v2/tests/src/test/java/org/keycloak/tests/admin/client/v2/ClientQueryTest.java|176": {
+      "verdict": "TP",
+      "note": "adjudicated 2026-10-03 from source ClientQueryTest.java:170-182: bare @Disabled on filterByRolesWithAnd, under a long comment explaining that current behaviour flattens an `and` filter into a single join and describing the correct semantics. The predicate translation the comment describes is precisely what is unverified in runs — the comment is the strongest evidence the gap is real."
+    },
+    "QA-JV-101|rest/admin-v2/tests/src/test/java/org/keycloak/tests/admin/client/v2/ClientQueryTest.java|345": {
+      "verdict": "TP",
+      "note": "adjudicated 2026-10-03 from source ClientQueryTest.java:339-351: bare @Disabled on filterByLoginFlows, under a comment describing a model-to-array transposition and that the JPA logic would need rewriting to support it. The search behaviour is unverified in every run."
+    },
+    "QA-JV-101|core/src/test/java/org/keycloak/jose/JWETest.java|74": {
+      "verdict": "RETRACT",
+      "note": "adjudicated 2026-10-03 — ORPHANED, removed rather than judged. At the pinned commit (keycloak @ 421c23f5221d) line 74 is `@Test`; the `@Ignore` is on line 73, and that annotation is already adjudicated TP at :73. The row was sampled with a line number one past the token the rule matches, so a verdict here would measure a finding that is not at this line — and would count the same annotation twice. This is the README orphan rule ('the cited line no longer exists ... the row is orphaned — remove it')."
+    },
+    "QA-JV-101|core/src/test/java/org/keycloak/jose/JWETest.java|114": {
+      "verdict": "RETRACT",
+      "note": "adjudicated 2026-10-03 — ORPHANED. Line 114 is `@Test`; the `@Ignore` is on line 113, already adjudicated TP at :113."
+    },
+    "QA-JV-101|core/src/test/java/org/keycloak/jose/JWETest.java|203": {
+      "verdict": "RETRACT",
+      "note": "adjudicated 2026-10-03 — ORPHANED. Line 203 is `@Test`; the `@Ignore` is on line 202, already adjudicated TP at :202."
+    },
+    "QA-PW-117|js/apps/admin-ui/test/clients/details.spec.ts|20": {
+      "verdict": "RETRACT",
+      "note": "adjudicated 2026-10-03 — ORPHANED. Line 20 is `const clientId = `client-details-${uuid()}`;` — no `test.describe.serial` on it and none on either adjacent line, so the rule does not fire there. details.spec.ts:16 IS already adjudicated TP for the serial block above this line, so the sample line drifted onto the first test's body. Removed rather than guessed."
+    }
+  }
+}

@@ -9,8 +9,8 @@
       "extended": 45
     },
     "measured": 73,
-    "measuredAtStaleRevision": 0,
-    "capabilities": 27,
+    "measuredAtStaleRevision": 2,
+    "capabilities": 14,
     "maxReachableMaturity": "M2_IMPLEMENTED",
     "unreachableLevels": [
       "M3_FIXTURE_VERIFIED",

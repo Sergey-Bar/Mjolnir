@@ -19,7 +19,8 @@
  */
 
 import { existsSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import type { Output } from "../cli-io.js";
 import {
   internalErrorMessage,
@@ -46,17 +47,45 @@ export function runDoctorCommand(
     io.err("Usage: mjolnir doctor [--json] [repo-root]");
     return 10;
   }
-  const targetArg = argv.find((a) => !a.startsWith("-")) ?? process.cwd();
+  const explicitTarget = argv.find((a) => !a.startsWith("-"));
+  /**
+   * NO target means "audit the checkout this command is part of".
+   *
+   * It used to mean `process.cwd()`, which was a real bug with a narrow blast
+   * radius: running `mjolnir doctor` from a SUBDIRECTORY of a checkout found no
+   * `tests/fixtures` there and exited 2, telling the user to "run from the
+   * mjolnir repo root" — which they were already in, just one level down.
+   * Resolving from `import.meta.url` fixes that case exactly.
+   *
+   * It deliberately does NOT make the audit work from an installed package. A
+   * self-audit verifies this tool's registry against its own corpus and
+   * fixtures, and neither ships: `tests/` and `docs/` are excluded from the
+   * published tarball on purpose (`files` in package.json, locked by
+   * `tests/integrations/package-smoke.spec.ts`) because ~2.5 MB of corpus
+   * verdicts and fixture data on every install is a bad trade for every user
+   * to make on behalf of a command most of them will never run. Making it work
+   * anyway would have meant either overriding that policy or adding a
+   * "checks that did not run" surface to a report whose contract says an
+   * INCONCLUSIVE never renders as pass. Both are owner decisions, so the
+   * exit-2 message below now says exactly what to do instead.
+   */
+  const targetArg = explicitTarget ?? installedPackageRoot();
   try {
     // Fixtures live under <repo>/tests/fixtures relative to the target.
     const fixturesRoot = resolve(join(targetArg, "tests", "fixtures"));
     if (!existsSync(fixturesRoot)) {
       io.err(
-        `No fixtures directory at ${fixturesRoot}. Run from the mjolnir repo root.`,
+        `No fixtures directory at ${fixturesRoot}.\n` +
+          "`mjolnir doctor` is a SELF-AUDIT and needs an mjolnir checkout — it verifies\n" +
+          "this tool's own registry against its own corpus and fixtures, and neither\n" +
+          "ships in the published package (tests/ and docs/ are excluded on purpose:\n" +
+          "see the 'files' whitelist in package.json, locked by\n" +
+          "tests/integrations/package-smoke.spec.ts).\n" +
+          "Pass a checkout explicitly:  mjolnir doctor <path-to-mjolnir>",
       );
       return 2;
     }
-    const report = runDoctorSelfAudit(fixturesRoot);
+    const report = runDoctorSelfAudit(fixturesRoot, resolve(targetArg));
     if (json) {
       // Exactly one JSON document on stdout; no trailing chatter.
       io.out(JSON.stringify(doctorReportJson(report), null, 2));
@@ -67,5 +96,33 @@ export function runDoctorCommand(
   } catch (err) {
     internalErrorMessage(err, io.err, process.argv.includes("--debug"));
     return 20;
+  }
+}
+
+/**
+ * The root of the checkout (or package) this module belongs to, derived from
+ * its own location rather than from `process.cwd()`.
+ *
+ * Falls back to `process.cwd()` only when the module path cannot be resolved at
+ * all, which in practice means a bundler inlined it without preserving
+ * `import.meta.url`. The fallback keeps the command running; the exit-2 message
+ * then names the directory it tried, so the failure is still legible.
+ */
+function installedPackageRoot(): string {
+  try {
+    const here = dirname(fileURLToPath(import.meta.url));
+    // src/commands/doctor-run.ts -> 3 levels up; dist/commands/* -> 2. Take
+    // whichever ancestor actually ships `tests/fixtures`, so the layout does not
+    // have to be assumed twice.
+    let dir = here;
+    for (let i = 0; i < 5; i++) {
+      if (existsSync(join(dir, "tests", "fixtures"))) return dir;
+      const parent = dirname(dir);
+      if (parent === dir) break;
+      dir = parent;
+    }
+    return resolve(here, "..", "..");
+  } catch {
+    return process.cwd();
   }
 }

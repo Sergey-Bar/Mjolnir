@@ -17,12 +17,20 @@
  * not fail because the legs are missing (they are, and they are the Wave 3
  * backfill's work list, not a defect anyone introduced today). It fails only
  * when a claim outruns its evidence. Missing legs are printed and counted on
- * every run; pass `--write` to also persist the census to
- * `docs/FIXTURE-QUAD.json` so a backfill in progress is visible in a diff
- * rather than only in a terminal.
+ * every run, and the census is WRITTEN to `docs/FIXTURE-QUAD.json` on every run
+ * so a backfill in progress is visible in a diff rather than only in a
+ * terminal. `--check` verifies the committed artifact instead of writing it.
  *
- * Usage: node scripts/v6/check-fixture-quad.ts [--root=<dir>] [--write] [--verdicts]
- * Exit codes: 0 = no over-claim, 1 = a capability claims M3 without its legs.
+ * It also enforces the PRECISION ratchet (`docs/PRECISION-RATCHET.json`): the
+ * count of live rules with an explicitly classified TN leg may not fall below
+ * the recorded floor. Raise it with `--update-precision`, never by editing the
+ * file — the flag writes the diff of rules that gained the leg, which is the
+ * evidence a hand edit cannot produce.
+ *
+ * Usage: node scripts/v6/check-fixture-quad.ts [--root=<dir>] [--check] [--verdicts] [--update-precision]
+ * Exit codes: 0 = no over-claim and the PRECISION ratchet holds, 1 = a capability
+ * claims M3 without its legs OR the ratchet fell below its floor, 2 = `--check`
+ * found a stale or missing artifact.
  */
 
 import { execFileSync } from "node:child_process";
@@ -151,8 +159,116 @@ const capabilityCoverage = registry.entries
   })
   .sort((a, b) => a.complete / a.of - b.complete / b.of);
 
+/**
+ * THE PRECISION RATCHET — the number of live rules with an explicitly
+ * classified TN leg.
+ *
+ * This is the arm that was missing. RECALL and MUST-FIRE are satisfied by a
+ * finding; MUST-NOT-FIRE by the existence of a directory. PRECISION alone
+ * requires someone to have CLASSIFIED the detector as silent on a real input —
+ * `quadFor` reads it as `tn > 0 && fp === 0`, and the "absence of an
+ * accusation is not a finding of innocence" comment above it is the reason.
+ * Nothing in the shipped registry had one, so no rule had ever been shown
+ * capable of staying quiet, and the ceiling that would have caught that
+ * (`M3_FIXTURE_VERIFIED`) was unreachable anyway.
+ *
+ * It is a RATCHET and not a target, for the same reason the unclassified
+ * ceiling and `MAX_UNMEASURED_CORE` are: a gate that went red on all 79 rules
+ * on day one would stay red and read as noise, which is exactly how raising
+ * `MAX_SAMPLES_PER_RULE` produced 1,121 unadjudicated rows nobody looked at.
+ * The floor moves only UP, only via `--update`, and the recorded diff is the
+ * evidence.
+ *
+ * It is deliberately SEPARATE from the over-claim check below. They can fail
+ * independently, and collapsing them into one status is how a backfill that
+ * adds no TN legs gets reported as a precision failure — a mislabel that would
+ * send the next maintainer to the wrong work list. `unsure-ceiling.json` and
+ * `MAX_UNMEASURED_CORE` (47 -> 40) are the same pattern in two other places.
+ */
+const PRECISION_RATCHET = join(ROOT, "docs", "PRECISION-RATCHET.json");
+
+function precisionRatchetFloor(): number {
+  if (!existsSync(PRECISION_RATCHET)) return 0;
+  const parsed: unknown = JSON.parse(readFileSync(PRECISION_RATCHET, "utf8"));
+  const floor = (parsed as { floor?: unknown }).floor;
+  if (typeof floor !== "number" || !Number.isInteger(floor) || floor < 0) {
+    throw new Error(
+      `docs/PRECISION-RATCHET.json: floor must be a non-negative integer, got ${JSON.stringify(floor)}. ` +
+        "A ratchet whose own floor is unreadable cannot be enforced, and defaulting it to 0 would " +
+        "silently delete the check.",
+    );
+  }
+  return floor;
+}
+
+/** Live rules whose PRECISION leg is satisfied by a classified TN. */
+const precisionProven = census
+  .filter((row) => row.present.includes("PRECISION"))
+  .map((row) => row.ruleId)
+  .sort();
+
+const precisionFloor = precisionRatchetFloor();
+const precisionOk = precisionProven.length >= precisionFloor;
+
+if (process.argv.includes("--update-precision")) {
+  if (precisionProven.length === precisionFloor) {
+    console.log(
+      `precision ratchet: unchanged at ${precisionFloor} (${precisionProven.length} rules with a TN leg)`,
+    );
+  } else {
+    // The diff NAMES every rule that gained the leg. A ratchet whose floor can
+    // move by any amount to any value, with no record of what moved, is a
+    // number somebody typed — so the gained set is computed against the rules
+    // the previous recording listed, and written into the file.
+    const previous = existsSync(PRECISION_RATCHET)
+      ? (
+          JSON.parse(readFileSync(PRECISION_RATCHET, "utf8")) as {
+            rules?: unknown;
+          }
+        ).rules
+      : undefined;
+    const before = new Set(
+      Array.isArray(previous)
+        ? previous.filter((v) => typeof v === "string")
+        : [],
+    );
+    const gained = precisionProven.filter((id) => !before.has(id));
+    mkdirSync(dirname(PRECISION_RATCHET), { recursive: true });
+    writeFileSync(
+      PRECISION_RATCHET,
+      JSON.stringify(
+        {
+          floor: precisionProven.length,
+          note:
+            `Live rules whose PRECISION leg holds — an explicitly classified TN row and no FP. ` +
+            `Raised from ${precisionFloor} to ${precisionProven.length}. ` +
+            `WHAT THIS IS NOT: most of these TN rows were produced by EXECUTING the scanner over ` +
+            `the rule's own fixtures (npm run check-fixture-quad --verdicts), so they prove the ` +
+            `detector is DIRECTIONAL — it fires on the case built for it and is silent on the ` +
+            `clean case. That is a wiring proof, not an accuracy proof, and a self-derived one. ` +
+            `The accuracy axis is MEASURED_FP over held-out corpus rows (docs/HOLDOUT-SPLIT.json). ` +
+            `Criteria for a HAND-classified leg: tests/corpus/verdicts/README.md.`,
+          gained,
+          rules: precisionProven,
+          updatedAt: process.env.SOURCE_DATE_EPOCH
+            ? new Date(
+                Number(process.env.SOURCE_DATE_EPOCH) * 1000,
+              ).toISOString()
+            : new Date().toISOString(),
+        },
+        null,
+        2,
+      ) + "\n",
+      "utf8",
+    );
+    console.log(
+      `precision ratchet: ${precisionFloor} -> ${precisionProven.length} (+${precisionProven.length - precisionFloor})`,
+    );
+  }
+}
+
 const report = {
-  status: overClaims.length === 0 ? "PASS" : "FAIL",
+  status: overClaims.length === 0 && precisionOk ? "PASS" : "FAIL",
   gate: "check-fixture-quad",
   rules: census.length,
   rulesWithCompleteQuad: complete.length,
@@ -161,6 +277,25 @@ const report = {
   missingByLeg,
   /** Per-capability coverage, as a ratio, so `some` is visible. */
   capabilityCoverage,
+  /**
+   * The PRECISION arm, kept as its own section rather than folded into
+   * `status`, because it fails for a different reason and points at different
+   * work. A reader who sees FAIL and looks only at `overClaims` is looking at
+   * the wrong list.
+   */
+  precision: {
+    ratchetFloor: precisionFloor,
+    proven: precisionProven.length,
+    ok: precisionOk,
+    rules: precisionProven,
+    belowFloor: precisionOk
+      ? []
+      : [
+          `${precisionProven.length} rule(s) have a classified TN leg, below the ratchet floor of ${precisionFloor}. ` +
+            "A backfill was reverted, or a verdict row was withdrawn. Classify the TN legs, or " +
+            "lower the floor deliberately with --update-precision.",
+        ],
+  },
   /** Capabilities that advertise M3 with no complete quad behind it. */
   overClaims: overClaims.map((entry) => ({
     id: entry.id,
@@ -180,7 +315,47 @@ const report = {
     "not an accuracy proof, and the two are reported separately for that reason.",
 };
 
-if (process.argv.includes("--write")) {
+/**
+ * The report is WRITTEN by default, and `--check` is the opt-out.
+ *
+ * It used to be written only under `--write`, and nothing in this repository
+ * passes `--write`. So the gate ran on every pull request, printed a census to
+ * a terminal nobody reads, and left no artifact behind — which means a backfill
+ * in progress was invisible in a diff, and the only record of the quad state
+ * was the last console line of whoever happened to run it. A gate whose output
+ * cannot be reviewed after the fact is a gate whose claim is unreviewable.
+ *
+ * Writing by default makes the artifact drift-gated: CI runs this on every PR
+ * and a rule that gains or loses a leg now shows up as a diff in
+ * `docs/FIXTURE-QUAD.json` that a reviewer can read, rather than as a number
+ * that changed.
+ *
+ * `--check` is what `--write` was for before it was used: verify the committed
+ * artifact matches a fresh render and write nothing. It is deliberately NOT the
+ * default, because a check-mode gate is the status quo this change is fixing.
+ */
+const CHECK_ONLY = process.argv.includes("--check");
+
+if (CHECK_ONLY) {
+  const live = JSON.stringify(report, null, 2) + "\n";
+  if (!existsSync(REPORT)) {
+    console.error(
+      `fixture-quad: ${REPORT} does not exist. Run \`npm run check-fixture-quad\` ` +
+        "once to write it, or drop --check to write it now.",
+    );
+    process.exit(2);
+  }
+  if (readFileSync(REPORT, "utf8") !== live) {
+    console.error(
+      `fixture-quad: ${REPORT} is stale — the live census differs. ` +
+        "Run `npm run check-fixture-quad` to re-record it and read the diff.",
+    );
+    process.exit(2);
+  }
+  console.log(
+    `fixture-quad: ${REPORT} matches the live census (${report.rules} rules)`,
+  );
+} else {
   mkdirSync(dirname(REPORT), { recursive: true });
   const next = JSON.stringify(report, null, 2) + "\n";
   if (existsSync(REPORT) && readFileSync(REPORT, "utf8") === next) {
@@ -193,10 +368,22 @@ if (process.argv.includes("--write")) {
 
 console.log(JSON.stringify(report, null, 2));
 if (report.status === "FAIL") {
-  console.error(
-    `\ncheck-fixture-quad: ${overClaims.length} capability/capabilities advertise M3 ` +
-      "without a complete fixture quad. M3 is a claim about behaviour; the fixture " +
-      "directories are a claim about files.",
-  );
+  // The two failures are named separately, because they are different defects
+  // with different work lists and a reader who is told only "FAIL" has to
+  // guess which one they are looking at.
+  if (overClaims.length > 0) {
+    console.error(
+      `\ncheck-fixture-quad: ${overClaims.length} capability/capabilities advertise M3 ` +
+        "without a complete fixture quad. M3 is a claim about behaviour; the fixture " +
+        "directories are a claim about files.",
+    );
+  }
+  if (!precisionOk) {
+    console.error(
+      `\ncheck-fixture-quad: PRECISION ratchet — ${precisionProven.length} rule(s) with a ` +
+        `classified TN leg, floor is ${precisionFloor}. This is the arm that proves a detector ` +
+        "can STAY QUIET, and absence of an accusation is not a finding of innocence.",
+    );
+  }
   process.exit(1);
 }

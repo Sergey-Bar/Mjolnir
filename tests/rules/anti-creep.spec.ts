@@ -691,11 +691,17 @@ describe("the quarantine tier has the same owner/date/exit obligation", () => {
     const result = checkQuarantineOwnership();
     expect(result.status, result.details.join("\n")).toBe("pass");
     const summary = result.details[0] ?? "";
-    expect(summary).toMatch(/quarantine rules carry no quarantinePromotion/);
-    // The failure direction: a count that FALLS must not be a failure. If it
-    // were, the check could only be satisfied by filling the field in, and
-    // filling a field in is not the same as deciding a rule's fate.
-    expect(summary).toContain("permanent by default");
+    // Updated with the check (A8): the backlog is no longer REPORTED as a
+    // count, because a count can only ratchet and the defect was silence. Every
+    // quarantined rule must now be accounted for by a promotion or a recorded
+    // disposition, and the summary says which of those two things it is looking
+    // for — so a maintainer reading one line knows what to do.
+    expect(summary).toMatch(/rule\(s\) in quarantine/);
+    expect(summary).toContain("quarantinePromotion");
+    // The failure direction, restated for the new vocabulary: carrying a record
+    // is not a failure. If it were, the check could only be satisfied by adding
+    // records, which is not the same as deciding a rule's fate.
+    expect(summary).toContain("silence is the failure");
   });
 
   it("a quarantine rule that DOES carry a defective promotion is blocking", () => {
@@ -739,14 +745,14 @@ describe("the quarantine tier has the same owner/date/exit obligation", () => {
       },
     ]);
     expect(result.status, result.details.join("\n")).toBe("pass");
-    // The backlog line now reads 0/1, which is the check's whole point: a
-    // rule WITH a record stops being counted. Asserted on the count rather
-    // than the absence of a word, because the summary always mentions the
-    // field.
-    expect(
-      result.details[0],
-      "the backlog line did not fall to zero",
-    ).toContain("0/1 quarantine rules");
+    // A rule that CARRIES a promotion is not asked for a disposition, which is
+    // the whole point: carrying a record is an acceptable way to discharge the
+    // obligation, so adding one cannot be a failure. Asserted by passing the
+    // planted rule ALONE — with no other quarantined rule in the list, there is
+    // no disposition register entry for it either, so a check that demanded a
+    // disposition regardless of the promotion would fail here.
+    expect(result.details[0]).toContain("1 rule(s) in quarantine");
+    expect(result.details.join("\n")).not.toContain("NO disposition");
   });
 });
 

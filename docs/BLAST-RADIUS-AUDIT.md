@@ -7,13 +7,13 @@ contract enforces: **every external import in src/ must belong to the
 allowlist**, and the shipped surface (adapters, rules, flags, formats, exit
 codes) must match this document exactly.
 
-## Inventory: 303 files, 72689 LOC
+## Inventory: 304 files, 73437 LOC
 
 | Area              | Files | LOC   |
 | ----------------- | ----- | ----- |
-| src/rules         | 86    | 12404 |
-| src/engine        | 44    | 12140 |
-| src/commands      | 34    | 11988 |
+| src/rules         | 87    | 12818 |
+| src/engine        | 44    | 12264 |
+| src/commands      | 34    | 12198 |
 | src/v6            | 10    | 6206  |
 | src/(root)        | 8     | 3965  |
 | src/reporter      | 14    | 3778  |
@@ -46,19 +46,19 @@ codes) must match this document exactly.
 | Module                          | Importers |
 | ------------------------------- | --------- |
 | src/types                       | 125       |
-| src/rules/rule                  | 82        |
+| src/rules/rule                  | 83        |
 | src/rules/shared/positions      | 62        |
 | src/cli-io                      | 21        |
-| src/lib/compare                 | 19        |
+| src/lib/compare                 | 20        |
 | src/lib/safe-json               | 18        |
 | src/forensics/types             | 18        |
-| src/rules/index                 | 16        |
+| src/rules/index                 | 17        |
 | src/reporter/ui                 | 15        |
 | src/engine/adapter              | 14        |
 | src/lib/fs-atomic               | 14        |
-| src/rules/measured-fp.generated | 14        |
+| src/rules/measured-fp.generated | 13        |
 | src/engine/degradation-ledger   | 12        |
-| src/rules/measurement           | 11        |
+| src/rules/measurement           | 12        |
 | src/discovery/ignores           | 10        |
 
 ## External dependency allowlist (containment)
@@ -69,7 +69,7 @@ codes) must match this document exactly.
 | node:path          | 64                 |
 | node:crypto        | 14                 |
 | ts-morph           | 7                  |
-| node:url           | 4                  |
+| node:url           | 5                  |
 | node:child_process | 4                  |
 | web-tree-sitter    | 3                  |
 | yaml               | 2                  |

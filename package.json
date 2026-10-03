@@ -28,6 +28,8 @@
     "mcp": "node dist/mcp/stdio.mjs",
     "test": "npm run skip:budget:init && vitest run --reporter=default --reporter=./scripts/vitest-skip-budget-reporter.mjs",
     "test:integration": "vitest run tests/integrations",
+    "test:fast": "vitest run tests/adapters tests/adversarial tests/agent tests/anti-gaming tests/bench tests/benchmark tests/blast-radius tests/brand tests/certification tests/claims tests/config tests/corpus tests/discovery tests/engine tests/enterprise tests/false-green tests/forensics tests/frameworks tests/fuzz tests/lib tests/mcp tests/plugins tests/release tests/reporters tests/roadmap tests/rules tests/scope tests/scorer tests/store tests/trust tests/v6",
+    "test:slow": "vitest run tests/audit tests/cli tests/commands tests/contract tests/e2e tests/integrations",
     "test:mcp:parity": "vitest run tests/mcp/parity.spec.ts",
     "frontier:contracts": "vitest run tests/contract/",
     "test:release": "vitest run tests/release tests/commands/release-trust-arms.spec.ts",
@@ -88,9 +90,10 @@
     "docs:provenance-drift": "tsx scripts/check-provenance-artifacts.ts",
     "docs:core-readiness": "tsx scripts/core-readiness.ts",
     "check-fixture-quad": "tsx scripts/v6/check-fixture-quad.ts",
+    "holdout:split": "tsx scripts/v6/check-holdout-split.ts",
     "rules:promotion:check": "tsx scripts/v6/check-promotion-throughput.mjs",
     "docs:provenance-drift:fix": "npm run docs:registry && npm run docs:v6-inventory",
-    "gates:claim-integrity": "npm run workflow:scripts && npm run config:consumers && npm run scripts:reachable && npm run check-unimported-modules && npm run check-cli-contract && npm run check-carve-manifest && npm run check-certification-surface && npm run docs:certification-matrix:check && npm run docs:certification-gaps:check && npm run check-concepts && npm run qa-ir:parity && npm run check-fixture-quad && npm run check-detector-hashes && npm run rules:promotion:check && npm run docs:provenance-drift && npm run docs:roadmap:backlinks && npm run entry-points:check",
+    "gates:claim-integrity": "npm run workflow:scripts && npm run config:consumers && npm run scripts:reachable && npm run check-unimported-modules && npm run check-cli-contract && npm run check-carve-manifest && npm run check-certification-surface && npm run docs:certification-matrix:check && npm run docs:certification-gaps:check && npm run check-concepts && npm run qa-ir:parity && npm run check-fixture-quad && npm run holdout:split && npm run conformity && npm run check-detector-hashes && npm run rules:quality:check && npm run rules:promotion:check && npm run docs:provenance-drift && npm run docs:roadmap:backlinks && npm run entry-points:check",
     "ci-local": "npm run certify:ci && npm run test:property && npm run test:fuzz && npm run coverage:ratchet && npm run audit:ci && npm run brand:doctor && npm run brand:doctor:selftest && npm run brand:fonts:check && npm run doctor && npm run ci-local:parity",
     "verify:isolation": "node scripts/verify-remediation-isolation.mjs",
     "golden:update": "tsx tests/golden/gen.ts",
@@ -162,7 +165,8 @@
     "docs:certification-matrix": "tsx scripts/generate-certification-matrix.ts",
     "docs:certification-matrix:check": "tsx scripts/generate-certification-matrix.ts --check",
     "docs:certification-gaps": "tsx scripts/generate-certification-gaps.ts",
-    "docs:certification-gaps:check": "tsx scripts/generate-certification-gaps.ts --check"
+    "docs:certification-gaps:check": "tsx scripts/generate-certification-gaps.ts --check",
+    "conformity": "tsx scripts/check-conformity.ts"
   },
   "keywords": [
     "qa",

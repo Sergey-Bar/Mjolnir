@@ -56,6 +56,7 @@ import type { QADoctorRule } from "./rule.js";
 import { MEASURED_FP, MEASURED_FP_RAW } from "./measured-fp.generated.js";
 import { RETIRED_RULE_IDS } from "./index.js";
 import { wilsonInterval, type WilsonInterval } from "../lib/wilson.js";
+import { compareCodePoints } from "../lib/compare.js";
 
 export type Tier = "core" | "extended" | "quarantine";
 
@@ -410,4 +411,179 @@ export function isProvisional(rule: QADoctorRule): boolean {
  */
 export function isRetiredRule(ruleId: string): boolean {
   return RETIRED_RULE_IDS.includes(ruleId);
+}
+
+/* ------------------------------------------------------------------ *
+ * THE HELD-OUT SPLIT
+ *
+ * `docs/claim-registry.json` blocks the `rule-registry-census` claim with
+ * one sentence: "Promoting this needs a classifier that has never seen the
+ * verdicts it is scored against." This is that split.
+ *
+ * WHY IT IS BY REPOSITORY AND NEVER BY ROW
+ *
+ * Splitting by row is trivially re-drawable. Take any classifier, and a
+ * per-row split can be searched until the held-out half agrees with the
+ * measurement half — that is fitting the split to the answer, and it makes
+ * the number worse rather than the model better. A repository is the unit a
+ * verdict row actually comes from: rows in one file are findings from one
+ * codebase, one team, one idiom, one set of conventions. A per-row split
+ * puts the same file — often the same test — in both halves, which is
+ * leakage wearing a partition's clothes. So the unit is the corpus
+ * repository, whole.
+ *
+ * WHY THE ASSIGNMENT IS A HASH AND NOT A LIST
+ *
+ * A committed hand-written list can be re-drawn the moment it is
+ * inconvenient, and nothing in the tree would show it. A salted hash makes
+ * the split a pure function of the repository id: the same input always
+ * yields the same partition, forever, and re-deriving it is a check rather
+ * than an opinion. The salt is committed, which means changing it is a
+ * visible one-line diff that invalidates every published number — which is
+ * the correct cost for changing the split.
+ *
+ * WHY THERE IS ONE EXCLUSION, AND IT IS COMPUTED
+ *
+ * The obvious hazard: a repository can be the ONLY source of rows for the
+ * rules closest to earning core, and moving it to holdout would empty the
+ * measurement side of exactly the evidence 6.0 is waiting on. `keycloak`
+ * holds 22 of `QA-JV-101`'s rows and 30 of `QA-PW-117`'s.
+ *
+ * The exclusion is not a hand-kept list of those repositories — that is the
+ * failure mode above wearing a smaller hat. It is derived from
+ * `isCoreCandidate` by the caller, so it moves with the candidate set and
+ * cannot be edited into place. Everything the hash puts in holdout that is NOT
+ * a protected source goes to holdout.
+ *
+ * WHAT THE HOLDOUT DOES AND DOES NOT DO
+ *
+ * It VALIDATES; it does not GATE. Core promotion reads the measurement
+ * partition. Requiring n >= 35 clean holdout rows would consume whole
+ * repositories — the Java corpora are `appsmith` and `keycloak`, and moving
+ * one drops `QA-JV-101` into a partition that cannot replace them. A
+ * holdout that gates is a holdout sized by the corpus rather than by the
+ * question, and the honest way to say "this generalises" is to report the
+ * holdout number beside the measurement number and let a reader see both.
+ */
+
+export type HoldoutPartition = "measurement" | "holdout";
+
+/**
+ * Committed salt. Changing this re-draws the entire split and therefore
+ * invalidates every published rate; it is a one-line diff on purpose.
+ */
+export const HOLDOUT_SALT = "mjolnir-holdout-v1";
+
+/** Buckets the hash is reduced to. Holdout is the lowest `HOLDOUT_BUCKETS_PERCENT`. */
+export const HOLDOUT_PERCENT = 25;
+
+/**
+ * FNV-1a, 32-bit. Not a security primitive and does not need to be: the
+ * requirement is a STABLE partition, and any deterministic hash gives one.
+ * Rolling crypto here would be the dependency this file is trying to avoid.
+ */
+function fnv1a(input: string): number {
+  let hash = 0x811c9dc5;
+  for (let i = 0; i < input.length; i++) {
+    hash ^= input.charCodeAt(i);
+    hash = Math.imul(hash, 0x01000193) >>> 0;
+  }
+  return hash >>> 0;
+}
+
+/**
+ * The raw bucket for a repository id, before any exclusion. Exposed so the
+ * split can be explained: a reader who disagrees with an assignment can see
+ * whether it came from the hash or from the protection rule.
+ */
+export function holdoutBucket(repositoryId: string): number {
+  return fnv1a(`${HOLDOUT_SALT}:${repositoryId}`) % 100;
+}
+
+/** The repositories the exclusion protects, and why each one is named. */
+export interface HoldoutProtected {
+  repositoryId: string;
+  /** Rule -> how many of its committed verdict rows this repository holds. */
+  rowsByRule: Record<string, number>;
+  reason: string;
+}
+
+/**
+ * Repositories that MUST stay in measurement, named by the caller.
+ *
+ * This function does not DERIVE the protected set, and that is a layering
+ * decision rather than a gap. The predicate that decides it — `isCoreCandidate`
+ * — lives in `scripts/lib/core-candidates.ts`, and `src/` importing from
+ * `scripts/` would invert the dependency the whole repository is built to keep
+ * (`scripts/check-unimported-modules.mjs` exists to hold that line). So the
+ * caller computes the set and passes it in; everything here stays a pure
+ * function of committed data.
+ *
+ * The point of the rule is that the set must not be HAND-MAINTAINED, because a
+ * hand-kept list of "repositories we must not move" is exactly the thing a
+ * re-drawn split would use to justify itself. Deriving it from
+ * `isCoreCandidate` means it moves with the candidate set and cannot be edited
+ * into place — see `scripts/v6/check-holdout-split.ts`, which is the caller
+ * that does the deriving.
+ */
+export interface HoldoutProtected {
+  repositoryId: string;
+  /** Rule -> how many of its committed verdict rows this repository holds. */
+  rowsByRule: Record<string, number>;
+}
+
+/** Which partition a repository's verdicts belong to. */
+export function holdoutPartitionFor(
+  repositoryId: string,
+  protectedIds: ReadonlySet<string>,
+): HoldoutPartition {
+  if (protectedIds.has(repositoryId)) return "measurement";
+  return holdoutBucket(repositoryId) < HOLDOUT_PERCENT
+    ? "holdout"
+    : "measurement";
+}
+
+export interface HoldoutSplit {
+  holdout: string[];
+  measurement: string[];
+  protected: HoldoutProtected[];
+  /** Bucket per repository, so an assignment can be explained or disputed. */
+  buckets: Record<string, number>;
+}
+
+/**
+ * The whole split, from the committed verdict files.
+ *
+ * `rowsByRepository` maps repository id -> (rule id -> committed row count).
+ * `protectedList` is the caller's derived exclusion (above).
+ *
+ * Rows are counted, never moved: the partition is a LABEL on a repository, and
+ * a repository in the holdout keeps its rows exactly where they are. The label
+ * is what a consumer filters on, which is why splitting by repository is a
+ * partition of the FILES and not of the corpus.
+ */
+export function computeHoldoutSplit(
+  rowsByRepository: ReadonlyMap<string, ReadonlyMap<string, number>>,
+  protectedList: readonly HoldoutProtected[] = [],
+): HoldoutSplit {
+  const protectedIds = new Set(protectedList.map((p) => p.repositoryId));
+  const holdout: string[] = [];
+  const measurement: string[] = [];
+  const buckets: Record<string, number> = {};
+  for (const repositoryId of [...rowsByRepository.keys()].sort()) {
+    buckets[repositoryId] = holdoutBucket(repositoryId);
+    if (holdoutPartitionFor(repositoryId, protectedIds) === "holdout") {
+      holdout.push(repositoryId);
+    } else {
+      measurement.push(repositoryId);
+    }
+  }
+  return {
+    holdout,
+    measurement,
+    protected: [...protectedList].sort((a, b) =>
+      compareCodePoints(a.repositoryId, b.repositoryId),
+    ),
+    buckets,
+  };
 }

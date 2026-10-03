@@ -134,6 +134,7 @@
     { "id": "script-reachability", "command": "npm run scripts:reachable" },
 
     { "id": "quad-verified", "command": "npm run check-fixture-quad" },
+    { "id": "holdout-split", "command": "npm run holdout:split" },
 
     { "id": "promotion-ratchet", "command": "npm run rules:promotion:check" },
 

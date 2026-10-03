@@ -32,7 +32,8 @@ does not accept prose as proof.
 | [0010](0010-ecosystem-census-is-the-authority.md)          | The ecosystem census is the authority on "what exists"    | Law 8             | accepted |
 | [0011](0011-orthogonal-claim-axes.md)                      | The six claim axes are orthogonal and never merged        | A1 §orthogonality | accepted |
 | [0012](0012-hosted-enterprise-boundary.md)                 | Optional hosted mode is a declared state, never a default | D-10              | accepted |
-| [0013](0013-the-core-ceiling-is-decided.md)                | The core ceiling is decided, not deferred                 | â€”               | accepted |
+| [0013](0013-the-core-ceiling-is-decided.md)                | The core ceiling is decided, not deferred                 | —                 | accepted |
+| [0014](0014-the-core-tier-carries-a-floor.md)              | The core tier carries a floor                             | ADR 0013          | accepted |
 
 ## Amendment-to-record map
 

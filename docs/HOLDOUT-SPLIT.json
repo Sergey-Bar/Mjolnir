@@ -1,0 +1,254 @@
+{
+  "schemaVersion": 1,
+  "salt": "mjolnir-holdout-v1",
+  "holdoutPercent": 25,
+  "rationale": "The unit is the CORPUS REPOSITORY, never the row. Rows in one file are\nfindings from one codebase, one team, one idiom; a per-row split puts the\nsame file — often the same test — in both halves, which is leakage wearing\na partition's clothes, and a per-row split can be searched until the\nheld-out half agrees with the measurement half.\n\nThe assignment is a SALTED HASH of the repository id, not a committed\nlist. A list can be re-drawn the moment it is inconvenient and nothing in\nthe tree would show it. Changing `salt` above is a one-line diff that\ninvalidates every published rate, which is the correct cost for changing\nthe split.\n\nOne exclusion, and it is DERIVED rather than declared: a repository\nholding rows for a rule `isCoreCandidate` says more clean samples would\nsettle stays in measurement, because moving it would empty the\nmeasurement side of the evidence the core tier is waiting on. Deriving it\nmeans it moves with the candidate set and cannot be edited into place.\n\nTHE HOLDOUT VALIDATES; IT DOES NOT GATE. Core promotion reads the\nmeasurement partition. Requiring n >= 35 clean holdout rows would consume\nwhole repositories — the Java corpora are appsmith and keycloak — so a\ngating holdout would be sized by the corpus rather than by the question.\nThe holdout's job is to be a second number a reader can compare against\nthe first.\n\nRe-derive with `npm run holdout:split`; it fails if this file and a fresh\nderivation disagree. Re-drawing the split means changing `salt`, which is\na visible decision rather than a quiet one.",
+  "holdout": [
+    "calcom-cal",
+    "github-docs",
+    "pytest-dev-pytest",
+    "tanstack-query",
+    "vercel-next-js",
+    "vitejs-vite"
+  ],
+  "measurement": [
+    "Humanizr-Humanizer",
+    "SeleniumHQ-selenium",
+    "apache-airflow",
+    "appsmithorg-appsmith",
+    "cypress-io-kitchensink",
+    "cypress-realworld-app",
+    "getsentry-sentry",
+    "grafana-grafana",
+    "hashicorp-vault",
+    "iluwatar-java-design-patterns",
+    "keycloak-keycloak",
+    "microsoft-playwright-dotnet",
+    "microsoft-playwright-java",
+    "microsoft-playwright-mcp",
+    "microsoft-playwright-pytest",
+    "nextauthjs-next-auth",
+    "nocodb-nocodb",
+    "pallets-click",
+    "playwright-community-eslint-plugin-playwright",
+    "psf-requests",
+    "puppeteer-puppeteer",
+    "reflex-dev-reflex",
+    "spectreconsole-spectre-console",
+    "streamlit-streamlit",
+    "sveltejs-kit",
+    "vitest-dev-vitest",
+    "withastro-astro"
+  ],
+  "protected": [
+    {
+      "repositoryId": "appsmithorg-appsmith",
+      "rowsByRule": {
+        "QA-CYP-003": 1
+      },
+      "reason": "holds committed verdicts for a rule `isCoreCandidate` says more clean samples would settle; moving it to holdout would empty the measurement side of the evidence the core tier is waiting on"
+    },
+    {
+      "repositoryId": "grafana-grafana",
+      "rowsByRule": {
+        "QA-PW-002": 3
+      },
+      "reason": "holds committed verdicts for a rule `isCoreCandidate` says more clean samples would settle; moving it to holdout would empty the measurement side of the evidence the core tier is waiting on"
+    },
+    {
+      "repositoryId": "Humanizr-Humanizer",
+      "rowsByRule": {
+        "QA-CS-103": 2
+      },
+      "reason": "holds committed verdicts for a rule `isCoreCandidate` says more clean samples would settle; moving it to holdout would empty the measurement side of the evidence the core tier is waiting on"
+    },
+    {
+      "repositoryId": "iluwatar-java-design-patterns",
+      "rowsByRule": {
+        "QA-JV-101": 2
+      },
+      "reason": "holds committed verdicts for a rule `isCoreCandidate` says more clean samples would settle; moving it to holdout would empty the measurement side of the evidence the core tier is waiting on"
+    },
+    {
+      "repositoryId": "keycloak-keycloak",
+      "rowsByRule": {
+        "QA-CI-007": 1,
+        "QA-JV-101": 22,
+        "QA-PW-117": 30
+      },
+      "reason": "holds committed verdicts for a rule `isCoreCandidate` says more clean samples would settle; moving it to holdout would empty the measurement side of the evidence the core tier is waiting on"
+    },
+    {
+      "repositoryId": "microsoft-playwright-dotnet",
+      "rowsByRule": {
+        "QA-CS-101": 20,
+        "QA-CS-103": 1
+      },
+      "reason": "holds committed verdicts for a rule `isCoreCandidate` says more clean samples would settle; moving it to holdout would empty the measurement side of the evidence the core tier is waiting on"
+    },
+    {
+      "repositoryId": "microsoft-playwright-java",
+      "rowsByRule": {
+        "QA-JV-101": 8
+      },
+      "reason": "holds committed verdicts for a rule `isCoreCandidate` says more clean samples would settle; moving it to holdout would empty the measurement side of the evidence the core tier is waiting on"
+    },
+    {
+      "repositoryId": "nextauthjs-next-auth",
+      "rowsByRule": {
+        "QA-PW-101": 4
+      },
+      "reason": "holds committed verdicts for a rule `isCoreCandidate` says more clean samples would settle; moving it to holdout would empty the measurement side of the evidence the core tier is waiting on"
+    },
+    {
+      "repositoryId": "reflex-dev-reflex",
+      "rowsByRule": {
+        "QA-SE-003": 3
+      },
+      "reason": "holds committed verdicts for a rule `isCoreCandidate` says more clean samples would settle; moving it to holdout would empty the measurement side of the evidence the core tier is waiting on"
+    },
+    {
+      "repositoryId": "sveltejs-kit",
+      "rowsByRule": {
+        "QA-PW-002": 17,
+        "QA-PW-101": 16,
+        "QA-PW-117": 1
+      },
+      "reason": "holds committed verdicts for a rule `isCoreCandidate` says more clean samples would settle; moving it to holdout would empty the measurement side of the evidence the core tier is waiting on"
+    }
+  ],
+  "buckets": {
+    "Humanizr-Humanizer": 12,
+    "SeleniumHQ-selenium": 66,
+    "apache-airflow": 91,
+    "appsmithorg-appsmith": 73,
+    "calcom-cal": 20,
+    "cypress-io-kitchensink": 52,
+    "cypress-realworld-app": 40,
+    "getsentry-sentry": 97,
+    "github-docs": 1,
+    "grafana-grafana": 97,
+    "hashicorp-vault": 66,
+    "iluwatar-java-design-patterns": 25,
+    "keycloak-keycloak": 9,
+    "microsoft-playwright-dotnet": 29,
+    "microsoft-playwright-java": 63,
+    "microsoft-playwright-mcp": 93,
+    "microsoft-playwright-pytest": 56,
+    "nextauthjs-next-auth": 7,
+    "nocodb-nocodb": 85,
+    "pallets-click": 70,
+    "playwright-community-eslint-plugin-playwright": 51,
+    "psf-requests": 98,
+    "puppeteer-puppeteer": 97,
+    "pytest-dev-pytest": 23,
+    "reflex-dev-reflex": 89,
+    "spectreconsole-spectre-console": 52,
+    "streamlit-streamlit": 89,
+    "sveltejs-kit": 57,
+    "tanstack-query": 8,
+    "vercel-next-js": 5,
+    "vitejs-vite": 14,
+    "vitest-dev-vitest": 51,
+    "withastro-astro": 65
+  },
+  "counts": {
+    "repositories": 33,
+    "holdoutRepositories": 6,
+    "measurementRepositories": 27,
+    "rows": 707,
+    "holdoutRows": 145,
+    "measurementRows": 562,
+    "holdoutRules": 23,
+    "measurementRules": 53
+  },
+  "rowsByRule": {
+    "holdout": {
+      "QA-CI-001": 1,
+      "QA-CI-002": 1,
+      "QA-ENV-001": 6,
+      "QA-PW-004": 1,
+      "QA-PW-115": 2,
+      "QA-PW-141": 3,
+      "QA-PW-142": 3,
+      "QA-PW-144": 2,
+      "QA-PY-002": 24,
+      "QA-PY-003": 17,
+      "QA-PY-004": 28,
+      "QA-PY-007": 11,
+      "QA-PY-009": 3,
+      "QA-PY-011": 1,
+      "QA-PY-012": 5,
+      "QA-TEST-002": 5,
+      "QA-TEST-003": 17,
+      "QA-TEST-004": 7,
+      "QA-TEST-006": 1,
+      "QA-TEST-010": 2,
+      "QA-TQUAL-002": 1,
+      "QA-TQUAL-009": 1,
+      "QA-TQUAL-011": 3
+    },
+    "measurement": {
+      "QA-CI-001": 4,
+      "QA-CI-002": 3,
+      "QA-CI-005": 2,
+      "QA-CI-007": 1,
+      "QA-CI-008": 1,
+      "QA-CI-010": 2,
+      "QA-CS-101": 20,
+      "QA-CS-102": 21,
+      "QA-CS-103": 3,
+      "QA-CS-105": 16,
+      "QA-CS-106": 4,
+      "QA-CS-107": 1,
+      "QA-CYP-001": 15,
+      "QA-CYP-003": 1,
+      "QA-ENV-001": 14,
+      "QA-JV-101": 32,
+      "QA-JV-102": 20,
+      "QA-JV-103": 54,
+      "QA-JV-104": 2,
+      "QA-JV-105": 20,
+      "QA-JV-106": 4,
+      "QA-PW-002": 20,
+      "QA-PW-003": 1,
+      "QA-PW-004": 7,
+      "QA-PW-101": 20,
+      "QA-PW-102": 1,
+      "QA-PW-115": 7,
+      "QA-PW-117": 31,
+      "QA-PW-122": 20,
+      "QA-PW-123": 5,
+      "QA-PW-124": 1,
+      "QA-PW-141": 6,
+      "QA-PW-143": 20,
+      "QA-PW-144": 7,
+      "QA-PY-002": 1,
+      "QA-PY-003": 3,
+      "QA-PY-004": 5,
+      "QA-PY-005": 19,
+      "QA-PY-007": 1,
+      "QA-PY-009": 5,
+      "QA-PY-011": 4,
+      "QA-PY-012": 10,
+      "QA-PY-103": 20,
+      "QA-SE-002": 4,
+      "QA-SE-003": 3,
+      "QA-TEST-001": 12,
+      "QA-TEST-002": 15,
+      "QA-TEST-003": 3,
+      "QA-TEST-004": 13,
+      "QA-TEST-006": 5,
+      "QA-TEST-010": 18,
+      "QA-TQUAL-002": 19,
+      "QA-TQUAL-011": 16
+    }
+  },
+  "excludedFromSplit": [
+    "negative-fixtures",
+    "positive-fixtures",
+    "unclassified-ceiling",
+    "unsure-ceiling"
+  ],
+  "digest": "sha256:be4234c2811b2ac31bf063839371c295b3dbdf5c4af24512dd78dda1961cdd51"
+}

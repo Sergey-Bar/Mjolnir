@@ -27,6 +27,8 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { checkQuarantineOwnership } from "../../src/commands/doctor.js";
+import { RULES } from "../../src/rules/index.js";
+import { effectiveTier } from "../../src/rules/measurement.js";
 
 const ROOT = join(import.meta.dirname, "..", "..");
 
@@ -46,8 +48,36 @@ function corePromotionFields(): Set<string> {
 describe("the quarantine-ownership report", () => {
   const fields = corePromotionFields();
 
+  /**
+   * The report as a maintainer working the backlog actually sees it: a
+   * quarantined rule with NO promotion and NO disposition.
+   *
+   * Asserted against a PLANTED rule rather than the live registry. The live
+   * registry has a complete disposition register, so its report is a single
+   * summary line and no field names at all — which is the correct behaviour
+   * (naming a backfill obligation when there is no backlog is noise), and it
+   * means the live registry cannot exercise the message this file is about.
+   */
+  function reportWithABacklog(): string {
+    const quarantined = RULES.find((r) => effectiveTier(r) === "quarantine");
+    expect(
+      quarantined,
+      "no quarantined rule to build the case from",
+    ).toBeDefined();
+    if (quarantined === undefined) return "";
+    const planted = {
+      ...quarantined,
+      id: "QA-PROBE-998",
+      quarantinePromotion: undefined,
+    };
+    return checkQuarantineOwnership([
+      ...RULES.filter((r) => r.id !== quarantined.id),
+      planted,
+    ] as never).details.join("\n");
+  }
+
   it("names only fields CorePromotion actually declares", () => {
-    const message = checkQuarantineOwnership().details.join("\n");
+    const message = reportWithABacklog();
     // Every backticked identifier in the report must be a real field or a real
     // field of the containing rule. `quarantinePromotion` is on `Rule`; the
     // others are on `CorePromotion`.
@@ -66,7 +96,7 @@ describe("the quarantine-ownership report", () => {
   });
 
   it("names the three a backfilled record has to supply", () => {
-    const message = checkQuarantineOwnership().details.join("\n");
+    const message = reportWithABacklog();
     // The three a person backfilling `quarantinePromotion` actually writes.
     // `evidenceRefs` is legitimately empty for a structural premise, and
     // `grantedAt` is the grant's own stamp, so neither is an obligation the
@@ -83,8 +113,17 @@ describe("the quarantine-ownership report", () => {
   it("does not demand a field the type does not declare", () => {
     // The regression this file exists for, asserted by name so the fix cannot
     // be reverted silently by re-adding the phrase.
-    const message = checkQuarantineOwnership().details.join("\n");
+    const message = reportWithABacklog();
     expect(message).not.toContain("exit condition");
     expect(message).not.toContain("exitCondition");
+  });
+
+  it("says nothing about backfilling when there is no backlog to backfill", () => {
+    // The mirror arm, and the reason the three above use a planted rule: a
+    // healthy registry's report is one summary line. A check that always named
+    // the obligation would be teaching a maintainer to ignore it.
+    const live = checkQuarantineOwnership().details.join("\n");
+    expect(live).not.toContain("expiresOn");
+    expect(live).toMatch(/rule\(s\) in quarantine/);
   });
 });

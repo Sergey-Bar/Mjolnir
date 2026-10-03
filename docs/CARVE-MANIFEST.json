@@ -352,6 +352,7 @@
       "importedBy": [
         "scripts/corpus/quad-verdicts.ts",
         "scripts/v6/check-fixture-quad.ts",
+        "src/rules/conformity.ts",
         "src/v6/capability-registry.ts",
         "src/v6/ecosystem-probe.ts"
       ],

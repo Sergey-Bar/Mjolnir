@@ -1,6 +1,7 @@
-import { MEASURED_FP } from "./measured-fp.generated.js";
 import { RULES, RETIRED_RULE_IDS } from "./index.js";
 import {
+  effectiveTier,
+  hasStaleMeasurement,
   hasValidMeasurement,
   ruleStatus,
   type RuleStatus,
@@ -26,14 +27,27 @@ export interface RuleCensus {
   retiredActiveIntersections: string[];
 }
 
+/**
+ * One row per rule, read through the SAME helpers every other surface reads.
+ *
+ * This file used to answer `stale` and `tier` with local predicates, and both
+ * were wrong. `stale` asked `MEASURED_FP[rule.id] !== undefined` about a map the
+ * generator pre-filters to revision-matching rows, so it was false for every
+ * stale rule and `staleCount` was structurally 0. `tier` re-derived the ladder
+ * as `declared ?? (measured ? core : extended)`, which is a THIRD copy of the
+ * tier resolution and the only one not reading `effectiveTier` — so the five
+ * rules with no declared tier printed `core` here and `extended` everywhere else.
+ *
+ * Both now delegate. A census that disagrees with doctor is not a census.
+ */
 function censusRecord(rule: QADoctorRule): RuleCensusRecord {
   return {
     id: rule.id,
     status: ruleStatus(rule),
     detectorRevision: rule.detectorRevision ?? 1,
     measured: hasValidMeasurement(rule),
-    stale: MEASURED_FP[rule.id] !== undefined && !hasValidMeasurement(rule),
-    tier: rule.tier ?? (hasValidMeasurement(rule) ? "core" : "extended"),
+    stale: hasStaleMeasurement(rule),
+    tier: effectiveTier(rule),
   };
 }
 

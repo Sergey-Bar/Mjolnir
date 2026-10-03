@@ -70,7 +70,7 @@ Listing content (paste verbatim into the marketplace draft):
   tests, Playwright configs, CI workflows — for gates that cannot fail:
   skipped tests, swallowed exit codes, always-success steps, retries
   that mask flakiness. 79 active rules over TS/JS, Python, Java, C#, GitHub
-  Actions YAML; 74 have corpus-measured false-positive rates and 5 are
+  Actions YAML; 73 have corpus-measured false-positive rates and 6 are
   explicitly unmeasured.
 - **Categories:** `Continuous integration`, `Code quality`
 - **Screenshots:** `assets/readme/terminal-hero.svg` (hero),
@@ -98,7 +98,7 @@ All three lists are curated; read their CONTRIBUTING before opening.
 Draft PR body (shared): "Adds Mjölnir (mjolnir-qa on npm) — a CI tool
 that audits the verification system itself: test suites, Playwright
 configs and CI workflows, for gates that cannot go red. 79 active rules;
-74 corpus-measured FP rates and 5 explicitly unmeasured rules; GitHub Action
+73 corpus-measured FP rates and 6 explicitly unmeasured rules; GitHub Action
 (`Sergey-Bar/Mjolnir@v5`), MCP server, SARIF. MIT."
 
 | Channel            | Where it belongs                                                    | State   |
@@ -144,8 +144,8 @@ Body (HN/Reddit/LinkedIn variants — same facts, different tone):
 > meaningless: focused tests committed, assertions removed, exit codes
 > swallowed (`|| true`, `continue-on-error`), retries hiding flakiness,
 > always-success steps masking failures. 79 active rules over TypeScript/JS,
-> Python, Java, C# and GitHub Actions YAML; 74 have measured FP rates and
-> 5 remain explicitly unmeasured.
+> Python, Java, C# and GitHub Actions YAML; 73 have measured FP rates and
+> 6 remain explicitly unmeasured.
 >
 > Two things it does differently from a linter: every rule ships a
 > must-fire AND a must-not-fire fixture, and every rule publishes a
