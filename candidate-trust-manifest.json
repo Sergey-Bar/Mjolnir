@@ -28,19 +28,27 @@
   "generatedAt": "2026-10-03",
   "identity": {
     "state": "WORKING_CANDIDATE",
-    "baseSha": "d0371ef08e69d42a5cfb60751eb51aa1d419dce4",
+    "baseSha": "5a61b91d30d4a59a24842caeae28d9c3664aa690",
     "candidateSha": null,
     "version": "6.0.0-rc.1",
     "packageSha256": "e7c47696fa2a3e45520a84f0946e4682bcdb0da8fd34039bbf4a247f6a1c9ea7",
     "lockfileSha256": "b4530c8bf73c8215650860133afb02318790b138e280313c69b0feab567777e7",
-    "workingTreeSha256": "7a91335088f416c606b822f0f5f87815dfe99c6113d9ceb0ffb1dbc8f452254f",
-    "changedPathCount": 0,
+    "workingTreeSha256": "c9eadef3deeea7d78795c4586ed01ad02695239aa10945bbfff537cb5ba321f5",
+    "changedPathCount": 3,
     "supportEnvelope": "self-hosted; hosted services require explicit consent and separate proof",
     "worktreeInventory": {
-      "changedPaths": [],
+      "changedPaths": [
+        "src/reporter/sarif.ts",
+        "tests/reporters/reporters.spec.ts",
+        "tests/reporters/sarif-fingerprints.spec.ts"
+      ],
       "untrackedPaths": []
     },
-    "dirtyFiles": []
+    "dirtyFiles": [
+      "src/reporter/sarif.ts",
+      "tests/reporters/reporters.spec.ts",
+      "tests/reporters/sarif-fingerprints.spec.ts"
+    ]
   },
   "claimRegistry": {
     "path": "docs/claim-registry.json",

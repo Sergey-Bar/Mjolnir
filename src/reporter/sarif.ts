@@ -9,6 +9,26 @@
 import type { Finding, ScanResult } from "../types.js";
 import { RULES } from "../rules/index.js";
 import { ENGINE_VERSION } from "../engine/version.js";
+import {
+  codeQualityFingerprint,
+  findingFingerprint,
+  findingId,
+} from "../engine/finding-identity.js";
+import { createHash } from "node:crypto";
+
+/**
+ * SARIF fingerprint values must be printable and stable. The engine's identity
+ * strings join their parts with NUL (a separator no repository path or message
+ * can contain, which is why it was chosen), and NUL is not legal in JSON
+ * string content without escaping — so it is hashed rather than embedded.
+ *
+ * Hashed also because the engine identities are long and partly human-readable
+ * (they contain the message). A fingerprint is an opaque key; putting an
+ * English sentence in one invites tooling to parse it.
+ */
+function hashFinding(identity: string): string {
+  return createHash("sha256").update(identity).digest("hex");
+}
 
 /** Map our rule categories to SARIF taxonomies/properties. */
 function sarifLevel(
@@ -143,6 +163,40 @@ export function renderSarif(result: ScanResult, repoRootUri?: string): string {
       ruleId: f.ruleId,
       level: sarifLevel(f.severity),
       message: { text: `${f.message} — ${f.why} Fix: ${f.fix}` },
+      // SARIF 2.1.0 §3.28 `fingerprints`, and §3.30 `partialFingerprints`.
+      //
+      // Without these, GitHub code scanning treats every upload as a fresh set
+      // of alerts: an unchanged finding re-opens as "new" on the next run, a
+      // dismissed alert comes back, and the baseline view is noise. The
+      // identities already existed in `engine/finding-identity.ts` for exactly
+      // this purpose and were simply not emitted — the engine computed a
+      // stable identity and then threw it away at the format boundary.
+      //
+      // Both are emitted because they answer different questions, and SARIF
+      // says so: a `fingerprints` entry is the finding's identity for alert
+      // tracking, while a `partialFingerprints` entry identifies a *component*
+      // of it and may combine with others. The engine has exactly that
+      // structure — a line-independent fingerprint plus a position-sensitive
+      // one — so both halves are representable and neither is decoration:
+      //
+      //   primaryFingerprint = line-INdependent (ruleId+file+message), so an
+      //     edit above the finding does not re-open the alert
+      //   primaryLocationLineHash = position-sensitive, so a finding that
+      //     genuinely MOVED is distinguishable from one that merely shifted
+      // The PRIMARY fingerprint is deliberately the line-INDEPENDENT identity.
+      // Using `findingId` (which carries line + column) here looks more precise
+      // and is wrong: it makes every edit above a finding re-open its alert,
+      // which is the exact behaviour these exist to prevent. The
+      // position-sensitive half is still emitted, as a partial fingerprint,
+      // where a consumer that genuinely cares about position can combine it.
+      fingerprints: { mjFingerprintV1: hashFinding(findingFingerprint(f)) },
+      partialFingerprints: {
+        // Quoted because SARIF fingerprint keys are arbitrary strings and `/`
+        // is not valid in an unquoted property name — an unquoted one parses
+        // as division and takes the rest of the literal with it.
+        "mjFingerprint/lineSensitiveV1": hashFinding(findingId(f)),
+        "mjFingerprint/codeQualityV1": codeQualityFingerprint(f),
+      },
       locations: [
         {
           physicalLocation: {
