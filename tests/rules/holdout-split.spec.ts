@@ -110,6 +110,38 @@ describe("held-out split: derivable, therefore not re-drawable", () => {
     const second = computeHoldoutSplit(rows, []);
     expect(second).toEqual(first);
   });
+
+  it("sorts by code point, and sorts the protected list it was handed", () => {
+    // The two orderings are a CONTRACT, not tidiness: `holdout`,
+    // `measurement` and `protected` are read by a human comparing two runs, and
+    // an unsorted list makes that comparison a diff of noise. Code points, not
+    // `localeCompare`, because `localeCompare` reads the environment — and a
+    // partition whose ORDER depends on the machine is a partition nobody can
+    // review in a diff.
+    const rows = new Map([
+      ["zeta", new Map([["QA-PW-001", 1]])],
+      ["Alpha", new Map([["QA-PW-002", 1]])],
+      ["beta", new Map([["QA-PW-003", 1]])],
+    ]);
+    const split = computeHoldoutSplit(rows, [
+      { repositoryId: "zeta", rowsByRule: { "QA-PW-001": 1 } },
+      { repositoryId: "Alpha", rowsByRule: { "QA-PW-002": 1 } },
+    ]);
+    // Uppercase before lowercase: that is `a < b`, not what a locale does.
+    // `localeCompare` would put "beta" before "zeta" here on some ICU builds
+    // and after it on others, which is the whole reason it is banned.
+    expect(Object.keys(split.buckets)).toEqual(["Alpha", "beta", "zeta"]);
+    expect(split.protected.map((p) => p.repositoryId)).toEqual([
+      "Alpha",
+      "zeta",
+    ]);
+    // And the protected repositories really are in measurement, which is what
+    // makes their exclusion a decision rather than a sort artefact.
+    for (const p of split.protected) {
+      expect(split.measurement, p.repositoryId).toContain(p.repositoryId);
+      expect(split.holdout, p.repositoryId).not.toContain(p.repositoryId);
+    }
+  });
 });
 
 describe("held-out split: the exclusion is computed, not declared", () => {
