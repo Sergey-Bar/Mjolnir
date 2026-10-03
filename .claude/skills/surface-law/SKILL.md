@@ -92,10 +92,12 @@ past release would disable the ratchet for every commit after it, permanently.
 
 It does not decide what ought to exist. The measurement question is answered
 by the corpus, not by a cap: the core ceiling is a 10 % Wilson upper bound, a
-rule observing zero false positives needs n ≥ 35 to clear it, and the minimum
-`ciHigh` across all measured rules is well above that — which is why the core
-tier is empty and the shipping rules are `extended`. "Shipped by default" and
-"earned core" are different claims. Do not conflate them in either direction.
+rule observing zero false positives needs n ≥ 35 to clear it, and almost every
+measured rule sits well above that — which is why the core tier holds two rules
+and the shipping default remains `extended`. "Shipped by default" and "earned
+core" are different claims. Do not conflate them in either direction. Read the
+live figure from `npm run rules:census` rather than from this paragraph, which
+is prose and has already been wrong once.
 
 ## Reporting
 

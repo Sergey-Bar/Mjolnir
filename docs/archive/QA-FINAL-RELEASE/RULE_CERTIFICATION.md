@@ -1,5 +1,20 @@
 # RULE_CERTIFICATION.md — Cycle 0 · RC `151186b`
 
+> **SUPERSEDED — read the numbers, not the `core` column.**
+>
+> Everything below is the record of what RC `151186b` claimed, kept as claimed.
+> Its `core` column is a fossil: it was produced by the `registry-census`
+> predicate, which no longer exists, so it does not reflect the tier arithmetic
+> the engine actually uses (`measurementTier` over the verdict corpus, gated by
+> `registry-ratchet.spec.ts` and `anti-creep.spec.ts`).
+>
+> Two rules hold `core` today — `QA-PW-117` and `QA-JV-101`, each at n=35 with
+> zero observed false positives — and this document cannot show that, because it
+> predates both promotions. For the live figures use `npm run rules:census`, or
+> `docs/MEASUREMENT-CLOSEOUT.md`, whose counts are generated and drift-locked.
+> Do not correct this file in place: it is a historical claim, and editing it to
+> match today would falsify the record.
+
 Per-rule (99) certification table. Generated from the live catalog captured at
 the RC (`evidence/151186b/rules-catalog.json` — command: `mjolnir explain --list --json`),
 cross-checked against `docs/RULE-CAPABILITY-MATRIX.md` (99 rows, drift-locked)

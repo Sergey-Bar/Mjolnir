@@ -16,8 +16,9 @@ change and its quoting sites move in one commit.
 - **Law 2 (fixture firewall):** a rule without BOTH a must-fire and a
   must-not-fire fixture is not done.
 - **Law 3 (north-star):** a rule without a measured FP rate (n ≥ 10) cannot
-  ship in the core tier. Core is empty today and the evidence, not a cap, is
-  what keeps it there.
+  ship in the core tier. Two rules hold core today (`QA-PW-117`, `QA-JV-101`,
+  both at n=35 with zero observed false positives), and the evidence, not a
+  cap, is what keeps the other 77 out of it.
 
 ## 1. Pick the ID before writing the rule
 

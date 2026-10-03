@@ -33,6 +33,55 @@ Both had been demoted from core in 6.0 for exactly this reason, and
 `src/rules/tier-evidence.ts` ranked `QA-PW-117` first among the nineteen most
 likely to clear on a re-sample.
 
+### The tree told a different story than the code
+
+Both core promotions landed in code, in the tier evidence and in this file,
+while their generated documentation went on reporting `extended` at n=23 and
+n=24. Nothing failed: `npm run check` regenerates and then inspects nothing,
+so a generator that rewrites a committed file leaves the tree green by
+construction. Four workflows each asserted staleness by hand and three of them
+could not see an untracked file at all.
+
+- **`docs/rules/QA-JV-101.md`, `docs/rules/QA-PW-117.md` and
+  `docs/DEPTH-ADJUDICATION.md` regenerated.** The shipped rule pages claimed
+  `extended` at n=23/24; both rules are `core` at n=35. No finding changes.
+- **`npm run docs:staleness` — one staleness assertion, and it can run locally.**
+  It reads `git status`, so it sees an untracked generated page; `git diff`
+  alone cannot, which is how a new rule's docs page shipped silently through
+  `corpus-audit.yml`, `release.yml` and `stable-release.yml`. Read-only by
+  construction — it cannot cost a working tree the adjudication records under
+  `tests/corpus/verdicts/`, and it is deliberately absent from `npm run check`,
+  where asserting after regenerating would be checking the generator against
+  itself. All four workflows now call it, and
+  `tests/contract/generated-surfaces.spec.ts` fails if a fifth is added that
+  does not, or if the copies drift apart again.
+- **`core` is a generated number, not a sentence.** `README.md` said "`core`
+  is empty" for a whole release after two rules had earned it. `measurementBlock()`
+  now returns `core` and `docs:counts` stamps it into `README.md`,
+  `docs/MEASUREMENT-CLOSEOUT.md` and the other census surfaces, so
+  `tests/contract/census-drift.spec.ts` fails if prose and registry disagree.
+  It counts UNMEASURED core rules deliberately: `MAX_UNMEASURED_CORE = 0`
+  means such a registry cannot ship, and a census that hid the rule behind
+  `measured` would report a clean `core: 0` at the moment the law broke.
+- **`docs/MEASUREMENT-CLOSEOUT.md` corrected to 73/6** (it read 74/5), gained
+  the missing `QA-PY-004` row, and now separates **stale** from unmeasured:
+  `QA-PY-004` (revision 4) and `QA-PY-007` (revision 5) have verdict sets that
+  no longer describe the shipped detector, so they need re-measurement at the
+  current revision rather than new classification.
+- **`src/rules/java/qa-jv-101-disabled-test.ts` — one provenance block.** The
+  file carried three stacked comments, two of them obsolete demotion notices
+  contradicting the third. It now records the two-batch arithmetic
+  (n=32 → 34 → 35) and names both verdict files, because the first batch
+  (`jv-101-final.json`, "STILL SHORT") reads as a refusal on its own and the
+  second (`jv-101-core.json`) is what cleared the ceiling.
+- **Governing prose that had gone stale.** `rule-author` and `surface-law`
+  both asserted the core tier was empty; the archived
+  `QA-FINAL-RELEASE/RULE_CERTIFICATION.md` carries a SUPERSEDED banner marking
+  its `core` column a fossil of the deleted `registry-census` predicate. The
+  ADR and the roadmap's "23 pending classifications" were left alone: they
+  record what a decision or a pass actually was, and editing them to match
+  today would falsify the record.
+
 ### Verification and enforcement overhaul
 
 Track A of the verification-enforcement plan: the checks that could fail but
