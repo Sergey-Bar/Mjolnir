@@ -67,7 +67,6 @@ export function censusValues(census: Census): Record<string, string> {
     // two rules had earned it: the claim was prose, so nothing could check
     // it. A sentinel makes the count generator-owned and drift-locked.
     "core-rules": String(census.core),
-    "core-rules-count": `${census.core} of ${census.total} rules`,
     // The CERTIFICATION-POLICY §2 compact form: measured/unmeasured/total,
     // quarantine — the census block's exact key order.
     census: `${census.measured}/${census.unmeasured}/${census.total}, ${census.quarantine}`,

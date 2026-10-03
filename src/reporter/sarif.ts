@@ -179,10 +179,11 @@ export function renderSarif(result: ScanResult, repoRootUri?: string): string {
       // structure — a line-independent fingerprint plus a position-sensitive
       // one — so both halves are representable and neither is decoration:
       //
-      //   primaryFingerprint = line-INdependent (ruleId+file+message), so an
-      //     edit above the finding does not re-open the alert
-      //   primaryLocationLineHash = position-sensitive, so a finding that
-      //     genuinely MOVED is distinguishable from one that merely shifted
+      // Emitted keys, named exactly as they appear in the output:
+      //   fingerprints."mjFingerprintV1"                  primary, line-INDEPENDENT
+      //   partialFingerprints."mjFingerprint/lineSensitiveV1"  did it MOVE
+      //   partialFingerprints."mjFingerprint/codeQualityV1"    GitLab dedup key
+      //
       // The PRIMARY fingerprint is deliberately the line-INDEPENDENT identity.
       // Using `findingId` (which carries line + column) here looks more precise
       // and is wrong: it makes every edit above a finding re-open its alert,

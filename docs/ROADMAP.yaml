@@ -58,11 +58,11 @@ versions:
       complete. See ADR 0013 — the ceiling is decided at 10%, and 23 pending
       classifications stood between the corpus and the first core rule.
     coreReachable: >-
-      YES, as of 2026-10-03 â€” QA-PW-117: n=35, zero observed false positives,
+      YES, as of 2026-10-03 — QA-PW-117: n=35, zero observed false positives,
       Wilson upper bound 9.89% against the 10% ceiling, all four fixture legs
       present. The 23 pending classifications were adjudicated and four of them
-      were orphans â€” rows citing a line one above the annotation, which would
-      have counted one annotation twice â€” so the pass funded 19 rows, a
+      were orphans — rows citing a line one above the annotation, which would
+      have counted one annotation twice — so the pass funded 19 rows, a
       corpus-wide sweep found one more, and the ceiling took the last of them.
       QA-JV-101 earned the tier the same day by the same route, and the census
       now counts 2 core rules; see `docs/MEASUREMENT-CLOSEOUT.md` for the

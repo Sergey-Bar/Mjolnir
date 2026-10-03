@@ -11,11 +11,18 @@ ignore.
    product claims, not only the rule set. Adding a CLI verb, an npm script, a
    gate, a generator or a documented format requires an equal-size removal or a
    recorded `ANTI-CREEP-EXCEPTION` in `CHANGELOG.md` with the reason.
-   `npm run check` is the whole PR path and it is at most 12 commands;
-   `npm run entry-points:check` is what enforces the number, so "the surface
-   grew" cannot be a fact nobody measures. `CLAUDE.md`, `README.md`,
-   `docs/ROADMAP.yaml`, `gates/*.json` and `package.json` are the surfaces
-   this applies to. Law 1 is the rule-set arm of this law, not the whole of it.
+   `npm run entry-points:check` is what enforces _part_ of this — it verifies
+   the two entry points name real scripts, that `check` is at most 12 commands,
+   that `certify` is a superset of `check`, and that neither reaches a
+   write-mode script. It counts **no** CLI verbs, no npm scripts outside
+   `check`, no gate ids and no generators; those are governed by
+   `npm run verbs:budget`, `npm run gates:check` and the rule-side ratchets
+   (`rules:promotion:check`, `docs/ANTI-CREEP-BASELINE.json`). "The surface
+   grew" is therefore measurable, but not by one command and not completely by
+   one — read this as the union, not as `entry-points:check` alone.
+   `CLAUDE.md`, `README.md`, `docs/ROADMAP.yaml`, `gates/*.json` and
+   `package.json` are the surfaces this applies to. Law 1 is the rule-set arm
+   of this law, not the whole of it.
 1. **Anti-creep law.** Every addition to the launch set requires an
    equal-size removal. The launch set is the rules that ship in the default
    report — every rule whose effective tier is not `quarantine`, which is 45 of

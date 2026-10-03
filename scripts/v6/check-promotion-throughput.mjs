@@ -248,6 +248,19 @@ const CERTIFICATION_PATH = join(
   "CORE-CERTIFICATION.json",
 );
 let certification = { status: "SKIPPED", reason: "no records file", rules: [] };
+if (!existsSync(CERTIFICATION_PATH)) {
+  // FAIL CLOSED. The first version of this arm was `if (existsSync(...))`,
+  // which meant deleting docs/CORE-CERTIFICATION.json switched the check off
+  // and reported SKIPPED with exit 0 — a gate that is strongest when the thing
+  // it governs is present, and vanishes when it is not. Deleting the artifact a
+  // rule needs in order to hold core must be the loudest possible failure, not
+  // a silent one.
+  failures.push(
+    "docs/CORE-CERTIFICATION.json is missing — every rule holding `core` " +
+      "requires a certification record, and the absence of the file is not " +
+      "the absence of the requirement",
+  );
+}
 if (existsSync(CERTIFICATION_PATH)) {
   let parsed;
   try {
@@ -293,10 +306,29 @@ if (existsSync(CERTIFICATION_PATH)) {
           `is n=${measured.n} — the verdict corpus moved under the record`,
       );
     }
-    if (record.measurement?.observedFalsePositives !== (measured.fp ?? 0)) {
+    // Observed FP COUNT. `MeasuredFp` stores a RATE, not a count — the first
+    // version of this read `measured.fp`, which does not exist, so the
+    // expression was `(undefined ?? 0)` and the arm silently reduced to
+    // "observedFalsePositives must be 0". Both committed records satisfy that,
+    // so it passed while checking nothing, and the failure message would have
+    // claimed "the live corpus has 0" whatever was true.
+    const observedFp = Math.round((measured.fpRate ?? 0) * measured.n);
+    if (record.measurement?.observedFalsePositives !== observedFp) {
       certProblems.push(
         `${id} was certified with ${record.measurement?.observedFalsePositives} observed ` +
-          `false positive(s) but the live corpus has ${measured.fp ?? 0}`,
+          `false positive(s) but the live corpus has ${observedFp} ` +
+          `(fpRate ${measured.fpRate} over n=${measured.n})`,
+      );
+    }
+    // The Wilson bound is the number the whole core ceiling argument rests on
+    // (ADR 0013 sets 10%), and it was RECORDED but never compared — so the
+    // "compared field by field" claim in the record itself and in principle P2
+    // was false in exactly the field that matters most.
+    if (record.measurement?.wilsonUpper !== measured.ciHigh) {
+      certProblems.push(
+        `${id} was certified at a Wilson upper bound of ${record.measurement?.wilsonUpper} ` +
+          `but the live measurement is ${measured.ciHigh} — the certification ` +
+          `records the number the 10% ceiling is decided on, and it moved`,
       );
     }
     for (const path of [
@@ -311,13 +343,13 @@ if (existsSync(CERTIFICATION_PATH)) {
         );
       }
     }
-    const rows = (record.evidence?.corpusVerdicts ?? []).reduce(
+    const citedRows = (record.evidence?.corpusVerdicts ?? []).reduce(
       (sum, v) => sum + (v.rows ?? 0),
       0,
     );
-    if (rows !== measured.n) {
+    if (citedRows !== measured.n) {
       certProblems.push(
-        `${id} cites ${rows} corpus verdict row(s) but the measurement is n=${measured.n} ` +
+        `${id} cites ${citedRows} corpus verdict row(s) but the measurement is n=${measured.n} ` +
           "— the cited evidence does not account for the sample it claims to certify",
       );
     }
@@ -362,6 +394,13 @@ if (existsSync(CERTIFICATION_PATH)) {
  */
 const TIER_HISTORY_PATH = join(ARTIFACT_ROOT, "docs", "TIER-HISTORY.json");
 let tierHistory = { status: "SKIPPED", reason: "no ledger", problems: [] };
+if (!existsSync(TIER_HISTORY_PATH)) {
+  failures.push(
+    "docs/TIER-HISTORY.json is missing — a demotion recorded only in a source " +
+      "comment is a demotion the next reader can contradict, which is the " +
+      "failure this file exists to prevent",
+  );
+}
 if (existsSync(TIER_HISTORY_PATH)) {
   const problems = [];
   let parsed;
@@ -468,6 +507,13 @@ let constitution = {
   reason: "no constitution",
   problems: [],
 };
+if (!existsSync(CONSTITUTION_PATH)) {
+  failures.push(
+    "docs/RULE-CONSTITUTION.json is missing — and it is also what names the " +
+      "enforcement for every other arm here, so losing it removes the check " +
+      "that the checks exist",
+  );
+}
 if (existsSync(CONSTITUTION_PATH)) {
   const problems = [];
   let parsed;

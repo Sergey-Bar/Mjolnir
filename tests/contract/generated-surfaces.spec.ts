@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
@@ -19,32 +19,83 @@ const ROOT = join(import.meta.dirname, "..", "..");
  * copy that nobody re-compares is a copy that drifts, and the drift is
  * invisible because all four still pass while meaning different things.
  */
-const STALENESS_WORKFLOWS = [
-  ".github/workflows/ci.yml",
-  ".github/workflows/corpus-audit.yml",
-  ".github/workflows/release.yml",
-  ".github/workflows/stable-release.yml",
-];
+/**
+ * DERIVED, not a fixed list of four — the comment above used to claim that
+ * while iterating a hardcoded array, so a fifth workflow that regenerated
+ * without asserting would have passed. It is discovered by reading the
+ * workflows and asking which of them regenerate.
+ */
+function workflowsThatRegenerate(): string[] {
+  const dir = join(ROOT, ".github", "workflows");
+  return readdirSync(dir)
+    .filter((f) => /\.ya?ml$/.test(f))
+    .map((f) => `.github/workflows/${f}`)
+    .filter((rel) => read(rel).includes("npm run docs:regen"))
+    .sort();
+}
+
+const STALENESS_WORKFLOWS = workflowsThatRegenerate();
 
 function read(rel: string): string {
   return readFileSync(join(ROOT, rel), "utf8");
 }
 
+/**
+ * What each step of `npm run docs:regen` writes.
+ *
+ * Keyed by the step name so the test can compare against the ACTUAL chain in
+ * package.json rather than against a hand-copied list of outputs. The previous
+ * version listed outputs only, and omitted `docs:capability`'s two files — a
+ * generator whose output nobody was watching, invisible precisely because the
+ * assertion still passed.
+ */
+const REGEN_STEP_OUTPUTS: Record<string, string[]> = {
+  "generate-rule-docs": ["docs/rules"],
+  "generate-fp-audit-table": [
+    "docs/COUNT-LOCK.md",
+    "docs/FP-AUDIT.md",
+    "src/rules/measured-fp.generated.ts",
+  ],
+  "docs:capability": [
+    "docs/RULE-CAPABILITY-MATRIX.md",
+    "docs/RULE-CAPABILITY-MATRIX.json",
+  ],
+  "docs:counts": [
+    "README.md",
+    "docs/README.md",
+    "docs/CERTIFICATION-POLICY.md",
+    "docs/MEASUREMENT-CLOSEOUT.md",
+    "site/reference/roadmap.md",
+  ],
+  "docs:depth-adjudication": ["docs/DEPTH-ADJUDICATION.md"],
+  "docs:machine-contract": ["docs/machine-contract.md"],
+  "docs:core-readiness": ["docs/CORE-READINESS.md"],
+  "brand:tokens": [
+    "assets/brand/tokens.json",
+    "site/.vitepress/theme/styles/vars.css",
+    "docs/design/DESIGN-TOKENS.md",
+  ],
+  "golden:update": ["tests/golden"],
+  "docs:hero": ["assets/readme"],
+  "docs:architecture": ["assets/readme"],
+  "docs:how-it-works": ["assets/readme"],
+  "docs:demo": ["assets/readme"],
+  "docs:readme-brand": ["assets/readme"],
+  "detector-hashes:update": ["tests/corpus/detector-hashes.json"],
+};
+
 describe("the generated-staleness assertion has one implementation", () => {
+  it("finds the workflows that regenerate, rather than trusting a list", () => {
+    // If this is empty the next assertion below passes vacuously, so the
+    // discovery itself is asserted: a rename or a move of `.github/workflows`
+    // must not quietly reduce coverage to nothing.
+    expect(STALENESS_WORKFLOWS.length).toBeGreaterThan(0);
+  });
+
   it("every workflow that regenerates docs also asserts they are committed", () => {
-    // Not a fixed list of four: derived from what the workflows actually do,
-    // so adding a fifth workflow that regenerates without asserting fails here
-    // rather than shipping the same hole a fifth time.
-    const offenders: string[] = [];
-    for (const rel of STALENESS_WORKFLOWS) {
-      const text = read(rel);
-      if (
-        text.includes("npm run docs:regen") &&
-        !text.includes("docs:staleness")
-      ) {
-        offenders.push(rel);
-      }
-    }
+    const offenders = STALENESS_WORKFLOWS.filter(
+      (rel) => !read(rel).includes("docs:staleness"),
+    );
     expect(
       offenders,
       "these workflows regenerate generated docs but never assert the " +
@@ -132,27 +183,39 @@ describe("the declared generated surface", () => {
 
   it("covers every generator docs:regen runs, by name", () => {
     // The list is explicit so the script never has to run the generators, and
-    // explicit means it can fall behind. These are the outputs each regen step
-    // declares; a new generator that writes somewhere unlisted fails here.
-    const required = [
-      "docs/rules", // generate-rule-docs
-      "docs/COUNT-LOCK.md", // generate-fp-audit-table
-      "docs/FP-AUDIT.md", // generate-fp-audit-table
-      "src/rules/measured-fp.generated.ts", // generate-fp-audit-table
-      "docs/DEPTH-ADJUDICATION.md", // docs:depth-adjudication
-      "docs/machine-contract.md", // docs:machine-contract
-      "docs/CORE-READINESS.md", // docs:core-readiness
-      "assets/brand/tokens.json", // brand:tokens
-      "site/.vitepress/theme/styles/vars.css", // brand:tokens
-      "docs/design/DESIGN-TOKENS.md", // brand:tokens
-      "tests/golden", // golden:update
-      "assets/readme", // docs:hero / architecture / how-it-works / demo
-      "tests/corpus/detector-hashes.json", // detector-hashes:update
-      "README.md", // docs:counts
-      "docs/CERTIFICATION-POLICY.md", // docs:counts
-      "docs/MEASUREMENT-CLOSEOUT.md", // docs:counts
-      "site/reference/roadmap.md", // docs:counts
-    ];
+    // explicit means it can fall behind — the previous version of this list
+    // omitted `docs:capability`'s two outputs entirely, which is exactly how an
+    // explicit list rots while still passing.
+    //
+    // The guard against a NEW generator is the step list: every script
+    // `docs:regen` invokes has to appear here, so adding a generator without
+    // saying where it writes fails. Outputs are per-generator facts and are
+    // spelled out.
+    const pkg = JSON.parse(read("package.json")) as {
+      scripts: Record<string, string>;
+    };
+    const regen = pkg.scripts["docs:regen"];
+    expect(
+      regen,
+      "package.json has no `docs:regen` script — the staleness gate watches " +
+        "what that chain writes, so its absence is a failure, not a reason to " +
+        "check nothing",
+    ).toBeTypeOf("string");
+    const regenSteps = (regen ?? "")
+      .split("&&")
+      .map((s) => s.trim().replace(/^npm run /, ""))
+      .filter(Boolean);
+
+    // Every step must be accounted for. `docs:regen` is one long `&&` chain.
+    const unaccounted = regenSteps.filter((step) => !REGEN_STEP_OUTPUTS[step]);
+    expect(
+      unaccounted,
+      "these run inside `docs:regen` but this test does not record what they " +
+        "write — add them to REGEN_STEP_OUTPUTS, or the staleness script " +
+        "cannot know what it is supposed to watch",
+    ).toEqual([]);
+
+    const required = Object.values(REGEN_STEP_OUTPUTS).flat();
     const missing = required.filter(
       (surface) => !GENERATED_SURFACES.includes(surface),
     );
@@ -161,5 +224,15 @@ describe("the declared generated surface", () => {
       "docs:regen writes these but the staleness script does not watch them — " +
         "add each to GENERATED_SURFACES",
     ).toEqual([]);
+  });
+
+  it("records the outputs of every docs:regen step, including the easy misses", () => {
+    // The step that was missing last time. Asserted separately because a
+    // regression here is invisible: the assertion above only fails if the
+    // whole step vanishes from the map.
+    expect(REGEN_STEP_OUTPUTS["docs:capability"]).toContain(
+      "docs/RULE-CAPABILITY-MATRIX.md",
+    );
+    expect(REGEN_STEP_OUTPUTS["docs:counts"]).toContain("docs/README.md");
   });
 });

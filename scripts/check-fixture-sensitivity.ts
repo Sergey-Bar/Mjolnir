@@ -21,12 +21,12 @@
  * fixture pair and classifies it. The finding, measured on this tree:
  *
  *   40 live rules carry both legs.
- *   2  are plausible neutralised mutants (divergence <= 0.25): QA-PW-144 and
- *      QA-PW-116, at 1 changed line out of 7 and out of 9.
- *   38 are a different program (divergence > 0.25). The next nearest after the
- *      two is 0.55, and the furthest diverge by more lines than either file
- *      contains, because a hand-written neutral fixture also renames the class
- *      and rewrites the bodies.
+ *   2  are plausible neutralised mutants (divergence <= 0.25): QA-PW-144 at
+ *      1 changed line of 7 (0.143) and QA-PW-116 at 1 of 5 (0.2).
+ *   38 are a different program (divergence > 0.25). The next nearest is 0.552
+ *      (QA-CS-109, 16 changed lines of 29), and the furthest diverge by more
+ *      lines than either file contains, because a hand-written neutral fixture
+ *      also renames the class and rewrites the bodies.
  *
  * Which is the honest answer to "does the detector set have teeth", and it is
  * not the answer the quad implies. Nothing here is a failure today: the pairs
@@ -63,11 +63,27 @@ export const RATCHET_PATH = "docs/SENSITIVITY-RATCHET.json";
  * Divergence at or below which a negative fixture counts as a neutralised
  * mutant rather than as unrelated code.
  *
- * 0.25 is where this tree's own data separates: two pairs land at or below it
- * (QA-PW-144 at 1 changed line of 9, QA-PW-116 at 1 of 7) and the next nearest
- * is 0.50. A threshold in the empty space between them is chosen from the
- * measurement rather than from a preference, and it is a named constant so
+ * 0.25 sits in the empty space between the two pairs that ARE mutants
+ * (0.143 and 0.2) and the nearest that is not (0.552) — so the cut comes from
+ * the measurement rather than from a preference, and it is a named constant so
  * changing it is a visible decision instead of a silent re-tune.
+ *
+ * KNOWN LIMITATION, measured rather than assumed: `lineDivergence` sums
+ * |count difference| over a line MULTISET, so an ADDED line contributes 1 and
+ * a SUBSTITUTED line contributes 2 (one removed, one added). The same
+ * neutralisation — removing a defect — therefore costs twice as much if it is
+ * written as a substitution (`@Disabled` -> `@Enabled`) as if it is written as
+ * an added line. Measured on a four-line fixture: addition 0.2, substitution
+ * 0.5, a 2.5x difference.
+ *
+ * Both current classifications are correct on inspection — QA-PW-144's negative
+ * adds a `firefox` project to a single-engine config, QA-PW-116's adds
+ * `globalSetup` to a `storageState` with no expiry strategy — so this is a
+ * metric-design limitation, not a wrong answer. It is recorded because the
+ * alternative is a threshold that silently means two different things depending
+ * on how the next author writes their fixture. Making the two shapes
+ * commensurate (Levenshtein over the line sequence, or counting EDIT SITES
+ * rather than differing lines) is the real fix and is not done here.
  */
 export const MUTANT_MAX_DIVERGENCE = 0.25;
 
@@ -232,7 +248,7 @@ export function check(): {
   };
 }
 
-export function update(_argv: string[] = []): number {
+export function update(): number {
   const rows = measureAll();
   const found = mutants(rows);
   const ratchet = loadRatchet();

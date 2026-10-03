@@ -222,7 +222,7 @@ const precisionOk = precisionProven.length >= precisionFloor;
  * would let a backfill silently move a measurement floor.
  */
 if (process.argv.includes("--update-sensitivity")) {
-  updateSensitivity([]);
+  updateSensitivity();
 }
 const sensitivity = sensitivityCheck();
 

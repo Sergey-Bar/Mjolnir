@@ -45,6 +45,8 @@ import { execFileSync } from "node:child_process";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { isMainModule } from "./lib/is-main-module.js";
+
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 
 /**
@@ -210,4 +212,6 @@ function main(argv) {
   return 0;
 }
 
-process.exitCode = main(process.argv.slice(2));
+if (isMainModule(import.meta.url)) {
+  process.exitCode = main(process.argv.slice(2));
+}

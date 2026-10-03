@@ -718,7 +718,7 @@ export function probeRepository(
   // or named twice in one manifest, is one observation of one tool.
   const seen = new Set<string>();
   const unique = observations.filter((observation) => {
-    const key = `${observation.name} ${observation.via}`;
+    const key = `${observation.name}\u0000${observation.via}`;
     if (seen.has(key)) return false;
     seen.add(key);
     return true;

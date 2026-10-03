@@ -20,8 +20,8 @@
  * WHAT THIS TEST IS FOR. It fails LOUDLY the day the arithmetic stops holding,
  * in either direction:
  *
- *   - if someone funds the adjudication â€” which `--core-candidates` in
- *     scripts/corpus-sample.ts now makes fundable for two rules at a time â€”
+ *   - if someone funds the adjudication — which `--core-candidates` in
+ *     scripts/corpus-sample.ts now makes fundable for two rules at a time —
  *     core opens. This test should then say so: that is a product win worth a
  *     diff, and it should be a deliberate one.
  *   - if someone lowers `CORE_FP_CEILING` below 0.162, core opens without any
