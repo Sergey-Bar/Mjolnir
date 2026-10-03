@@ -898,8 +898,6 @@ arithmetic and the alternative levers are recorded in the `6.0.0-rc.1` entry
 below and in `CLAUDE.md` law 0, so the question no longer has to be re-argued
 from file counts.
 
-## [6.0.0] — 2026-10-03
-
 The verification trust engine, measured. A tier you can only reach with
 evidence, a promotion that cannot land unreviewed, and generated documentation
 that cannot quietly go stale behind the code. Carries the 6.0.0-rc.1 line below.

@@ -3,8 +3,8 @@
   "artifact": "v6-inventory",
   "generatedBy": "npm run docs:v6-inventory",
   "wave": "0",
-  "baseSha": "5a527790ff8079277b9353ba13e0ddc0e8f28edf",
-  "version": "6.0.0",
+  "baseSha": "3ec2c1ecd2369d2e552c0d6a0701be860fffe197",
+  "version": "6.0.0-rc.1",
   "publishedStable": "5.1.0",
   "counts": {
     "srcFiles": 296,

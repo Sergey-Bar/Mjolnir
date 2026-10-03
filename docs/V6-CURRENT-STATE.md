@@ -2,7 +2,7 @@
 
 **Generated — do not edit by hand.** Regenerate: `npm run docs:v6-inventory`.
 
-Baseline commit `5a527790ff8079277b9353ba13e0ddc0e8f28edf` · package version `6.0.0` · published stable `5.1.0`.
+Baseline commit `3ec2c1ecd2369d2e552c0d6a0701be860fffe197` · package version `6.0.0-rc.1` · published stable `5.1.0`.
 
 This is the truth baseline v6 is built on. It is deliberately blunt: the
 interesting part of a current-state inventory is what the product _cannot_
@@ -28,7 +28,7 @@ demonstrate, not what it contains.
 
 | Fact                            | Value                                                                                                                                   | Source                                       |
 | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
-| Package version                 | `6.0.0`                                                                                                                                 | `package.json`                               |
+| Package version                 | `6.0.0-rc.1`                                                                                                                            | `package.json`                               |
 | Published stable                | `5.1.0`                                                                                                                                 | `package.json`                               |
 | Source files (`src/**.ts`)      | 296                                                                                                                                     | derived                                      |
 | Test specs (`tests/**.spec.ts`) | 685                                                                                                                                     | derived                                      |
