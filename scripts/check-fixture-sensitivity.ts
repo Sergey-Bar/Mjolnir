@@ -259,7 +259,7 @@ export function update(_argv: string[] = []): number {
       "real and closing it needs a per-rule recipe for what the defect IS, " +
       "so the mutant can be generated rather than hand-written a second time. " +
       "Criteria and the full per-rule classification: " +
-      "`npm run fixture:sensitivity`.",
+      "`npm run check-fixture-quad`, which prints this arm beside PRECISION.",
   };
   writeFileSync(join(ROOT, RATCHET_PATH), `${JSON.stringify(doc, null, 2)}\n`);
   console.log(

@@ -2,6 +2,6 @@
   "floor": 2,
   "mutants": ["QA-PW-144", "QA-PW-116"],
   "paired": 40,
-  "updatedAt": "2026-10-03T17:29:03.158Z",
-  "note": "Live rules whose MUST-NOT-FIRE fixture is plausibly the must-fire fixture with the defect neutralised — divergence <= 0.25 of non-blank lines, measured on the closest positive/negative pair. WHAT THIS IS NOT: a claim that the other rules are imprecise. Their negative fixtures are a different program that happens not to trigger, which shows the detector is directional and does NOT show the predicate is sensitive to the defect. That gap is real and closing it needs a per-rule recipe for what the defect IS, so the mutant can be generated rather than hand-written a second time. Criteria and the full per-rule classification: `npm run fixture:sensitivity`."
+  "updatedAt": "2026-10-03T17:50:38.344Z",
+  "note": "Live rules whose MUST-NOT-FIRE fixture is plausibly the must-fire fixture with the defect neutralised — divergence <= 0.25 of non-blank lines, measured on the closest positive/negative pair. WHAT THIS IS NOT: a claim that the other rules are imprecise. Their negative fixtures are a different program that happens not to trigger, which shows the detector is directional and does NOT show the predicate is sensitive to the defect. That gap is real and closing it needs a per-rule recipe for what the defect IS, so the mutant can be generated rather than hand-written a second time. Criteria and the full per-rule classification: `npm run check-fixture-quad`, which prints this arm beside PRECISION."
 }
