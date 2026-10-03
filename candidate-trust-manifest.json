@@ -28,7 +28,7 @@
   "generatedAt": "2026-10-03",
   "identity": {
     "state": "WORKING_CANDIDATE",
-    "baseSha": "f29e333cb43a7628617fc4bac238201564cf1aa2",
+    "baseSha": "868c0ef69ee116b041b37d39599ad942e401c03f",
     "candidateSha": null,
     "version": "6.0.0-rc.1",
     "packageSha256": "e7c47696fa2a3e45520a84f0946e4682bcdb0da8fd34039bbf4a247f6a1c9ea7",
