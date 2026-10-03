@@ -28,41 +28,19 @@
   "generatedAt": "2026-10-03",
   "identity": {
     "state": "WORKING_CANDIDATE",
-    "baseSha": "81bf860fb18e6e3dd0dbfefa9e7d959e2818e34e",
+    "baseSha": "2db14a6c58614e292d08af2f65b6e752a41f3f9d",
     "candidateSha": null,
     "version": "6.0.0-rc.1",
-    "packageSha256": "6e231330598d08cdefb6b102f18cf017083402ea86e2d0a8eefbb1aacaec90be",
+    "packageSha256": "e7c47696fa2a3e45520a84f0946e4682bcdb0da8fd34039bbf4a247f6a1c9ea7",
     "lockfileSha256": "f7589d1ba3118e6e7bc341de9129d038fe4be6b738687b4bce674109a0bc1c40",
-    "workingTreeSha256": "745f851e4bcd4b98dedd08793e7fcc665ce7385d2ef62f4462aa76a351e08793",
-    "changedPathCount": 10,
+    "workingTreeSha256": "4bd220a63d57af21a80328dbe5f116345ce15c6e1f63fe330eb378e128db0bb6",
+    "changedPathCount": 0,
     "supportEnvelope": "self-hosted; hosted services require explicit consent and separate proof",
     "worktreeInventory": {
-      "changedPaths": [
-        "CHANGELOG.md",
-        "docs/CI-MATRIX.json",
-        "docs/DOMAIN-COVERAGE.json",
-        "docs/FRAMEWORK-MATRIX.json",
-        "docs/LANGUAGE-MATRIX.json",
-        "docs/SURFACE-MATURITY.json",
-        "docs/V6-CURRENT-STATE.md",
-        "docs/V6-GAP-MATRIX.md",
-        "docs/capability-registry.json",
-        "docs/v6-inventory.json"
-      ],
+      "changedPaths": [],
       "untrackedPaths": []
     },
-    "dirtyFiles": [
-      "CHANGELOG.md",
-      "docs/CI-MATRIX.json",
-      "docs/DOMAIN-COVERAGE.json",
-      "docs/FRAMEWORK-MATRIX.json",
-      "docs/LANGUAGE-MATRIX.json",
-      "docs/SURFACE-MATURITY.json",
-      "docs/V6-CURRENT-STATE.md",
-      "docs/V6-GAP-MATRIX.md",
-      "docs/capability-registry.json",
-      "docs/v6-inventory.json"
-    ]
+    "dirtyFiles": []
   },
   "claimRegistry": {
     "path": "docs/claim-registry.json",
