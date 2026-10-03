@@ -11,27 +11,27 @@ once shipped, so this file is the record of what changed between versions.
 
 ## [Unreleased]
 
-### `QA-PW-117` is the first core rule — `ANTI-CREEP-EXCEPTION`
+### Two core rules, measured: QA-PW-117 and QA-JV-101 - `ANTI-CREEP-EXCEPTION`
 
 Law 1 requires an equal-size removal for every addition to the governed set.
-This is an addition of one with nothing to remove, because the governed set
+This is an addition of **two** with nothing to remove, because the governed set
 held **zero** core rules until now. The exception is recorded rather than the
 baseline being edited, because `previousBaselineCore` is `0` on purpose: lowering
 `baselineCore` to match the grown tier would make the growth read as zero and
 switch the law off in one uncross-checked JSON edit.
 
-The reason is that this is a **measured** promotion, not a declared one. Twenty
-rows were adjudicated TP against pinned source and four orphans retracted
-(taking n from 24 to 34), then a corpus-wide sampling sweep over all 37
-repositories found exactly one remaining finding, which is also a TP. At
-n = 35 with zero observed false positives the Wilson upper bound is **9.89%**,
-at or below the 10% core ceiling. `measurementTier` returns `core` on its own
-evidence and `declaredCoreWithoutEvidence` is null — the declaration records a
-decision the measurement had already reached.
+The reason is that both are **measured** promotions, not declared ones.
+`QA-PW-117` reached n=35 and `QA-JV-101` reached n=35, both with zero observed
+false positives and a Wilson upper bound of **9.89%** against the 10% ceiling,
+both adjudicated row by row against pinned source, and both found by a
+corpus-wide `--core-candidates` sweep rather than by any global cap raise.
+`measurementTier` returns `core` for each on its own evidence and
+`declaredCoreWithoutEvidence` is null, so each declaration records a decision the
+measurement had already reached.
 
-The rule had been demoted from core in 6.0 for exactly this reason, and
-`src/rules/tier-evidence.ts` listed it as _"the most likely of the nineteen to
-clear on a re-sample"_. It was the first to.
+Both had been demoted from core in 6.0 for exactly this reason, and
+`src/rules/tier-evidence.ts` ranked `QA-PW-117` first among the nineteen most
+likely to clear on a re-sample.
 
 ### Verification and enforcement overhaul
 
@@ -177,57 +177,68 @@ undefined` about a map the generator pre-filters to revision-matching rows, so
   actually missing: the split exists, but no holdout _evaluation_ has been run
   against it, and it is still produced by this repository.
 
-### Adjudication: 20 rows, 4 orphans, and the first core rule
+### Adjudication: 23 rows, 6 orphans, and the FIRST defect in the sampler
 
 Every row was read at the corpus's pinned commit (`keycloak @ 421c23f5221d`,
-`sveltejs-kit @ bf6833a639c9`), following the convention the already-committed
-rows in the same files establish. **20 rows were adjudicable; 4 are orphaned and
-were removed rather than judged.**
+`playwright-java @ c17b6060bd39`, `sveltejs-kit @ bf6833a639c9`), and each cited
+line independently re-verified by enumerating every `@Ignore`/`@Disabled` /
+`test.describe.serial` in the pinned file rather than trusting the ±6-line window.
 
-Three of the orphans are `QA-JV-101` rows citing `JWETest.java:74`, `:114` and
-`:203`, where the `@Ignore` is on line 73/113/202 — the same annotations already
-adjudicated `TP` one line up. A verdict on any of them would have counted one
-annotation twice and moved a rule's `n` on the strength of a finding that is not
-at that line. The fourth is `QA-PW-117` citing `details.spec.ts:20`, a
-`const clientId = …` line with no `test.describe.serial` on or beside it. So the
-committed ceiling of 23 funded 19 rows, not 23.
+**Six rows were orphans and were removed rather than judged** — and finding them
+turned up a defect that made orphans inevitable:
 
-`npm run corpus:sample -- --core-candidates --core-target QA-PW-117` then swept
-all 37 corpus repositories and found exactly **one** remaining finding — which is
-how the arithmetic closed:
+> **`scripts/corpus-sample.ts` cloned the default branch and ignored `repo.ref`.**
+> It ran `git clone --depth 1 <url>` — HEAD — then `rm -rf .git`, so nothing
+> downstream could tell. Every verdict is adjudicated against the _pinned_ commit
+> via `npm run corpus:verdict-context`. Those are two trees, and they drift.
+>
+> On keycloak that produced a repeating phantom: the pinned `JWETest.java` has
+> exactly three `@Ignore`, on lines 73, 113 and 202, all three already adjudicated
+> `TP` — and the sweep kept emitting rows citing **74, then 114, then 203**, the
+> same three annotations cited one line late, each arriving as a fresh
+> unclassified row that looked like new evidence.
+>
+> Four of those were caught by hand during the first adjudication pass. That was
+> luck, not a control: a row whose drifted line happened to still land on a
+> trigger would have been judged against source the verdict claims to describe and
+> does not. `cloneRepo` now fetches `repo.ref` the way `tests/corpus/audit.ts`
+> always did, **verifies** the checked-out SHA and hard-stops on a mismatch, and a
+> cached clone is verified rather than trusted by existence.
 
-| Rule        | n before |  after |         95% ciHigh | core ceiling |
-| ----------- | -------: | -----: | -----------------: | ------------ |
-| `QA-PW-117` |       24 | **35** | 13.80% → **9.89%** | **cleared**  |
-| `QA-JV-101` |       23 | **32** |    14.31% → 10.72% | needs n=35   |
+Retracting a row also proved non-durable: `corpus-sample.ts` de-dupes on the
+`ruleId|file|line` keys present in a `.jsonl`, so the instant an orphan was
+removed the next sweep re-found and re-appended it. `apply-verdicts` now writes
+**tombstones** to `tests/corpus/verdicts/retracted.jsonl` and the sampler reads
+them alongside the verdicts — because an orphan rule that regenerates its own
+evidence is not an orphan rule. The generator and its spec then needed the same
+exclusion, since a tombstone has no `file`/`line` and parses as a verdict with
+`undefined` fields.
 
-The 35th row is `sveltejs-kit`'s `test.describe.serial('Errors')` over six tests
-that each navigate to a different URL and assert their own page — no shared
-realm, no shared client, no `beforeAll`. `.serial` there buys nothing and costs
-exactly what the rule names: one failure aborts the five after it, so five error
-paths go unverified while the block reports as run. A stronger instance than the
-ten keycloak rows, where serial was at least load-bearing.
+**The two rules that earned core, and how:**
 
-`docs/ROADMAP.yaml` records the 6.0 kill criterion as met. **Three gates had to
-learn about the promotion, and each one was right to complain:**
+| Rule        |           n |             ciHigh | the last row                                                                                 |
+| ----------- | ----------: | -----------------: | -------------------------------------------------------------------------------------------- |
+| `QA-PW-117` | 24 → **35** | 13.80% → **9.89%** | sveltejs-kit `test.describe.serial('Errors')` — six tests, each its own URL, no shared state |
+| `QA-JV-101` | 23 → **35** | 14.31% → **9.89%** | keycloak `@Disabled("Only for PUT/POST")` on an **empty-bodied** override                    |
 
-- `check-fixture-quad`'s PRECISION arm, the quarantined-count ratchets and the
-  capability matrix all moved, because a rule changed tier.
-- `conformity`'s `CLAIM_OWNED` failed the rule for carrying no `corePromotion`.
-  It now accepts a claim the **measurement** derives independently — the same
-  principle `checkRegistry` and `declaredCoreWithoutEvidence` already applied,
-  which is that a measurement is a stronger owner than a note: it has an owner
-  (the corpus), a rationale (the rate and its interval), and it withdraws
-  itself on a re-sample with no date for anyone to forget. A hand record has an
-  expiry somebody has to renew; the measurement has a condition that either
-  holds or does not.
-- **Law 1 had two implementations and only one had an escape.**
-  `checkAntiCreep` honours `ANTI-CREEP-EXCEPTION`; `check-promotion-throughput`
-  did not, so the promotion `docs/ANTI-CREEP.md` explicitly calls legal was
-  reported as a regression. It now reads the same marker through the same
-  parser, and its report gained `licensed` + `license` — because a gate that
-  prints `netChange: 1` against `mustBe: ≤ 0` and exits 0 teaches a reader to
-  look past both lines.
+Both cleared by the same arithmetic — `z²/(n+z²)` ≤ 10% first holds at n=35 — and
+both were funded by a corpus-wide `--core-candidates` sweep rather than by any
+global cap raise. The `QA-JV-101` row is the purest instance of the rule's
+diagnosis in the whole corpus: a disabled test with **no assertions** cannot hide
+a defect, because it could not have detected one.
+
+Neither sweep was unbounded: `CORE_CANDIDATE_CAP` stayed at 35 and the cap was not
+raised to chase a number. `QA-JV-101`'s file carries two further
+`@Disabled("Only for PUT/POST")` overrides at `:107` and `:113` that remain
+**unfunded and unclassified**, because at n=35 the budget is zero. That is the cap
+doing its job, not an oversight.
+
+A third core rule now needs no hand record: `conformity`'s `CLAIM_OWNED` accepts a
+claim the measurement derives independently, which is what `checkRegistry` and
+`declaredCoreWithoutEvidence` already did. `QA-JV-101`'s entry in the 6.0 demotion
+table also carried a justification describing a _different_ rule's premise
+("static mutable shared across tests"); it is gone with the entry, and the
+remaining eighteen are unaudited — named here as a finding, not fixed.
 
 ### Adjudication of the 23 sampled rows — staged, then applied
 
