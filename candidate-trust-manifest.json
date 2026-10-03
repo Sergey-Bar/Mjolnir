@@ -28,26 +28,44 @@
   "generatedAt": "2026-10-03",
   "identity": {
     "state": "WORKING_CANDIDATE",
-    "baseSha": "5a61b91d30d4a59a24842caeae28d9c3664aa690",
+    "baseSha": "8d889b511ef5930eceda354e7253a16c8a3ef2e0",
     "candidateSha": null,
     "version": "6.0.0-rc.1",
     "packageSha256": "e7c47696fa2a3e45520a84f0946e4682bcdb0da8fd34039bbf4a247f6a1c9ea7",
     "lockfileSha256": "b4530c8bf73c8215650860133afb02318790b138e280313c69b0feab567777e7",
-    "workingTreeSha256": "c9eadef3deeea7d78795c4586ed01ad02695239aa10945bbfff537cb5ba321f5",
-    "changedPathCount": 3,
+    "workingTreeSha256": "c101ed55ae7f097e4a3de00a9643941408de4b94e44d1cca977960e387fb6d86",
+    "changedPathCount": 12,
     "supportEnvelope": "self-hosted; hosted services require explicit consent and separate proof",
     "worktreeInventory": {
       "changedPaths": [
-        "src/reporter/sarif.ts",
-        "tests/reporters/reporters.spec.ts",
-        "tests/reporters/sarif-fingerprints.spec.ts"
+        "docs/BLAST-RADIUS-AUDIT.md",
+        "docs/CI-MATRIX.json",
+        "docs/DOMAIN-COVERAGE.json",
+        "docs/EXTERNAL-CONFIG.md",
+        "docs/FRAMEWORK-MATRIX.json",
+        "docs/LANGUAGE-MATRIX.json",
+        "docs/SURFACE-MATURITY.json",
+        "docs/V6-CURRENT-STATE.md",
+        "docs/V6-GAP-MATRIX.md",
+        "docs/capability-registry.json",
+        "docs/v6-inventory.json",
+        "tests/contract/promotion-ratchet.spec.ts"
       ],
       "untrackedPaths": []
     },
     "dirtyFiles": [
-      "src/reporter/sarif.ts",
-      "tests/reporters/reporters.spec.ts",
-      "tests/reporters/sarif-fingerprints.spec.ts"
+      "docs/BLAST-RADIUS-AUDIT.md",
+      "docs/CI-MATRIX.json",
+      "docs/DOMAIN-COVERAGE.json",
+      "docs/EXTERNAL-CONFIG.md",
+      "docs/FRAMEWORK-MATRIX.json",
+      "docs/LANGUAGE-MATRIX.json",
+      "docs/SURFACE-MATURITY.json",
+      "docs/V6-CURRENT-STATE.md",
+      "docs/V6-GAP-MATRIX.md",
+      "docs/capability-registry.json",
+      "docs/v6-inventory.json",
+      "tests/contract/promotion-ratchet.spec.ts"
     ]
   },
   "claimRegistry": {

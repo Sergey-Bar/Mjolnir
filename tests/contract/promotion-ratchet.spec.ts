@@ -18,6 +18,7 @@
 import { execFileSync } from "node:child_process";
 import {
   cpSync,
+  copyFileSync,
   existsSync,
   mkdirSync,
   mkdtempSync,
@@ -26,7 +27,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 
 import { afterEach, describe, expect, it } from "vitest";
 
@@ -248,8 +249,144 @@ describe("the promotion ratchet reports rather than only enforcing", () => {
       ) + "\n",
       "utf8",
     );
+    // The certification, tier-history and constitution arms fail CLOSED when
+    // their artifact is absent — right for this repository, and the reason
+    // every fixture here used to skip all three. A fixture root containing only
+    // the ledger is an incomplete repository, not a passing one.
+    //
+    // The artifacts are COPIED from the real tree, not stubbed: these arms
+    // evaluate against the live registry (`RULES` is imported from `src`, not
+    // read from `--root`), so an empty `records: {}` fails on the two rules that
+    // genuinely hold core and the 17 genuine demotions. A stub would make this
+    // fixture assert nothing. Copying also keeps it honest — the fixture then
+    // represents "this repository, with a looser baseline", which is exactly
+    // what the test is about.
+    for (const name of [
+      "CORE-CERTIFICATION.json",
+      "TIER-HISTORY.json",
+      "RULE-PROMOTION-LEDGER.json",
+    ]) {
+      copyFileSync(join(ROOT, "docs", name), join(dir, "docs", name));
+    }
+    // …and every path those records cite. The arms resolve cited evidence
+    // against the tree they are inspecting, and a certification pointing at
+    // files the tree does not contain is exactly what they exist to catch.
+    // Derived from the committed record rather than hardcoded, so the fixture
+    // stays correct as the records change.
+    const cited = new Set<string>();
+    const cert = JSON.parse(
+      readFileSync(join(ROOT, "docs", "CORE-CERTIFICATION.json"), "utf8"),
+    ) as {
+      records: Record<
+        string,
+        {
+          evidence: {
+            mustFire?: string[];
+            mustNotFire?: string[];
+            corpusVerdicts?: Array<{ file: string }>;
+          };
+        }
+      >;
+    };
+    for (const record of Object.values(cert.records)) {
+      for (const p of record.evidence?.mustFire ?? []) cited.add(p);
+      for (const p of record.evidence?.mustNotFire ?? []) cited.add(p);
+      for (const v of record.evidence?.corpusVerdicts ?? []) cited.add(v.file);
+    }
+    for (const rel of cited) {
+      const to = join(dir, rel);
+      mkdirSync(dirname(to), { recursive: true });
+      copyFileSync(join(ROOT, rel), to);
+    }
+    // Now relax the ledger past its recorded position — the actual subject of
+    // this test. Done AFTER the copy so the artifacts above stay faithful.
+    const relaxed = committedBaseline();
+    writeFileSync(
+      join(dir, "docs", "RULE-PROMOTION-LEDGER.json"),
+      JSON.stringify(
+        {
+          ...relaxed,
+          core: relaxed.core + 5,
+          unmeasured: relaxed.unmeasured + 5,
+        },
+        null,
+        2,
+      ) + "\n",
+      "utf8",
+    );
+    // One principle naming a file that exists inside the fixture, so the "a
+    // principle resting on a check that is not there" arm has something real to
+    // verify instead of being satisfied by omission.
+    writeFileSync(
+      join(dir, "docs", "RULE-CONSTITUTION.json"),
+      JSON.stringify(
+        {
+          schemaVersion: 1,
+          principles: [
+            { id: "P1", statement: "fixture", enforcedBy: ["package.json"] },
+          ],
+          explicitNonPrinciples: [],
+          exemptions: {},
+        },
+        null,
+        2,
+      ) + "\n",
+      "utf8",
+    );
+    writeFileSync(join(dir, "package.json"), "{}\n", "utf8");
     const { code, output } = runCheck(dir);
     expect(code, output).toBe(0);
+  });
+
+  it("each governed artifact fails closed when it is deleted", () => {
+    // The counterpart to the three `existsSync` guards: deleting the artifact
+    // a rule needs in order to hold core must be the loudest failure available,
+    // not a SKIPPED arm and exit 0. Asserted per file so removing one guard is
+    // caught even though the other two still fail.
+    for (const artifact of [
+      "CORE-CERTIFICATION.json",
+      "TIER-HISTORY.json",
+      "RULE-CONSTITUTION.json",
+    ]) {
+      const dir = mkdtempSync(join(tmpdir(), "mjolnir-promotion-"));
+      scratch.push(dir);
+      mkdirSync(join(dir, "docs"), { recursive: true });
+      const baseline = committedBaseline();
+      writeFileSync(
+        join(dir, "docs", "RULE-PROMOTION-LEDGER.json"),
+        JSON.stringify(baseline, null, 2) + "\n",
+        "utf8",
+      );
+      writeFileSync(join(dir, "package.json"), "{}\n", "utf8");
+      for (const keep of [
+        "CORE-CERTIFICATION.json",
+        "TIER-HISTORY.json",
+        "RULE-CONSTITUTION.json",
+      ]) {
+        if (keep === artifact) continue;
+        writeFileSync(
+          join(dir, "docs", keep),
+          keep === "RULE-CONSTITUTION.json"
+            ? JSON.stringify(
+                {
+                  schemaVersion: 1,
+                  principles: [
+                    { id: "P1", statement: "f", enforcedBy: ["package.json"] },
+                  ],
+                  explicitNonPrinciples: [],
+                  exemptions: {},
+                },
+                null,
+                2,
+              ) + "\n"
+            : JSON.stringify({ schemaVersion: 1, records: {} }, null, 2) + "\n",
+          "utf8",
+        );
+      }
+      const { code, output } = runCheck(dir);
+      expect(code, `${artifact} deleted but the gate still passed`).toBe(1);
+      expect(output).toContain(artifact);
+    }
   });
 
   it("a missing baseline fails closed rather than reporting a green", () => {
