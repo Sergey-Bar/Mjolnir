@@ -101,6 +101,10 @@ jobs:
         run: |
           set -euo pipefail
           npm run docs:regen
+          # Was `git diff --exit-code -- docs/`, which cannot see an UNTRACKED
+          # generated file and so let a new rule's docs page ship silently.
+          # One implementation, shared with the other three workflows.
+          npm run docs:staleness
           if ! git diff --exit-code -- docs/; then
             echo "::error::generated docs are stale — run 'npm run docs:regen' and commit"
             git --no-pager diff --stat -- docs/

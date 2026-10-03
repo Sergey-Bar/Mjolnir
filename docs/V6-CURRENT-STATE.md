@@ -2,7 +2,7 @@
 
 **Generated — do not edit by hand.** Regenerate: `npm run docs:v6-inventory`.
 
-Baseline commit `81bf860fb18e6e3dd0dbfefa9e7d959e2818e34e` · package version `6.0.0-rc.1` · published stable `5.1.0`.
+Baseline commit `652da6998e3b611260cc5f779c026b293d28bbca` · package version `6.0.0-rc.1` · published stable `5.1.0`.
 
 This is the truth baseline v6 is built on. It is deliberately blunt: the
 interesting part of a current-state inventory is what the product _cannot_
@@ -31,7 +31,7 @@ demonstrate, not what it contains.
 | Package version                 | `6.0.0-rc.1`                                                                                                                            | `package.json`                               |
 | Published stable                | `5.1.0`                                                                                                                                 | `package.json`                               |
 | Source files (`src/**.ts`)      | 296                                                                                                                                     | derived                                      |
-| Test specs (`tests/**.spec.ts`) | 683                                                                                                                                     | derived                                      |
+| Test specs (`tests/**.spec.ts`) | 684                                                                                                                                     | derived                                      |
 | Live rules                      | 79                                                                                                                                      | `src/rules/index.ts`                         |
 | Retired rule ids (preserved)    | 22                                                                                                                                      | `RETIRED_RULE_IDS`                           |
 | Rules with a valid measurement  | 73                                                                                                                                      | `MEASURED_FP` + `detectorRev`                |

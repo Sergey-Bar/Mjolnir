@@ -494,16 +494,13 @@ jobs:
           npm run docs:regen
       - name: Fail when committed artifacts differ from regenerated ones
         run: |
+          # `--all` because this job also gates the whole tree, not just the
+          # generated surfaces: a generator that writes OUTSIDE the declared
+          # output map is a defect in that map, and only a whole-tree diff
+          # notices. The script is the single implementation; the three release
+          # workflows call the same one without `--all`.
+          npm run docs:staleness -- --all
           git diff --exit-code
-          # `git diff` cannot see UNTRACKED generated files (e.g. the
-          # docs/rules page of a newly added rule) — those would ship
-          # silently. Fail on any unexpected generated output too.
-          untracked="$(git ls-files --others --exclude-standard docs/rules docs/COUNT-LOCK.md docs/FP-AUDIT.md docs/RULE-CAPABILITY-MATRIX.md docs/RULE-CAPABILITY-MATRIX.json tests/golden assets/readme)"
-          if [ -n "$untracked" ]; then
-            echo "Untracked generated artifacts — commit them:"
-            echo "$untracked"
-            exit 1
-          fi
       # F3 (certification-audit remediation): agent instruction surfaces
       # are version-stamped generated content the regen step above never
       # touched — the v0.5.15-stamp drift shipped silently through this

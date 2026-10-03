@@ -201,6 +201,10 @@ jobs:
         run: |
           set -euo pipefail
           npm run docs:regen
+          # Was `git diff --exit-code -- docs/` only, which cannot see an
+          # UNTRACKED generated file. One implementation, shared with the
+          # other three workflows.
+          npm run docs:staleness
           if ! git diff --exit-code -- docs/; then
             echo "::error::generated docs are stale — run 'npm run docs:regen' and commit the result"
             git --no-pager diff --stat -- docs/
