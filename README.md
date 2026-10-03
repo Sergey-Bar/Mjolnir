@@ -227,6 +227,30 @@ Three steps to trust your release pipeline:
 2. **Block in CI** — `npx mjolnir-qa@5.1.0 --scope changed` — scans only changed lines, blocks PRs with error findings
 3. **Fix and re-verify** — `mjolnir fix` applies safe auto-fixes, then re-scans to prove each one landed
 
+### Proving the fix: baseline, then delta
+
+Steps 1–3 tell you the **state** of your tests. This tells you the **change**,
+which is the only question a reviewer actually has about a diff:
+
+```bash
+npx mjolnir-qa@5.1.0 . --save-baseline   # once: writes .mjolnir/baseline.json
+# … make the fix …
+mjolnir ci verify                         # what moved, in both directions
+```
+
+`ci verify` reports **RESOLVED** (baseline findings that are gone — and
+per the finding lifecycle, only `VERIFIED-RESOLVED` counts as a fix claim) and
+**NEW** (findings the fix introduced). `--format pr-comment` renders the same
+delta as a PR comment. Commit `.mjolnir/baseline.json`: it is the before-state
+that gives the after-state meaning.
+
+Exit codes are a contract, not a mood: `0` clean, `1` new error findings, `2`
+partial scan or no committed baseline — nothing to verify against.
+
+> **Before your first PR:** `ci verify` exits `2` until a baseline exists. That
+> is why `mjolnir ci install` does not add it for you — it would redden every
+> install on day one. Establish the baseline once, commit it, then opt in.
+
 Install the advisory PR workflow first, so existing trust debt cannot break
 CI on day one:
 
@@ -240,15 +264,16 @@ After reviewing the findings or baselining existing debt, opt into blocking:
 mjolnir ci install --gate error
 ```
 
-| Command                           | What it does                                      |
-| --------------------------------- | ------------------------------------------------- |
-| `mjolnir`                         | Trust Report: verdict, confidence, next action    |
-| `mjolnir --scope changed`         | Only what your branch introduced (CI form)        |
-| `mjolnir --blocking error`        | Exit 1 on error findings — gate releases          |
-| `mjolnir ci install`              | Write the advisory PR workflow (default)          |
-| `mjolnir ci install --gate error` | Opt into the blocking PR workflow                 |
-| `mjolnir ci release-trust`        | 12-dimension release assurance verdict            |
-| `mjolnir share`                   | One self-contained HTML trust report to hand over |
+| Command                           | What it does                                            |
+| --------------------------------- | ------------------------------------------------------- |
+| `mjolnir`                         | Trust Report: verdict, confidence, next action          |
+| `mjolnir --scope changed`         | Only what your branch introduced (CI form)              |
+| `mjolnir --blocking error`        | Exit 1 on error findings — gate releases                |
+| `mjolnir ci install`              | Write the advisory PR workflow (default)                |
+| `mjolnir ci install --gate error` | Opt into the blocking PR workflow                       |
+| `mjolnir ci verify`               | Delta against `.mjolnir/baseline.json` — RESOLVED / NEW |
+| `mjolnir ci release-trust`        | 12-dimension release assurance verdict                  |
+| `mjolnir share`                   | One self-contained HTML trust report to hand over       |
 
 | `mjolnir contract-verify --contract <scan.json>` | Verify a persisted machine contract against a scan |
 
