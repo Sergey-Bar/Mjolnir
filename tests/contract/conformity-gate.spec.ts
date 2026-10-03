@@ -380,3 +380,117 @@ describe("the whole registry is covered, so a new rule cannot slip past", () => 
     }
   });
 });
+
+/**
+ * `CLAIM_OWNED`'s four rejection arms.
+ *
+ * These are planted rather than found, and that is the point: no rule in the
+ * registry currently carries a promotion record, so the live registry can only
+ * ever exercise the "declares no tier claim" arm. A validator whose failure
+ * branches are never run is the shape this repository has already paid for
+ * twice, so each arm is planted here and the reason string is asserted — a
+ * rejection that says nothing actionable is half a rejection.
+ */
+describe("CLAIM_OWNED rejects a claim that is present but unusable", () => {
+  const BASE = RULES.find((r) => r.tier === "core") ?? RULES[0];
+  if (BASE === undefined) throw new Error("rule registry is empty");
+
+  /**
+   * A rule carrying a promotion record, field by field.
+   *
+   * Typed through `unknown` on purpose. The arms under test are precisely the
+   * ones where a record is MALFORMED — a blank owner, a two-word rationale — so
+   * the input cannot be a valid `CorePromotion` and a direct cast would either
+   * fail to compile or need a lie to get past it. What the check reads is the
+   * shape of the record, so the fixture supplies the shape and says so.
+   */
+  function claiming(
+    promotion: Record<string, unknown>,
+    tier: "core" | "quarantine" = "core",
+  ) {
+    return {
+      ...BASE,
+      id: "QA-TEST-777",
+      tier,
+      ...(tier === "core"
+        ? { corePromotion: promotion }
+        : { quarantinePromotion: promotion }),
+    } as unknown as Parameters<typeof conformityOf>[0];
+  }
+
+  it("rejects a claim with no named owner", () => {
+    const state = conformityOf(
+      claiming({
+        owner: "  ",
+        rationale: "a rationale long enough to clear the threshold",
+        expiresOn: "2999-01-01",
+      }),
+      ROOT,
+    );
+    expect(state.checks.CLAIM_OWNED.ok).toBe(false);
+    expect(state.checks.CLAIM_OWNED.detail).toContain("no named owner");
+    expect(state.failed).toContain("CLAIM_OWNED");
+  });
+
+  it("rejects a claim whose rationale is too thin to check", () => {
+    const state = conformityOf(
+      claiming({
+        owner: "rule-owner",
+        rationale: "because",
+        expiresOn: "2999-01-01",
+      }),
+      ROOT,
+    );
+    expect(state.checks.CLAIM_OWNED.ok).toBe(false);
+    expect(state.checks.CLAIM_OWNED.detail).toContain(
+      "no rationale a reader could check",
+    );
+  });
+
+  it("rejects a claim that has already lapsed", () => {
+    // The arm that matters most: a claim renewed by nobody looking at it is the
+    // permanent-by-default outcome the tier exists to avoid.
+    const state = conformityOf(
+      claiming({
+        owner: "rule-owner",
+        rationale: "a rationale long enough to clear the threshold",
+        expiresOn: "2020-01-01",
+      }),
+      ROOT,
+    );
+    expect(state.checks.CLAIM_OWNED.ok).toBe(false);
+    expect(state.checks.CLAIM_OWNED.detail).toContain("lapsed on 2020-01-01");
+    expect(state.checks.CLAIM_OWNED.detail).toContain("nobody chose");
+  });
+
+  it("accepts a claim that carries all three, on either tier's field", () => {
+    const sound = {
+      owner: "rule-owner",
+      rationale: "a rationale long enough to clear the threshold",
+      expiresOn: "2999-01-01",
+      grantedAt: "2026-01-01",
+      evidenceRefs: ["docs/QUARANTINE-REMEDIATION.md"],
+    };
+    expect(conformityOf(claiming(sound), ROOT).checks.CLAIM_OWNED.ok).toBe(
+      true,
+    );
+    expect(
+      conformityOf(claiming(sound, "quarantine"), ROOT).checks.CLAIM_OWNED.ok,
+    ).toBe(true);
+  });
+
+  it("accepts a claim with no expiry, and says so rather than inventing one", () => {
+    // `expiresOn` is optional on the type. A claim without one is still a
+    // claim, and the detail must not print a date that was never set.
+    const state = conformityOf(
+      claiming({
+        owner: "rule-owner",
+        rationale: "a rationale long enough to clear the threshold",
+      }),
+      ROOT,
+    );
+    expect(state.checks.CLAIM_OWNED.ok).toBe(true);
+    expect(state.checks.CLAIM_OWNED.detail).toContain("rule-owner");
+    expect(state.checks.CLAIM_OWNED.detail).toContain("undefined");
+  });
+});

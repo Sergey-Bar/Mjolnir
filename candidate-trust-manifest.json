@@ -28,19 +28,19 @@
   "generatedAt": "2026-10-03",
   "identity": {
     "state": "WORKING_CANDIDATE",
-    "baseSha": "0c798aeb0cb0148833df4eaa3a0aad5c16632da5",
+    "baseSha": "95e77b943a2169a48bd8d43541ed0e4fc997f46a",
     "candidateSha": null,
     "version": "6.0.0-rc.1",
     "packageSha256": "6e231330598d08cdefb6b102f18cf017083402ea86e2d0a8eefbb1aacaec90be",
     "lockfileSha256": "f7589d1ba3118e6e7bc341de9129d038fe4be6b738687b4bce674109a0bc1c40",
-    "workingTreeSha256": "924319f271c02efd26ac652999f74f6cc5ac977db8fa9c94639ad402e711bb17",
-    "changedPathCount": 0,
+    "workingTreeSha256": "f87e4b19c595bf81a3b2a440021f321cca71b73596a9c154b514cd974fe3bc81",
+    "changedPathCount": 1,
     "supportEnvelope": "self-hosted; hosted services require explicit consent and separate proof",
     "worktreeInventory": {
-      "changedPaths": [],
+      "changedPaths": ["tests/contract/conformity-gate.spec.ts"],
       "untrackedPaths": []
     },
-    "dirtyFiles": []
+    "dirtyFiles": ["tests/contract/conformity-gate.spec.ts"]
   },
   "claimRegistry": {
     "path": "docs/claim-registry.json",
