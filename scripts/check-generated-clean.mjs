@@ -42,12 +42,37 @@
  */
 
 import { execFileSync } from "node:child_process";
+import { realpathSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
-
-import { isMainModule } from "./lib/is-main-module.js";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
+
+/**
+ * Entry-point guard, duplicated rather than imported.
+ *
+ * `scripts/lib/is-main-module.ts` is the shared helper and seventeen scripts use
+ * it — but those are TypeScript run through `tsx`, which resolves the `.ts`.
+ * This file is deliberately plain `.mjs` executed by bare `node`, with no build
+ * step and no dependencies, because it runs in CI BEFORE anything is built. Node
+ * will not resolve `./lib/is-main-module.js` to the `.ts` on disk, and the build
+ * output that would satisfy it is not committed.
+ *
+ * Not hypothetical: importing it broke `npm run docs:staleness` in all four
+ * workflows that call it, with ERR_MODULE_NOT_FOUND on a clean CI checkout
+ * while passing on a developer machine that had run a build. A gate that works
+ * locally and dies in CI is the worst of both, so the guard is duplicated here
+ * with the reason attached.
+ */
+function isMainModule(importMetaUrl) {
+  const argv1 = process.argv[1];
+  if (!argv1) return false;
+  try {
+    return realpathSync(fileURLToPath(importMetaUrl)) === realpathSync(argv1);
+  } catch {
+    return importMetaUrl === pathToFileURL(argv1).href;
+  }
+}
 
 /**
  * What `npm run docs:regen` writes, by generator.
