@@ -2,7 +2,7 @@
 
 **Generated — do not edit by hand.** Regenerate: `npm run docs:v6-inventory`.
 
-Baseline commit `c797c1cb848246aecbdef87b42efc20a5b32fbcc` · package version `6.0.0-rc.1` · published stable `5.1.0`.
+Baseline commit `486830593cd913acdfd72b6678a9caf67f2ef00d` · package version `6.0.0-rc.1` · published stable `5.1.0`.
 
 This is the truth baseline v6 is built on. It is deliberately blunt: the
 interesting part of a current-state inventory is what the product _cannot_
@@ -35,7 +35,7 @@ demonstrate, not what it contains.
 | Live rules                      | 79                                                                                                                                      | `src/rules/index.ts`                         |
 | Retired rule ids (preserved)    | 22                                                                                                                                      | `RETIRED_RULE_IDS`                           |
 | Rules with a valid measurement  | 73                                                                                                                                      | `MEASURED_FP` + `detectorRev`                |
-| Rule tiers                      | **extended** 45 · **quarantine** 34                                                                                                     | `effectiveTier`                              |
+| Rule tiers                      | **core** 1 · **extended** 44 · **quarantine** 34                                                                                        | `effectiveTier`                              |
 | Adapters                        | 11 (azure-pipelines, csharp, exit-code-integrity, github-actions, gitlab-ci, index, java, jenkins, python, typescript, workflow-bypass) | `src/adapters`                               |
 | Commands                        | 34                                                                                                                                      | `src/commands`                               |
 | Frameworks in the inventory     | 14                                                                                                                                      | `FRAMEWORK_INVENTORY`                        |

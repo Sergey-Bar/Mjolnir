@@ -100,17 +100,38 @@ function driftedBaseline(
 }
 
 describe("the promotion ratchet reports rather than only enforcing", () => {
-  it("the committed tree passes at its baseline", () => {
+  it("the committed tree passes at its baseline, and says how", () => {
     const { code, output } = runCheck(ROOT);
     expect(code, output).toBe(0);
     const report = JSON.parse(output) as {
-      launchSet: { tier: string; netChange: number; mustBe: string };
+      launchSet: {
+        tier: string;
+        netChange: number;
+        mustBe: string;
+        licensed: boolean | null;
+        license: string | null;
+      };
       tiers: Array<{ tier: string; count: number }>;
       unmeasured: { now: number; baseline: number };
     };
     expect(report.launchSet.tier).toBe("core");
+
+    /**
+     * `netChange` is 1, not ≤ 0: `QA-PW-117` was promoted to core on
+     * 2026-10-03, which is Law 1 growth against a baseline of 0. The unreleased
+     * changelog carries an `ANTI-CREEP-EXCEPTION` for it, which is the law's own
+     * second condition — and condition 1 (an equal-size removal) is unavailable
+     * here, because the launch set held nothing to remove.
+     *
+     * So the report states the licence rather than reporting a violation and an
+     * exit code at the same time. A gate that prints `netChange: 1` against
+     * `mustBe: ≤ 0` and exits 0 teaches a reader to look past both lines.
+     */
+    expect(report.launchSet.netChange).toBe(1);
     expect(report.launchSet.mustBe).toBe("≤ 0");
-    expect(report.launchSet.netChange).toBeLessThanOrEqual(0);
+    expect(report.launchSet.licensed, output).toBe(true);
+    expect(report.launchSet.license).toContain("ANTI-CREEP-EXCEPTION");
+
     expect(report.tiers.map((t) => t.tier)).toEqual([
       "quarantine",
       "extended",

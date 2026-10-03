@@ -493,4 +493,47 @@ describe("CLAIM_OWNED rejects a claim that is present but unusable", () => {
     expect(state.checks.CLAIM_OWNED.detail).toContain("rule-owner");
     expect(state.checks.CLAIM_OWNED.detail).toContain("undefined");
   });
+
+  it("accepts a core claim the MEASUREMENT derives, and says who owns it", () => {
+    // The arm that opened on 2026-10-03. `QA-PW-117` declares `tier: "core"`
+    // and carries no `corePromotion`, because its n=35 measurement derives core
+    // on its own.
+    //
+    // The check has to name that owner rather than pass silently, because the
+    // difference matters to whoever reads the report: "owned by the corpus" is
+    // re-derived every run and withdraws itself when the interval widens, while
+    // a hand record has an expiry date somebody has to remember.
+    const state = conformityOf(
+      RULES.find((r) => r.id === "QA-PW-117") as Parameters<
+        typeof conformityOf
+      >[0],
+      ROOT,
+    );
+    expect(state.checks.CLAIM_OWNED.ok).toBe(true);
+    expect(state.checks.CLAIM_OWNED.detail).toContain("owned by the corpus");
+    expect(state.checks.CLAIM_OWNED.detail).not.toContain("undefined");
+  });
+
+  it("still fails a core claim the measurement does NOT support", () => {
+    // The arm the check was written for, and the one the new owner must not
+    // swallow. A rule claiming core on nothing is the permanent-by-default
+    // outcome the tier exists to prevent, so planting one must fail even
+    // though a promoted sibling passes.
+    const promoted = RULES.find((r) => r.id === "QA-PW-117");
+    if (promoted === undefined)
+      throw new Error("QA-PW-117 is not in the registry");
+    const state = conformityOf(
+      {
+        ...promoted,
+        id: "QA-TEST-778",
+        // measurementTier is re-derived from the registry's own measurement
+        // table, so a clone at a DIFFERENT id has no interval at all and falls
+        // to "extended" — which is exactly the unsupported claim.
+        corePromotion: undefined,
+      } as unknown as Parameters<typeof conformityOf>[0],
+      ROOT,
+    );
+    expect(state.checks.CLAIM_OWNED.ok).toBe(false);
+    expect(state.checks.CLAIM_OWNED.detail).toContain("permanent by default");
+  });
 });

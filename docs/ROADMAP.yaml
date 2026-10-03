@@ -56,7 +56,17 @@ versions:
       Wilson interval clears the 10% core ceiling at n >= 35 with zero observed
       false positives, adjudicated by a person, with its four-leg fixture quad
       complete. See ADR 0013 — the ceiling is decided at 10%, and 23 pending
-      classifications stand between the corpus and the first core rule.
+      classifications stood between the corpus and the first core rule.
+    coreReachable: >-
+      YES, as of 2026-10-03 — QA-PW-117: n=35, zero observed false positives,
+      Wilson upper bound 9.89% against the 10% ceiling, all four fixture legs
+      present. The 23 pending classifications were adjudicated and four of them
+      were orphans — rows citing a line one above the annotation, which would
+      have counted one annotation twice — so the pass funded 19 rows, a
+      corpus-wide sweep found one more, and the ceiling took the last of them.
+      See ADR 0014 for the floor that gives the tier teeth, and CHANGELOG.md for
+      the ANTI-CREEP-EXCEPTION Law 1 required for the first addition to a launch
+      set that held nothing to remove.
 
   - version: "7.0"
     status: "deferred"

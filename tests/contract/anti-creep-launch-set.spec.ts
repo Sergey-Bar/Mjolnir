@@ -68,9 +68,19 @@ describe("the launch set is what ships, not the empty core tier", () => {
   it("the two sets genuinely differ in this repository", () => {
     // Without this the rest of the file passes vacuously. It is the fact that
     // made the old predicate wrong.
+    //
+    // `core` was 0 when this was written and is 1 as of 2026-10-03, when
+    // `QA-PW-117` was promoted. The arm still has teeth, and MORE of them: it
+    // now has to check the core set is a genuine SUBSET rather than the whole
+    // shipped set wearing a different name. A predicate that silently widened
+    // until both sets were equal would make every cap in this file vacuous
+    // again, and that is the exact failure this file was written to prevent.
     expect(shipped.length).toBeGreaterThan(0);
-    expect(core.length).toBe(0);
+    expect(core.length).toBeGreaterThan(0);
     expect(shipped.length).toBeGreaterThan(core.length);
+    for (const rule of core) {
+      expect(shipped, `${rule.id} is core but not shipped`).toContain(rule);
+    }
   });
 
   it("the ratchet counts the shipped set", () => {

@@ -73,8 +73,7 @@
       "repositoryId": "keycloak-keycloak",
       "rowsByRule": {
         "QA-CI-007": 1,
-        "QA-JV-101": 22,
-        "QA-PW-117": 30
+        "QA-JV-101": 19
       },
       "reason": "holds committed verdicts for a rule `isCoreCandidate` says more clean samples would settle; moving it to holdout would empty the measurement side of the evidence the core tier is waiting on"
     },
@@ -111,8 +110,7 @@
       "repositoryId": "sveltejs-kit",
       "rowsByRule": {
         "QA-PW-002": 17,
-        "QA-PW-101": 16,
-        "QA-PW-117": 1
+        "QA-PW-101": 16
       },
       "reason": "holds committed verdicts for a rule `isCoreCandidate` says more clean samples would settle; moving it to holdout would empty the measurement side of the evidence the core tier is waiting on"
     }
@@ -156,9 +154,9 @@
     "repositories": 33,
     "holdoutRepositories": 6,
     "measurementRepositories": 27,
-    "rows": 707,
+    "rows": 704,
     "holdoutRows": 145,
-    "measurementRows": 562,
+    "measurementRows": 559,
     "holdoutRules": 23,
     "measurementRules": 53
   },
@@ -204,7 +202,7 @@
       "QA-CYP-001": 15,
       "QA-CYP-003": 1,
       "QA-ENV-001": 14,
-      "QA-JV-101": 32,
+      "QA-JV-101": 29,
       "QA-JV-102": 20,
       "QA-JV-103": 54,
       "QA-JV-104": 2,

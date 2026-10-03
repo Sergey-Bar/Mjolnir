@@ -78,12 +78,29 @@ const decisions = JSON.parse(readFileSync(decisionsPath, "utf8")) as Record<
   Record<string, Decision>
 >;
 
+/**
+ * Keys beginning with `_` are METADATA, not repositories.
+ *
+ * A decisions file that records why it exists — the pinned commit, the method,
+ * what the author read — needs somewhere to put that, and `tests/corpus/verdicts/
+ * proposed/keycloak-keycloak.json` puts it under `_meta`. Without this skip the
+ * applier walks `_meta` as if it were a corpus repository, opens
+ * `tests/corpus/verdicts/_meta.jsonl`, and dies with ENOENT — a failure that
+ * names a missing file rather than the real problem, which is the shape this
+ * tool exists to avoid.
+ */
+const repositoryDecisions = Object.fromEntries(
+  Object.entries(decisions).filter(
+    ([key]) => !key.startsWith("_") && key !== "default",
+  ),
+);
+
 let applied = 0;
 let retracted = 0;
 const unknown: string[] = [];
 const immutable: string[] = [];
 
-for (const [repo, rows] of Object.entries(decisions)) {
+for (const [repo, rows] of Object.entries(repositoryDecisions)) {
   const path = join(VERDICTS_DIR, `${repo}.jsonl`);
   const lines = readFileSync(path, "utf8").split("\n");
   const out: string[] = [];

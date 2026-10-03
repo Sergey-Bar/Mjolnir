@@ -62,9 +62,18 @@ describe("the candidate cap is the arithmetic, not a literal", () => {
 });
 
 describe("a candidate is a rule more samples can still settle", () => {
-  it("the two plan targets are candidates", () => {
-    expect(coreCandidateRuleIds()).toContain("QA-PW-117");
+  it("QA-JV-101 is the plan target still to be funded", () => {
+    // `QA-PW-117` was the other plan target and stopped being a candidate on
+    // 2026-10-03, when it reached n=35 and was promoted: the predicate asks
+    // "can more samples still settle this", and a rule whose interval already
+    // clears the ceiling cannot be settled by any number of samples. Asserted
+    // here because a predicate that kept offering to fund a promotion the rule
+    // already has would send the next run after work that is finished.
     expect(coreCandidateRuleIds()).toContain("QA-JV-101");
+    expect(
+      coreCandidateRuleIds(),
+      "QA-PW-117 is core - the predicate is still offering to fund it",
+    ).not.toContain("QA-PW-117");
   });
 
   it("the predicate is worth far more than the two nearest candidates", () => {
@@ -148,27 +157,39 @@ describe("funding a pass is a separate decision from candidacy", () => {
   });
 
   it("naming targets funds exactly those, and the ceiling arithmetic follows", () => {
-    // The plan's step-4 pass: two rules, eleven and twelve rows, twenty-three
-    // classifications, and a ceiling that moves to admit exactly them. The number
-    // the ceiling has to move by is DERIVED here rather than asserted in a
-    // comment, because it is the number a person approves and the number the
-    // rows then become.
-    const funded = selectCoreCandidates(["QA-PW-117", "QA-JV-101"]);
-    expect(funded).toEqual(["QA-JV-101", "QA-PW-117"]);
+    // The plan's step-4 pass, as it RAN: two rules, eleven and twelve rows,
+    // twenty-three classifications. Twenty were adjudicated and four were
+    // orphans, so `QA-PW-117` moved 24 -> 34 rather than 24 -> 35, and the
+    // corpus-wide sweep that followed found the last row.
+    //
+    // The arithmetic below is therefore run against `QA-JV-101` alone — the one
+    // target the campaign has NOT yet settled. Its 12 is the number a person
+    // approves next.
+    const funded = selectCoreCandidates(["QA-JV-101"]);
+    expect(funded).toEqual(["QA-JV-101"]);
     const rows = funded.map((id) => {
       const m = measurementFor(id);
       expect(m, id).toBeDefined();
       return CORE_CANDIDATE_CAP - (m?.n ?? 0);
     });
-    expect(rows).toEqual([12, 11]);
-    expect(rows.reduce((a, b) => a + b, 0)).toBe(23);
+    expect(rows).toEqual([3]);
+    expect(rows.reduce((a, b) => a + b, 0)).toBe(3);
   });
 
   it("the funded set is a subset of the candidate set, never a replacement", () => {
     const candidates = new Set(coreCandidateRuleIds());
-    for (const id of selectCoreCandidates(["QA-PW-117"])) {
+    for (const id of selectCoreCandidates(["QA-JV-101"])) {
       expect(candidates.has(id), id).toBe(true);
     }
+    // A promoted rule is not fundable, and naming one is an ERROR rather than
+    // an empty result — the same "a run that quietly sampled nothing" guard the
+    // next arm is about, applied to the promotion that just happened.
+    expect(() => selectCoreCandidates(["QA-PW-117"])).toThrow(
+      /QA-PW-117 is not a core candidate/,
+    );
+    expect(() => selectCoreCandidates(["QA-PW-117"])).toThrow(
+      /already past the 35-sample threshold/,
+    );
   });
 
   it("a rule that is not a candidate is an ERROR, not a silent skip", () => {
@@ -195,7 +216,12 @@ describe("funding a pass is a separate decision from candidacy", () => {
       message = err instanceof Error ? err.message : String(err);
     }
     expect(message).toContain("Candidates today:");
-    expect(message).toContain("QA-PW-117");
+    // `QA-JV-101` rather than `QA-PW-117`: the list is derived, so it names
+    // whichever rules can still be settled, and PW-117 was promoted out of it
+    // on 2026-10-03. A hard-coded ID here would rot the day the second rule
+    // clears — which is the point of asserting against the live derivation.
+    expect(message).toContain("QA-JV-101");
+    expect(message).not.toContain("QA-PW-117");
   });
 });
 

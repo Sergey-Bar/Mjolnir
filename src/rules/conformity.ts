@@ -52,6 +52,7 @@ import {
   defensibleTier,
   hasStaleMeasurement,
   hasValidMeasurement,
+  measurementTier,
 } from "./measurement.js";
 import { quadFor } from "../v6/fixture-quad-probe.js";
 
@@ -146,13 +147,49 @@ function checkClaimOwned(rule: QADoctorRule): CheckResult {
   }
   const promotion = rule[field];
   if (promotion === undefined) {
+    /**
+     * No hand-written record. Before `QA-PW-117`, that was the end of the
+     * check and the gap the gate was built to close: a claim with no record is
+     * permanent by default.
+     *
+     * It is no longer the end, because a claim can now be owned by a
+     * MEASUREMENT rather than by a person's note. `QA-PW-117` reached n=35 with
+     * zero observed false positives, so `measurementTier` returns `core` from
+     * its own evidence, and requiring an expiring `corePromotion` on top of
+     * that would be worse than redundant — it would fail this gate on the
+     * record's expiry date while the measurement still cleared the ceiling,
+     * leaving a rule that is simultaneously conforming and failing.
+     *
+     * So the record is now one of two owners, and the other is arithmetic:
+     *
+     *   - a `corePromotion` is how a person owns a claim the measurement does
+     *     NOT support. That is the case this arm was written for and it still
+     *     fails without a record.
+     *   - a measurement that independently derives the claimed tier owns
+     *     itself. It has an owner (the corpus), a rationale (the FP rate and
+     *     its interval), and it cannot silently lapse: it is re-derived on every
+     *     run, so a re-sample that widens the interval withdraws the ownership
+     *     by itself, with no date for anyone to forget.
+     *
+     * This is the asymmetry worth naming: the second owner is STRONGER than the
+     * first. A hand record has an expiry that has to be renewed; the measurement
+     * has a condition that either still holds or does not.
+     */
+    if (measurementTier(rule) === rule.tier) {
+      return {
+        ok: true,
+        detail:
+          `declares tier "${rule.tier}" and the measurement derives the same ` +
+          "tier independently — owned by the corpus, not by a note.",
+      };
+    }
     return {
       ok: false,
       detail:
-        `declares tier "${rule.tier}" with no ${field} record. The field's own ` +
-        "documentation says a claim without one is permanent by default, " +
-        "which is the outcome the tier exists to avoid — so the omission is " +
-        "not neutral, it is a decision nobody made.",
+        `declares tier "${rule.tier}" with no ${field} record, and its measurement ` +
+        `derives ${measurementTier(rule)}. The field's own documentation says a claim ` +
+        "without one is permanent by default, which is the outcome the tier exists " +
+        "to avoid — so the omission is not neutral, it is a decision nobody made.",
     };
   }
   if (promotion.owner.trim().length < 3) {

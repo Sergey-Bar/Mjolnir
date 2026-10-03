@@ -20,8 +20,8 @@
  * WHAT THIS TEST IS FOR. It fails LOUDLY the day the arithmetic stops holding,
  * in either direction:
  *
- *   - if someone funds the adjudication — which `--core-candidates` in
- *     scripts/corpus-sample.ts now makes fundable for two rules at a time —
+ *   - if someone funds the adjudication â€” which `--core-candidates` in
+ *     scripts/corpus-sample.ts now makes fundable for two rules at a time â€”
  *     core opens. This test should then say so: that is a product win worth a
  *     diff, and it should be a deliberate one.
  *   - if someone lowers `CORE_FP_CEILING` below 0.162, core opens without any
@@ -29,6 +29,14 @@
  *
  * A structural fact that is true and silent is a trap for the next person. A
  * structural fact that is true and asserted is a note in the code.
+ *
+ * THE SECOND DIRECTION FIRED. On 2026-10-03 the first arm fired for real:
+ * `QA-PW-117` cleared the ceiling at n=35 / 9.89% and was promoted, so the two
+ * arms below now assert the core tier is NON-EMPTY and say what earned it. The
+ * arithmetic arms above are unchanged and still true — the ceiling still needs
+ * n=35, and it still cannot be reached at the default cap of 20. What changed is
+ * that 35 is no longer hypothetical, so a reader can see the whole route in one
+ * file: cap 20 -> `--core-candidates` cap 35 -> adjudicate -> n=35 -> promote.
  */
 
 import { describe, expect, it } from "vitest";
@@ -38,10 +46,12 @@ import {
   CORE_FP_CEILING,
   QUARANTINE_FP_FLOOR,
   measurementFor,
+  measurementInterval,
   measurementTier,
   samplesForZeroFp,
 } from "../../src/rules/measurement.js";
 import { RULES } from "../../src/rules/index.js";
+import { declaredCoreWithoutEvidence } from "../../src/rules/tier-evidence.js";
 import {
   CORE_CANDIDATE_CAP,
   isCoreCandidate,
@@ -108,38 +118,67 @@ describe("the core tier is unreachable at the DEFAULT corpus sample cap", () => 
     expect(wilsonInterval(0, CORE_CANDIDATE_CAP).ciHigh).toBeLessThanOrEqual(
       CORE_FP_CEILING,
     );
-    expect(isCoreCandidate("QA-PW-117")).toBe(true);
     expect(isCoreCandidate("QA-JV-101")).toBe(true);
+    // QA-PW-117 earned core on 2026-10-03, so the predicate must stop offering
+    // to fund a promotion it already has.
     expect(
-      selectCoreCandidates(["QA-PW-117", "QA-JV-101"]),
-      "the two nearest candidates cannot be funded — the 10% ceiling is not " +
-        "reachable on this corpus and docs/CORE-READINESS.md is advertising a " +
-        "work list that cannot be started",
-    ).toEqual(["QA-JV-101", "QA-PW-117"]);
+      isCoreCandidate("QA-PW-117"),
+      "QA-PW-117 is core - the candidate predicate is still offering to fund a " +
+        "promotion it already has",
+    ).toBe(false);
+    expect(
+      selectCoreCandidates(["QA-JV-101"]),
+      "QA-JV-101 is the remaining candidate at n=32; if it dropped out, " +
+        "docs/CORE-READINESS.md is advertising a work list that cannot be started",
+    ).toEqual(["QA-JV-101"]);
   });
 
-  it("no live rule derives core, and the reason is the adjudication, not the arithmetic", () => {
-    // The state, next to the arithmetic that produces it. Nothing derives core
-    // today, and the reason is that no one has adjudicated the rows the mode
-    // can now sample — `docs/CORE-READINESS.md` names the work list, and
-    // `tests/corpus/verdicts/README.md` is the handoff boundary.
+  it("the core tier is no longer empty: QA-PW-117 earned it at n=35", () => {
+    // The arm that fired on 2026-10-03, rewritten from "none" to the truth.
+    //
+    // Pinned by ID rather than by count, because a count passes again after the
+    // second promotion and the reader learns nothing. This one is named so a
+    // reviewer can check WHERE it came from: 20 keycloak rows adjudicated TP
+    // against pinned source plus 4 orphans retracted (n 24 -> 34), then a
+    // corpus-wide sweep over all 37 repositories found one more finding, also a
+    // TP (n 34 -> 35), taking the Wilson upper bound to 9.89%.
     const core = RULES.filter((r) => measurementTier(r) === "core");
     expect(
       core.map((r) => r.id),
-      "a rule now derives core — the core tier is no longer empty",
-    ).toEqual([]);
+      "the derived-core set changed - if a rule left it the measurement moved " +
+        "and docs/FP-AUDIT.md is the record; if one joined, it earned it the " +
+        "same way QA-PW-117 did",
+    ).toEqual(["QA-PW-117"]);
+
+    // And the promotion is MEASURED, not declared: the measurement reaches core
+    // on its own, so `tier: "core"` records a decision the evidence had already
+    // made rather than substituting for it.
+    const promoted = RULES.find((r) => r.id === "QA-PW-117");
+    if (promoted === undefined)
+      throw new Error("QA-PW-117 is not in the registry");
+    expect(measurementTier(promoted)).toBe("core");
+    expect(declaredCoreWithoutEvidence(promoted)).toBeNull();
+    const interval = measurementInterval(promoted);
+    expect(measurementFor(promoted.id)?.n).toBe(CORE_CANDIDATE_CAP);
+    expect(interval?.ciHigh).toBeLessThanOrEqual(CORE_FP_CEILING);
   });
 
   it("a rule declared core is still held to the measurement, not believed", () => {
-    // `rule.tier` accepts "core" and no rule holds it. If one ever does, the
-    // tightening law in registry-ratchet.spec.ts is what decides whether the
-    // evidence supports it — this arm only asserts the type-level gap is real,
-    // so that closing it is a visible event rather than a silent one.
+    // The type-level gap this arm was written to precede is now closed - one
+    // rule holds `tier: "core"` - so the arm has become the thing it preceded:
+    // the promotion happened AND the measurement backs it.
+    // `registry-ratchet.spec.ts` re-derives the interval on every run, so a
+    // later re-sample that widens the interval fails there, not here.
     const declaredCore = RULES.filter((r) => r.tier === "core");
     expect(
-      declaredCore.length,
-      "a rule now declares core — registry-ratchet decides whether it is earned",
-    ).toBe(0);
+      declaredCore.map((r) => r.id),
+      "the declared-core set changed - every entry must clear the ceiling on " +
+        "its own measurement, which registry-ratchet.spec.ts enforces",
+    ).toEqual(["QA-PW-117"]);
+    for (const rule of declaredCore) {
+      expect(measurementTier(rule), rule.id).toBe("core");
+      expect(declaredCoreWithoutEvidence(rule), rule.id).toBeNull();
+    }
   });
 });
 
@@ -199,10 +238,15 @@ describe("the quarantine threshold needs a 75% error rate to fire on measurement
   });
 });
 
-describe("the ladder reaches one output per side, and only at extremes", () => {
-  it("measurementTier returns 'extended' and 'quarantine' — never 'core'", () => {
+describe("the ladder reaches all three outputs now", () => {
+  it("measurementTier returns all three tiers", () => {
+    // Was `["extended", "quarantine"]`, with the file's own header explaining
+    // that `core` was the one output the interval could not produce on this
+    // corpus. That was true and worth asserting, because it is what made the
+    // sampling campaign necessary. It stopped being true on 2026-10-03, when
+    // `QA-PW-117` reached n=35 and the ladder produced all three values from
+    // the same derivation.
     const derived = new Set(RULES.map(measurementTier));
-    expect([...derived].sort()).toEqual(["extended", "quarantine"]);
-    expect(derived.has("core")).toBe(false);
+    expect([...derived].sort()).toEqual(["core", "extended", "quarantine"]);
   });
 });

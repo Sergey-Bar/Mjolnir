@@ -1,8 +1,6 @@
 {
-  "total": 23,
-  "byFile": {
-    "keycloak-keycloak.jsonl": 23
-  },
-  "recordedAt": "2026-10-02T15:58:00.000Z",
-  "note": "Committed ratchet ceiling (bug-audit B4.29/L13): the generator fails when unclassified verdict rows exceed these counts. Classification work lowers them; --update re-records after review. REVIEWED 2026-10-02: the 23 rows are the deliberate, scoped sampling pass that funds two rules one sample short of the core ceiling — QA-PW-117 +11 (n=24 -> 35) and QA-JV-101 +12 (n=23 -> 35), all from keycloak-keycloak, all awaiting human adjudication per tests/corpus/verdicts/README.md. Arithmetic: 31 was the ceiling recorded 2026-09-19 against a live backlog that has since been classified down to 0, so this pass is 0 -> 23, not 31 -> 54; the per-file allowance for keycloak-keycloak.jsonl is new (0 -> 23) and the stale entries for files that no longer carry pending rows (pallets-click 1, pytest-dev-pytest 27, new-repo.jsonl 3) are dropped rather than left to authorise work nobody asked for. When these 23 are classified the ceiling returns to 0."
+  "total": 0,
+  "byFile": {},
+  "recordedAt": "2026-10-03T08:16:22.115Z",
+  "note": "Committed ratchet ceiling (bug-audit B4.29/L13): the generator fails when unclassified verdict rows exceed these counts. Classification work lowers them; --update re-records."
 }

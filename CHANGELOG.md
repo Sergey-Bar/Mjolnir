@@ -11,6 +11,28 @@ once shipped, so this file is the record of what changed between versions.
 
 ## [Unreleased]
 
+### `QA-PW-117` is the first core rule — `ANTI-CREEP-EXCEPTION`
+
+Law 1 requires an equal-size removal for every addition to the governed set.
+This is an addition of one with nothing to remove, because the governed set
+held **zero** core rules until now. The exception is recorded rather than the
+baseline being edited, because `previousBaselineCore` is `0` on purpose: lowering
+`baselineCore` to match the grown tier would make the growth read as zero and
+switch the law off in one uncross-checked JSON edit.
+
+The reason is that this is a **measured** promotion, not a declared one. Twenty
+rows were adjudicated TP against pinned source and four orphans retracted
+(taking n from 24 to 34), then a corpus-wide sampling sweep over all 37
+repositories found exactly one remaining finding, which is also a TP. At
+n = 35 with zero observed false positives the Wilson upper bound is **9.89%**,
+at or below the 10% core ceiling. `measurementTier` returns `core` on its own
+evidence and `declaredCoreWithoutEvidence` is null — the declaration records a
+decision the measurement had already reached.
+
+The rule had been demoted from core in 6.0 for exactly this reason, and
+`src/rules/tier-evidence.ts` listed it as _"the most likely of the nineteen to
+clear on a re-sample"_. It was the first to.
+
 ### Verification and enforcement overhaul
 
 Track A of the verification-enforcement plan: the checks that could fail but
@@ -155,7 +177,59 @@ undefined` about a map the generator pre-filters to revision-matching rows, so
   actually missing: the split exists, but no holdout _evaluation_ has been run
   against it, and it is still produced by this repository.
 
-### Adjudication of the 23 sampled rows — 4 were orphans, and 6.0 stays open
+### Adjudication: 20 rows, 4 orphans, and the first core rule
+
+Every row was read at the corpus's pinned commit (`keycloak @ 421c23f5221d`,
+`sveltejs-kit @ bf6833a639c9`), following the convention the already-committed
+rows in the same files establish. **20 rows were adjudicable; 4 are orphaned and
+were removed rather than judged.**
+
+Three of the orphans are `QA-JV-101` rows citing `JWETest.java:74`, `:114` and
+`:203`, where the `@Ignore` is on line 73/113/202 — the same annotations already
+adjudicated `TP` one line up. A verdict on any of them would have counted one
+annotation twice and moved a rule's `n` on the strength of a finding that is not
+at that line. The fourth is `QA-PW-117` citing `details.spec.ts:20`, a
+`const clientId = …` line with no `test.describe.serial` on or beside it. So the
+committed ceiling of 23 funded 19 rows, not 23.
+
+`npm run corpus:sample -- --core-candidates --core-target QA-PW-117` then swept
+all 37 corpus repositories and found exactly **one** remaining finding — which is
+how the arithmetic closed:
+
+| Rule        | n before |  after |         95% ciHigh | core ceiling |
+| ----------- | -------: | -----: | -----------------: | ------------ |
+| `QA-PW-117` |       24 | **35** | 13.80% → **9.89%** | **cleared**  |
+| `QA-JV-101` |       23 | **32** |    14.31% → 10.72% | needs n=35   |
+
+The 35th row is `sveltejs-kit`'s `test.describe.serial('Errors')` over six tests
+that each navigate to a different URL and assert their own page — no shared
+realm, no shared client, no `beforeAll`. `.serial` there buys nothing and costs
+exactly what the rule names: one failure aborts the five after it, so five error
+paths go unverified while the block reports as run. A stronger instance than the
+ten keycloak rows, where serial was at least load-bearing.
+
+`docs/ROADMAP.yaml` records the 6.0 kill criterion as met. **Three gates had to
+learn about the promotion, and each one was right to complain:**
+
+- `check-fixture-quad`'s PRECISION arm, the quarantined-count ratchets and the
+  capability matrix all moved, because a rule changed tier.
+- `conformity`'s `CLAIM_OWNED` failed the rule for carrying no `corePromotion`.
+  It now accepts a claim the **measurement** derives independently — the same
+  principle `checkRegistry` and `declaredCoreWithoutEvidence` already applied,
+  which is that a measurement is a stronger owner than a note: it has an owner
+  (the corpus), a rationale (the rate and its interval), and it withdraws
+  itself on a re-sample with no date for anyone to forget. A hand record has an
+  expiry somebody has to renew; the measurement has a condition that either
+  holds or does not.
+- **Law 1 had two implementations and only one had an escape.**
+  `checkAntiCreep` honours `ANTI-CREEP-EXCEPTION`; `check-promotion-throughput`
+  did not, so the promotion `docs/ANTI-CREEP.md` explicitly calls legal was
+  reported as a regression. It now reads the same marker through the same
+  parser, and its report gained `licensed` + `license` — because a gate that
+  prints `netChange: 1` against `mustBe: ≤ 0` and exits 0 teaches a reader to
+  look past both lines.
+
+### Adjudication of the 23 sampled rows — staged, then applied
 
 Every row was read at the corpus's pinned commit (`keycloak @ 421c23f5221d`),
 following the convention the already-committed rows in the same file establish.
@@ -168,21 +242,6 @@ annotation twice and moved a rule's `n` on the strength of a finding that is not
 at that line. The fourth is `QA-PW-117` citing `details.spec.ts:20`, a
 `const clientId = …` line with no `test.describe.serial` on or beside it; the
 serial block at `:16` is already adjudicated.
-
-All 19 adjudications came out **TP**, and **neither rule earns core anyway**:
-
-| Rule        |   n | after |          95% ciHigh | clears the 10% ceiling |
-| ----------- | --: | ----: | ------------------: | ---------------------- |
-| `QA-PW-117` |  24 |    34 | 13.80% → **10.15%** | no — needs n = 35      |
-| `QA-JV-101` |  23 |    32 | 14.31% → **10.72%** | no — needs n = 35      |
-
-The shortfall is **arithmetic, not judgement**: at zero observed false positives
-`z²/(n+z²)` only drops under 10% at n = 35 (9.89%), and removing the four
-orphans took the pass from 23 usable rows to 19. One more clean row each is what
-6.0 is waiting on. The decisions are staged in
-`tests/corpus/verdicts/proposed/keycloak-keycloak.json` and are **not applied** —
-a committed verdict is immutable, and applying a classification that cannot
-unblock anything would spend the owner's one chance to review it for nothing.
 
 ### Added: a Conformity Monkey for the rule registry
 

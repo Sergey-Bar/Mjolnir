@@ -36,10 +36,12 @@ import {
   evaluateAntiCreep,
   type AntiCreepBaseline,
 } from "../../src/commands/doctor.js";
-import { hasValidMeasurement } from "../../src/rules/measurement.js";
 import type { CorePromotion, QADoctorRule } from "../../src/rules/rule.js";
 import { RULES } from "../../src/rules/index.js";
-import { effectiveTier } from "../../src/rules/measurement.js";
+import {
+  effectiveTier,
+  hasValidMeasurement,
+} from "../../src/rules/measurement.js";
 
 const SOUND_PROMOTION: CorePromotion = {
   rationale:
@@ -615,11 +617,32 @@ describe("a declared core rule on a thin measurement needs the record", () => {
     expect(hasValidMeasurement(rule)).toBe(false);
   });
 
-  it("no registry rule is in core, so the registry check has nothing to demand", () => {
-    // The counterpart to the demotion ratchet: 6.0 demoted the nineteen, and
-    // this asserts the tier is still empty so a future promotion cannot arrive
-    // without tripping `checkRegistry`'s corePromotion requirement.
-    expect(RULES.filter((r) => r.tier === "core")).toEqual([]);
+  it("the one core rule is owned by its measurement, not by a hand record", () => {
+    // Was "no registry rule is in core, so the registry check has nothing to
+    // demand" — an assertion that the tier stayed empty. It stopped being empty
+    // on 2026-10-03, when `QA-PW-117` reached n=35 and was promoted.
+    //
+    // The obligation `checkRegistry` enforces did NOT change: a core rule with
+    // no valid measurement must carry a `corePromotion`. A core rule whose
+    // measurement independently derives core is owned by the corpus, and
+    // requiring an expiring note on top of that would fail the registry on the
+    // note's expiry while the measurement still cleared the ceiling.
+    //
+    // So this now pins WHICH rule is core and WHY it needs no record, and the
+    // synthetic arms below still prove the obligation is real.
+    const core = RULES.filter((r) => r.tier === "core");
+    expect(
+      core.map((r) => r.id),
+      "the declared-core set changed - a rule left it because its measurement " +
+        "moved, or one joined because it earned the way QA-PW-117 did",
+    ).toEqual(["QA-PW-117"]);
+    for (const rule of core) {
+      expect(
+        hasValidMeasurement(rule),
+        `${rule.id} declares core with no valid measurement, so checkRegistry ` +
+          "now requires a corePromotion - and this arm would be lying",
+      ).toBe(true);
+    }
   });
 
   it("the registry check reports a core rule carrying no promotion", () => {
@@ -764,11 +787,18 @@ describe("the Law #3 ratchet is not vacuous on an empty tier", () => {
   // measurement OR by an unexpired `corePromotion`; anything else counts.
   const VERDICTS = join(import.meta.dirname, "..", "corpus", "verdicts");
 
-  it("the shipped tree has no core rules, and says so rather than claiming a pass", () => {
+  it("the shipped tree's one core rule is accounted for, not vacuous", () => {
+    // Was "the shipped tree has no core rules ... Vacuous by construction" —
+    // an honest report of a check that could not fail. As of 2026-10-03 the
+    // tier holds `QA-PW-117`, so the check is no longer vacuous and says so.
+    //
+    // This is the arm that matters most for the change: a check that reports
+    // "vacuous" forever is indistinguishable from a check that was switched off,
+    // and that is exactly how the tier stayed empty for a release.
     const result = checkTierEnforcement(VERDICTS);
     expect(result.status).toBe("pass");
-    expect(result.details[0]).toContain("0 core rules");
-    expect(result.details[0]).toContain("Vacuous by construction");
+    expect(result.details[0]).toContain("1 core rule");
+    expect(result.details[0]).not.toContain("Vacuous by construction");
   });
 
   it("a core rule with neither a measurement nor a promotion is unaccounted", () => {

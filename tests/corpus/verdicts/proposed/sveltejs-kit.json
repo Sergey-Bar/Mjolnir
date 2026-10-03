@@ -1,0 +1,14 @@
+{
+  "_meta": {
+    "stagedAt": "2026-10-03",
+    "method": "Read at the corpus PINNED commit (sveltejs-kit @ bf6833a639c9) via `npm run corpus:verdict-context`, plus the full describe block fetched from the same ref. Judged against the rule's diagnosis, not the code's quality.",
+    "why": "The 19 keycloak adjudications moved QA-PW-117 from n=24 to n=34. The core ceiling at zero observed false positives is cleared at n=35 (9.89%); n=34 gives 10.15%. A corpus-wide `--core-candidates --core-target QA-PW-117` sweep found exactly one remaining finding, and this is it.",
+    "projected": "QA-PW-117 n=34 -> 35, ciHigh 10.15% -> 9.89%, which is at or below the 10% core ceiling. QA-JV-101 stays at n=32 (+3 still needed)."
+  },
+  "sveltejs-kit": {
+    "QA-PW-117|packages/kit/test/apps/basics/test/playwright/cross-platform/client.test.js|751": {
+      "verdict": "TP",
+      "note": "adjudicated 2026-10-03 from source client.test.js:751-800 at sveltejs-kit @ bf6833a639c9: `test.describe.serial('Errors', ...)` over six tests that are each fully INDEPENDENT — every one navigates to a different URL (`/errors/load-client`, `/errors/module-scope-client`, `/errors/load-error-client`, `/errors/load-status-without-error-client`, `/errors/error-html`, ...) and asserts only its own footer/message/h1. There is no `beforeAll`, no shared `let` reassigned between tests, no shared realm or client; the only fixture in common is Playwright's `page`, which is fresh per test whether or not the block is serial. So `.serial` here buys nothing and costs exactly what the rule names: one failure aborts the five after it, so five error paths go unverified and the suite still reports the block as run. This is a STRONGER instance than the ten keycloak rows already committed for this rule, where serial was load-bearing over shared state — here it is pure cascade. No justification comment in the rule's window."
+    }
+  }
+}

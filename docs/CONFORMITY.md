@@ -71,7 +71,7 @@ positives" comes to describe a rule nobody ever ran.
 | `QA-PW-115`    | NONCONFORMING              | CLAIM_OWNED, QUAD_COMPLETE                             | 2026-11-01 |
 | `QA-PW-140`    | CONFORMING                 | —                                                      | —          |
 | `QA-PW-123`    | NONCONFORMING              | CLAIM_OWNED, QUAD_COMPLETE                             | 2026-11-01 |
-| `QA-ENV-001`   | NONCONFORMING              | CLAIM_OWNED, QUAD_COMPLETE                             | 2026-11-01 |
+| `QA-ENV-001`   | NONCONFORMING              | QUAD_COMPLETE                                          | 2026-11-01 |
 | `QA-PW-141`    | NONCONFORMING              | QUAD_COMPLETE                                          | 2026-12-01 |
 | `QA-PW-142`    | NONCONFORMING              | QUAD_COMPLETE                                          | 2026-12-01 |
 | `QA-PW-143`    | NONCONFORMING              | QUAD_COMPLETE                                          | 2026-12-01 |

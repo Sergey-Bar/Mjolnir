@@ -38,6 +38,7 @@ import {
 } from "../../src/rules/measurement.js";
 import { RULES } from "../../src/rules/index.js";
 import { DEMOTED_FOR_UNSUBSTANTIATED_CORE } from "../../src/rules/tier-evidence.js";
+import { exceptionInUnreleasedChangelog } from "../../src/commands/doctor.js";
 
 /**
  * Which checkout's ledger to read.
@@ -112,6 +113,43 @@ const netLaunchSetChange = readBaseline()
   ? launchSet.length - readBaseline().core
   : 0;
 
+/**
+ * Whether THIS change carries an `ANTI-CREEP-EXCEPTION`.
+ *
+ * Read through `src/commands/doctor.ts`'s own parser rather than a second
+ * implementation of "the unreleased section", because this file and
+ * `checkAntiCreep` are the SAME Law 1 and were disagreeing about whether it has
+ * an escape. Doctor honoured the marker; this gate did not, so the promotion
+ * `docs/ANTI-CREEP.md` explicitly calls legal — "promoting `QA-PW-117` and
+ * demoting `QA-JV-105` is legal in one commit with no paperwork", or condition
+ * 2, an `ANTI-CREEP-EXCEPTION` with its reason — was reported here as a
+ * regression.
+ *
+ * Two implementations of one law is how a law becomes "whatever the stricter
+ * one says". This one is now the same call, and the marker is read with the
+ * scoping that keeps it from a past release switching the ratchet off forever.
+ */
+function readChangelogIfPresent() {
+  try {
+    return readFileSync(join(ARTIFACT_ROOT, "CHANGELOG.md"), "utf8");
+  } catch {
+    // Absent changelog means no marker was recorded, which is the answer the
+    // check needs. Reading it unconditionally instead made every synthetic tree
+    // that does not model the whole repository die with ENOENT —
+    // `tests/contract/promotion-ratchet.spec.ts` builds five of them to exercise
+    // the baseline arms, and a fixture that lacks one file is not a failure of
+    // the thing under test.
+    //
+    // It matches `readChangelog()` in `src/commands/doctor.ts`, which has
+    // returned "" on a missing file all along.
+    return "";
+  }
+}
+
+const exceptionRecorded = exceptionInUnreleasedChangelog(
+  readChangelogIfPresent(),
+);
+
 if (process.argv.includes("--init")) {
   const baselinePath = join(
     ARTIFACT_ROOT,
@@ -166,7 +204,7 @@ if (baseline === null) {
 
 const failures = [];
 
-if (netLaunchSetChange > 0) {
+if (netLaunchSetChange > 0 && !exceptionRecorded) {
   failures.push(
     `the launch set grew by ${netLaunchSetChange} (${baseline.core} → ${launchSet.length}) — ` +
       "law 1 says every addition requires an equal-size removal. Promoting a rule to core " +
@@ -204,6 +242,19 @@ console.log(
         baseline: baseline.core,
         netChange: netLaunchSetChange,
         mustBe: "≤ 0",
+        /**
+         * Whether the growth above is LICENSED, and why.
+         *
+         * Reported rather than inferred, because the alternative is a gate that
+         * exits 0 while printing `netChange: 1` against a `mustBe: ≤ 0` — a
+         * reader who sees a violation and a pass learns to read past both. The
+         * exit code says the change was claimed; these two fields say whether
+         * the claim was honoured.
+         */
+        licensed: netLaunchSetChange > 0 ? exceptionRecorded : null,
+        license: exceptionRecorded
+          ? "the unreleased CHANGELOG.md entry carries an ANTI-CREEP-EXCEPTION with its reason"
+          : null,
       },
       tiers: rows,
       measured: now.measured,
