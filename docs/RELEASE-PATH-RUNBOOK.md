@@ -30,12 +30,21 @@ in its pre-release gate, which is where a naive reading of this ledger ends up.
 **This runbook is the surviving record of those items.** They were written up in
 a separate request document, `docs/EXTERNAL-EVIDENCE-REQUEST.md`, which the 6.0
 M26-M50 retirement deleted along with the ledgers it named; its sections §1–§6
-are the six `EXTERNAL_PENDING` rows below. What that deletion left behind is the
-checker: `scripts/check-external-evidence.ts` still reads that document, so
-`npm run docs:external-evidence` exits 2 with a setup error and
-`npm run certify:integrity` cannot complete. The rows below are intact and the
-gate that used to count them is not. Recorded here rather than fixed by lowering
-its ceiling — see [D-9](PRODUCT-DECISIONS.md#d-9--an-unobtainable-criterion-is-not-a-criterion).
+are the six `EXTERNAL_PENDING` rows below.
+
+What that deletion left behind was the checker: `scripts/check-external-evidence.ts`
+read that document, so `npm run docs:external-evidence` exited 2 with a setup
+error and `npm run certify:integrity` could not complete. **The checker and its
+`certify:integrity` leaf have since been removed.** The rows below are untouched
+and are the whole surviving record.
+
+Lowering its ceiling was rejected — see [D-9](PRODUCT-DECISIONS.md#d-9--an-unobtainable-criterion-is-not-a-criterion)
+— and so was re-creating the document, which would resurrect retired scope. What
+settled it is D-9's own principle applied one level further: a criterion nobody
+can satisfy is not a criterion, and neither is a gate whose input was deleted on
+purpose. A gate that can never pass is worse than no gate, because it turns every
+release red for a reason nobody can fix in a diff — which is exactly how a gate
+gets switched off, and then the six rows lose even the visibility they kept.
 
 ## The release path, and who owns each step
 

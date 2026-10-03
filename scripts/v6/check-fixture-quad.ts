@@ -336,8 +336,36 @@ const report = {
  */
 const CHECK_ONLY = process.argv.includes("--check");
 
+/**
+ * The artifact is written PRETTIER-CLEAN, and that is load-bearing rather than
+ * cosmetic.
+ *
+ * `JSON.stringify(report, null, 2)` is not what `prettier --check` accepts for
+ * this document — prettier collapses the short numeric arrays and reflows some
+ * objects. So a plain stringify writes a file that `npm run lint` rejects, and
+ * because `lint` runs EARLIER in the certify chain than this gate, the second
+ * certify run fails on the file the first one wrote. Two gates fighting over one
+ * artifact, where the loser is whichever ran first.
+ *
+ * `generate-quarantine-ledger.ts` already does this (`renderForCommit` formats
+ * through prettier before writing); this follows the same rule for the same
+ * reason. When prettier is unavailable the raw stringify is used rather than
+ * failing the gate — a missing formatter must not turn the census into a
+ * blocker, and `lint` remains the thing that enforces formatting.
+ */
+async function renderArtifact(): Promise<string> {
+  const raw = JSON.stringify(report, null, 2) + "\n";
+  try {
+    const prettier = await import("prettier");
+    return await prettier.format(raw, { parser: "json" });
+  } catch {
+    return raw;
+  }
+}
+
+const artifact = await renderArtifact();
+
 if (CHECK_ONLY) {
-  const live = JSON.stringify(report, null, 2) + "\n";
   if (!existsSync(REPORT)) {
     console.error(
       `fixture-quad: ${REPORT} does not exist. Run \`npm run check-fixture-quad\` ` +
@@ -345,7 +373,7 @@ if (CHECK_ONLY) {
     );
     process.exit(2);
   }
-  if (readFileSync(REPORT, "utf8") !== live) {
+  if (readFileSync(REPORT, "utf8") !== artifact) {
     console.error(
       `fixture-quad: ${REPORT} is stale — the live census differs. ` +
         "Run `npm run check-fixture-quad` to re-record it and read the diff.",
@@ -357,11 +385,10 @@ if (CHECK_ONLY) {
   );
 } else {
   mkdirSync(dirname(REPORT), { recursive: true });
-  const next = JSON.stringify(report, null, 2) + "\n";
-  if (existsSync(REPORT) && readFileSync(REPORT, "utf8") === next) {
+  if (existsSync(REPORT) && readFileSync(REPORT, "utf8") === artifact) {
     console.log(`fixture-quad: unchanged (${report.rules} rules)`);
   } else {
-    writeFileSync(REPORT, next, "utf8");
+    writeFileSync(REPORT, artifact, "utf8");
     console.log(`fixture-quad: wrote ${REPORT}`);
   }
 }

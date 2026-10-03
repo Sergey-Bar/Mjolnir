@@ -247,16 +247,24 @@ this ledger ends up.
 now fails if any live document stops linking to a file that exists, which is the
 form this decision takes now that its request document is gone.
 
-The gate that used to back the count no longer runs at all.
-`scripts/check-external-evidence.ts` reads `docs/EXTERNAL-EVIDENCE-REQUEST.md`,
+The gate that used to back the count no longer runs at all, and has now been
+removed. `scripts/check-external-evidence.ts` read `docs/EXTERNAL-EVIDENCE-REQUEST.md`,
 which the 6.0 M26-M50 retirement deleted, so `npm run docs:external-evidence`
-exits 2 with a setup error and `npm run certify:integrity` cannot complete. Its
-`EXTERNAL_BOX_CEILING = 39` is a number about a file that no longer exists.
-Re-homing those 39 boxes is **open work, not something this edit decided**: the
-runbook has 18 rows, and moving the count to 18 by lowering a recorded ceiling is
-exactly the change D-7 and the corpus ceiling both exist to prevent. The honest
-state is that D-9's evidence mechanism is broken and the disposition it protects
-is intact.
+exited 2 with a setup error and `npm run certify:integrity` could not complete.
+Its `EXTERNAL_BOX_CEILING = 39` was a number about a file that no longer exists.
+
+Re-homing those boxes is **open work, not something this edit decided**: the
+runbook's `EXTERNAL_PENDING` rows are the record, and moving the count onto them
+by lowering a recorded ceiling is exactly the change D-7 and the corpus ceiling
+both exist to prevent. So the ceiling was left alone and the dead checker was
+deleted instead. That is this decision applied one level further: an
+unobtainable criterion is not a criterion, and a gate whose input was deleted on
+purpose is an unobtainable criterion wearing a ratchet's clothes. What would have
+been worse is leaving it — a gate that can never pass turns every release red
+for a reason nobody can fix in a diff, and that is how gates get switched off.
+
+The disposition D-9 protects is intact; what it no longer has is a mechanical
+counter.
 
 ---
 

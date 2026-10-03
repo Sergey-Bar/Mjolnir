@@ -231,7 +231,7 @@
     }
   ],
   "precision": {
-    "ratchetFloor": 0,
+    "ratchetFloor": 32,
     "proven": 32,
     "ok": true,
     "rules": [

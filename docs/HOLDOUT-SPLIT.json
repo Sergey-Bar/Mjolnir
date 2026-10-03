@@ -42,6 +42,13 @@
   ],
   "protected": [
     {
+      "repositoryId": "Humanizr-Humanizer",
+      "rowsByRule": {
+        "QA-CS-103": 2
+      },
+      "reason": "holds committed verdicts for a rule `isCoreCandidate` says more clean samples would settle; moving it to holdout would empty the measurement side of the evidence the core tier is waiting on"
+    },
+    {
       "repositoryId": "appsmithorg-appsmith",
       "rowsByRule": {
         "QA-CYP-003": 1
@@ -52,13 +59,6 @@
       "repositoryId": "grafana-grafana",
       "rowsByRule": {
         "QA-PW-002": 3
-      },
-      "reason": "holds committed verdicts for a rule `isCoreCandidate` says more clean samples would settle; moving it to holdout would empty the measurement side of the evidence the core tier is waiting on"
-    },
-    {
-      "repositoryId": "Humanizr-Humanizer",
-      "rowsByRule": {
-        "QA-CS-103": 2
       },
       "reason": "holds committed verdicts for a rule `isCoreCandidate` says more clean samples would settle; moving it to holdout would empty the measurement side of the evidence the core tier is waiting on"
     },

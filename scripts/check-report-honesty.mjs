@@ -56,12 +56,17 @@ const IGNORED_DIRS = new Set(["node_modules", "dist", ".git", "fixtures"]);
  */
 const ALLOWLIST = new Map([
   [
-    "src/engine/trust-classification.ts:81",
-    "completeness GATE, not a rendered value: `skippedFiles ?? 0 > 0` asks whether anything was skipped, and 0 is the identity for that question. Absent analysisStatus is already handled honestly one branch up (:78). Follow-up: BW-021 makes the census total explicit so the field stops being optional.",
+    // Line-addressed, so this entry has to move whenever the file above it
+    // changes. That is the gate working as intended: a justification that
+    // describes a line which no longer exists is a claim about the code that
+    // nothing checks, so it fails rather than sitting here looking current.
+    // Last moved when the classification gained the cascade guards at :129-132.
+    "src/engine/trust-classification.ts:100",
+    "completeness GATE, not a rendered value: `(skippedFiles ?? 0) > 0` asks whether anything was skipped, and 0 is the identity for that question. Absent analysisStatus is already handled honestly one branch up. Follow-up: BW-021 makes the census total explicit so the field stops being optional.",
   ],
   [
-    "src/engine/trust-classification.ts:105",
-    "same completeness gate as :81; the `?? 0` feeds `> 0`, never a printed count. Follow-up: BW-021.",
+    "src/engine/trust-classification.ts:129",
+    "same completeness gate as :100, in the cascade branch that explains WHY classification is incomplete rather than only reporting that it is. The `?? 0` feeds `> 0`, never a printed count. Follow-up: BW-021.",
   ],
   [
     "src/engine/trust-summary.ts:142",
