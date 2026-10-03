@@ -72,7 +72,6 @@ export const GENERATED_SURFACES = [
   "docs/README.md",
   "docs/RULE-CAPABILITY-MATRIX.json",
   "docs/RULE-CAPABILITY-MATRIX.md",
-  "docs/capability-registry.json",
   "docs/design/DESIGN-TOKENS.md",
   "docs/machine-contract.md",
   "docs/rules",
@@ -85,6 +84,25 @@ export const GENERATED_SURFACES = [
   "README.md",
   "docs/MEASUREMENT-CLOSEOUT.md",
 ];
+
+/**
+ * Artifacts deliberately NOT watched here, and why.
+ *
+ * `docs/capability-registry.json`, `docs/v6-inventory.json`, `docs/CI-MATRIX.json`,
+ * `docs/DOMAIN-COVERAGE.json`, `docs/FRAMEWORK-MATRIX.json`,
+ * `docs/LANGUAGE-MATRIX.json` and `docs/SURFACE-MATURITY.json` carry a `baseSha`
+ * that names the commit they were generated from, and that value is *meant* to
+ * lag: an artifact generated three commits ago is not lying about its contents,
+ * it is three commits old. `docs:provenance-drift` already checks these files
+ * for real content drift with the provenance keys excluded, and it does that
+ * properly.
+ *
+ * This script cannot: `git status` sees "modified" for a restamp and for a real
+ * content change alike, so watching them here would report FAIL on every commit
+ * that regenerates and no failure at all on the drift that matters. One check
+ * doing a thing badly is worse than one check doing it well, so these are left
+ * to the gate that can tell the difference.
+ */
 
 /** Runs git and returns stdout, or throws with git's own stderr. */
 function git(args) {

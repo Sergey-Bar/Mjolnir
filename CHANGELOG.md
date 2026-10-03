@@ -82,6 +82,48 @@ could not see an untracked file at all.
   record what a decision or a pass actually was, and editing them to match
   today would falsify the record.
 
+### The detector set is wired. It is not yet shown to have teeth.
+
+`docs/PRECISION-RATCHET.json` records 32 rules as holding a PRECISION leg and
+says plainly that this is "a wiring proof, not an accuracy proof, and a
+self-derived one". That caveat can be given a number, and the number is not
+comfortable.
+
+A must-not-fire fixture is only evidence that a rule is _sensitive_ when it is
+the must-fire fixture with the defect neutralised. When it is a different
+program that merely does not trigger, the pair shows the detector is
+directional and says nothing about the predicate. The quad counts presence, so
+both look identical to it.
+
+- **`docs/SENSITIVITY-RATCHET.json` — the SENSITIVITY arm of
+  `check-fixture-quad`.** Of the 40 live rules carrying both fixture legs, **2**
+  hold a negative fixture that is plausibly the positive fixture with the defect
+  removed (`QA-PW-144`, one changed line of nine; `QA-PW-116`, one of seven).
+  The other **38** are a different program — the next nearest is 0.55 diverging
+  and the furthest diverge by more lines than either file contains, because a
+  hand-written neutral fixture also renames the class and rewrites the bodies.
+  `QA-JV-101`, a core rule, is one of them: its negative fixture is a different
+  class with different methods and no case distinguishing a disabled test from
+  a justified one.
+- **Leashed at the true count, in an existing gate.** No new gate id and no new
+  npm script, so Law 0 is untouched: the arm is folded into
+  `check-fixture-quad` beside PRECISION, which asks a different question and
+  reports separately. The floor is 2, the honest number, so the gate fails on a
+  rule _regressing_ out of the mutant set or on a new rule shipping without one,
+  and does not go red on the 38 that were always like this. `--update` only ever
+  raises the floor, so a regression can never be absorbed by re-running a command.
+- **Neither core rule is exempt.** The ratchet names the gap rather than
+  narrowing it: closing it needs a per-rule recipe for what the defect _is_, so
+  the mutant can be generated rather than hand-written a second time and left to
+  drift. That is the remaining work, and it is now named rather than assumed
+  away.
+- **`docs:staleness` no longer watches provenance-stamped artifacts.** Their
+  `baseSha` is meant to lag, and `git status` cannot tell a restamp from real
+  drift, so watching them produced FAIL on every regeneration and caught nothing
+  that matters. `docs:provenance-drift` already checks their content with the
+  provenance keys excluded; leaving them there would have been a second copy
+  doing the same job worse.
+
 ### Verification and enforcement overhaul
 
 Track A of the verification-enforcement plan: the checks that could fail but

@@ -105,6 +105,31 @@ describe("the declared generated surface", () => {
     expect(isGenerated("docs/rules")).toBe(true);
   });
 
+  it("does not watch provenance-stamped artifacts it cannot judge", () => {
+    // Their `baseSha` is meant to lag, and `git status` cannot tell a restamp
+    // from real drift — so watching them here would FAIL on every regeneration
+    // and catch nothing. `docs:provenance-drift` covers their content properly.
+    // Re-adding one of these reintroduces a gate that is red constantly and
+    // green when it matters, which is worse than not having it.
+    const provenanceStamped = [
+      "docs/capability-registry.json",
+      "docs/v6-inventory.json",
+      "docs/CI-MATRIX.json",
+      "docs/DOMAIN-COVERAGE.json",
+      "docs/FRAMEWORK-MATRIX.json",
+      "docs/LANGUAGE-MATRIX.json",
+      "docs/SURFACE-MATURITY.json",
+    ];
+    const watched = provenanceStamped.filter((p) =>
+      GENERATED_SURFACES.includes(p),
+    );
+    expect(
+      watched,
+      "these carry a baseSha that is meant to lag; leave them to " +
+        "docs:provenance-drift",
+    ).toEqual([]);
+  });
+
   it("covers every generator docs:regen runs, by name", () => {
     // The list is explicit so the script never has to run the generators, and
     // explicit means it can fall behind. These are the outputs each regen step

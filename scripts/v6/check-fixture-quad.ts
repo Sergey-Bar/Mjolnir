@@ -49,6 +49,11 @@ import {
   ruleHasCompleteQuad,
 } from "../../src/v6/fixture-quad-probe.js";
 import { maturityRank } from "../../src/v6/maturity.js";
+import {
+  check as sensitivityCheck,
+  MUTANT_MAX_DIVERGENCE,
+  update as updateSensitivity,
+} from "../check-fixture-sensitivity.js";
 
 // `../..` and not `..`: this file is two directories below the root
 // (`scripts/v6/`), and the first version resolved to `scripts/`, which made
@@ -210,6 +215,17 @@ const precisionProven = census
 const precisionFloor = precisionRatchetFloor();
 const precisionOk = precisionProven.length >= precisionFloor;
 
+/**
+ * The SENSITIVITY arm. `--update-sensitivity` is the deliberate write path,
+ * separate from `--update-precision` on purpose: one records a new precision
+ * verdict, the other re-baselines a measured fixture pair, and conflating them
+ * would let a backfill silently move a measurement floor.
+ */
+if (process.argv.includes("--update-sensitivity")) {
+  updateSensitivity([]);
+}
+const sensitivity = sensitivityCheck();
+
 if (process.argv.includes("--update-precision")) {
   if (precisionProven.length === precisionFloor) {
     console.log(
@@ -268,7 +284,10 @@ if (process.argv.includes("--update-precision")) {
 }
 
 const report = {
-  status: overClaims.length === 0 && precisionOk ? "PASS" : "FAIL",
+  status:
+    overClaims.length === 0 && precisionOk && sensitivity.status === "PASS"
+      ? "PASS"
+      : "FAIL",
   gate: "check-fixture-quad",
   rules: census.length,
   rulesWithCompleteQuad: complete.length,
@@ -295,6 +314,34 @@ const report = {
             "A backfill was reverted, or a verdict row was withdrawn. Classify the TN legs, or " +
             "lower the floor deliberately with --update-precision.",
         ],
+  },
+  /**
+   * The SENSITIVITY arm: is the MUST-NOT-FIRE fixture the must-fire fixture
+   * with the defect neutralised, or a different program that merely does not
+   * trigger? Kept beside PRECISION rather than inside it because it answers a
+   * different question. PRECISION asks whether the detector is silent on clean
+   * input. This asks whether the clean input was DERIVED from the dirty one —
+   * which is what makes silence evidence about the predicate instead of
+   * evidence about an unrelated file.
+   *
+   * Folded into this gate rather than added beside it: same subject (fixture
+   * legs), and Law 0 charges for a new gate id. Reported on its own so a
+   * reader who sees FAIL knows which list to read.
+   */
+  sensitivity: {
+    ratchetFloor: sensitivity.floor,
+    mutantPairs: sensitivity.live,
+    pairedRules: sensitivity.paired,
+    ok: sensitivity.status === "PASS",
+    rules: sensitivity.recorded,
+    threshold: MUTANT_MAX_DIVERGENCE,
+    belowFloor:
+      sensitivity.status === "PASS"
+        ? []
+        : sensitivity.details.map(
+            (d) =>
+              `${d}. The SENSITIVITY ratchet only ratchets UP, so re-running --update-sensitivity will not clear this: lower docs/SENSITIVITY-RATCHET.json by hand, deliberately.`,
+          ),
   },
   /** Capabilities that advertise M3 with no complete quad behind it. */
   overClaims: overClaims.map((entry) => ({
