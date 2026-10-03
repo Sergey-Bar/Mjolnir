@@ -6,8 +6,8 @@ _Generated from the live rule registry and this rule's own committed fixtures by
 | ------------------------------------- | ------------------------------ |
 | Severity                              | warning                        |
 | Confidence                            | high                           |
-| Tier                                  | extended                       |
-| Measured FP rate                      | 0% (n=23)                      |
+| Tier                                  | core                           |
+| Measured FP rate                      | 0% (n=35)                      |
 | Evidence level                        | E2                             |
 | QA impact                             | False-green risk (FALSE-GREEN) |
 | False-positive risk (author estimate) | low                            |
