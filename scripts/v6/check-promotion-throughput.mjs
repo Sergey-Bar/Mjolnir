@@ -37,6 +37,7 @@ import {
   hasValidMeasurement,
 } from "../../src/rules/measurement.js";
 import { RULES } from "../../src/rules/index.js";
+import { MEASURED_FP } from "../../src/rules/measured-fp.generated.js";
 import { DEMOTED_FOR_UNSUBSTANTIATED_CORE } from "../../src/rules/tier-evidence.js";
 import { exceptionInUnreleasedChangelog } from "../../src/commands/doctor.js";
 
@@ -226,6 +227,121 @@ const rows = TIERS.map((tier) => ({
   count: (now.byTier[tier] ?? []).length,
 }));
 
+/**
+ * Per-core-rule certification: a rule may not hold core without a record in
+ * docs/CORE-CERTIFICATION.json, and a record must still describe the rule it
+ * certifies.
+ *
+ * Placed HERE rather than in a new gate for two reasons. It is the promotion
+ * gate, so this is where a promotion is checked — and Law 0 charges for a new
+ * gate id, so extending the existing one is free where a sibling would not be.
+ *
+ * The measurement block is compared against the LIVE MEASURED_FP row field by
+ * field. That is the part that matters: it makes a certification expire when
+ * its evidence moves rather than when somebody remembers to revisit it. Add a
+ * false positive, change the detector, or let the verdict corpus drift, and
+ * this fails until a person re-certifies and says why.
+ */
+const CERTIFICATION_PATH = join(
+  ARTIFACT_ROOT,
+  "docs",
+  "CORE-CERTIFICATION.json",
+);
+let certification = { status: "SKIPPED", reason: "no records file", rules: [] };
+if (existsSync(CERTIFICATION_PATH)) {
+  let parsed;
+  try {
+    parsed = JSON.parse(readFileSync(CERTIFICATION_PATH, "utf8"));
+  } catch (err) {
+    failures.push(
+      `${CERTIFICATION_PATH} is unreadable: ${err.message}. A certification ` +
+        "record that cannot be parsed certifies nothing",
+    );
+    parsed = { records: {} };
+  }
+  const records = parsed.records ?? {};
+  const live = (now.byTier.core ?? []).slice().sort();
+  const certProblems = [];
+
+  for (const id of live) {
+    const record = records[id];
+    if (record === undefined) {
+      certProblems.push(
+        `${id} holds core with no entry in docs/CORE-CERTIFICATION.json — a ` +
+          "promotion that lands with no artifact is a promotion nobody reviewed",
+      );
+      continue;
+    }
+    const rule = RULES.find((r) => r.id === id);
+    const measured = rule === undefined ? undefined : MEASURED_FP[id];
+    if (rule === undefined || measured === undefined) {
+      certProblems.push(
+        `${id} has a certification but no live measurement to certify`,
+      );
+      continue;
+    }
+    if (record.measurement?.detectorRevision !== measured.detectorRevision) {
+      certProblems.push(
+        `${id} was certified at detector revision ${record.measurement?.detectorRevision} ` +
+          `but the live measurement is at ${measured.detectorRevision} — the detector moved, ` +
+          `so the certification describes a rule that no longer exists`,
+      );
+    }
+    if (record.measurement?.n !== measured.n) {
+      certProblems.push(
+        `${id} was certified at n=${record.measurement?.n} but the live measurement ` +
+          `is n=${measured.n} — the verdict corpus moved under the record`,
+      );
+    }
+    if (record.measurement?.observedFalsePositives !== (measured.fp ?? 0)) {
+      certProblems.push(
+        `${id} was certified with ${record.measurement?.observedFalsePositives} observed ` +
+          `false positive(s) but the live corpus has ${measured.fp ?? 0}`,
+      );
+    }
+    for (const path of [
+      ...(record.evidence?.mustFire ?? []),
+      ...(record.evidence?.mustNotFire ?? []),
+      ...(record.evidence?.corpusVerdicts ?? []).map((v) => v.file),
+    ]) {
+      if (!existsSync(join(ARTIFACT_ROOT, path))) {
+        certProblems.push(
+          `${id} cites ${path}, which does not exist — a certification may not ` +
+            "rest on evidence that is not in the tree",
+        );
+      }
+    }
+    const rows = (record.evidence?.corpusVerdicts ?? []).reduce(
+      (sum, v) => sum + (v.rows ?? 0),
+      0,
+    );
+    if (rows !== measured.n) {
+      certProblems.push(
+        `${id} cites ${rows} corpus verdict row(s) but the measurement is n=${measured.n} ` +
+          "— the cited evidence does not account for the sample it claims to certify",
+      );
+    }
+  }
+
+  for (const id of Object.keys(records)) {
+    if (!live.includes(id)) {
+      certProblems.push(
+        `${id} has a certification record but does not hold core — a record for a ` +
+          "rule that lost the tier is history, not certification; the tier evidence " +
+          "ledger is where a demotion belongs",
+      );
+    }
+  }
+
+  certification = {
+    status: certProblems.length === 0 ? "PASS" : "FAIL",
+    path: "docs/CORE-CERTIFICATION.json",
+    rules: live,
+    problems: certProblems,
+  };
+  failures.push(...certProblems);
+}
+
 if (failures.length > 0) {
   console.error("Promotion ratchet failed:");
   for (const failure of failures) console.error(`  - ${failure}`);
@@ -236,6 +352,7 @@ console.log(
   JSON.stringify(
     {
       status: "PASS",
+      certification,
       launchSet: {
         tier: "core",
         now: launchSet.length,

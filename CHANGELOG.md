@@ -124,6 +124,63 @@ both look identical to it.
   provenance keys excluded; leaving them there would have been a second copy
   doing the same job worse.
 
+### A promotion can no longer land with no artifact
+
+Both core promotions reached the registry, the tier evidence and this file while
+their generated documentation went on reporting `extended` at n=23 and n=24.
+Nothing failed, because nothing asked. The mechanism that should have caught it
+now exists, and it catches the case that matters: not "is this rule measurable"
+but "did a person certify **this** measurement, and does the certification still
+describe the rule".
+
+- **`docs/CORE-CERTIFICATION.json` — a record is required to hold `core`.** A
+  rule with no record fails; a record for a rule that lost the tier fails, because
+  a demotion belongs in the tier evidence ledger, not in a certification file.
+- **The record expires with its evidence, which is the entire design.** The
+  measurement block is compared field by field against the live `MEASURED_FP`
+  row on every run. Move the detector revision, change n, or introduce an
+  observed false positive and the gate fails until someone re-certifies and
+  writes down why. It cannot outlive what it certifies.
+- **The cited evidence must account for the sample.** Every path a record cites
+  must exist in the tree, and the corpus verdict rows it lists must sum to
+  exactly `n`. A certification may not rest on evidence that is not here, nor on
+  less evidence than it claims. Proven in both directions: a record citing 33
+  rows for an `n=35` measurement fails.
+- **Self-derived evidence is excluded on purpose.** The quad verdicts under
+  `tests/corpus/verdicts/quad/` are wiring proofs and do not count. Only corpus
+  rows do — which is why both records sum to exactly 35 (29+2+4 and 20+10+2+3).
+- **`QA-JV-101`'s record states its known weakness rather than omitting it.** Its
+  must-not-fire fixture is a hand-written different program, not the must-fire
+  fixture with `@Disabled` neutralised, so per `docs/SENSITIVITY-RATCHET.json` it
+  does not prove the predicate is sensitive to the annotation. That is the gap
+  per-rule defect recipes must close, and a certification record that omitted it
+  would be worse than no record.
+- **No new gate, no new npm script.** This is an arm of `rules:promotion:check`,
+  which is already the promotion gate and already in `gates:claim-integrity`. Law
+  0 charges for both, and extending the existing gate is free where a sibling
+  would not be. Deliberately not given its own unit test either, for the reason
+  `src/rules/conformity.ts` already states about a duplicate check.
+
+### The delta loop is now visible, and the freeze is written down
+
+- **Quickstart documents baseline → delta.** Steps 1–3 report the **state** of
+  your tests; `mjolnir ci verify` reports the **change**, which is the only
+  question a reviewer has about a diff. `--save-baseline` writes
+  `.mjolnir/baseline.json`, `ci verify` reports RESOLVED (of which only
+  `VERIFIED-RESOLVED` is a fix claim) and NEW, and the `0`/`1`/`2` exit contract
+  is stated. It also says why `mjolnir ci install` does not add it: `ci verify`
+  exits `2` until a baseline exists, which would redden every install on day
+  one. Agents were already taught this at `src/commands/install-agents.ts:58`;
+  humans were not taught it anywhere.
+- **`docs/ENGINE-FREEZE.md` — what a consumer may rely on.** The source of truth
+  is `CONTRACT_REGISTRY` in `src/engine/contract-versions.ts`; the document
+  deliberately copies no version numbers, for the same reason the census
+  sentinels exist. It explains each `compatibilityPolicy`, records that
+  `scoringModelVersion` 2.0.0 is a _semantic_ change (ADR 0014's evidence floor)
+  so a consumer comparing scores across it is comparing different things, and is
+  honest that `frameworkSupportMatrixVersion` is written by the engine and read
+  by nothing but a test — a version stamp on a fact, not a negotiated protocol.
+
 ### Verification and enforcement overhaul
 
 Track A of the verification-enforcement plan: the checks that could fail but

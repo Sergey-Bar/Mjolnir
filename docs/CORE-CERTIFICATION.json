@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "description": "Per-core-rule certification. A rule may not hold `core` without a record here, and a record stops being true the moment the measurement it certifies moves. The measurement block is RE-DERIVED from MEASURED_FP by scripts/v6/check-promotion-throughput.mjs on every run and compared field by field, so a record cannot outlive its evidence: change the detector, add a false positive, or let the verdict corpus drift, and this gate fails until a person re-certifies. That is the entire point — a promotion that lands with no artifact is a promotion nobody reviewed.",
+  "whatThisIsNot": "This is not an accuracy claim about the rules themselves. MEASURED_FP is measured on corpus rows this repository holds; docs/HOLDOUT-SPLIT.json partitions them and states what the holdout does and does not validate. The quad verdicts under tests/corpus/verdicts/quad/ are self-derived wiring proofs and are deliberately NOT counted here — only corpus rows are, which is why the counts below sum to exactly n.",
+  "reviewerIdentity": "Not recorded. The adjudication trail lives in the verdict rows themselves (a note and a pinned commit per row) and in CHANGELOG.md. Requiring a personal name here would produce a placeholder that always passes and a gate that looks like accountability while checking nothing, so this file records the EVIDENCE and the DATE instead.",
+  "records": {
+    "QA-PW-117": {
+      "certifiedOn": "2026-10-03",
+      "rationale": "serial/fullyParallel scheduling keys on describe blocks and the config surface. Closed runner token sets where lexical matching is exact, so the predicate is not a heuristic over arbitrary identifiers. Adjudicated against pinned corpus commits; four candidate rows were retracted as orphans citing a line one above the annotation rather than removed silently.",
+      "measurement": {
+        "n": 35,
+        "observedFalsePositives": 0,
+        "wilsonUpper": 0.0989,
+        "detectorRevision": 1
+      },
+      "evidence": {
+        "mustFire": [
+          "tests/corpus/positive-fixtures/QA-PW-117/more-serial.spec.ts",
+          "tests/corpus/positive-fixtures/QA-PW-117/serial-describe.spec.ts"
+        ],
+        "mustNotFire": [
+          "tests/corpus/negative-fixtures/QA-PW-117/justified-serial.spec.ts"
+        ],
+        "corpusVerdicts": [
+          {
+            "file": "tests/corpus/verdicts/keycloak-keycloak.jsonl",
+            "rows": 29
+          },
+          { "file": "tests/corpus/verdicts/sveltejs-kit.jsonl", "rows": 2 },
+          { "file": "tests/corpus/verdicts/positive-fixtures.jsonl", "rows": 4 }
+        ]
+      }
+    },
+    "QA-JV-101": {
+      "certifiedOn": "2026-10-03",
+      "rationale": "@Disabled and @Ignore are exact JUnit/TestNG annotation identifiers — closed token sets where lexical and structural match coincide. Earned in two batches, and the arithmetic matters: 32 (10.72%) → 34 (10.15%) → 35 (9.89%). The first batch's verdict file reads as a refusal on its own; the second, from a sweep run after corpus-sample.ts was corrected to clone the pinned ref, is what cleared the ceiling. Read both or read neither.",
+      "measurement": {
+        "n": 35,
+        "observedFalsePositives": 0,
+        "wilsonUpper": 0.0989,
+        "detectorRevision": 1
+      },
+      "evidence": {
+        "mustFire": [
+          "tests/corpus/positive-fixtures/QA-JV-101/DisabledTests.java"
+        ],
+        "mustNotFire": [
+          "tests/corpus/negative-fixtures/QA-JV-101/ActiveTests.java"
+        ],
+        "corpusVerdicts": [
+          {
+            "file": "tests/corpus/verdicts/keycloak-keycloak.jsonl",
+            "rows": 20
+          },
+          {
+            "file": "tests/corpus/verdicts/microsoft-playwright-java.jsonl",
+            "rows": 10
+          },
+          {
+            "file": "tests/corpus/verdicts/iluwatar-java-design-patterns.jsonl",
+            "rows": 2
+          },
+          { "file": "tests/corpus/verdicts/positive-fixtures.jsonl", "rows": 3 }
+        ]
+      },
+      "knownWeakness": "The must-not-fire fixture is a hand-written different program (different class, different method bodies), not the must-fire fixture with @Disabled neutralised. Per docs/SENSITIVITY-RATCHET.json it does not measure as a neutralised mutant, so it shows the detector is directional and does NOT show the predicate is sensitive to the annotation specifically. Recorded rather than omitted: this is the gap that per-rule defect recipes must close."
+    }
+  }
+}
