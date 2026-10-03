@@ -62,6 +62,10 @@ const NOT_A_CORPUS = new Set([
   "negative-fixtures",
   "unclassified-ceiling",
   "unsure-ceiling",
+  // Tombstones for retracted orphans. Not a corpus repository: a retraction is
+  // a decision about a row, and the decision lives beside the corpus so the
+  // sampler can de-dupe against it.
+  "retracted",
 ]);
 
 /** repository id -> (rule id -> committed row count). */

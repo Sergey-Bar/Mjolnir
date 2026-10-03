@@ -635,7 +635,7 @@ describe("a declared core rule on a thin measurement needs the record", () => {
       core.map((r) => r.id),
       "the declared-core set changed - a rule left it because its measurement " +
         "moved, or one joined because it earned the way QA-PW-117 did",
-    ).toEqual(["QA-PW-117"]);
+    ).toEqual(["QA-PW-117", "QA-JV-101"]);
     for (const rule of core) {
       expect(
         hasValidMeasurement(rule),
@@ -797,7 +797,7 @@ describe("the Law #3 ratchet is not vacuous on an empty tier", () => {
     // and that is exactly how the tier stayed empty for a release.
     const result = checkTierEnforcement(VERDICTS);
     expect(result.status).toBe("pass");
-    expect(result.details[0]).toContain("1 core rule");
+    expect(result.details[0]).toContain("2 core rules");
     expect(result.details[0]).not.toContain("Vacuous by construction");
   });
 

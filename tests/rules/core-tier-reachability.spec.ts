@@ -118,7 +118,11 @@ describe("the core tier is unreachable at the DEFAULT corpus sample cap", () => 
     expect(wilsonInterval(0, CORE_CANDIDATE_CAP).ciHigh).toBeLessThanOrEqual(
       CORE_FP_CEILING,
     );
-    expect(isCoreCandidate("QA-JV-101")).toBe(true);
+    expect(
+      isCoreCandidate("QA-JV-101"),
+      "QA-JV-101 earned core on 2026-10-03, the same day as QA-PW-117 - the " +
+        "predicate must stop offering to fund a promotion it already has",
+    ).toBe(false);
     // QA-PW-117 earned core on 2026-10-03, so the predicate must stop offering
     // to fund a promotion it already has.
     expect(
@@ -127,13 +131,13 @@ describe("the core tier is unreachable at the DEFAULT corpus sample cap", () => 
         "promotion it already has",
     ).toBe(false);
     expect(
-      selectCoreCandidates(["QA-JV-101"]),
-      "QA-JV-101 is the remaining candidate at n=32; if it dropped out, " +
-        "docs/CORE-READINESS.md is advertising a work list that cannot be started",
-    ).toEqual(["QA-JV-101"]);
+      selectCoreCandidates(["QA-PW-113"]),
+      "both plan targets have earned core - the funded set is read off " +
+        "the live derivation instead, so this cannot name a rule that has moved",
+    ).toEqual(["QA-PW-113"]);
   });
 
-  it("the core tier is no longer empty: QA-PW-117 earned it at n=35", () => {
+  it("the core tier is no longer empty: two rules earned it at n=35", () => {
     // The arm that fired on 2026-10-03, rewritten from "none" to the truth.
     //
     // Pinned by ID rather than by count, because a count passes again after the
@@ -148,7 +152,7 @@ describe("the core tier is unreachable at the DEFAULT corpus sample cap", () => 
       "the derived-core set changed - if a rule left it the measurement moved " +
         "and docs/FP-AUDIT.md is the record; if one joined, it earned it the " +
         "same way QA-PW-117 did",
-    ).toEqual(["QA-PW-117"]);
+    ).toEqual(["QA-PW-117", "QA-JV-101"]);
 
     // And the promotion is MEASURED, not declared: the measurement reaches core
     // on its own, so `tier: "core"` records a decision the evidence had already
@@ -174,7 +178,7 @@ describe("the core tier is unreachable at the DEFAULT corpus sample cap", () => 
       declaredCore.map((r) => r.id),
       "the declared-core set changed - every entry must clear the ceiling on " +
         "its own measurement, which registry-ratchet.spec.ts enforces",
-    ).toEqual(["QA-PW-117"]);
+    ).toEqual(["QA-PW-117", "QA-JV-101"]);
     for (const rule of declaredCore) {
       expect(measurementTier(rule), rule.id).toBe("core");
       expect(declaredCoreWithoutEvidence(rule), rule.id).toBeNull();

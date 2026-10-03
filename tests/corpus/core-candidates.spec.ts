@@ -69,11 +69,12 @@ describe("a candidate is a rule more samples can still settle", () => {
     // clears the ceiling cannot be settled by any number of samples. Asserted
     // here because a predicate that kept offering to fund a promotion the rule
     // already has would send the next run after work that is finished.
-    expect(coreCandidateRuleIds()).toContain("QA-JV-101");
     expect(
       coreCandidateRuleIds(),
-      "QA-PW-117 is core - the predicate is still offering to fund it",
+      "a promoted rule is still being offered for funding - QA-PW-117 and " +
+        "QA-JV-101 both earned core on 2026-10-03",
     ).not.toContain("QA-PW-117");
+    expect(coreCandidateRuleIds()).not.toContain("QA-JV-101");
   });
 
   it("the predicate is worth far more than the two nearest candidates", () => {
@@ -165,20 +166,20 @@ describe("funding a pass is a separate decision from candidacy", () => {
     // The arithmetic below is therefore run against `QA-JV-101` alone — the one
     // target the campaign has NOT yet settled. Its 12 is the number a person
     // approves next.
-    const funded = selectCoreCandidates(["QA-JV-101"]);
-    expect(funded).toEqual(["QA-JV-101"]);
+    const funded = selectCoreCandidates(["QA-PW-113"]);
+    expect(funded).toEqual(["QA-PW-113"]);
     const rows = funded.map((id) => {
       const m = measurementFor(id);
       expect(m, id).toBeDefined();
       return CORE_CANDIDATE_CAP - (m?.n ?? 0);
     });
-    expect(rows).toEqual([3]);
-    expect(rows.reduce((a, b) => a + b, 0)).toBe(3);
+    expect(rows).toEqual([24]);
+    expect(rows.reduce((a, b) => a + b, 0)).toBe(24);
   });
 
   it("the funded set is a subset of the candidate set, never a replacement", () => {
     const candidates = new Set(coreCandidateRuleIds());
-    for (const id of selectCoreCandidates(["QA-JV-101"])) {
+    for (const id of selectCoreCandidates(["QA-PW-113"])) {
       expect(candidates.has(id), id).toBe(true);
     }
     // A promoted rule is not fundable, and naming one is an ERROR rather than
@@ -189,6 +190,9 @@ describe("funding a pass is a separate decision from candidacy", () => {
     );
     expect(() => selectCoreCandidates(["QA-PW-117"])).toThrow(
       /already past the 35-sample threshold/,
+    );
+    expect(() => selectCoreCandidates(["QA-JV-101"])).toThrow(
+      /QA-JV-101 is not a core candidate/,
     );
   });
 
@@ -220,8 +224,12 @@ describe("funding a pass is a separate decision from candidacy", () => {
     // whichever rules can still be settled, and PW-117 was promoted out of it
     // on 2026-10-03. A hard-coded ID here would rot the day the second rule
     // clears — which is the point of asserting against the live derivation.
-    expect(message).toContain("QA-JV-101");
+    // Read off the live derivation rather than hard-coded: the set changes
+    // every time a rule is promoted, which is twice in one day so far.
+    const live = coreCandidateRuleIds()[0];
+    expect(message).toContain(live);
     expect(message).not.toContain("QA-PW-117");
+    expect(message).not.toContain("QA-JV-101");
   });
 });
 

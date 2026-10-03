@@ -127,7 +127,7 @@ describe("the promotion ratchet reports rather than only enforcing", () => {
      * exit code at the same time. A gate that prints `netChange: 1` against
      * `mustBe: ≤ 0` and exits 0 teaches a reader to look past both lines.
      */
-    expect(report.launchSet.netChange).toBe(1);
+    expect(report.launchSet.netChange).toBe(2);
     expect(report.launchSet.mustBe).toBe("≤ 0");
     expect(report.launchSet.licensed, output).toBe(true);
     expect(report.launchSet.license).toContain("ANTI-CREEP-EXCEPTION");

@@ -192,11 +192,6 @@ const DEMOTED_ROWS: ReadonlyArray<{
       "n=25, 2 observed FPs. Wait-for-timeout is structural; the rate is not established.",
   },
   {
-    ruleId: "QA-JV-101",
-    justification:
-      "n=20, 0% observed. Static mutable shared across tests is structural, and a structural premise does not measure its own false-positive rate.",
-  },
-  {
     ruleId: "QA-CS-102",
     justification:
       "n=24, 2 observed FPs — the largest C# sample in this group, and 15.0% is still above a 10% ceiling.",

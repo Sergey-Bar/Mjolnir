@@ -333,7 +333,15 @@ export function registryRuleIds(): string[] {
 
 function loadVerdicts(): Verdict[] {
   if (!existsSync(VERDICTS_DIR)) return [];
-  const files = readdirSync(VERDICTS_DIR).filter((f) => f.endsWith(".jsonl"));
+  // `retracted.jsonl` holds TOMBSTONES, not verdicts: one record per orphan a
+  // person retracted, keyed `ruleId|file|line`. It lives beside the corpus so
+  // `corpus-sample.ts` can de-duplicate against it, and it must be excluded
+  // here — a tombstone has no `file`/`line`, so parsing it as a Verdict
+  // produces a row of `undefined`s and the sort throws. Same category as the two
+  // ceiling files: metadata that happens to share the directory.
+  const files = readdirSync(VERDICTS_DIR).filter(
+    (f) => f.endsWith(".jsonl") && f !== "retracted.jsonl",
+  );
   const all: Verdict[] = [];
   for (const f of files) {
     const lines = readFileSync(join(VERDICTS_DIR, f), "utf8")
@@ -342,7 +350,14 @@ function loadVerdicts(): Verdict[] {
     for (const line of lines) {
       try {
         const entry = JSON.parse(line) as Verdict;
-        if (entry.verdict) all.push(entry);
+        // A row is a verdict only if it has a rule AND a non-empty verdict.
+        // Checking `entry.verdict` alone is not enough: a record that carries a
+        // verdict string but no `ruleId` — a tombstone, or a half-written row —
+        // lands in the map under `undefined` and the sort downstream throws on
+        // `undefined.localeCompare`. The file-name exclusion above is the
+        // tidy fix; this is the one that cannot be defeated by a new file.
+        if (!entry.verdict || typeof entry.ruleId !== "string") continue;
+        all.push(entry);
       } catch {
         // skip malformed lines
       }
@@ -368,7 +383,7 @@ export function collectUnclassified(): UnclassifiedReport {
   const report: UnclassifiedReport = { total: 0, byFile: {} };
   if (!existsSync(VERDICTS_DIR)) return report;
   for (const f of readdirSync(VERDICTS_DIR)) {
-    if (!f.endsWith(".jsonl")) continue;
+    if (!f.endsWith(".jsonl") || f === "retracted.jsonl") continue;
     for (const line of readFileSync(join(VERDICTS_DIR, f), "utf8").split(
       "\n",
     )) {
@@ -507,7 +522,7 @@ export function collectUnsure(): UnsureReport {
   const report: UnsureReport = { byRule: {}, total: 0 };
   if (!existsSync(VERDICTS_DIR)) return report;
   for (const f of readdirSync(VERDICTS_DIR)) {
-    if (!f.endsWith(".jsonl")) continue;
+    if (!f.endsWith(".jsonl") || f === "retracted.jsonl") continue;
     for (const line of readFileSync(join(VERDICTS_DIR, f), "utf8").split(
       "\n",
     )) {

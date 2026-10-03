@@ -63,17 +63,9 @@
       "reason": "holds committed verdicts for a rule `isCoreCandidate` says more clean samples would settle; moving it to holdout would empty the measurement side of the evidence the core tier is waiting on"
     },
     {
-      "repositoryId": "iluwatar-java-design-patterns",
-      "rowsByRule": {
-        "QA-JV-101": 2
-      },
-      "reason": "holds committed verdicts for a rule `isCoreCandidate` says more clean samples would settle; moving it to holdout would empty the measurement side of the evidence the core tier is waiting on"
-    },
-    {
       "repositoryId": "keycloak-keycloak",
       "rowsByRule": {
-        "QA-CI-007": 1,
-        "QA-JV-101": 19
+        "QA-CI-007": 1
       },
       "reason": "holds committed verdicts for a rule `isCoreCandidate` says more clean samples would settle; moving it to holdout would empty the measurement side of the evidence the core tier is waiting on"
     },
@@ -82,13 +74,6 @@
       "rowsByRule": {
         "QA-CS-101": 20,
         "QA-CS-103": 1
-      },
-      "reason": "holds committed verdicts for a rule `isCoreCandidate` says more clean samples would settle; moving it to holdout would empty the measurement side of the evidence the core tier is waiting on"
-    },
-    {
-      "repositoryId": "microsoft-playwright-java",
-      "rowsByRule": {
-        "QA-JV-101": 8
       },
       "reason": "holds committed verdicts for a rule `isCoreCandidate` says more clean samples would settle; moving it to holdout would empty the measurement side of the evidence the core tier is waiting on"
     },
@@ -154,9 +139,9 @@
     "repositories": 33,
     "holdoutRepositories": 6,
     "measurementRepositories": 27,
-    "rows": 704,
+    "rows": 707,
     "holdoutRows": 145,
-    "measurementRows": 559,
+    "measurementRows": 562,
     "holdoutRules": 23,
     "measurementRules": 53
   },
@@ -202,7 +187,7 @@
       "QA-CYP-001": 15,
       "QA-CYP-003": 1,
       "QA-ENV-001": 14,
-      "QA-JV-101": 29,
+      "QA-JV-101": 32,
       "QA-JV-102": 20,
       "QA-JV-103": 54,
       "QA-JV-104": 2,
@@ -245,6 +230,7 @@
   "excludedFromSplit": [
     "negative-fixtures",
     "positive-fixtures",
+    "retracted",
     "unclassified-ceiling",
     "unsure-ceiling"
   ],

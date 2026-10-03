@@ -6,8 +6,8 @@
     "retiredRules": 22,
     "tiers": {
       "quarantine": 34,
-      "extended": 44,
-      "core": 1
+      "extended": 43,
+      "core": 2
     },
     "measured": 73,
     "measuredAtStaleRevision": 2,

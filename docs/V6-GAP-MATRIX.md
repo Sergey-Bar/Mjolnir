@@ -2,7 +2,7 @@
 
 **Generated — do not edit by hand.** Regenerate: `npm run docs:v6-inventory`.
 
-Baseline commit `486830593cd913acdfd72b6678a9caf67f2ef00d`.
+Baseline commit `15ef652b83bea5f7ddda4cdde332142062bc0da4`.
 
 One source: gaps this inventory found by measuring the tree. The M26
 ledger's open release-blockers were removed in 6.0 with the program that

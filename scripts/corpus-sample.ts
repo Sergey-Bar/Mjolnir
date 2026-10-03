@@ -280,18 +280,48 @@ const pendingByRule = readPendingVerdictRows();
 function recordedVerdictKeys(repo: string): Set<string> {
   const keys = new Set<string>();
   const path = join(VERDICTS_DIR, `${repo}.jsonl`);
+  if (existsSync(path)) {
+    for (const line of readFileSync(path, "utf8").split("\n")) {
+      if (!line.trim()) continue;
+      try {
+        const o = JSON.parse(line) as {
+          ruleId: string;
+          file: string;
+          line: number;
+        };
+        keys.add(`${o.ruleId}|${o.file}|${o.line}`);
+      } catch {
+        /* preserve malformed rows as-is — never overwrite verdicts */
+      }
+    }
+  }
+  // Retracted rows join the same key set, from `tests/corpus/verdicts/retracted.jsonl`.
+  //
+  // Without this, a retraction is undone by the next sampling pass: the row is
+  // gone from the `.jsonl`, so its key is no longer recorded, so the very same
+  // finding is sampled again and re-appended as a fresh unclassified row. That
+  // is not hypothetical — `QA-JV-101`'s `JWETest.java:74` was retracted on
+  // 2026-10-03 and the next sweep put it straight back, because the annotation
+  // one line up was already adjudicated and the citation was not.
+  //
+  // An orphan rule that regenerates its own evidence is not an orphan rule, so
+  // the tombstone is read here rather than only recorded by the applier.
+  for (const key of retractedVerdictKeys()) keys.add(key);
+  return keys;
+}
+
+/** Every `ruleId|file|line` that has been retracted, across all repositories. */
+function retractedVerdictKeys(): Set<string> {
+  const keys = new Set<string>();
+  const path = join(VERDICTS_DIR, "retracted.jsonl");
   if (!existsSync(path)) return keys;
   for (const line of readFileSync(path, "utf8").split("\n")) {
     if (!line.trim()) continue;
     try {
-      const o = JSON.parse(line) as {
-        ruleId: string;
-        file: string;
-        line: number;
-      };
-      keys.add(`${o.ruleId}|${o.file}|${o.line}`);
+      const o = JSON.parse(line) as { key?: unknown };
+      if (typeof o.key === "string") keys.add(o.key);
     } catch {
-      /* preserve malformed rows as-is — never overwrite verdicts */
+      /* a malformed tombstone must not resurrect a retracted row silently */
     }
   }
   return keys;
@@ -308,27 +338,89 @@ interface SampledFinding {
 
 function cloneRepo(repo: CorpusRepo): string {
   const dest = join(CACHE_DIR, repo.name);
-  if (existsSync(dest)) return dest; // reuse cached clone
-  mkdirSync(CACHE_DIR, { recursive: true });
-  // `local:` URLs (§08 classes B/C) — copy the committed corpus instead
+  // `local:` URLs (SS08 classes B/C) - copy the committed corpus instead
   // of cloning; .git never exists for in-repo fixtures.
   if (repo.url.startsWith("local:")) {
     const src = join(HERE, "..", repo.url.slice("local:".length));
     if (!existsSync(src)) {
       throw new Error(`local corpus missing: ${src}`);
     }
+    mkdirSync(CACHE_DIR, { recursive: true });
     cpSync(src, dest, { recursive: true });
     return dest;
   }
+
+  /**
+   * THE PIN, OR THE SAMPLE IS UNJUDGEABLE.
+   *
+   * This used to `git clone --depth 1 <url>` - the HEAD of the default branch -
+   * and then `rm -rf .git`, so nothing downstream could tell. Every verdict is
+   * adjudicated against `repo.ref` via `npm run corpus:verdict-context`, which
+   * reads the PINNED commit. Those are two different trees, and they drift.
+   *
+   * What that produced, on keycloak: the pinned `JWETest.java` has exactly three
+   * `@Ignore`, on lines 73, 113 and 202, all three already adjudicated `TP`. The
+   * sweep kept emitting rows citing 74, then 114, then 203 - the same three
+   * annotations, cited one line late, each arriving as a fresh unclassified row
+   * that looked like new evidence. Four of those were caught by hand as orphans
+   * during the first adjudication pass, which is luck, not a control: any row
+   * whose line happened to still land on a trigger would have been judged
+   * against source the verdict claims to describe and does not.
+   *
+   * So the clone fetches `repo.ref`, the way `tests/corpus/audit.ts` already
+   * did, and a cached clone is VERIFIED against it rather than trusted by
+   * existence. A cache hit at the wrong ref is a stale tree wearing a fresh
+   * clone's name.
+   */
+  if (existsSync(join(dest, ".git"))) {
+    const head = execFileSync("git", ["-C", dest, "rev-parse", "HEAD"], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+    }).trim();
+    if (head === repo.ref) return dest;
+    rmSync(dest, { recursive: true, force: true });
+  } else if (existsSync(dest)) {
+    // A cache entry with no .git cannot be verified, so it cannot be trusted.
+    rmSync(dest, { recursive: true, force: true });
+  }
+
+  mkdirSync(CACHE_DIR, { recursive: true });
+  mkdirSync(dest, { recursive: true });
+  execFileSync("git", ["init", "--quiet", dest], { stdio: "pipe" });
+  execFileSync("git", ["-C", dest, "remote", "add", "origin", repo.url], {
+    stdio: "pipe",
+  });
   execFileSync(
     "git",
-    // core.longpaths: same Windows MAX_PATH rationale as the audit clone.
-    ["-c", "core.longpaths=true", "clone", "--depth", "1", repo.url, dest],
-    {
-      stdio: "pipe",
-    },
+    [
+      "-c",
+      "core.longpaths=true",
+      "-C",
+      dest,
+      "fetch",
+      "--depth",
+      "1",
+      "--no-tags",
+      "origin",
+      repo.ref,
+    ],
+    { stdio: "pipe" },
   );
-  rmSync(join(dest, ".git"), { recursive: true, force: true });
+  execFileSync("git", ["-C", dest, "checkout", "--quiet", "FETCH_HEAD"], {
+    stdio: "pipe",
+  });
+
+  const checkedOut = execFileSync("git", ["-C", dest, "rev-parse", "HEAD"], {
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "ignore"],
+  }).trim();
+  if (checkedOut !== repo.ref) {
+    throw new Error(
+      `corpus ${repo.name}: checked out ${checkedOut}, expected the pinned ${repo.ref}. ` +
+        "A verdict read at the pin must describe the tree that was scanned, so this " +
+        "is a hard stop rather than a warning.",
+    );
+  }
   return dest;
 }
 

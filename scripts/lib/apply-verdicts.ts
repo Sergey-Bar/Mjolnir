@@ -34,7 +34,7 @@
  * Usage: npx tsx scripts/lib/apply-verdicts.ts <decisions.json> [--verdicts-dir=<dir>]
  */
 
-import { readFileSync, writeFileSync } from "node:fs";
+import { appendFileSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 
 const ROOT = join(import.meta.dirname, "..", "..");
@@ -65,6 +65,34 @@ type DecisionVerdict = "TP" | "FP" | "UNSURE" | "RETRACT";
 interface Decision {
   verdict: DecisionVerdict;
   note: string;
+}
+
+/**
+ * Tombstones for retracted rows, appended alongside the corpus.
+ *
+ * A retraction that leaves no trace does not stick. `corpus-sample.ts` de-dupes
+ * on the `ruleId|file|line` keys present in a repository's verdict file, so the
+ * moment an orphan row is removed, the next sampling pass finds the same
+ * finding again and re-appends it — which is not a hypothetical: `QA-JV-101`'s
+ * `JWETest.java:74` was retracted, and the very next sweep put it straight back.
+ * An orphan rule that regenerates its own evidence is not an orphan rule.
+ *
+ * So the retraction is recorded, in a file the sampler reads alongside the
+ * verdicts. It is deliberately NOT a row in the `.jsonl`: a tombstone there
+ * would be a row with no verdict, which is the exact state the sweep is
+ * supposed to stop producing.
+ */
+const RETRACTIONS = join(VERDICTS_DIR, "retracted.jsonl");
+
+function appendRetraction(key: string, repo: string, note: string): void {
+  const payload = {
+    key,
+    repo,
+    verdict: "RETRACT",
+    retractedAt: new Date().toISOString().slice(0, 10),
+    note,
+  };
+  appendFileSync(RETRACTIONS, JSON.stringify(payload) + "\n", "utf8");
 }
 
 const decisionsPath = process.argv[2];
@@ -149,6 +177,7 @@ for (const [repo, rows] of Object.entries(repositoryDecisions)) {
     }
     if (d.verdict === "RETRACT") {
       retracted++;
+      appendRetraction(key, repo, d.note);
       continue; // drop the line entirely — an orphan is not evidence
     }
     row.verdict = d.verdict;

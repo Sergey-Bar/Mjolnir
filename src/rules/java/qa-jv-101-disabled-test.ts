@@ -37,7 +37,22 @@ export const jvDisabledTest = defineRule({
   // `quarantine` is enforced, so this is behaviour-neutral: the rule still
   // runs on every scan. A re-sample at the raised MAX_SAMPLES_PER_RULE can
   // earn it back; src/rules/tier-evidence.ts ratchets that.
-  tier: "extended",
+  // 6.0: was "core", demoted to "extended" because 0% observed over n=10..23 is
+  // a Wilson interval of [0, 27.8%] to [0, 14.3%], which clears nothing.
+  // `src/rules/tier-evidence.ts` ratcheted that.
+  //
+  // It cleared on 2026-10-03, the same day and by the same route as
+  // QA-PW-117: a `--core-candidates` sweep over all 37 corpus repositories,
+  // twenty rows adjudicated TP against pinned source, and the orphans removed
+  // rather than judged. n = 35, zero observed false positives, Wilson upper
+  // bound 9.89% against the 10% ceiling. `measurementTier` returns "core" on
+  // its own evidence and `declaredCoreWithoutEvidence` is null, so this
+  // declaration records a decision the measurement had already reached.
+  //
+  // Not behaviour-neutral: ADR 0014 gives core an evidence floor, so a finding
+  // from this rule is stamped at least E1 and deducts `floor(base/2)` instead
+  // of nothing.
+  tier: "core",
 
   run(ctx) {
     const text = ctx.codeText ?? ctx.text;

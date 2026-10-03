@@ -32,6 +32,12 @@ const EXCLUDED_FROM_SPLIT = new Set([
   "negative-fixtures",
   "unclassified-ceiling",
   "unsure-ceiling",
+  // Tombstones for retracted orphans, not verdicts. A line-counted partition
+  // that included them would be 3 rows larger on the measurement side than the
+  // generator recorded — the generator counts rows that have a `ruleId`, this
+  // spec counts lines, and the two only agree while every `.jsonl` in the
+  // directory holds verdicts.
+  "retracted",
 ]);
 
 const ROOT = join(import.meta.dirname, "..", "..");

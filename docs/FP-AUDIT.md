@@ -44,7 +44,7 @@ happen to have been sampled.
 | QA-CYP-002   | 0%      | [0, 0.2775]      | 10         | 10  | 0   | 0      | 1           | 🕤 quarantine                                     |
 | QA-CYP-003   | 0%      | [0, 0.2775]      | 10         | 10  | 0   | 0      | 1           | 🕤 quarantine                                     |
 | QA-ENV-001   | 100%    | [0.8389, 1]      | 20         | 0   | 20  | 0      | 4           | 🕤 quarantine                                     |
-| QA-JV-101    | 0%      | [0, 0.1072]      | 32         | 32  | 0   | 0      | 1           | △ extended                                        |
+| QA-JV-101    | 0%      | [0, 0.0989]      | 35         | 35  | 0   | 0      | 1           | … core                                            |
 | QA-JV-102    | 26%     | [0.1255, 0.4647] | 23         | 17  | 6   | 0      | 1           | △ extended                                        |
 | QA-JV-103    | 26%     | [0.1635, 0.3838] | 58         | 43  | 15  | 0      | 2           | △ extended                                        |
 | QA-JV-104    | 20%     | [0.0567, 0.5098] | 10         | 8   | 2   | 0      | 1           | △ extended                                        |
@@ -61,7 +61,7 @@ happen to have been sampled.
 | QA-PW-113    | 0%      | [0, 0.2588]      | 11         | 11  | 0   | 0      | 1           | △ extended                                        |
 | QA-PW-115    | 56%     | [0.3318, 0.769]  | 16         | 7   | 9   | 0      | 1           | 🕤 quarantine                                     |
 | QA-PW-116    | 0%      | [0, 0.2775]      | 10         | 10  | 0   | 0      | 1           | ↔ straddling (interval crosses the tier boundary) |
-| QA-PW-117    | 0%      | [0, 0.0989]      | 35         | 35  | 0   | 0      | 1           | △ extended                                        |
+| QA-PW-117    | 0%      | [0, 0.0989]      | 35         | 35  | 0   | 0      | 1           | … core                                            |
 | QA-PW-121    | 0%      | [0, 0.2425]      | 12         | 12  | 0   | 0      | 1           | △ extended                                        |
 | QA-PW-122    | 6%      | [0.027, 0.1381]  | 80         | 75  | 5   | 0      | 1           | △ extended                                        |
 | QA-PW-123    | 45%     | [0.2127, 0.7199] | 11         | 6   | 5   | 0      | 1           | 🕤 quarantine                                     |

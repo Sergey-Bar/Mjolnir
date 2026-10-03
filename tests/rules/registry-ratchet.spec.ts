@@ -523,7 +523,7 @@ describe("declaredCoreWithoutEvidence", () => {
       earning.map((rule) => rule.id),
       "the set of rules clearing the ceiling changed - QA-PW-117 earned it on " +
         "2026-10-03, and a second promotion would land here",
-    ).toEqual(["QA-PW-117"]);
+    ).toEqual(["QA-PW-117", "QA-JV-101"]);
 
     for (const rule of earning) {
       expect(

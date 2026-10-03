@@ -1,0 +1,24 @@
+{
+  "_meta": {
+    "stagedAt": "2026-10-03",
+    "method": "Read at the corpus PINNED commits (keycloak @ 421c23f5221d, microsoft/playwright-java @ c17b6060bd39) via `npm run corpus:verdict-context`, and each cited line independently re-verified by enumerating every @Ignore/@Disabled in the pinned file rather than trusting the +/-6 window.",
+    "why": "A corpus-wide `--core-candidates --core-target QA-JV-101` sweep found 3 findings. QA-JV-101 sat at n=32, so 3 clean rows would have been exactly the gap to n=35. It gets 2: one of the three is an orphan.",
+    "projected": "QA-JV-101 n=32 -> 34. ciHigh 10.72% -> 10.15%. STILL SHORT of the 10% ceiling, which needs n=35. QA-JV-101 is NOT promoted and stays extended."
+  },
+  "keycloak-keycloak": {
+    "QA-JV-101|core/src/test/java/org/keycloak/jose/JWETest.java|74": {
+      "verdict": "RETRACT",
+      "note": "adjudicated 2026-10-03 — ORPHANED, and this is the SECOND time. Enumerating every @Ignore in the pinned file (421c23f5221d) returns exactly three: lines 73, 113 and 202 — the three already adjudicated TP. Line 74 is `@Test`, which matches neither @Disabled nor @Ignore, and the rule reports lineAt(text, m.index) with no offset. So the cited line holds no trigger and the annotation one line up is already scored. Retracted rather than judged; a verdict here would count one annotation twice."
+    }
+  },
+  "microsoft-playwright-java": {
+    "QA-JV-101|playwright/src/test/java/com/microsoft/playwright/TestGlobalFetch.java|239": {
+      "verdict": "TP",
+      "note": "adjudicated 2026-10-03 from source TestGlobalFetch.java:235-244 at microsoft/playwright-java @ c17b6060bd39. Enumerating every @Disabled/@Ignore in the pinned file returns exactly two, on lines 239 and 247 — the cited lines hold the annotations themselves, so this row is sound where the JWETest one is not. `@Disabled(\"Error: socket hang up\")` on `shouldSupportGlobalIgnoreHTTPSErrorsOption`, which asserts that `setIgnoreHTTPSErrors(true)` makes a request to an HTTPS test server return 200. Disabled for a transient network symptom ('socket hang up'), which is a CI flake, not a property of the code under test. The behaviour — that the ignore-HTTPS-errors option is honoured — is therefore unverified in every run, and the two options around it (proxy credentials, redirects) are the same feature. Consistent with the committed TP for @Disabled('slow, run manually'): a stated reason does not rescue a disabled assertion under this rule, because the rule's diagnosis is a GREEN RUN THAT PROVES NOTHING, not a badly-written test."
+    },
+    "QA-JV-101|playwright/src/test/java/com/microsoft/playwright/TestGlobalFetch.java|247": {
+      "verdict": "TP",
+      "note": "adjudicated 2026-10-03 from source TestGlobalFetch.java:246-253 at microsoft/playwright-java @ c17b6060bd39. `@Disabled(\"Error: socket hang up\")` on `shouldPropagateIgnoreHTTPSErrorsOnRedirects`, which asserts that the ignore-HTTPS-errors option is PROPAGATED across a redirect (`/redir` -> `/empty.html`). Two assertions of the same option, disabled for the same transient symptom, in adjacent methods. Redirect propagation is the case where the option silently stops applying, so this is the more load-bearing of the two and it is the one no run exercises."
+    }
+  }
+}

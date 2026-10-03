@@ -3,7 +3,7 @@
   "artifact": "v6-inventory",
   "generatedBy": "npm run docs:v6-inventory",
   "wave": "0",
-  "baseSha": "486830593cd913acdfd72b6678a9caf67f2ef00d",
+  "baseSha": "15ef652b83bea5f7ddda4cdde332142062bc0da4",
   "version": "6.0.0-rc.1",
   "publishedStable": "5.1.0",
   "counts": {
@@ -46,8 +46,8 @@
     "measured": 73,
     "byTier": {
       "quarantine": 34,
-      "extended": 44,
-      "core": 1
+      "extended": 43,
+      "core": 2
     }
   },
   "ledgers": {
