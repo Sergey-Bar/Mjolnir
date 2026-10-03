@@ -28,19 +28,19 @@
   "generatedAt": "2026-10-03",
   "identity": {
     "state": "WORKING_CANDIDATE",
-    "baseSha": "64f0e74a6a8c981d1e457c8fef260409a46c8a79",
+    "baseSha": "5f5bda897e09691688cb50fcbac3114e68509b99",
     "candidateSha": null,
     "version": "6.0.0-rc.1",
     "packageSha256": "e7c47696fa2a3e45520a84f0946e4682bcdb0da8fd34039bbf4a247f6a1c9ea7",
     "lockfileSha256": "b4530c8bf73c8215650860133afb02318790b138e280313c69b0feab567777e7",
     "workingTreeSha256": "4586e505bf5b2f79af2cfbbdfa2e9b592208542cdb2418347800e97cfd50ac4a",
-    "changedPathCount": 1,
+    "changedPathCount": 0,
     "supportEnvelope": "self-hosted; hosted services require explicit consent and separate proof",
     "worktreeInventory": {
-      "changedPaths": [".claude/commands/mjolnir.md"],
+      "changedPaths": [],
       "untrackedPaths": []
     },
-    "dirtyFiles": [".claude/commands/mjolnir.md"]
+    "dirtyFiles": []
   },
   "claimRegistry": {
     "path": "docs/claim-registry.json",
