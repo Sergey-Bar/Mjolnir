@@ -13,7 +13,7 @@ import {
 } from "../../scripts/check-fixture-sensitivity.js";
 
 const ROOT = join(import.meta.dirname, "..", "..");
-const rows = measureAll();
+const rows = measureAll(ROOT);
 
 /**
  * These assertions are about the MEASUREMENT, not about the world being tidy.

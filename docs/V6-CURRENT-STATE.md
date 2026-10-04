@@ -2,7 +2,7 @@
 
 **Generated — do not edit by hand.** Regenerate: `npm run docs:v6-inventory`.
 
-Baseline commit `ae5c3cf5fa4fd15bc7985cc254052a5536124b92` · package version `6.0.0` · published stable `6.0.0`.
+Baseline commit `a00f2269dc4fc1d8e7460738ccc632b489559131` · package version `6.0.0` · published stable `6.0.0`.
 
 This is the truth baseline v6 is built on. It is deliberately blunt: the
 interesting part of a current-state inventory is what the product _cannot_
@@ -30,7 +30,7 @@ demonstrate, not what it contains.
 | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
 | Package version                 | `6.0.0`                                                                                                                                 | `package.json`                               |
 | Published stable                | `6.0.0`                                                                                                                                 | `package.json`                               |
-| Source files (`src/**.ts`)      | 297                                                                                                                                     | derived                                      |
+| Source files (`src/**.ts`)      | 298                                                                                                                                     | derived                                      |
 | Test specs (`tests/**.spec.ts`) | 689                                                                                                                                     | derived                                      |
 | Live rules                      | 79                                                                                                                                      | `src/rules/index.ts`                         |
 | Retired rule ids (preserved)    | 22                                                                                                                                      | `RETIRED_RULE_IDS`                           |
@@ -52,7 +52,7 @@ contained is `docs/archive/ROADMAP-M26-M50.yaml`; the live ladder is
 
 ### Largest source areas
 
-- `src/rules/` — 87
+- `src/rules/` — 88
 - `src/engine/` — 44
 - `src/commands/` — 34
 - `src/forensics/` — 18
