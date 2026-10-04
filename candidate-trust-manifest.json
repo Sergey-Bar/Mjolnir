@@ -28,31 +28,19 @@
   "generatedAt": "2026-10-04",
   "identity": {
     "state": "WORKING_CANDIDATE",
-    "baseSha": "43215ab758a5768ba5b9fce7862e3919e52f0811",
+    "baseSha": "5888e1c52cd58971e0562cc767d88349d70625e8",
     "candidateSha": null,
     "version": "6.0.0",
     "packageSha256": "4f0770a9fc87769a57d14eb26975689a915ad4f175b43354a6546b8def8bec69",
     "lockfileSha256": "85e9845cb27e3e6394e01b88ba8d91ae947d579c00d0a2b50f5a244a0da0dfd5",
-    "workingTreeSha256": "0d67919dc7ce7c64a4d267ed855492ea1966a0616d94dca5a1bd8d8f61e0bd38",
-    "changedPathCount": 5,
+    "workingTreeSha256": "c80f77e196436618a47108c354fb7e296a700c00f2d2aa4c16732a4697d14877",
+    "changedPathCount": 1,
     "supportEnvelope": "self-hosted; hosted services require explicit consent and separate proof",
     "worktreeInventory": {
-      "changedPaths": [
-        "docs/BLAST-RADIUS-AUDIT.md",
-        "docs/ECOSYSTEM-CENSUS.json",
-        "docs/ECOSYSTEM-DISPOSITIONS.json",
-        "docs/ECOSYSTEM-GAPS.md",
-        "docs/capability-registry.json"
-      ],
+      "changedPaths": ["docs/BLAST-RADIUS-AUDIT.md"],
       "untrackedPaths": []
     },
-    "dirtyFiles": [
-      "docs/BLAST-RADIUS-AUDIT.md",
-      "docs/ECOSYSTEM-CENSUS.json",
-      "docs/ECOSYSTEM-DISPOSITIONS.json",
-      "docs/ECOSYSTEM-GAPS.md",
-      "docs/capability-registry.json"
-    ]
+    "dirtyFiles": ["docs/BLAST-RADIUS-AUDIT.md"]
   },
   "claimRegistry": {
     "path": "docs/claim-registry.json",
