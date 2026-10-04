@@ -9,35 +9,69 @@
  * byte-identical — a score shift is a regression, not an improvement.
  */
 
+import { AsyncLocalStorage } from "node:async_hooks";
+
 import { Project, type SourceFile, ts } from "ts-morph";
 
 import type { ParsedFile } from "./adapter.js";
 import { recordDegradation } from "./degradation-ledger.js";
 
-// One shared Project per scan keeps memory bounded while reusing the
-// compiler's program across files.
-let project: Project | null = null;
+/**
+ * One shared Project PER SCAN keeps memory bounded while reusing the compiler's
+ * program across files.
+ *
+ * "Per scan" has to mean per scan. The variable lived at module scope, so it
+ * was one Project per PROCESS, and two scans running concurrently shared it —
+ * `parseTsFile` calls `replaceWithText` on a cached SourceFile, so scan B
+ * could overwrite the text scan A was mid-rule on. ts-morph's in-memory file
+ * system and language service are not reentrant, and the observable result was
+ * three of four concurrent scans reporting `rulesCrashed: 4` with
+ * `rules: "partial"` — different machine-contract digests from the same tree,
+ * which is the one thing this product claims cannot happen.
+ *
+ * An AsyncLocalStorage scope is the smallest change that makes the comment
+ * true: each scan's async context carries its own Project, memory stays bounded
+ * per scan exactly as intended, and the context is collected when the scan's
+ * promise chain is. The loose project below remains for callers outside a scan
+ * (tests, one-off parses), where there is nothing to collide with.
+ */
+const scanProjects = new AsyncLocalStorage<Project>();
+let looseProject: Project | null = null;
+
+function createProject(): Project {
+  return new Project({
+    useInMemoryFileSystem: true,
+    skipAddingFilesFromTsConfig: true,
+    compilerOptions: {
+      allowJs: true,
+      declaration: false,
+      noEmit: true,
+    },
+  });
+}
 
 /**
- * The shared ts-morph project.
+ * Run `fn` with its own ts-morph Project.
+ *
+ * Async context propagates across `await`, so the Project stays the scan's own
+ * for the whole scan without threading an argument through every adapter.
+ */
+export function runWithScanProject<T>(fn: () => T): T {
+  return scanProjects.run(createProject(), fn);
+}
+
+/**
+ * The ts-morph Project for the current scan.
  *
  * Exported so an adapter's `dispose()` can evict the file it parsed: ts-morph
  * caches by file path, so without eviction a long scan holds every parsed
  * SourceFile until the process exits (plan V5-021).
  */
 export function getProject(): Project {
-  if (!project) {
-    project = new Project({
-      useInMemoryFileSystem: true,
-      skipAddingFilesFromTsConfig: true,
-      compilerOptions: {
-        allowJs: true,
-        declaration: false,
-        noEmit: true,
-      },
-    });
-  }
-  return project;
+  const scoped = scanProjects.getStore();
+  if (scoped !== undefined) return scoped;
+  looseProject ??= createProject();
+  return looseProject;
 }
 
 /**
@@ -216,7 +250,14 @@ export function getCodeOnlyText(file: ParsedFile): string {
   }
 }
 
-/** Release the shared ts-morph Project between scans to free memory. */
+/**
+ * Release the loose ts-morph Project used outside a scan.
+ *
+ * Deliberately does NOT call `scanProjects.disable()`. Scan-scoped Projects are
+ * released by garbage collection when the scan's async context ends, and
+ * `disable()` would tear the store out from under a scan still running — the
+ * exact corruption this scoping exists to remove.
+ */
 export function resetTsMorphProject(): void {
-  project = null;
+  looseProject = null;
 }

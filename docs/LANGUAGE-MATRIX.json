@@ -5,7 +5,7 @@
   "projectionOf": "mjolnir-capability-registry",
   "axis": "language",
   "observedAt": "2026-10-04",
-  "baseSha": "698d520e4f231e2a9d47e80acd98d7ebfb18be61",
+  "baseSha": "99f59bdb2040c48f93c6826b2330f886baf4cd1c",
   "rowCount": 1,
   "rows": [
     {
@@ -41,7 +41,7 @@
           "name": "jest",
           "kind": "test-framework",
           "owner": "framework-inventory",
-          "maturity": "M2",
+          "maturity": "M3",
           "rules": [
             "QA-JV-104",
             "QA-JV-107",
@@ -187,7 +187,7 @@
           "name": "pytest",
           "kind": "test-framework",
           "owner": "framework-inventory",
-          "maturity": "M2",
+          "maturity": "M3",
           "rules": [
             "QA-PY-003",
             "QA-PY-005",
@@ -286,7 +286,7 @@
           "name": "vitest",
           "kind": "test-framework",
           "owner": "framework-inventory",
-          "maturity": "M2",
+          "maturity": "M3",
           "rules": [
             "QA-JV-104",
             "QA-JV-107",

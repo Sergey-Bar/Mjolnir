@@ -28,19 +28,19 @@
   "generatedAt": "2026-10-04",
   "identity": {
     "state": "WORKING_CANDIDATE",
-    "baseSha": "f58682753bc38d7e47fa5fa6649b2d13e5cc71eb",
+    "baseSha": "5888e1c52cd58971e0562cc767d88349d70625e8",
     "candidateSha": null,
     "version": "6.0.0",
     "packageSha256": "4f0770a9fc87769a57d14eb26975689a915ad4f175b43354a6546b8def8bec69",
     "lockfileSha256": "85e9845cb27e3e6394e01b88ba8d91ae947d579c00d0a2b50f5a244a0da0dfd5",
-    "workingTreeSha256": "71a36ce64a1e3828e3d31a5de33dc43a82ec095ec4e94f0ab4c06f98948c50df",
+    "workingTreeSha256": "c80f77e196436618a47108c354fb7e296a700c00f2d2aa4c16732a4697d14877",
     "changedPathCount": 1,
     "supportEnvelope": "self-hosted; hosted services require explicit consent and separate proof",
     "worktreeInventory": {
-      "changedPaths": ["scripts/lib/normalize-cli-json.mjs"],
+      "changedPaths": ["docs/BLAST-RADIUS-AUDIT.md"],
       "untrackedPaths": []
     },
-    "dirtyFiles": ["scripts/lib/normalize-cli-json.mjs"]
+    "dirtyFiles": ["docs/BLAST-RADIUS-AUDIT.md"]
   },
   "claimRegistry": {
     "path": "docs/claim-registry.json",

@@ -7,12 +7,12 @@ contract enforces: **every external import in src/ must belong to the
 allowlist**, and the shipped surface (adapters, rules, flags, formats, exit
 codes) must match this document exactly.
 
-## Inventory: 305 files, 73955 LOC
+## Inventory: 305 files, 74016 LOC
 
 | Area              | Files | LOC   |
 | ----------------- | ----- | ----- |
 | src/rules         | 87    | 12883 |
-| src/engine        | 44    | 12311 |
+| src/engine        | 44    | 12372 |
 | src/commands      | 34    | 12241 |
 | src/v6            | 10    | 6206  |
 | src/(root)        | 8     | 3971  |
@@ -76,6 +76,7 @@ codes) must match this document exactly.
 | node:os            | 2                  |
 | node:process       | 2                  |
 | node:util          | 2                  |
+| node:async_hooks   | 1                  |
 | node:zlib          | 1                  |
 | node:buffer        | 1                  |
 | node:readline      | 1                  |
