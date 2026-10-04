@@ -21,8 +21,17 @@ export const TRUST_MODEL_VERSION = "1.0.0" as const;
  */
 export const SCORING_MODEL_VERSION = "2.0.0" as const;
 export const FRAMEWORK_SUPPORT_MATRIX_VERSION = "1.0.0" as const;
-export const EVIDENCE_SCHEMA_VERSION = 1 as const;
-export const FORENSICS_SCHEMA_VERSION = 1 as const;
+/**
+ * 2 (ADR 0015): .NET runs are evidence. TRX (`dotnet test`) is a recognised
+ * run-report convention, so a C#/F# repository can reach L3 at all. Previously
+ * it could not, and unreadable evidence and absent evidence look identical from
+ * the outside — the exact ambiguity the evidence-state vocabulary exists to
+ * prevent. This is a change to what L3 can MEAN, which is why the `version-bump`
+ * policy applies literally.
+ */
+export const EVIDENCE_SCHEMA_VERSION = 2 as const;
+/** 2, same ADR and same reason: TRX adds a `dotnet-trx` forensics source. */
+export const FORENSICS_SCHEMA_VERSION = 2 as const;
 
 export interface VersionedContract {
   readonly identifier: string;

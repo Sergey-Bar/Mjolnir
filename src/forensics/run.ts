@@ -22,6 +22,7 @@ import { analyze, renderFlakyMd, renderLeaderboard } from "./analyze.js";
 import { parseTraceArtifact } from "./trace.js";
 import { looksLikeJestJson, parseJestJson } from "./parse-jest-json.js";
 import { parseJunitXml } from "./parse-junit.js";
+import { looksLikeTrxXml, parseTrxXml } from "./parse-trx.js";
 import { parsePlaywrightJson } from "./parse-playwright-json.js";
 import { looksLikeVitestJson, parseVitestJson } from "./parse-vitest-json.js";
 import { looksLikeHarJson, parseHarJsonDetailed } from "./parse-har.js";
@@ -308,7 +309,7 @@ function traceArtifactName(fullPath: string): string {
   return base;
 }
 
-function parseFile(
+export function parseFile(
   path: string,
   text: string,
 ): {
@@ -317,6 +318,15 @@ function parseFile(
   parseFailed?: boolean;
   truncated?: boolean;
 } {
+  // TRX is checked BEFORE the JUnit branch, and it has to be: `dotnet test`
+  // writes `.trx`, but the JUnit branch is reached by the `<?xml` sniff, so a
+  // TRX file would otherwise be handed to a parser looking for `<testsuite>`,
+  // match nothing, and report an empty run — which reads as "the suite ran and
+  // passed nothing", the most reassuring possible wrong answer.
+  if (/\.trx$/i.test(path) || looksLikeTrxXml(text)) {
+    const records = parseTrxXml(text);
+    if (records.length > 0) return { records, source: "dotnet-trx" };
+  }
   if (
     /\.xml$/i.test(path) ||
     /^\s*<\?xml|<testsuite\b/i.test(text.slice(0, 200))

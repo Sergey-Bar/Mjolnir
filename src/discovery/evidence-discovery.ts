@@ -24,7 +24,10 @@ export interface EvidenceCandidate {
     | "mjolnir-report" // packages/playwright-reporter default output
     | "playwright-json" // PW JSON reporter outputs
     | "test-results-dir" // PW test-results directory
-    | "junit-file"; // JUnit XML outputs
+    | "junit-file"
+    // `dotnet test`'s `./TestResults` directory. See the entry below for why it
+    // is a directory rather than a `*.trx` file pattern.
+    | "dotnet-trx"; // JUnit XML outputs
   /** Discovery depth (0 = scan root, 1 = one level down, etc.). */
   depth: number;
 }
@@ -63,6 +66,21 @@ export const EVIDENCE_CONVENTIONS: readonly {
     convention: "junit-file",
     kind: "file",
     names: ["junit-report.xml", "junit.xml"],
+  },
+  {
+    // `dotnet test` writes `<timestamp>_<machine>.trx` into `./TestResults` by
+    // default. The FILE name is not predictable, so the convention is the
+    // DIRECTORY — which is why this entry is `kind: dir` while every other is a
+    // file. A `.trx` glob was rejected: discovery matches exact names, and adding
+    // globbing to one convention would mean the finder and the runner disagree
+    // about what a convention is.
+    //
+    // The parser shape-sniffs the content regardless, so a `TestResults/`
+    // directory holding something else yields no evidence rather than a wrong
+    // parse.
+    convention: "dotnet-trx",
+    kind: "dir",
+    names: ["TestResults"],
   },
 ];
 

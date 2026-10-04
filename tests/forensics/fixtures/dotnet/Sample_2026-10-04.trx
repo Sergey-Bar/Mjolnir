@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestRun id="1f0c9a11-6a9b-4b0e-9f3f-2c6f8d1a0001" name="dotnet test" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-10-04T09:00:00.0000000+00:00" queuing="2026-10-04T09:00:00.0000000+00:00" start="2026-10-04T09:00:01.0000000+00:00" finish="2026-10-04T09:00:09.0000000+00:00" />
+  <Results>
+    <UnitTestResult executionId="11111111-0000-0000-0000-000000000001" testId="aaaa1111-0000-0000-0000-000000000001" testName="CheckoutSucceeds" outcome="Passed" duration="00:00:00.0120000" />
+    <UnitTestResult executionId="11111111-0000-0000-0000-000000000002" testId="aaaa1111-0000-0000-0000-000000000002" testName="CartRemembersItems" outcome="Failed" duration="00:00:01.2500000">
+      <Output>
+        <ErrorInfo>
+          <Message>Expected: not null. Actual: null</Message>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="11111111-0000-0000-0000-000000000003" testId="aaaa1111-0000-0000-0000-000000000003" testName="FlakyBannerRenders" outcome="Failed" duration="00:00:00.0300000" />
+    <UnitTestResult executionId="11111111-0000-0000-0000-000000000004" testId="aaaa1111-0000-0000-0000-000000000004" testName="LegacyPaymentFlow" outcome="NotExecuted" duration="00:00:00" />
+    <UnitTestResult executionId="11111111-0000-0000-0000-000000000005" testId="aaaa1111-0000-0000-0000-000000000005" testName="SlowCheckoutTimesOut" outcome="Timeout" duration="00:01:30.0000000" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="CheckoutSucceeds" storage="checkout.dll" id="aaaa1111-0000-0000-0000-000000000001">
+      <Execution id="11111111-0000-0000-0000-000000000001" />
+      <TestMethod codeBase="Checkout.dll" className="Shop.Tests.CheckoutTests" name="CheckoutSucceeds" />
+    </UnitTest>
+    <UnitTest name="CartRemembersItems" storage="checkout.dll" id="aaaa1111-0000-0000-0000-000000000002">
+      <Execution id="11111111-0000-0000-0000-000000000002" />
+      <TestMethod codeBase="Checkout.dll" className="Shop.Tests.CartTests" name="CartRemembersItems" />
+    </UnitTest>
+  </TestDefinitions>
+</TestRun>

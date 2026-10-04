@@ -33,13 +33,17 @@ describe("version constants", () => {
     expect(FRAMEWORK_SUPPORT_MATRIX_VERSION).toMatch(/^\d+\.\d+\.\d+$/);
   });
 
-  it("EVIDENCE_SCHEMA_VERSION is a positive integer", () => {
-    expect(EVIDENCE_SCHEMA_VERSION).toBe(1);
+  it("EVIDENCE_SCHEMA_VERSION is the version ADR 0015 set", () => {
+    // Pinned, not "a positive integer". A test that accepts any integer
+    // accepts the version this bump exists to reject: an artifact written by a
+    // 1.x engine carries the assumption that no TRX source exists, and that
+    // assumption has to be falsified by a number change or by nothing.
+    expect(EVIDENCE_SCHEMA_VERSION).toBe(2);
     expect(Number.isInteger(EVIDENCE_SCHEMA_VERSION)).toBe(true);
   });
 
-  it("FORENSICS_SCHEMA_VERSION is a positive integer", () => {
-    expect(FORENSICS_SCHEMA_VERSION).toBe(1);
+  it("FORENSICS_SCHEMA_VERSION is the version ADR 0015 set", () => {
+    expect(FORENSICS_SCHEMA_VERSION).toBe(2);
     expect(Number.isInteger(FORENSICS_SCHEMA_VERSION)).toBe(true);
   });
 });
