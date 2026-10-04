@@ -105,8 +105,12 @@
     },
     "suite-invalidating-unverified": {
       "scope": "Rules declaring `suiteInvalidating`",
-      "reason": "P5 requires this claim to be verified and nothing verifies it today. The exemptions are recorded so the gap is a tracked item rather than an unremarked one; each entry must move to a measured basis or be removed.",
-      "evidence": ["src/rules/rule.ts", "src/scorer/scorer.ts"],
+      "reason": "DISCHARGED 2026-10-04. P5 is now satisfied for this claim: a rule may declare suiteInvalidating only with a stated reason in SUITE_INVALIDATING_JUSTIFICATIONS (src/engine/tier-policy.ts), and doctor registry-sanity rejects a claim with no entry. The exemption is retained as the record of what the gap was.",
+      "evidence": [
+        "src/engine/tier-policy.ts",
+        "src/commands/doctor.ts",
+        "src/scorer/scorer.ts"
+      ],
       "expires": null,
       "reviewBy": null
     }

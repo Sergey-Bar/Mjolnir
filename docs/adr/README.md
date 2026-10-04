@@ -34,6 +34,7 @@ does not accept prose as proof.
 | [0012](0012-hosted-enterprise-boundary.md)                 | Optional hosted mode is a declared state, never a default | D-10              | accepted |
 | [0013](0013-the-core-ceiling-is-decided.md)                | The core ceiling is decided, not deferred                 | —                 | accepted |
 | [0014](0014-the-core-tier-carries-a-floor.md)              | The core tier carries a floor                             | ADR 0013          | accepted |
+| [0015](0015-dotnet-trx-is-evidence.md)                     | .NET runs are evidence, not an absence of it              | evidence schema   | accepted |
 
 ## Amendment-to-record map
 

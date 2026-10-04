@@ -53,6 +53,7 @@ import {
 import {
   validateCell,
   type CellEvidence,
+  type CorpusDiversity,
 } from "../src/certification/validate.js";
 
 /**
@@ -304,8 +305,13 @@ function recordToEvidence(record: Record<string, unknown>): CellEvidence {
     fn: number;
     n: number;
   };
-  const diversity = record["corpusDiversity"] as
-    { uniqueRepos: number; maxSingleRepoShare: number } | undefined;
+  // Cast to the validator's own type and pass the record's fields through
+  // UNALTERED — no defaults filled in. A record is JSON, so it can carry fewer
+  // axes than the interface declares, and filling them in here would convert
+  // "this cell was never measured across framework versions" into "this cell
+  // measured one framework version". Those are different findings and gate F
+  // reports them differently, so the omission has to survive to it.
+  const diversity = record["corpusDiversity"] as CorpusDiversity | undefined;
   return {
     concept: asString(record["concept"]),
     language: asString(record["language"]),
@@ -462,19 +468,45 @@ if (args.includes("--check")) {
   } catch {
     /* written below */
   }
-  if (current === rendered) {
+  if (current !== rendered) {
+    console.error(
+      "generate-certification-matrix: docs/CERTIFICATION-MATRIX.md is stale.\n" +
+        "Regenerate with `npm run docs:certification-matrix`. A committed " +
+        "table that disagrees with the manifest, the surface and the records " +
+        "is a claim the code no longer supports.",
+    );
+    process.exit(1);
+  }
+
+  // NOTE on what is and is not checked here. `validateCell` IS enforced: the
+  // `matrix.problems` block above runs before this branch, in both modes, and
+  // rejects a record whose state asserts more than its own evidence supports
+  // ("claims |x| is v6-CERTIFIED but gate(s) D, F fail on its own evidence").
+  // An earlier draft of this check ran the validator a SECOND time here to
+  // report per-cell verdicts, which was a duplicate of a check that already
+  // existed — and src/rules/conformity.ts states the rule this repo works by: a
+  // second copy of one check is a second thing to keep in sync.
+
+  // What was genuinely missing is below: with zero recorded cells, this printed
+  // "PASS — 0/100 cells certified", which reads as an achievement. It is the
+  // absence of evidence, and an absence that prints PASS is how a coverage
+  // ladder gets treated as covered.
+  if (matrix.totalCertified === 0) {
     console.log(
-      `generate-certification-matrix: PASS — ${matrix.totalCertified}/${matrix.totalRequired} cells certified across ${matrix.rows.length} ecosystems.`,
+      `generate-certification-matrix: UNEVALUATED — 0 of ${matrix.totalRequired} ` +
+        `cells recorded, so no cell verdict was computed and none was earned. ` +
+        `This is not a pass. \`npm run docs:certification-gaps\` lists what is ` +
+        `open. A matrix at zero certifies nothing.`,
     );
     process.exit(0);
   }
-  console.error(
-    "generate-certification-matrix: docs/CERTIFICATION-MATRIX.md is stale.\n" +
-      "Regenerate with `npm run docs:certification-matrix`. A committed table that " +
-      "disagrees with the manifest, the surface and the records is a claim the code " +
-      "no longer supports.",
+
+  console.log(
+    `generate-certification-matrix: PASS — ${matrix.totalCertified}/${matrix.totalRequired} ` +
+      `cells certified across ${matrix.rows.length} ecosystems, every recorded ` +
+      `cell's state cleared against its own evidence.`,
   );
-  process.exit(1);
+  process.exit(0);
 }
 
 mkdirSync(join(ROOT, "docs"), { recursive: true });

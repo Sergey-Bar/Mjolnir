@@ -145,6 +145,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `azure-pipelines|ignored-exit-code-true|azure-pipelines`
 
@@ -179,6 +181,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `azure-pipelines|report-consumed-but-never-generated|azure-pipelines`
 
@@ -213,6 +217,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `azure-pipelines|test-command-does-not-propagate-exit-code|azure-pipelines`
 
@@ -247,6 +253,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `azure-pipelines|tests-skipped-where-they-must-block|azure-pipelines`
 
@@ -281,6 +289,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `csharp|commented-out-test|nunit`
 
@@ -315,6 +325,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `csharp|empty-test-body|nunit`
 
@@ -349,6 +361,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `csharp|focused-test-committed|nunit`
 
@@ -383,6 +397,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `csharp|hard-sleep-before-element-lookup|nunit`
 
@@ -413,6 +429,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `csharp|hard-sleep-in-test|nunit`
 
@@ -443,6 +461,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `csharp|retry-masks-test-failures|nunit`
 
@@ -473,6 +493,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `csharp|skipped-test|nunit`
 
@@ -503,6 +525,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `csharp|tautological-assertion|nunit`
 
@@ -537,6 +561,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `csharp|test-without-assertions|nunit`
 
@@ -567,6 +593,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `cypress|brittle-selector-instead-of-role-based-locator|cypress`
 
@@ -597,6 +625,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `cypress|browser-state-shared-across-tests|cypress`
 
@@ -631,6 +661,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `cypress|css-xpath-string-selector-instead-of-a-normalized-locator|cypress`
 
@@ -661,6 +693,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `cypress|cypress-config-disables-chromewebsecurity|cypress`
 
@@ -691,6 +725,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `cypress|empty-test-body|cypress`
 
@@ -721,6 +757,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `cypress|fixed-cy-wait-n-hard-coded-wait|cypress`
 
@@ -751,6 +789,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `cypress|focused-test-committed|cypress`
 
@@ -781,6 +821,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `cypress|hard-sleep-in-test|cypress`
 
@@ -811,6 +853,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `cypress|hardcoded-url-in-test|cypress`
 
@@ -845,6 +889,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `cypress|waitforloadstate-networkidle-used|cypress`
 
@@ -879,6 +925,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `github-actions|continue-on-error-masks-a-failing-verification-gate|github-actions`
 
@@ -913,6 +961,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `github-actions|ignored-exit-code-true|github-actions`
 
@@ -947,6 +997,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `github-actions|report-consumed-but-never-generated|github-actions`
 
@@ -981,6 +1033,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `github-actions|test-command-does-not-propagate-exit-code|github-actions`
 
@@ -1015,6 +1069,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `github-actions|tests-skipped-where-they-must-block|github-actions`
 
@@ -1049,6 +1105,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `gitlab-ci|continue-on-error-masks-a-failing-verification-gate|gitlab-ci`
 
@@ -1083,6 +1141,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `gitlab-ci|ignored-exit-code-true|gitlab-ci`
 
@@ -1117,6 +1177,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `gitlab-ci|report-consumed-but-never-generated|gitlab-ci`
 
@@ -1151,6 +1213,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `gitlab-ci|test-command-does-not-propagate-exit-code|gitlab-ci`
 
@@ -1185,6 +1249,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `gitlab-ci|tests-skipped-where-they-must-block|gitlab-ci`
 
@@ -1219,6 +1285,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `java|commented-out-test|junit`
 
@@ -1253,6 +1321,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `java|empty-test-body|junit`
 
@@ -1287,6 +1357,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `java|focused-test-committed|junit`
 
@@ -1321,6 +1393,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `java|hard-sleep-before-element-lookup|junit`
 
@@ -1351,6 +1425,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `java|hard-sleep-in-test|junit`
 
@@ -1381,6 +1457,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `java|retry-masks-test-failures|junit`
 
@@ -1411,6 +1489,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `java|skipped-test|junit`
 
@@ -1445,6 +1525,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `java|tautological-assertion|junit`
 
@@ -1479,6 +1561,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `java|test-without-assertions|junit`
 
@@ -1509,6 +1593,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `jenkins|continue-on-error-masks-a-failing-verification-gate|jenkins`
 
@@ -1543,6 +1629,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `jenkins|ignored-exit-code-true|jenkins`
 
@@ -1577,6 +1665,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `jenkins|report-consumed-but-never-generated|jenkins`
 
@@ -1611,6 +1701,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `jenkins|test-command-does-not-propagate-exit-code|jenkins`
 
@@ -1645,6 +1737,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `jenkins|tests-skipped-where-they-must-block|jenkins`
 
@@ -1679,6 +1773,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `playwright|brittle-selector-instead-of-role-based-locator|playwright`
 
@@ -1709,6 +1805,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `playwright|browser-state-shared-across-tests|playwright`
 
@@ -1743,6 +1841,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `playwright|css-xpath-string-selector-instead-of-a-normalized-locator|playwright`
 
@@ -1773,6 +1873,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `playwright|describe-serial-without-justification|playwright`
 
@@ -1803,6 +1905,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `playwright|empty-test-body|playwright`
 
@@ -1833,6 +1937,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `playwright|focused-test-committed|playwright`
 
@@ -1863,6 +1969,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `playwright|framelocator-chain-deeper-than-2|playwright`
 
@@ -1893,6 +2001,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `playwright|hard-sleep-in-test|playwright`
 
@@ -1923,6 +2033,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `playwright|hardcoded-url-in-test|playwright`
 
@@ -1957,6 +2069,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `playwright|load-event-wait-instead-of-web-first-assertion|playwright`
 
@@ -1987,6 +2101,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `playwright|screenshot-without-maxdiffpixelratio|playwright`
 
@@ -2017,6 +2133,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `playwright|trial-true-click-without-follow-up-assertion|playwright`
 
@@ -2047,6 +2165,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `playwright|unawaited-playwright-assertion|playwright`
 
@@ -2077,6 +2197,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `playwright|waitforloadstate-networkidle-used|playwright`
 
@@ -2111,6 +2233,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `python|bare-truthiness-assert-on-complex-object|pytest`
 
@@ -2141,6 +2265,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `python|browser-state-shared-across-tests|playwright-python`
 
@@ -2171,6 +2297,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `python|commented-out-test|pytest`
 
@@ -2201,6 +2329,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `python|empty-test-body|playwright-python`
 
@@ -2235,6 +2365,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `python|empty-test-body|pytest`
 
@@ -2269,6 +2401,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `python|focused-test-committed|playwright-python`
 
@@ -2299,6 +2433,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `python|focused-test-committed|pytest`
 
@@ -2329,6 +2465,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `python|hard-sleep-in-test|playwright-python`
 
@@ -2363,6 +2501,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `python|hard-sleep-in-test|pytest`
 
@@ -2397,6 +2537,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `python|hardcoded-url-in-test|playwright-python`
 
@@ -2427,6 +2569,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `python|mutable-fixture-shared-across-tests|pytest`
 
@@ -2457,6 +2601,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `python|pytest-raises-without-match|pytest`
 
@@ -2487,6 +2633,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `python|retry-masks-test-failures|pytest`
 
@@ -2521,6 +2669,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `python|skipped-test|pytest`
 
@@ -2551,6 +2701,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `python|tautological-assertion|pytest`
 
@@ -2581,6 +2733,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `python|test-without-assertions|pytest`
 
@@ -2615,6 +2769,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `selenium|brittle-selector-instead-of-role-based-locator|selenium`
 
@@ -2645,6 +2801,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `selenium|browser-state-shared-across-tests|selenium`
 
@@ -2679,6 +2837,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `selenium|css-xpath-string-selector-instead-of-a-normalized-locator|selenium`
 
@@ -2709,6 +2869,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `selenium|empty-test-body|selenium`
 
@@ -2739,6 +2901,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `selenium|focused-test-committed|selenium`
 
@@ -2769,6 +2933,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `selenium|hard-sleep-before-element-lookup|selenium`
 
@@ -2803,6 +2969,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `selenium|hard-sleep-in-test|selenium`
 
@@ -2833,6 +3001,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `selenium|hardcoded-url-in-test|selenium`
 
@@ -2867,6 +3037,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `selenium|waitforloadstate-networkidle-used|selenium`
 
@@ -2901,6 +3073,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `typescript|browser-state-shared-across-tests|playwright`
 
@@ -2935,6 +3109,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `typescript|commented-out-test|vitest`
 
@@ -2965,6 +3141,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `typescript|empty-test-body|playwright`
 
@@ -2995,6 +3173,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `typescript|empty-test-body|vitest`
 
@@ -3025,6 +3205,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `typescript|focused-test-committed|playwright`
 
@@ -3055,6 +3237,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `typescript|focused-test-committed|vitest`
 
@@ -3085,6 +3269,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `typescript|hard-sleep-in-test|playwright`
 
@@ -3115,6 +3301,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `typescript|hard-sleep-in-test|vitest`
 
@@ -3145,6 +3333,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `typescript|hardcoded-url-in-test|playwright`
 
@@ -3179,6 +3369,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `typescript|retry-masks-test-failures|vitest`
 
@@ -3213,6 +3405,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `typescript|skipped-test|vitest`
 
@@ -3243,6 +3437,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `typescript|tautological-assertion|vitest`
 
@@ -3273,6 +3469,8 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.
 
 #### `typescript|test-without-assertions|vitest`
 
@@ -3307,3 +3505,5 @@ precision: a corpus of ≥3 real repositories with ≤40% from any one, and a fa
 
 - uniqueRepos=0 is below 3. Three repositories is the floor at which a rate says anything about a language rather than about a codebase.
 - maxSingleRepoShare=1 exceeds 0.4. One repository may not supply more than 40% of a cell's evidence.
+- uniqueFrameworkVersions=0 is below 2. A cell measured against a single version states something about that version, not about the framework.
+- maxSingleSizeBandShare=1 exceeds 0.6. One project-size band may not supply more than 60% of a cell's evidence.

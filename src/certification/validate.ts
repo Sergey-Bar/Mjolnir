@@ -84,7 +84,32 @@ export interface CorpusDiversity {
   readonly uniqueRepos: number;
   /** The largest single repository's share of the cell's precision `n`. */
   readonly maxSingleRepoShare: number;
+  /**
+   * Distinct framework VERSIONS this cell's evidence came from.
+   *
+   * Added because `uniqueRepos` counts distinct projects, and a set of
+   * repositories can easily agree on one version by being clones of each other
+   * or by pinning the same release. A rate measured only against Jest 29 is a
+   * statement about Jest 29, and calling it a statement about Jest is the
+   * failure this makes visible.
+   */
+  readonly uniqueFrameworkVersions: number;
+  /**
+   * The share of evidence drawn from the largest single project-size band.
+   *
+   * Size bands rather than raw byte counts, so "one enormous repository
+   * dominates the sample" is detectable without pretending a byte count is a
+   * quality signal. Bands are declared by the recorder; this only bounds the
+   * share.
+   */
+  readonly maxSingleSizeBandShare: number;
+  /** 0 = small, 1 = medium, 2 = large. */
+  readonly sizeBand: 0 | 1 | 2;
 }
+
+/** Floors for the two axes added after the first recorded cells exposed the gap. */
+export const PRECISION_MIN_UNIQUE_FRAMEWORK_VERSIONS = 2;
+export const PRECISION_MAX_SINGLE_SIZE_BAND_SHARE = 0.6;
 
 /**
  * One cell's evidence — `concept × language × framework`.
@@ -337,6 +362,43 @@ function gateF(e: CellEvidence): GateVerdict {
         `maxSingleRepoShare=${d.maxSingleRepoShare} exceeds ` +
           `${PRECISION_MAX_SINGLE_REPO_SHARE}. One repository may not supply ` +
           "more than 40% of a cell's evidence.",
+      );
+    }
+    // Version spread. Reported separately from `uniqueRepos` because three
+    // repositories on one version are one version's evidence counted thrice,
+    // and the two numbers move independently.
+    if (d.uniqueFrameworkVersions === undefined) {
+      reasons.push(
+        "corpusDiversity.uniqueFrameworkVersions is absent. Distinct " +
+          "repositories can agree on one version by being clones or by " +
+          "pinning the same release, so the repo count alone cannot say " +
+          "whether a cell is evidence about a framework or about a version.",
+      );
+    } else if (
+      d.uniqueFrameworkVersions < PRECISION_MIN_UNIQUE_FRAMEWORK_VERSIONS
+    ) {
+      reasons.push(
+        `uniqueFrameworkVersions=${d.uniqueFrameworkVersions} is below ` +
+          `${PRECISION_MIN_UNIQUE_FRAMEWORK_VERSIONS}. A cell measured against ` +
+          "a single version states something about that version, not about the " +
+          "framework.",
+      );
+    }
+    // Size spread. Bounds concentration within a size band without pretending
+    // a repository's byte count is itself a quality signal.
+    if (d.maxSingleSizeBandShare === undefined) {
+      reasons.push(
+        "corpusDiversity.maxSingleSizeBandShare is absent. Without it a cell " +
+          "can be met entirely by one large project and small ones, which is a " +
+          "different claim from one supported across sizes.",
+      );
+    } else if (
+      d.maxSingleSizeBandShare > PRECISION_MAX_SINGLE_SIZE_BAND_SHARE
+    ) {
+      reasons.push(
+        `maxSingleSizeBandShare=${d.maxSingleSizeBandShare} exceeds ` +
+          `${PRECISION_MAX_SINGLE_SIZE_BAND_SHARE}. One project-size band may ` +
+          "not supply more than 60% of a cell's evidence.",
       );
     }
   }

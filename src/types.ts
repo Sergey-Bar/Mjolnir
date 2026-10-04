@@ -159,7 +159,13 @@ export interface RuntimeCorroboration {
     | "jest-json"
     | "vitest-json"
     | "playwright-trace"
-    | "har";
+    | "har"
+    /**
+     * Visual Studio TRX (`dotnet test`). Added so .NET runs can corroborate at
+     * all — previously the union had no member a TRX source could inhabit, so a
+     * C# run was unrepresentable rather than merely unrecognised.
+     */
+    | "dotnet-trx";
   /** Number of tests executed in the finding's file (any level). */
   testsExecuted: number;
   /**

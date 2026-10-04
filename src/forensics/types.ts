@@ -95,6 +95,7 @@ export interface ForensicsReport {
   source:
     | "playwright-json"
     | "junit-xml"
+    | "dotnet-trx"
     | "jest-json"
     | "vitest-json"
     | "playwright-trace"

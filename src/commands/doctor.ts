@@ -57,7 +57,10 @@ import {
 // them is the last place to have four copies.
 import { errorMessage } from "../cli-io.js";
 import { deriveEvidenceLevel } from "../types.js";
-import { capForTier } from "../engine/tier-policy.js";
+import {
+  capForTier,
+  SUITE_INVALIDATING_JUSTIFICATIONS,
+} from "../engine/tier-policy.js";
 import { sectionHeader, plainContext } from "../reporter/ui.js";
 import {
   computeDetectorHashes,
@@ -203,6 +206,28 @@ export function checkRegistry(
           ok = false;
           details.push(`${r.id}: corePromotion ${problem}`);
         }
+      }
+    }
+    // `suiteInvalidating` caps the score into the UNWORTHY band regardless of
+    // exposure, and it is a DECLARATION by the rule about itself. Nothing about
+    // a boolean in a rule file earns it: the cap is real, so the question is
+    // whether the claim behind it was reviewed, and "the rule said so" is not an
+    // answer.
+    //
+    // Two rules declaring it today, both for the same unambiguous mechanism: a
+    // focused test makes the runner skip everything else, so the suite's green
+    // is not evidence of anything. An allowlist with a stated reason per entry
+    // is the difference between a cap that was reviewed and one that was typed.
+    if (r.suiteInvalidating === true) {
+      const justification = SUITE_INVALIDATING_JUSTIFICATIONS[r.id];
+      if (justification === undefined) {
+        ok = false;
+        details.push(
+          `${r.id}: declares suiteInvalidating without an entry in ` +
+            `SUITE_INVALIDATING_JUSTIFICATIONS (src/engine/tier-policy.ts) — the ` +
+            `cap into the UNWORTHY band is real, so the claim behind it has to ` +
+            `be a reviewed one rather than a boolean in a rule file`,
+        );
       }
     }
     // Duplicate titles are allowed across languages (TS and Python rules

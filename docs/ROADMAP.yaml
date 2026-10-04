@@ -10,11 +10,17 @@
 # one kill criterion per row is a plan that can be abandoned at its own
 # criterion without stranding the next version.
 #
-# Validated by `scripts/roadmap/validate.ts`; the archived program is NOT
+# It is now a ONE-row table. Versions 7.0 through 10.0 were listed as
+# `deferred`, which reads as a schedule: four dated rows, each with a theme, a
+# promise and a kill criterion, and no owner and no date attached to any of them.
+# Nobody promised them. They are retired below, with their surviving ideas
+# recorded, so retiring the versions does not retire what they were for.
+#
+# Validated by `scripts/roadmap/validate.ts`; the archived programs are NOT
 # validated, because a record of claims nobody is keeping is not a contract.
 
-schemaVersion: 2
-program: "6.0-10.0"
+schemaVersion: 3
+program: "6.0"
 status: "in-progress"
 
 retiredProgram:
@@ -71,47 +77,49 @@ versions:
       the ANTI-CREEP-EXCEPTION Law 1 required for the first addition to a launch
       set that held nothing to remove.
 
-  - version: "7.0"
-    status: "deferred"
-    theme: "The gate proves itself"
-    promise: >-
-      The PR output is the change in trust, not the state.
-    moves: >-
-      Every gated PR proves it blocks; the demo repository blocks in one CI
-      run.
-    killCriterion: >-
-      A third CI provider that needs more than ~80 new lines gets dropped, not
-      built.
-
-  - version: "8.0"
-    status: "deferred"
-    theme: "One notch wider"
-    promise: >-
-      Python/pytest and GitLab — measured, or not shipped.
-    moves: >-
-      Zero new default-scan rules without n >= 10 measured FP verdicts.
-    killCriterion: >-
-      A rule that cannot be measured inside the existing adjudication budget
-      does not ship.
-
-  - version: "9.0"
-    status: "deferred"
-    theme: "It ran"
-    promise: >-
-      Findings reach L3-L5 from a real run report, read from disk, parsed and
-      discarded.
-    moves: >-
-      Share of GATE findings reaching L3+, measured on fixtures.
-    killCriterion: >-
-      Anything requiring persistence across runs is out.
-
-  - version: "10.0"
-    status: "deferred"
-    theme: "Prove it on adversarial code"
-    promise: >-
-      A public, versioned, licensed false-green benchmark.
-    moves: >-
-      Every default-scan rule has a benchmark row with its measured FP rate.
-    killCriterion: >-
-      If it cannot be reproduced from a clean checkout without private data, it
-      stays internal and 10.0 ships as a documentation-only release.
+# ---------------------------------------------------------------------------
+# Retired: the 7.0-10.0 ladder.
+#
+# These four rows were not promises. They carried no owner and no date, and
+# "deferred" reads as a schedule rather than as an absence. A reader sees four
+# themes, four promises and four kill criteria and concludes there is a plan.
+#
+# The THEMES were good, and retiring the rows is not a verdict on them — three
+# of the four are live work already, tracked where they can actually be closed.
+# What was retired is the claim that they were scheduled releases. Each entry
+# says where its thinking went, following the precedent the M26 retirement set:
+# preserve the text, retire the version.
+# ---------------------------------------------------------------------------
+retiredPrograms:
+  - program: "7.0-10.0 version ladder"
+    status: "RETIRED"
+    retiredOn: "2026-10-04"
+    archive: "docs/archive/ROADMAP-M26-M50.yaml"
+    reason: >-
+      Four `deferred` rows with no owner and no date read as a schedule. Nothing
+      committed to them and nothing should be reported as committed on their
+      behalf.
+    deletedLedgers:
+      - "four version rows (7.0, 8.0, 9.0, 10.0), each with theme, promise, moves and killCriterion"
+      - "the `program: 6.0-10.0` span, which described a ladder four versions longer than the one in flight"
+    survivingIdeas:
+      - >-
+        7.0's "the PR output is the change in trust, not the state" — SHIPPED
+        inside 6.0, not deferred. `mjolnir ci verify` reports RESOLVED / NEW
+        against `.mjolnir/baseline.json`, and the Quickstart now documents it.
+      - >-
+        8.0's "Python/pytest and GitLab — measured, or not shipped" — LIVE as
+        the evidence-ladder work in `src/discovery/evidence-discovery.ts`, where
+        `EVIDENCE_CONVENTIONS` is the four-entry gate that decides which run
+        reports a rule may read. Unmeasured ecosystems are withheld rather than
+        guessed at.
+      - >-
+        9.0's "share of GATE findings reaching L3+" — LIVE in
+        `src/engine/runtime-corroboration.ts` and `src/forensics/run.ts`, with
+        the metric recorded in docs/ROADMAP.yaml's own `northStar`. The
+        capability exists; publishing the figure is not done, and is named as
+        such rather than claimed.
+      - >-
+        10.0's public false-green benchmark — NOT STARTED and not scheduled. It
+        needs a licensing decision and a clean-checkout reproduction, both of
+        which are the owner's to make.
