@@ -28,19 +28,19 @@
   "generatedAt": "2026-10-04",
   "identity": {
     "state": "WORKING_CANDIDATE",
-    "baseSha": "5189e38772ab82264da79eb84367a310e87f6193",
+    "baseSha": "f58682753bc38d7e47fa5fa6649b2d13e5cc71eb",
     "candidateSha": null,
     "version": "6.0.0",
     "packageSha256": "4f0770a9fc87769a57d14eb26975689a915ad4f175b43354a6546b8def8bec69",
     "lockfileSha256": "85e9845cb27e3e6394e01b88ba8d91ae947d579c00d0a2b50f5a244a0da0dfd5",
-    "workingTreeSha256": "654723d343813b271e74845b39a03480a427238b33a384cbe3c89335a886d5f1",
-    "changedPathCount": 0,
+    "workingTreeSha256": "71a36ce64a1e3828e3d31a5de33dc43a82ec095ec4e94f0ab4c06f98948c50df",
+    "changedPathCount": 1,
     "supportEnvelope": "self-hosted; hosted services require explicit consent and separate proof",
     "worktreeInventory": {
-      "changedPaths": [],
+      "changedPaths": ["scripts/lib/normalize-cli-json.mjs"],
       "untrackedPaths": []
     },
-    "dirtyFiles": []
+    "dirtyFiles": ["scripts/lib/normalize-cli-json.mjs"]
   },
   "claimRegistry": {
     "path": "docs/claim-registry.json",
