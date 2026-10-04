@@ -17,10 +17,11 @@
  * THAT IS THE WHOLE DESIGN, and it is why it replaces opinion with arithmetic
  * here rather than pretending to. The corpus false-positive rate asks a human
  * "is this code legitimate?", which is the one question no tree can answer. The
- * four checks below ask questions the tree CAN answer — does a measurement
+ * five checks below ask questions the tree CAN answer — does a measurement
  * exist, was it taken at the detector revision that produced the finding, is a
- * tier claim owned and unexpired, does the fixture quad have four legs — and
- * therefore need no judgement, only an owner who reacts.
+ * tier claim owned and unexpired, does the fixture quad have four legs, and is
+ * the negative fixture plausibly the positive one with the defect neutralised —
+ * and therefore need no judgement, only an owner who reacts.
  *
  * Why a RATCHET over an opt-out registry rather than a gate that fails:
  *
@@ -55,12 +56,14 @@ import {
   measurementTier,
 } from "./measurement.js";
 import { quadFor } from "../v6/fixture-quad-probe.js";
+import { MUTANT_MAX_DIVERGENCE, sensitivityOf } from "./fixture-sensitivity.js";
 
 export const CONFORMITY_CHECKS = [
   "MEASURED",
   "DETECTOR_CURRENT",
   "CLAIM_OWNED",
   "QUAD_COMPLETE",
+  "PREDICATE_SENSITIVE",
 ] as const;
 
 export type ConformityCheck = (typeof CONFORMITY_CHECKS)[number];
@@ -235,13 +238,73 @@ function checkQuadComplete(rule: QADoctorRule, root: string): CheckResult {
   };
 }
 
-/** One rule's state across all four checks. */
+/**
+ * Is the predicate actually SENSITIVE to the defect it claims to detect?
+ *
+ * QUAD_COMPLETE asks whether both fixture legs exist. It cannot ask whether the
+ * negative one means anything, and that is the whole gap: a hand-written
+ * MUST-NOT-FIRE fixture is usually a DIFFERENT PROGRAM that happens not to
+ * trigger, and the pair then shows the detector is directional — it fires on the
+ * case built for it and is quiet on unrelated code — without showing the
+ * predicate responds to the defect at all.
+ *
+ * A negative fixture is evidence about the predicate only when it is plausibly
+ * the positive fixture with the defect neutralised. That is measurable without
+ * knowing what the defect is: measure how far the two files diverge.
+ *
+ * Reported as a separate leg rather than folded into QUAD_COMPLETE because it is
+ * a different claim. "Both legs exist" is about coverage and can be satisfied by
+ * adding a file. "The negative leg is the defect, removed" is about evidence and
+ * cannot.
+ *
+ * The threshold and the full per-rule classification live in
+ * `scripts/check-fixture-sensitivity.ts` and `docs/SENSITIVITY-RATCHET.json`;
+ * this reads the same measurement rather than reimplementing it, so the leg and
+ * the nightly arm cannot disagree.
+ */
+function checkPredicateSensitive(
+  rule: QADoctorRule,
+  root: string,
+): CheckResult {
+  const measured = sensitivityOf(rule.id, root);
+  if (measured === null) {
+    return {
+      ok: true,
+      detail:
+        "no paired fixture to compare — QUAD_COMPLETE reports the missing legs, " +
+        "and a rule with no negative fixture is not this leg's problem to guess at.",
+    };
+  }
+  if (measured.classification === "MUTANT") {
+    return {
+      ok: true,
+      detail:
+        `MUST-NOT-FIRE diverges from MUST-FIRE by ${measured.divergence} ` +
+        `(${measured.changedLines} of ${measured.lines} lines) — plausibly the ` +
+        "same program with the defect neutralised.",
+    };
+  }
+  return {
+    ok: false,
+    detail:
+      `MUST-NOT-FIRE diverges from MUST-FIRE by ${measured.divergence} ` +
+      `(${measured.changedLines} of ${measured.lines} lines, limit ` +
+      `${MUTANT_MAX_DIVERGENCE}) — it is a DIFFERENT PROGRAM that does not ` +
+      "trigger, so the pair shows the detector is directional and not that the " +
+      "predicate is sensitive to the defect. Fixing this needs a recipe for what " +
+      "the defect IS, so the neutralised mutant can be generated rather than " +
+      "hand-written a second time. See docs/SENSITIVITY-RATCHET.json.",
+  };
+}
+
+/** One rule's state across all five checks. */
 export function conformityOf(rule: QADoctorRule, root: string): RuleConformity {
   const checks: Record<ConformityCheck, CheckResult> = {
     MEASURED: checkMeasured(rule),
     DETECTOR_CURRENT: checkDetectorCurrent(rule),
     CLAIM_OWNED: checkClaimOwned(rule),
     QUAD_COMPLETE: checkQuadComplete(rule, root),
+    PREDICATE_SENSITIVE: checkPredicateSensitive(rule, root),
   };
   const failed = CONFORMITY_CHECKS.filter((name) => !checks[name].ok);
   return {

@@ -249,6 +249,11 @@ describe("the checks are decidable by the tree, and say so", () => {
         "DETECTOR_CURRENT",
         "CLAIM_OWNED",
         "QUAD_COMPLETE",
+        // The fifth leg: is the negative fixture plausibly the positive one
+        // with the defect neutralised? Machine-decidable by measurement, which
+        // is the point — QUAD_COMPLETE can be satisfied by adding a file, and
+        // this one cannot.
+        "PREDICATE_SENSITIVE",
       ]).toContain(name);
     }
     expect(CONFORMITY_CHECKS).not.toContain("FALSE_POSITIVE_RATE");

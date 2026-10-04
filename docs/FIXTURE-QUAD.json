@@ -210,21 +210,21 @@
     },
     {
       "id": "test.framework.jest",
-      "maturity": "M2_IMPLEMENTED",
+      "maturity": "M3_FIXTURE_VERIFIED",
       "complete": 3,
       "of": 8,
       "basis": "some"
     },
     {
       "id": "test.framework.pytest",
-      "maturity": "M2_IMPLEMENTED",
+      "maturity": "M3_FIXTURE_VERIFIED",
       "complete": 6,
       "of": 16,
       "basis": "some"
     },
     {
       "id": "test.framework.vitest",
-      "maturity": "M2_IMPLEMENTED",
+      "maturity": "M3_FIXTURE_VERIFIED",
       "complete": 3,
       "of": 8,
       "basis": "some"

@@ -3,11 +3,11 @@
   "artifact": "v6-inventory",
   "generatedBy": "npm run docs:v6-inventory",
   "wave": "0",
-  "baseSha": "ae5c3cf5fa4fd15bc7985cc254052a5536124b92",
+  "baseSha": "a00f2269dc4fc1d8e7460738ccc632b489559131",
   "version": "6.0.0",
   "publishedStable": "6.0.0",
   "counts": {
-    "srcFiles": 297,
+    "srcFiles": 298,
     "testSpecs": 689,
     "rulesLive": 79,
     "rulesRetired": 22,
