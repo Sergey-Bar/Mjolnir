@@ -25,15 +25,15 @@
     "Approve the hosted, enterprise, and agent threat-model boundaries.",
     "Approve human adjudication and design-partner evidence collection."
   ],
-  "generatedAt": "2026-10-03",
+  "generatedAt": "2026-10-04",
   "identity": {
     "state": "WORKING_CANDIDATE",
-    "baseSha": "5f5bda897e09691688cb50fcbac3114e68509b99",
+    "baseSha": "2b0874744b97962fcb65874672fa17de1a27d766",
     "candidateSha": null,
     "version": "6.0.0-rc.1",
     "packageSha256": "e7c47696fa2a3e45520a84f0946e4682bcdb0da8fd34039bbf4a247f6a1c9ea7",
     "lockfileSha256": "b4530c8bf73c8215650860133afb02318790b138e280313c69b0feab567777e7",
-    "workingTreeSha256": "4586e505bf5b2f79af2cfbbdfa2e9b592208542cdb2418347800e97cfd50ac4a",
+    "workingTreeSha256": "8d7b568b479771f5b0ca22308cf91bd73f2d03c62df061fb2055b5d904f9c595",
     "changedPathCount": 0,
     "supportEnvelope": "self-hosted; hosted services require explicit consent and separate proof",
     "worktreeInventory": {
