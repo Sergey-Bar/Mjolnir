@@ -110,6 +110,27 @@ describe("ADR 0007 — one registry, never a parallel one", () => {
   const registry = buildCapabilityRegistry({
     evidence: BLIND_REGISTRY_EVIDENCE,
     observedAt: OBSERVED_AT,
+    // `census: new Map()` is explicit and load-bearing.
+    //
+    // `buildCapabilityRegistry` defaults to reading the REAL
+    // `docs/ECOSYSTEM-CENSUS.json` when no census is passed. This describe
+    // block builds a registry from BLIND evidence — evidence that deliberately
+    // sees no adapter, no fixture quad and no upstream — and the point of
+    // `passes its own validator` below is that a registry which cannot see
+    // anything must not claim maturity it cannot support.
+    //
+    // Inheriting the real census defeated that. The census records what REAL
+    // evidence proved, so once `docs/ECOSYSTEM-CENSUS.json` was regenerated
+    // honestly, four entries declared `M3_FIXTURE_VERIFIED`, those claims
+    // leaked into a registry whose evidence is blind by construction, and the
+    // validator — correctly — reported OVER_CLAIMED_MATURITY. A gate asserting
+    // "blind evidence cannot over-claim" was failing because it had quietly
+    // stopped being blind.
+    //
+    // Passing an empty census restores what the block says it is testing. It
+    // is also the stricter fixture: an empty census cannot rescue a maturity
+    // claim the evidence does not support.
+    census: new Map(),
   });
 
   it("derives every entry from an existing primitive, not a new list", () => {
