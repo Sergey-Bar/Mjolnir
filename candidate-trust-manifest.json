@@ -28,19 +28,19 @@
   "generatedAt": "2026-10-04",
   "identity": {
     "state": "WORKING_CANDIDATE",
-    "baseSha": "1bcd584ca7ceb38a5da4f219be1bc6ad35def8dd",
+    "baseSha": "37238cca402c9208b7de83a33e8649dba5133721",
     "candidateSha": null,
-    "version": "6.0.0-rc.1",
-    "packageSha256": "e7c47696fa2a3e45520a84f0946e4682bcdb0da8fd34039bbf4a247f6a1c9ea7",
-    "lockfileSha256": "b4530c8bf73c8215650860133afb02318790b138e280313c69b0feab567777e7",
-    "workingTreeSha256": "28a7157277590dd14a62eac2ec761f7f9617d6df4ab12418062789369cbea4f5",
-    "changedPathCount": 0,
+    "version": "6.0.0",
+    "packageSha256": "4f0770a9fc87769a57d14eb26975689a915ad4f175b43354a6546b8def8bec69",
+    "lockfileSha256": "85e9845cb27e3e6394e01b88ba8d91ae947d579c00d0a2b50f5a244a0da0dfd5",
+    "workingTreeSha256": "4853677247967dc38e36abaa846d031c55a435bd6f6d6cf60cc85447d11b01dc",
+    "changedPathCount": 1,
     "supportEnvelope": "self-hosted; hosted services require explicit consent and separate proof",
     "worktreeInventory": {
-      "changedPaths": [],
+      "changedPaths": [".claude/commands/mjolnir.md"],
       "untrackedPaths": []
     },
-    "dirtyFiles": []
+    "dirtyFiles": [".claude/commands/mjolnir.md"]
   },
   "claimRegistry": {
     "path": "docs/claim-registry.json",

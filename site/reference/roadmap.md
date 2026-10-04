@@ -6,13 +6,13 @@ works from; when planning changes, this page changes with it. Nothing on
 this page is a promise with a deadline; each item is a direction with an
 entry condition.
 
-> **Release status:** package 5.1.0 is the current stable line. 3.0.0, 4.0.0
+> **Release status:** package 6.0.0 is the current stable line. 3.0.0, 4.0.0
 > and 5.0.0 remain published and immutable; a tag alone is not a new release,
 > and republishing an existing version is not a path forward.
 
 ## Where Mjölnir is now
 
-- **v6.0.0-rc.1 — current release candidate.** Two words and one number: a
+- **v6.0.0 — current stable.** Two words and one number: a
   first run reads `GATE` or `WARN` per finding and nothing else, and it names
   the command that turns the scan into a blocking check. The `core` /
   `extended` / `quarantine` tiers, the `E0–E2` evidence rungs and the `L0–L5`
@@ -27,7 +27,7 @@ entry condition.
   quarantined, never silently shipped.
   `mjolnir share` writes one self-contained HTML trust report — no server, no
   network, byte-stable under the deterministic clock.
-- **v5.1.0 — current stable.** The reporting surface is checked against the
+- **v5.1.0 — shipped, superseded.** The reporting surface is checked against the
   working tree rather than against a plan, and each check is a gate in
   `npm run certify`. A silent capability loss is disclosed through a
   degradation ledger rather than absorbed, and a verdict is never published

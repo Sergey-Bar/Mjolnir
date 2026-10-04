@@ -18,7 +18,7 @@ when verification isn't earning its keep.
 [![node](https://img.shields.io/badge/node-%E2%89%A5%2022.18-1F6F7C.svg?style=flat-square&labelColor=0A1119)](https://nodejs.org)
 
 ```bash
-npx mjolnir-qa@5.1.0
+npx mjolnir-qa@6.0.0
 ```
 
 [**Interactive walkthrough**](https://sergey-bar.github.io/Mjolnir/) · [See it work](#see-it-work) · [Quickstart](#quickstart) · [What it finds](#what-mjölnir-finds) · [Score](#the-worthiness-score) · [Evidence](#the-evidence-model) · [Forensics](#runtime-forensics) · [CI](#ci-integrity) · [Agents](#ai-agents) · [Security](#trust-and-security) · [Limits](#what-mjölnir-cannot-tell-you) · [Docs](#documentation)
@@ -95,8 +95,8 @@ registry, never typed by hand. The same picture as a poster:
 
 ## Release status
 
-The published line is `5.1.0`; this working tree is the `6.0.0-rc.1`
-candidate. `5.1.0` must not be republished or retagged. The version table is
+The published line is `6.0.0`, and this working tree is that line. `5.1.0` must
+not be republished or retagged. The version table is
 [`docs/ROADMAP.yaml`](docs/ROADMAP.yaml); provisional capability contracts
 are not automatically enabled or certified. Repository-owned checks pass, but
 Trust certification remains `NOT_CERTIFIED` until the protected holdout,
@@ -124,7 +124,7 @@ CI. The full `--verbose` report of the same scan is
 
 <p align="center">
   <a href="assets/video/mjolnir-demo.mp4">
-    <img src="assets/video/mjolnir-demo-poster.png" alt="A frame of the demo recording: npx mjolnir-qa@5.1.0 scanning the demo repository in a terminal window" width="900" />
+    <img src="assets/video/mjolnir-demo-poster.png" alt="A frame of the demo recording: npx mjolnir-qa@6.0.0 scanning the demo repository in a terminal window" width="900" />
   </a>
 </p>
 
@@ -218,13 +218,13 @@ That is the unit of value: one place where CI reports a pass it did not earn.
 ## Quickstart
 
 ```bash
-npx mjolnir-qa@5.1.0
+npx mjolnir-qa@6.0.0
 ```
 
 Three steps to trust your release pipeline:
 
-1. **Scan** — `npx mjolnir-qa@5.1.0` — scans the current directory, prints the Trust Report, exits `1` if findings at the gate
-2. **Block in CI** — `npx mjolnir-qa@5.1.0 --scope changed` — scans only changed lines, blocks PRs with error findings
+1. **Scan** — `npx mjolnir-qa@6.0.0` — scans the current directory, prints the Trust Report, exits `1` if findings at the gate
+2. **Block in CI** — `npx mjolnir-qa@6.0.0 --scope changed` — scans only changed lines, blocks PRs with error findings
 3. **Fix and re-verify** — `mjolnir fix` applies safe auto-fixes, then re-scans to prove each one landed
 
 ### Proving the fix: baseline, then delta
@@ -233,7 +233,7 @@ Steps 1–3 tell you the **state** of your tests. This tells you the **change**,
 which is the only question a reviewer actually has about a diff:
 
 ```bash
-npx mjolnir-qa@5.1.0 . --save-baseline   # once: writes .mjolnir/baseline.json
+npx mjolnir-qa@6.0.0 . --save-baseline   # once: writes .mjolnir/baseline.json
 # … make the fix …
 mjolnir ci verify                         # what moved, in both directions
 ```
@@ -660,14 +660,14 @@ In your existing workflow, pin the action and explicitly opt into an error gate:
 The `--blocking error` flag does the same in any CI pipeline:
 
 ```bash
-npx mjolnir-qa@5.1.0 --scope changed --blocking error
+npx mjolnir-qa@6.0.0 --scope changed --blocking error
 ```
 
 To put findings in GitHub Code Scanning, upload SARIF (requires
 `security-events: write` at workflow or job scope):
 
 ```yaml
-- run: npx mjolnir-qa@5.1.0 --format sarif > mjolnir.sarif
+- run: npx mjolnir-qa@6.0.0 --format sarif > mjolnir.sarif
   continue-on-error: true
 - uses: github/codeql-action/upload-sarif@v3
   if: ${{ !cancelled() }}
@@ -682,7 +682,7 @@ Editor and pipeline setup: [docs/SARIF-INTEGRATION.md](docs/SARIF-INTEGRATION.md
 ### Changed-scope attribution
 
 ```bash
-npx mjolnir-qa@5.1.0 --scope changed
+npx mjolnir-qa@6.0.0 --scope changed
 ```
 
 Findings are attributed to the lines your branch added, measured against
@@ -720,7 +720,7 @@ re-scan, never from the agent's own report of success.
 Add it to a client that ships its own CLI:
 
 ```bash
-claude mcp add mjolnir -- npx -y mjolnir-qa@5.1.0 mcp
+claude mcp add mjolnir -- npx -y mjolnir-qa@6.0.0 mcp
 ```
 
 Or to any client that takes an `mcpServers` block:
@@ -730,7 +730,7 @@ Or to any client that takes an `mcpServers` block:
   "mcpServers": {
     "mjolnir": {
       "command": "npx",
-      "args": ["-y", "mjolnir-qa@5.1.0", "mcp"]
+      "args": ["-y", "mjolnir-qa@6.0.0", "mcp"]
     }
   }
 }
@@ -849,8 +849,8 @@ The full docs site is at <https://sergey-bar.github.io/Mjolnir/>.
 
 ### Status
 
-**Version 5.1.0 published; 6.0 in the working tree.** The JSON schema and the
-exit codes are frozen contracts.
+**Version 6.0.0 published.** The JSON schema and the exit codes are frozen
+contracts.
 TypeScript and Python have the broadest measured coverage. Java and C# are
 newer; read them through the
 [maturity table](https://sergey-bar.github.io/Mjolnir/reference/rule-lifecycle).
@@ -877,7 +877,7 @@ fixture-firewall laws are in [CONTRIBUTING.md](CONTRIBUTING.md).
 <img src="assets/readme/closing.svg" alt="Run it on your repo." width="100%" />
 
 ```bash
-npx mjolnir-qa@5.1.0
+npx mjolnir-qa@6.0.0
 ```
 
 [Read the guide](https://sergey-bar.github.io/Mjolnir/guide/getting-started) · [Docs site](https://sergey-bar.github.io/Mjolnir/) · [npm](https://www.npmjs.com/package/mjolnir-qa)

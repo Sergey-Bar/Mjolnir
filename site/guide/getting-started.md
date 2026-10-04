@@ -24,7 +24,7 @@ can never 404 because a version was renamed or a release was withdrawn.
 
 It is also mutable. If you are copying this into a gate that has to behave the
 same next month, pin the version instead — that is the whole difference between
-`npx mjolnir-qa@5.1.0` and the lines above.
+`npx mjolnir-qa@6.0.0` and the lines above.
 
 Requires Node.js ≥ 22.18. Works on Windows, macOS, and Linux.
 
@@ -46,7 +46,7 @@ Open a terminal in the repository you want to inspect: the directory containing 
 Use a repository with supported test files or workflows; an empty repository has no test suite to score.
 
 1. Check your runtime with `node --version` — use Node.js 22.18 or later.
-2. Run `npx mjolnir-qa@5.1.0` from that repository root.
+2. Run `npx mjolnir-qa@6.0.0` from that repository root.
 3. Read the prioritized findings. Each gives you a rule ID, file location, evidence, and a suggested fix.
 4. Review one relevant finding, make the change, run the affected tests, and repeat the scan.
 
@@ -60,7 +60,7 @@ A clean scan means no findings in the scanned scope; it does not establish that 
 The Marketplace action runs the same scan from any workflow:
 
 ```yaml
-- uses: Sergey-Bar/Mjolnir@v5
+- uses: Sergey-Bar/Mjolnir@v6
   with:
     scope: changed
     fail-on: error

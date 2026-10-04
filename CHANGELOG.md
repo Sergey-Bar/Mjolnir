@@ -9,6 +9,79 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [6.0.0] — 2026-10-04
+
+<!-- ANTI-CREEP-EXCEPTION: The launch set grew from 0 to 2 — QA-PW-117 and QA-JV-101 both earned core at n=35 with a 9.89% Wilson upper bound against the 10% ceiling, every row adjudicated by hand against a pinned corpus commit. Law 1 requires an equal-size removal or a recorded exception. Nothing was removed, deliberately: the quarantine population is what keeps unmeasured rules out of default scans, and promoting two rules by demoting two measured ones would have traded measured accuracy for a smaller number. The growth is arithmetic, not preference. -->
+
+The verification trust engine, measured. A tier you can only reach with evidence,
+a promotion that cannot land unreviewed, and generated documentation that cannot
+quietly go stale behind the code. Carries the 6.0.0-rc.1 line below.
+
+### Two core rules, and the arithmetic behind them
+
+`QA-PW-117` and `QA-JV-101` hold `core`, each at **n=35, zero observed false
+positives, Wilson upper bound 9.89%** against a 10% ceiling — reproduced by hand
+from `src/lib/wilson.ts` before either was believed.
+
+`QA-JV-101` earned it in two batches, and the sequence matters: **32 (10.72%) →
+34 (10.15%) → 35 (9.89%)**. The first batch's verdict file reads as a refusal on
+its own ("STILL SHORT, NOT promoted"). Reading only it is how an audit concluded
+the promotion was fabricated. Both files are cited in the certification record so
+the next reader cannot repeat the mistake.
+
+### The tree told a different story than the code
+
+Both promotions reached the registry, the tier evidence and this file while their
+generated documentation still reported `extended` at n=23/24. Nothing failed,
+because nothing asked — `npm run check` regenerates and then inspects nothing,
+and three of four workflows asserted staleness with `git diff`, which is provably
+blind to an untracked generated page.
+
+- **`npm run docs:staleness`** — one assertion, `git status`-based, read-only by
+  construction, wired into all four workflows.
+- **A count nobody can check is a claim, so generate it.** `README.md` said
+  "`core` is empty" for a release after two rules had earned it.
+- **`docs/MEASUREMENT-CLOSEOUT.md`** corrected 74/5 → 73/6, gained the missing
+  `QA-PY-004` row, and separates _stale_ from unmeasured.
+
+### A promotion can no longer land with no artifact
+
+`docs/CORE-CERTIFICATION.json` is required to hold `core`, and expires with its
+evidence: the measurement is compared against the live registry field by field.
+`docs/TIER-HISTORY.json` records all 19 transitions as data, so a demotion is no
+longer something that exists only as a source comment.
+`docs/RULE-CONSTITUTION.json` states seven principles, each naming the code that
+enforces it, plus **two principles it explicitly refuses** with the measurement
+that refutes them.
+
+### The detector set is wired; it is not yet shown to have teeth
+
+Of the 40 rules carrying both fixture legs, **2** have a negative fixture that is
+the positive fixture with the defect removed. The other **38** are a different
+program. Leashed at the true floor of 2, so it fails on a rule _regressing_ out of
+that set and not on the 38 that were always like this. Closing the gap needs a
+per-rule recipe for what the defect _is_; that work is named, not assumed away.
+
+### .NET runs are evidence (ADR 0015)
+
+`EVIDENCE_CONVENTIONS` held four entries and .NET was in none of them, so a C#/F#
+run left every finding at `INFERRED` however often the suite actually ran. TRX is
+now dispatched **before** JUnit, and that ordering is load-bearing: the JUnit
+branch is reached by an `<?xml` sniff, so a TRX file was matching nothing and
+returning an empty run — which reads as "the suite passed", and for a .NET project
+whose tests were never examined was the most reassuring possible wrong answer.
+
+### Release honesty
+
+`candidate:readiness` remains **NO_GO** on this release. Four of its ten blockers
+are `REMOTE_PROVEN` attestations about the real world — protected holdout,
+real-world repositories, platform matrix, consumer install, remote workflow —
+plus external validation and owner authorization.
+
+The check RAN and was RECORDED as unsatisfied. It was not treated as blocking
+because `vars.STABLE_RELEASE_AUTHORIZED` is `true`: a decision someone made and
+wrote down, not a check that passed.
+
 ## [Unreleased]
 
 ### Two core rules, measured: QA-PW-117 and QA-JV-101 - `ANTI-CREEP-EXCEPTION`
