@@ -17,12 +17,12 @@ support statements are projections of the capability registry (ADR 0007).
 ## Census summary
 
 - Registry entries: **33**
-- Corpus repositories probed: **0**
-- Observations matched to a census entry: **0**
-- Observations classified as a QA tool the census has no entry for (`UNRECOGNIZED`): **0 distinct tools**
-- Observations that are ordinary application dependencies, not ecosystem gaps: **0** (counted, not reported — see _Probe scope_ below)
-- Maturity distribution: **M1** 24 · **M2** 5 · **M3** 4
-- State distribution: SUPPORTED 4 · TARGET 29
+- Corpus repositories probed: **16**
+- Observations matched to a census entry: **16**
+- Observations classified as a QA tool the census has no entry for (`UNRECOGNIZED`): **20 distinct tools**
+- Observations that are ordinary application dependencies, not ecosystem gaps: **1500** (counted, not reported — see _Probe scope_ below)
+- Maturity distribution: **M1** 24 · **M2** 9
+- State distribution: TARGET 33
 
 ### The honest read
 
@@ -46,48 +46,74 @@ No `SUPPORTED` entry was demoted: either the corpus cache is absent, or every ob
 
 ## Census entries
 
-| Census id                              | Name                  | Category             | State     | Maturity | Adapter                | Blocks axes                            | Revisit trigger                                                                                                     |
-| -------------------------------------- | --------------------- | -------------------- | --------- | -------- | ---------------------- | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| ec.api-contract-testing.bruno          | Bruno                 | api-contract-testing | TARGET    | M1       | —                      | API QA, Discovery                      | census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof              |
-| ec.api-contract-testing.karate         | Karate                | api-contract-testing | TARGET    | M1       | —                      | API QA, Contract Coverage              | census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof              |
-| ec.api-contract-testing.pact           | Pact                  | api-contract-testing | TARGET    | M1       | —                      | API QA, Contract Quality               | census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof              |
-| ec.api-contract-testing.postman-newman | Postman / Newman      | api-contract-testing | TARGET    | M1       | —                      | API QA, Artifact Analysis              | census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof              |
-| ec.api-contract-testing.rest-assured   | REST Assured          | api-contract-testing | TARGET    | M1       | —                      | API QA, Contract Coverage              | census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof              |
-| ec.bdd-spec-dsl.cucumber               | Cucumber              | bdd-spec-dsl         | TARGET    | M1       | —                      | Discovery, Static Analysis             | census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof              |
-| ec.bdd-spec-dsl.specflow               | SpecFlow              | bdd-spec-dsl         | TARGET    | M1       | —                      | Discovery, Static Analysis             | census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof              |
-| ec.ci-cd-provider.azure-pipelines      | azure-pipelines       | ci-cd-provider       | TARGET    | M2       | azure-pipelines        | CI Integrity, False-Green Detection    | CI-IR adapter no longer normalizes a azure-pipelines pipeline construct; census staleness trigger demotes SUPPORTED |
-| ec.ci-cd-provider.github-actions       | github-actions        | ci-cd-provider       | TARGET    | M2       | github-actions         | CI Integrity, False-Green Detection    | CI-IR adapter no longer normalizes a github-actions pipeline construct; census staleness trigger demotes SUPPORTED  |
-| ec.ci-cd-provider.gitlab-ci            | gitlab-ci             | ci-cd-provider       | TARGET    | M2       | —                      | CI Integrity, False-Green Detection    | CI-IR adapter no longer normalizes a gitlab-ci pipeline construct; census staleness trigger demotes SUPPORTED       |
-| ec.ci-cd-provider.jenkins              | jenkins               | ci-cd-provider       | TARGET    | M2       | jenkins                | CI Integrity, False-Green Detection    | CI-IR adapter no longer normalizes a jenkins pipeline construct; census staleness trigger demotes SUPPORTED         |
-| ec.component-e2e.cypress               | cypress               | component-e2e        | TARGET    | M2       | typescript             | Discovery                              | adapter no longer handles a major version in cypress; census staleness trigger demotes SUPPORTED                    |
-| ec.component-e2e.playwright            | playwright            | component-e2e        | SUPPORTED | M3       | typescript             | Discovery                              | adapter no longer handles a major version in playwright; census staleness trigger demotes SUPPORTED                 |
-| ec.component-e2e.playwright-components | Playwright Components | component-e2e        | TARGET    | M1       | —                      | Component E2E                          | census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof              |
-| ec.iac-container.kubernetes-manifests  | Kubernetes manifests  | iac-container        | TARGET    | M1       | —                      | Infrastructure / Cloud / IaC           | census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof              |
-| ec.iac-container.terraform             | Terraform             | iac-container        | TARGET    | M1       | —                      | Infrastructure / Cloud / IaC           | census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof              |
-| ec.load-performance.gatling            | Gatling               | load-performance     | TARGET    | M1       | —                      | Performance QA                         | census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof              |
-| ec.load-performance.k6                 | k6                    | load-performance     | TARGET    | M1       | —                      | Performance QA                         | census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof              |
-| ec.load-performance.locust             | Locust                | load-performance     | TARGET    | M1       | —                      | Performance QA                         | census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof              |
-| ec.test-framework.jest                 | jest                  | test-framework       | SUPPORTED | M3       | typescript             | Discovery                              | adapter no longer handles a major version in jest; census staleness trigger demotes SUPPORTED                       |
-| ec.test-framework.junit                | junit                 | test-framework       | TARGET    | M1       | java                   | Discovery                              | adapter no longer handles a major version in junit; census staleness trigger demotes SUPPORTED                      |
-| ec.test-framework.nunit                | nunit                 | test-framework       | TARGET    | M1       | csharp                 | Discovery                              | adapter no longer handles a major version in nunit; census staleness trigger demotes SUPPORTED                      |
-| ec.test-framework.pytest               | pytest                | test-framework       | SUPPORTED | M3       | python                 | Discovery                              | adapter no longer handles a major version in pytest; census staleness trigger demotes SUPPORTED                     |
-| ec.test-framework.testcontainers       | Testcontainers        | test-framework       | TARGET    | M1       | —                      | Database QA, Isolation                 | census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof              |
-| ec.test-framework.testng               | testng                | test-framework       | TARGET    | M1       | java                   | Discovery                              | adapter no longer handles a major version in testng; census staleness trigger demotes SUPPORTED                     |
-| ec.test-framework.vitest               | vitest                | test-framework       | SUPPORTED | M3       | typescript             | Discovery                              | adapter no longer handles a major version in vitest; census staleness trigger demotes SUPPORTED                     |
-| ec.test-framework.xunit                | xunit                 | test-framework       | TARGET    | M1       | csharp                 | Discovery                              | adapter no longer handles a major version in xunit; census staleness trigger demotes SUPPORTED                      |
-| ec.test-management.azure-test-plans    | Azure Test Plans      | test-management      | TARGET    | M1       | —                      | Human / Manual Verification            | census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof              |
-| ec.test-management.testrail            | TestRail              | test-management      | TARGET    | M1       | —                      | Human / Manual Verification            | census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof              |
-| ec.test-management.xray                | Xray                  | test-management      | TARGET    | M1       | —                      | Human / Manual Verification            | census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof              |
-| ec.test-management.zephyr              | Zephyr                | test-management      | TARGET    | M1       | —                      | Human / Manual Verification            | census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof              |
-| ec.test-runner.robot-framework         | Robot Framework       | test-runner          | TARGET    | M1       | —                      | Discovery, Human / Manual Verification | census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof              |
-| ec.test-runner.selenium                | selenium              | test-runner          | TARGET    | M1       | typescript,python,java | Discovery                              | adapter no longer handles a major version in selenium; census staleness trigger demotes SUPPORTED                   |
+| Census id                              | Name                  | Category             | State  | Maturity | Adapter                | Blocks axes                            | Revisit trigger                                                                                                     |
+| -------------------------------------- | --------------------- | -------------------- | ------ | -------- | ---------------------- | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| ec.api-contract-testing.bruno          | Bruno                 | api-contract-testing | TARGET | M1       | —                      | API QA, Discovery                      | census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof              |
+| ec.api-contract-testing.karate         | Karate                | api-contract-testing | TARGET | M1       | —                      | API QA, Contract Coverage              | census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof              |
+| ec.api-contract-testing.pact           | Pact                  | api-contract-testing | TARGET | M1       | —                      | API QA, Contract Quality               | census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof              |
+| ec.api-contract-testing.postman-newman | Postman / Newman      | api-contract-testing | TARGET | M1       | —                      | API QA, Artifact Analysis              | census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof              |
+| ec.api-contract-testing.rest-assured   | REST Assured          | api-contract-testing | TARGET | M1       | —                      | API QA, Contract Coverage              | census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof              |
+| ec.bdd-spec-dsl.cucumber               | Cucumber              | bdd-spec-dsl         | TARGET | M1       | —                      | Discovery, Static Analysis             | census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof              |
+| ec.bdd-spec-dsl.specflow               | SpecFlow              | bdd-spec-dsl         | TARGET | M1       | —                      | Discovery, Static Analysis             | census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof              |
+| ec.ci-cd-provider.azure-pipelines      | azure-pipelines       | ci-cd-provider       | TARGET | M2       | azure-pipelines        | CI Integrity, False-Green Detection    | CI-IR adapter no longer normalizes a azure-pipelines pipeline construct; census staleness trigger demotes SUPPORTED |
+| ec.ci-cd-provider.github-actions       | github-actions        | ci-cd-provider       | TARGET | M2       | github-actions         | CI Integrity, False-Green Detection    | CI-IR adapter no longer normalizes a github-actions pipeline construct; census staleness trigger demotes SUPPORTED  |
+| ec.ci-cd-provider.gitlab-ci            | gitlab-ci             | ci-cd-provider       | TARGET | M2       | —                      | CI Integrity, False-Green Detection    | CI-IR adapter no longer normalizes a gitlab-ci pipeline construct; census staleness trigger demotes SUPPORTED       |
+| ec.ci-cd-provider.jenkins              | jenkins               | ci-cd-provider       | TARGET | M2       | jenkins                | CI Integrity, False-Green Detection    | CI-IR adapter no longer normalizes a jenkins pipeline construct; census staleness trigger demotes SUPPORTED         |
+| ec.component-e2e.cypress               | cypress               | component-e2e        | TARGET | M2       | typescript             | Discovery                              | adapter no longer handles a major version in cypress; census staleness trigger demotes SUPPORTED                    |
+| ec.component-e2e.playwright            | playwright            | component-e2e        | TARGET | M2       | typescript             | Discovery                              | adapter no longer handles a major version in playwright; census staleness trigger demotes SUPPORTED                 |
+| ec.component-e2e.playwright-components | Playwright Components | component-e2e        | TARGET | M1       | —                      | Component E2E                          | census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof              |
+| ec.iac-container.kubernetes-manifests  | Kubernetes manifests  | iac-container        | TARGET | M1       | —                      | Infrastructure / Cloud / IaC           | census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof              |
+| ec.iac-container.terraform             | Terraform             | iac-container        | TARGET | M1       | —                      | Infrastructure / Cloud / IaC           | census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof              |
+| ec.load-performance.gatling            | Gatling               | load-performance     | TARGET | M1       | —                      | Performance QA                         | census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof              |
+| ec.load-performance.k6                 | k6                    | load-performance     | TARGET | M1       | —                      | Performance QA                         | census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof              |
+| ec.load-performance.locust             | Locust                | load-performance     | TARGET | M1       | —                      | Performance QA                         | census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof              |
+| ec.test-framework.jest                 | jest                  | test-framework       | TARGET | M2       | typescript             | Discovery                              | adapter no longer handles a major version in jest; census staleness trigger demotes SUPPORTED                       |
+| ec.test-framework.junit                | junit                 | test-framework       | TARGET | M1       | java                   | Discovery                              | adapter no longer handles a major version in junit; census staleness trigger demotes SUPPORTED                      |
+| ec.test-framework.nunit                | nunit                 | test-framework       | TARGET | M1       | csharp                 | Discovery                              | adapter no longer handles a major version in nunit; census staleness trigger demotes SUPPORTED                      |
+| ec.test-framework.pytest               | pytest                | test-framework       | TARGET | M2       | python                 | Discovery                              | adapter no longer handles a major version in pytest; census staleness trigger demotes SUPPORTED                     |
+| ec.test-framework.testcontainers       | Testcontainers        | test-framework       | TARGET | M1       | —                      | Database QA, Isolation                 | census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof              |
+| ec.test-framework.testng               | testng                | test-framework       | TARGET | M1       | java                   | Discovery                              | adapter no longer handles a major version in testng; census staleness trigger demotes SUPPORTED                     |
+| ec.test-framework.vitest               | vitest                | test-framework       | TARGET | M2       | typescript             | Discovery                              | adapter no longer handles a major version in vitest; census staleness trigger demotes SUPPORTED                     |
+| ec.test-framework.xunit                | xunit                 | test-framework       | TARGET | M1       | csharp                 | Discovery                              | adapter no longer handles a major version in xunit; census staleness trigger demotes SUPPORTED                      |
+| ec.test-management.azure-test-plans    | Azure Test Plans      | test-management      | TARGET | M1       | —                      | Human / Manual Verification            | census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof              |
+| ec.test-management.testrail            | TestRail              | test-management      | TARGET | M1       | —                      | Human / Manual Verification            | census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof              |
+| ec.test-management.xray                | Xray                  | test-management      | TARGET | M1       | —                      | Human / Manual Verification            | census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof              |
+| ec.test-management.zephyr              | Zephyr                | test-management      | TARGET | M1       | —                      | Human / Manual Verification            | census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof              |
+| ec.test-runner.robot-framework         | Robot Framework       | test-runner          | TARGET | M1       | —                      | Discovery, Human / Manual Verification | census gap generator reports this entry in the field backlog; promote only with adapter + corpus proof              |
+| ec.test-runner.selenium                | selenium              | test-runner          | TARGET | M1       | typescript,python,java | Discovery                              | adapter no longer handles a major version in selenium; census staleness trigger demotes SUPPORTED                   |
 
 ## Field gap backlog (generated, ranked by field frequency)
 
-The probe observed no tooling. That is **not** a clean result — an empty
-observation usually means the corpus cache is absent, and an absent cache
-must read as `UNKNOWN`, never as _nothing to support_. See the probe's
-`nextLevelGap` below.
+Ranked by **number of corpus repositories** in which the tool was observed.
+Frequency, not enthusiasm, sets priority (ADR 0010 rule 2).
+
+| Tool                 | Category               | Repos | Observations | Census entry                | Priority |
+| -------------------- | ---------------------- | ----- | ------------ | --------------------------- | -------- |
+| vitest               | UNCLASSIFIED           | 5     | 5            | ec.test-framework.vitest    | P0       |
+| playwright           | UNCLASSIFIED           | 4     | 4            | ec.component-e2e.playwright | P0       |
+| pytest               | UNCLASSIFIED           | 3     | 4            | ec.test-framework.pytest    | P0       |
+| pytest-cov           | test-framework         | 3     | 3            | **UNRECOGNIZED**            | P0       |
+| jest                 | UNCLASSIFIED           | 2     | 2            | ec.test-framework.jest      | P1       |
+| pytest-benchmark     | test-framework         | 2     | 2            | **UNRECOGNIZED**            | P1       |
+| pytest-mock          | test-framework         | 2     | 2            | **UNRECOGNIZED**            | P1       |
+| pytest-playwright    | test-framework         | 2     | 2            | **UNRECOGNIZED**            | P1       |
+| pytest-xdist         | test-framework         | 2     | 2            | **UNRECOGNIZED**            | P1       |
+| @vitest/ui           | report-artifact-format | 1     | 1            | **UNRECOGNIZED**            | P2       |
+| faker                | test-framework         | 1     | 1            | **UNRECOGNIZED**            | P2       |
+| hypothesis           | test-framework         | 1     | 1            | **UNRECOGNIZED**            | P2       |
+| jest-junit           | report-artifact-format | 1     | 1            | **UNRECOGNIZED**            | P2       |
+| mocha                | test-runner            | 1     | 1            | **UNRECOGNIZED**            | P2       |
+| parameterized        | test-framework         | 1     | 1            | **UNRECOGNIZED**            | P2       |
+| pytest-asyncio       | test-framework         | 1     | 1            | **UNRECOGNIZED**            | P2       |
+| pytest-codspeed      | test-framework         | 1     | 1            | **UNRECOGNIZED**            | P2       |
+| pytest-httpbin       | test-framework         | 1     | 1            | **UNRECOGNIZED**            | P2       |
+| pytest-randomly      | test-framework         | 1     | 1            | **UNRECOGNIZED**            | P2       |
+| pytest-repeat        | test-framework         | 1     | 1            | **UNRECOGNIZED**            | P2       |
+| pytest-rerunfailures | test-framework         | 1     | 1            | **UNRECOGNIZED**            | P2       |
+| pytest-split         | test-framework         | 1     | 1            | **UNRECOGNIZED**            | P2       |
+| pytest-timeout       | test-framework         | 1     | 1            | **UNRECOGNIZED**            | P2       |
+| selenium             | UNCLASSIFIED           | 1     | 1            | ec.test-runner.selenium     | P2       |
+| testfixtures         | test-framework         | 1     | 1            | **UNRECOGNIZED**            | P2       |
 
 ## `UNRECOGNIZED` findings — the honesty register
 
@@ -95,8 +121,28 @@ Tools the engine saw in a real repository that the census does not know.
 **A new tool the engine sees in the wild and ignores is a release-blocking
 honesty failure** (`ecosystem:gaps` gate), not a backlog item.
 
-None observed in the probed corpus. Note the scope limit below before
-reading that as a clean result.
+| Tool                 | Category               | Repos | Disposition        |
+| -------------------- | ---------------------- | ----- | ------------------ |
+| pytest-cov           | test-framework         | 3     | ACCEPTED_AS_TARGET |
+| pytest-benchmark     | test-framework         | 2     | ACCEPTED_AS_TARGET |
+| pytest-mock          | test-framework         | 2     | ACCEPTED_AS_TARGET |
+| pytest-playwright    | test-framework         | 2     | ACCEPTED_AS_TARGET |
+| pytest-xdist         | test-framework         | 2     | ACCEPTED_AS_TARGET |
+| @vitest/ui           | report-artifact-format | 1     | ACCEPTED_AS_TARGET |
+| faker                | test-framework         | 1     | ACCEPTED_AS_TARGET |
+| hypothesis           | test-framework         | 1     | ACCEPTED_AS_TARGET |
+| jest-junit           | report-artifact-format | 1     | ACCEPTED_AS_TARGET |
+| mocha                | test-runner            | 1     | ACCEPTED_AS_TARGET |
+| parameterized        | test-framework         | 1     | ACCEPTED_AS_TARGET |
+| pytest-asyncio       | test-framework         | 1     | ACCEPTED_AS_TARGET |
+| pytest-codspeed      | test-framework         | 1     | ACCEPTED_AS_TARGET |
+| pytest-httpbin       | test-framework         | 1     | ACCEPTED_AS_TARGET |
+| pytest-randomly      | test-framework         | 1     | ACCEPTED_AS_TARGET |
+| pytest-repeat        | test-framework         | 1     | ACCEPTED_AS_TARGET |
+| pytest-rerunfailures | test-framework         | 1     | ACCEPTED_AS_TARGET |
+| pytest-split         | test-framework         | 1     | ACCEPTED_AS_TARGET |
+| pytest-timeout       | test-framework         | 1     | ACCEPTED_AS_TARGET |
+| testfixtures         | test-framework         | 1     | ACCEPTED_AS_TARGET |
 
 ## Probe scope and its own gaps
 

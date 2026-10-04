@@ -3,15 +3,13 @@
   "artifact": "ecosystem-census",
   "generatedBy": "npm run docs:ecosystem",
   "censusId": "mjolnir-ecosystem-census",
-  "observedAt": "2026-10-04",
-  "baseSha": "0f698bc427336fb0991b6ca706755fdf07999455",
+  "observedAt": "2026-09-28",
+  "baseSha": "a806496160aeefe64c1795823f90b64cce582835",
   "counts": {
     "entries": 33,
-    "state:TARGET": 29,
+    "state:TARGET": 33,
     "maturity:M1": 24,
-    "maturity:M2": 5,
-    "state:SUPPORTED": 4,
-    "maturity:M3": 4
+    "maturity:M2": 9
   },
   "entries": [
     {
@@ -20,7 +18,7 @@
       "category": "api-contract-testing",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "manifest-file",
@@ -57,7 +55,7 @@
       "category": "api-contract-testing",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "dependency",
@@ -95,7 +93,7 @@
       "category": "api-contract-testing",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "dependency",
@@ -133,7 +131,7 @@
       "category": "api-contract-testing",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "dependency",
@@ -171,7 +169,7 @@
       "category": "api-contract-testing",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "dependency",
@@ -209,7 +207,7 @@
       "category": "bdd-spec-dsl",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "dependency",
@@ -247,7 +245,7 @@
       "category": "bdd-spec-dsl",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "dependency",
@@ -285,7 +283,7 @@
       "category": "ci-cd-provider",
       "state": "TARGET",
       "owner": "provider-capability-contract",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "manifest-file",
@@ -316,7 +314,7 @@
       "category": "ci-cd-provider",
       "state": "TARGET",
       "owner": "provider-capability-contract",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "workflow-dir",
@@ -352,7 +350,7 @@
       "category": "ci-cd-provider",
       "state": "TARGET",
       "owner": "provider-capability-contract",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "manifest-file",
@@ -383,7 +381,7 @@
       "category": "ci-cd-provider",
       "state": "TARGET",
       "owner": "provider-capability-contract",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "manifest-file",
@@ -414,7 +412,7 @@
       "category": "component-e2e",
       "state": "TARGET",
       "owner": "framework-inventory",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "dependency",
@@ -457,9 +455,9 @@
       "id": "ec.component-e2e.playwright",
       "name": "playwright",
       "category": "component-e2e",
-      "state": "SUPPORTED",
+      "state": "TARGET",
       "owner": "framework-inventory",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "dependency",
@@ -516,14 +514,14 @@
       ],
       "revisitTrigger": "adapter no longer handles a major version in playwright; census staleness trigger demotes SUPPORTED",
       "nextLevelGap": {
-        "target": "M4_CORPUS_VERIFIED",
+        "target": "M3_FIXTURE_VERIFIED",
         "missing": [
-          "real-repository corpus run, n >= 10 classified verdicts, Wilson CI recorded, precision AND recall measured, detectorRev locked"
+          "the fixture quad for playwright is not complete — MUST-FIRE, MUST-NOT-FIRE, RECALL and PRECISION are the M3 criteria (evidence: fixtureQuadVerified); `npm run check-fixture-quad` prints the per-leg work list"
         ],
         "owner": "framework-inventory",
         "revisitTrigger": "adapter no longer handles a major version in playwright; census staleness trigger demotes SUPPORTED"
       },
-      "maturity": "M3_FIXTURE_VERIFIED"
+      "maturity": "M2_IMPLEMENTED"
     },
     {
       "id": "ec.component-e2e.playwright-components",
@@ -531,7 +529,7 @@
       "category": "component-e2e",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "dependency",
@@ -569,7 +567,7 @@
       "category": "iac-container",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "extension",
@@ -606,7 +604,7 @@
       "category": "iac-container",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "extension",
@@ -643,7 +641,7 @@
       "category": "load-performance",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "dependency",
@@ -681,7 +679,7 @@
       "category": "load-performance",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "manifest-file",
@@ -718,7 +716,7 @@
       "category": "load-performance",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "dependency",
@@ -754,9 +752,9 @@
       "id": "ec.test-framework.jest",
       "name": "jest",
       "category": "test-framework",
-      "state": "SUPPORTED",
+      "state": "TARGET",
       "owner": "framework-inventory",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "dependency",
@@ -795,14 +793,14 @@
       ],
       "revisitTrigger": "adapter no longer handles a major version in jest; census staleness trigger demotes SUPPORTED",
       "nextLevelGap": {
-        "target": "M4_CORPUS_VERIFIED",
+        "target": "M3_FIXTURE_VERIFIED",
         "missing": [
-          "real-repository corpus run, n >= 10 classified verdicts, Wilson CI recorded, precision AND recall measured, detectorRev locked"
+          "the fixture quad for jest is not complete — MUST-FIRE, MUST-NOT-FIRE, RECALL and PRECISION are the M3 criteria (evidence: fixtureQuadVerified); `npm run check-fixture-quad` prints the per-leg work list"
         ],
         "owner": "framework-inventory",
         "revisitTrigger": "adapter no longer handles a major version in jest; census staleness trigger demotes SUPPORTED"
       },
-      "maturity": "M3_FIXTURE_VERIFIED"
+      "maturity": "M2_IMPLEMENTED"
     },
     {
       "id": "ec.test-framework.junit",
@@ -810,7 +808,7 @@
       "category": "test-framework",
       "state": "TARGET",
       "owner": "framework-inventory",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "dependency",
@@ -882,7 +880,7 @@
       "category": "test-framework",
       "state": "TARGET",
       "owner": "framework-inventory",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "dependency",
@@ -934,9 +932,9 @@
       "id": "ec.test-framework.pytest",
       "name": "pytest",
       "category": "test-framework",
-      "state": "SUPPORTED",
+      "state": "TARGET",
       "owner": "framework-inventory",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "dependency",
@@ -975,14 +973,14 @@
       ],
       "revisitTrigger": "adapter no longer handles a major version in pytest; census staleness trigger demotes SUPPORTED",
       "nextLevelGap": {
-        "target": "M4_CORPUS_VERIFIED",
+        "target": "M3_FIXTURE_VERIFIED",
         "missing": [
-          "real-repository corpus run, n >= 10 classified verdicts, Wilson CI recorded, precision AND recall measured, detectorRev locked"
+          "the fixture quad for pytest is not complete — MUST-FIRE, MUST-NOT-FIRE, RECALL and PRECISION are the M3 criteria (evidence: fixtureQuadVerified); `npm run check-fixture-quad` prints the per-leg work list"
         ],
         "owner": "framework-inventory",
         "revisitTrigger": "adapter no longer handles a major version in pytest; census staleness trigger demotes SUPPORTED"
       },
-      "maturity": "M3_FIXTURE_VERIFIED"
+      "maturity": "M2_IMPLEMENTED"
     },
     {
       "id": "ec.test-framework.testcontainers",
@@ -990,7 +988,7 @@
       "category": "test-framework",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "dependency",
@@ -1028,7 +1026,7 @@
       "category": "test-framework",
       "state": "TARGET",
       "owner": "framework-inventory",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "dependency",
@@ -1080,9 +1078,9 @@
       "id": "ec.test-framework.vitest",
       "name": "vitest",
       "category": "test-framework",
-      "state": "SUPPORTED",
+      "state": "TARGET",
       "owner": "framework-inventory",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "dependency",
@@ -1112,14 +1110,14 @@
       ],
       "revisitTrigger": "adapter no longer handles a major version in vitest; census staleness trigger demotes SUPPORTED",
       "nextLevelGap": {
-        "target": "M4_CORPUS_VERIFIED",
+        "target": "M3_FIXTURE_VERIFIED",
         "missing": [
-          "real-repository corpus run, n >= 10 classified verdicts, Wilson CI recorded, precision AND recall measured, detectorRev locked"
+          "the fixture quad for vitest is not complete — MUST-FIRE, MUST-NOT-FIRE, RECALL and PRECISION are the M3 criteria (evidence: fixtureQuadVerified); `npm run check-fixture-quad` prints the per-leg work list"
         ],
         "owner": "framework-inventory",
         "revisitTrigger": "adapter no longer handles a major version in vitest; census staleness trigger demotes SUPPORTED"
       },
-      "maturity": "M3_FIXTURE_VERIFIED"
+      "maturity": "M2_IMPLEMENTED"
     },
     {
       "id": "ec.test-framework.xunit",
@@ -1127,7 +1125,7 @@
       "category": "test-framework",
       "state": "TARGET",
       "owner": "framework-inventory",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "dependency",
@@ -1172,7 +1170,7 @@
       "category": "test-management",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "workflow-dir",
@@ -1209,7 +1207,7 @@
       "category": "test-management",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "extension",
@@ -1246,7 +1244,7 @@
       "category": "test-management",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "dependency",
@@ -1284,7 +1282,7 @@
       "category": "test-management",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "manifest-file",
@@ -1321,7 +1319,7 @@
       "category": "test-runner",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "dependency",
@@ -1359,7 +1357,7 @@
       "category": "test-runner",
       "state": "TARGET",
       "owner": "framework-inventory",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "dependency",
@@ -1434,9 +1432,9 @@
       ],
       "revisitTrigger": "adapter no longer handles a major version in selenium; census staleness trigger demotes SUPPORTED",
       "nextLevelGap": {
-        "target": "M3_FIXTURE_VERIFIED",
+        "target": "M2_IMPLEMENTED",
         "missing": [
-          "the fixture quad for selenium is not complete — MUST-FIRE, MUST-NOT-FIRE, RECALL and PRECISION are the M3 criteria (evidence: fixtureQuadVerified); `npm run check-fixture-quad` prints the per-leg work list"
+          "no adapter module resolves for selenium (evidence: adapterExists) and the census entry's own `adapter` field is not evidence of one"
         ],
         "owner": "framework-inventory",
         "revisitTrigger": "adapter no longer handles a major version in selenium; census staleness trigger demotes SUPPORTED"
@@ -1452,7 +1450,7 @@
       "category": "api-contract-testing",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "manifest-file",
@@ -1489,7 +1487,7 @@
       "category": "api-contract-testing",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "dependency",
@@ -1527,7 +1525,7 @@
       "category": "api-contract-testing",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "dependency",
@@ -1565,7 +1563,7 @@
       "category": "api-contract-testing",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "dependency",
@@ -1603,7 +1601,7 @@
       "category": "api-contract-testing",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "dependency",
@@ -1641,7 +1639,7 @@
       "category": "bdd-spec-dsl",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "dependency",
@@ -1679,7 +1677,7 @@
       "category": "bdd-spec-dsl",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "dependency",
@@ -1717,7 +1715,7 @@
       "category": "ci-cd-provider",
       "state": "TARGET",
       "owner": "provider-capability-contract",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "manifest-file",
@@ -1748,7 +1746,7 @@
       "category": "ci-cd-provider",
       "state": "TARGET",
       "owner": "provider-capability-contract",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "workflow-dir",
@@ -1784,7 +1782,7 @@
       "category": "ci-cd-provider",
       "state": "TARGET",
       "owner": "provider-capability-contract",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "manifest-file",
@@ -1815,7 +1813,7 @@
       "category": "ci-cd-provider",
       "state": "TARGET",
       "owner": "provider-capability-contract",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "manifest-file",
@@ -1846,7 +1844,7 @@
       "category": "component-e2e",
       "state": "TARGET",
       "owner": "framework-inventory",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "dependency",
@@ -1889,9 +1887,9 @@
       "id": "ec.component-e2e.playwright",
       "name": "playwright",
       "category": "component-e2e",
-      "state": "SUPPORTED",
+      "state": "TARGET",
       "owner": "framework-inventory",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "dependency",
@@ -1948,14 +1946,14 @@
       ],
       "revisitTrigger": "adapter no longer handles a major version in playwright; census staleness trigger demotes SUPPORTED",
       "nextLevelGap": {
-        "target": "M4_CORPUS_VERIFIED",
+        "target": "M3_FIXTURE_VERIFIED",
         "missing": [
-          "real-repository corpus run, n >= 10 classified verdicts, Wilson CI recorded, precision AND recall measured, detectorRev locked"
+          "the fixture quad for playwright is not complete — MUST-FIRE, MUST-NOT-FIRE, RECALL and PRECISION are the M3 criteria (evidence: fixtureQuadVerified); `npm run check-fixture-quad` prints the per-leg work list"
         ],
         "owner": "framework-inventory",
         "revisitTrigger": "adapter no longer handles a major version in playwright; census staleness trigger demotes SUPPORTED"
       },
-      "maturity": "M3_FIXTURE_VERIFIED"
+      "maturity": "M2_IMPLEMENTED"
     },
     {
       "id": "ec.component-e2e.playwright-components",
@@ -1963,7 +1961,7 @@
       "category": "component-e2e",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "dependency",
@@ -2001,7 +1999,7 @@
       "category": "iac-container",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "extension",
@@ -2038,7 +2036,7 @@
       "category": "iac-container",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "extension",
@@ -2075,7 +2073,7 @@
       "category": "load-performance",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "dependency",
@@ -2113,7 +2111,7 @@
       "category": "load-performance",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "manifest-file",
@@ -2150,7 +2148,7 @@
       "category": "load-performance",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "dependency",
@@ -2186,9 +2184,9 @@
       "id": "ec.test-framework.jest",
       "name": "jest",
       "category": "test-framework",
-      "state": "SUPPORTED",
+      "state": "TARGET",
       "owner": "framework-inventory",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "dependency",
@@ -2227,14 +2225,14 @@
       ],
       "revisitTrigger": "adapter no longer handles a major version in jest; census staleness trigger demotes SUPPORTED",
       "nextLevelGap": {
-        "target": "M4_CORPUS_VERIFIED",
+        "target": "M3_FIXTURE_VERIFIED",
         "missing": [
-          "real-repository corpus run, n >= 10 classified verdicts, Wilson CI recorded, precision AND recall measured, detectorRev locked"
+          "the fixture quad for jest is not complete — MUST-FIRE, MUST-NOT-FIRE, RECALL and PRECISION are the M3 criteria (evidence: fixtureQuadVerified); `npm run check-fixture-quad` prints the per-leg work list"
         ],
         "owner": "framework-inventory",
         "revisitTrigger": "adapter no longer handles a major version in jest; census staleness trigger demotes SUPPORTED"
       },
-      "maturity": "M3_FIXTURE_VERIFIED"
+      "maturity": "M2_IMPLEMENTED"
     },
     {
       "id": "ec.test-framework.junit",
@@ -2242,7 +2240,7 @@
       "category": "test-framework",
       "state": "TARGET",
       "owner": "framework-inventory",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "dependency",
@@ -2314,7 +2312,7 @@
       "category": "test-framework",
       "state": "TARGET",
       "owner": "framework-inventory",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "dependency",
@@ -2366,9 +2364,9 @@
       "id": "ec.test-framework.pytest",
       "name": "pytest",
       "category": "test-framework",
-      "state": "SUPPORTED",
+      "state": "TARGET",
       "owner": "framework-inventory",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "dependency",
@@ -2407,14 +2405,14 @@
       ],
       "revisitTrigger": "adapter no longer handles a major version in pytest; census staleness trigger demotes SUPPORTED",
       "nextLevelGap": {
-        "target": "M4_CORPUS_VERIFIED",
+        "target": "M3_FIXTURE_VERIFIED",
         "missing": [
-          "real-repository corpus run, n >= 10 classified verdicts, Wilson CI recorded, precision AND recall measured, detectorRev locked"
+          "the fixture quad for pytest is not complete — MUST-FIRE, MUST-NOT-FIRE, RECALL and PRECISION are the M3 criteria (evidence: fixtureQuadVerified); `npm run check-fixture-quad` prints the per-leg work list"
         ],
         "owner": "framework-inventory",
         "revisitTrigger": "adapter no longer handles a major version in pytest; census staleness trigger demotes SUPPORTED"
       },
-      "maturity": "M3_FIXTURE_VERIFIED"
+      "maturity": "M2_IMPLEMENTED"
     },
     {
       "id": "ec.test-framework.testcontainers",
@@ -2422,7 +2420,7 @@
       "category": "test-framework",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "dependency",
@@ -2460,7 +2458,7 @@
       "category": "test-framework",
       "state": "TARGET",
       "owner": "framework-inventory",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "dependency",
@@ -2512,9 +2510,9 @@
       "id": "ec.test-framework.vitest",
       "name": "vitest",
       "category": "test-framework",
-      "state": "SUPPORTED",
+      "state": "TARGET",
       "owner": "framework-inventory",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "dependency",
@@ -2544,14 +2542,14 @@
       ],
       "revisitTrigger": "adapter no longer handles a major version in vitest; census staleness trigger demotes SUPPORTED",
       "nextLevelGap": {
-        "target": "M4_CORPUS_VERIFIED",
+        "target": "M3_FIXTURE_VERIFIED",
         "missing": [
-          "real-repository corpus run, n >= 10 classified verdicts, Wilson CI recorded, precision AND recall measured, detectorRev locked"
+          "the fixture quad for vitest is not complete — MUST-FIRE, MUST-NOT-FIRE, RECALL and PRECISION are the M3 criteria (evidence: fixtureQuadVerified); `npm run check-fixture-quad` prints the per-leg work list"
         ],
         "owner": "framework-inventory",
         "revisitTrigger": "adapter no longer handles a major version in vitest; census staleness trigger demotes SUPPORTED"
       },
-      "maturity": "M3_FIXTURE_VERIFIED"
+      "maturity": "M2_IMPLEMENTED"
     },
     {
       "id": "ec.test-framework.xunit",
@@ -2559,7 +2557,7 @@
       "category": "test-framework",
       "state": "TARGET",
       "owner": "framework-inventory",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "dependency",
@@ -2604,7 +2602,7 @@
       "category": "test-management",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "workflow-dir",
@@ -2641,7 +2639,7 @@
       "category": "test-management",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "extension",
@@ -2678,7 +2676,7 @@
       "category": "test-management",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "dependency",
@@ -2716,7 +2714,7 @@
       "category": "test-management",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "manifest-file",
@@ -2753,7 +2751,7 @@
       "category": "test-runner",
       "state": "TARGET",
       "owner": "ecosystem-census",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "dependency",
@@ -2791,7 +2789,7 @@
       "category": "test-runner",
       "state": "TARGET",
       "owner": "framework-inventory",
-      "observedAt": "2026-10-04",
+      "observedAt": "2026-09-28",
       "signals": [
         {
           "kind": "dependency",
@@ -2866,9 +2864,9 @@
       ],
       "revisitTrigger": "adapter no longer handles a major version in selenium; census staleness trigger demotes SUPPORTED",
       "nextLevelGap": {
-        "target": "M3_FIXTURE_VERIFIED",
+        "target": "M2_IMPLEMENTED",
         "missing": [
-          "the fixture quad for selenium is not complete — MUST-FIRE, MUST-NOT-FIRE, RECALL and PRECISION are the M3 criteria (evidence: fixtureQuadVerified); `npm run check-fixture-quad` prints the per-leg work list"
+          "no adapter module resolves for selenium (evidence: adapterExists) and the census entry's own `adapter` field is not evidence of one"
         ],
         "owner": "framework-inventory",
         "revisitTrigger": "adapter no longer handles a major version in selenium; census staleness trigger demotes SUPPORTED"
