@@ -28,26 +28,26 @@
   "generatedAt": "2026-10-04",
   "identity": {
     "state": "WORKING_CANDIDATE",
-    "baseSha": "9bc2b73b33f734a8f4dd81db8630d3638147b0cd",
+    "baseSha": "0f698bc427336fb0991b6ca706755fdf07999455",
     "candidateSha": null,
     "version": "6.0.0",
     "packageSha256": "4f0770a9fc87769a57d14eb26975689a915ad4f175b43354a6546b8def8bec69",
     "lockfileSha256": "85e9845cb27e3e6394e01b88ba8d91ae947d579c00d0a2b50f5a244a0da0dfd5",
-    "workingTreeSha256": "159cadc81ffbd053724c9d4dadebe57a975b2e3f9ded32c1520690f114520f2b",
+    "workingTreeSha256": "cee42a07717fb99ac983620e9b56b35db0c8c532c8b0b4493b73c5296bd4435d",
     "changedPathCount": 3,
     "supportEnvelope": "self-hosted; hosted services require explicit consent and separate proof",
     "worktreeInventory": {
       "changedPaths": [
-        "docs/BLAST-RADIUS-AUDIT.md",
-        "src/engine/scan-pipeline.ts",
-        "src/engine/ts-ast.ts"
+        "docs/ECOSYSTEM-CENSUS.json",
+        "docs/ECOSYSTEM-DISPOSITIONS.json",
+        "docs/ECOSYSTEM-GAPS.md"
       ],
       "untrackedPaths": []
     },
     "dirtyFiles": [
-      "docs/BLAST-RADIUS-AUDIT.md",
-      "src/engine/scan-pipeline.ts",
-      "src/engine/ts-ast.ts"
+      "docs/ECOSYSTEM-CENSUS.json",
+      "docs/ECOSYSTEM-DISPOSITIONS.json",
+      "docs/ECOSYSTEM-GAPS.md"
     ]
   },
   "claimRegistry": {
