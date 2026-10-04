@@ -87,7 +87,7 @@ import {
 } from "./evidence-core.js";
 import { classifyProvenance, computeAgenticProfile } from "./provenance.js";
 import { releaseTreeSitterResources } from "./tree-sitter-ast.js";
-import { resetTsMorphProject } from "./ts-ast.js";
+import { resetTsMorphProject, runWithScanProject } from "./ts-ast.js";
 import { applyOverlapDedup, type OverlapMeta } from "./overlap-dedup.js";
 import { correlateFindings } from "./correlation-engine.js";
 import { buildDependencyGraph } from "./dependency-graph.js";
@@ -1561,7 +1561,27 @@ export function assembleScanResult(o: AssembleScanResultInput): ScanResult {
  * inherently async); `runRules` and every rule stay synchronous and
  * consume `ParsedFile.ast`. Callers await the returned promise.
  */
+/**
+ * Run one scan inside its own ts-morph Project scope.
+ *
+ * The wrapper is the whole fix. ts-morph's Project caches SourceFiles by path
+ * and `parseTsFile` calls `replaceWithText` on them, so a Project shared between
+ * two concurrent scans lets one rewrite the file the other is mid-rule on —
+ * which surfaced as three of four concurrent scans reporting
+ * `rulesCrashed: 4` and `rules: "partial"`, and therefore as two different
+ * machine-contract digests from one tree. See `src/engine/ts-ast.ts`.
+ *
+ * Async context propagates across `await`, so the scope covers the whole scan
+ * without threading a Project through every adapter.
+ */
 export async function runScan(
+  args: CliArgs,
+  hooks: ScanHooks = {},
+): Promise<ScanResult> {
+  return runWithScanProject(() => runScanInProject(args, hooks));
+}
+
+async function runScanInProject(
   args: CliArgs,
   hooks: ScanHooks = {},
 ): Promise<ScanResult> {

@@ -28,19 +28,27 @@
   "generatedAt": "2026-10-04",
   "identity": {
     "state": "WORKING_CANDIDATE",
-    "baseSha": "f58682753bc38d7e47fa5fa6649b2d13e5cc71eb",
+    "baseSha": "9bc2b73b33f734a8f4dd81db8630d3638147b0cd",
     "candidateSha": null,
     "version": "6.0.0",
     "packageSha256": "4f0770a9fc87769a57d14eb26975689a915ad4f175b43354a6546b8def8bec69",
     "lockfileSha256": "85e9845cb27e3e6394e01b88ba8d91ae947d579c00d0a2b50f5a244a0da0dfd5",
-    "workingTreeSha256": "71a36ce64a1e3828e3d31a5de33dc43a82ec095ec4e94f0ab4c06f98948c50df",
-    "changedPathCount": 1,
+    "workingTreeSha256": "159cadc81ffbd053724c9d4dadebe57a975b2e3f9ded32c1520690f114520f2b",
+    "changedPathCount": 3,
     "supportEnvelope": "self-hosted; hosted services require explicit consent and separate proof",
     "worktreeInventory": {
-      "changedPaths": ["scripts/lib/normalize-cli-json.mjs"],
+      "changedPaths": [
+        "docs/BLAST-RADIUS-AUDIT.md",
+        "src/engine/scan-pipeline.ts",
+        "src/engine/ts-ast.ts"
+      ],
       "untrackedPaths": []
     },
-    "dirtyFiles": ["scripts/lib/normalize-cli-json.mjs"]
+    "dirtyFiles": [
+      "docs/BLAST-RADIUS-AUDIT.md",
+      "src/engine/scan-pipeline.ts",
+      "src/engine/ts-ast.ts"
+    ]
   },
   "claimRegistry": {
     "path": "docs/claim-registry.json",
