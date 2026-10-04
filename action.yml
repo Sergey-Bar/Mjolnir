@@ -72,7 +72,7 @@ inputs:
       registry while it is a release candidate. Override only with another
       published exact version.
     required: false
-    default: "5.1.0"
+    default: "6.0.0"
   upload-sarif:
     description: >-
       Upload SARIF to GitHub Code Scanning (requires security-events:

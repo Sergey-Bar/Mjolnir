@@ -170,10 +170,10 @@ No additional lifecycle hook may be added without an equivalent row explaining w
 - rollback: [`ROLLBACK-3.0.0.md`](ROLLBACK-3.0.0.md)
 - `3.0.0`, `4.0.0`, `5.0.0` and `5.1.0` are already published; do not
   republish or retag them for the current working tree.
-- current working version: `6.0.0-rc.1`; its tag is cut from protected `main`
+- current working version: `6.0.0`; its release is cut from protected `main`
   after the tree is landed there.
 - `npm run release:decision` is the machine-readable final decision gate.
-- npm `latest` is **5.1.0** after this stable promotion; package publication does not imply Trust certification.
+- npm `latest` is **6.0.0** after this stable promotion; package publication does not imply Trust certification.
 - registry evidence: [`mjolnir-qa@5.1.0`](https://www.npmjs.com/package/mjolnir-qa/v/5.1.0) and npm attestations.
 - GitHub Release evidence: [`v5.1.0`](https://github.com/Sergey-Bar/Mjolnir/releases/tag/v5.1.0).
 - protected `main`: the merge commit that carried 5.1.0, observed at tag time.

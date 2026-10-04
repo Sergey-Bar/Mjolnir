@@ -22,6 +22,7 @@
 schemaVersion: 3
 program: "6.0"
 status: "in-progress"
+currentRelease: "v6.0.0 — current stable"
 
 retiredProgram:
   id: "M26-M50"

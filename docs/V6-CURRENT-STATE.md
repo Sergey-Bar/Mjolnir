@@ -2,7 +2,7 @@
 
 **Generated — do not edit by hand.** Regenerate: `npm run docs:v6-inventory`.
 
-Baseline commit `ce44e0b2641cd72aad437259ec99f8295c7bec1d` · package version `6.0.0-rc.1` · published stable `5.1.0`.
+Baseline commit `23b4b54afae77ac9d1421c4ee9fc6599a3ae8b8e` · package version `6.0.0` · published stable `6.0.0`.
 
 This is the truth baseline v6 is built on. It is deliberately blunt: the
 interesting part of a current-state inventory is what the product _cannot_
@@ -28,8 +28,8 @@ demonstrate, not what it contains.
 
 | Fact                            | Value                                                                                                                                   | Source                                       |
 | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
-| Package version                 | `6.0.0-rc.1`                                                                                                                            | `package.json`                               |
-| Published stable                | `5.1.0`                                                                                                                                 | `package.json`                               |
+| Package version                 | `6.0.0`                                                                                                                                 | `package.json`                               |
+| Published stable                | `6.0.0`                                                                                                                                 | `package.json`                               |
 | Source files (`src/**.ts`)      | 297                                                                                                                                     | derived                                      |
 | Test specs (`tests/**.spec.ts`) | 689                                                                                                                                     | derived                                      |
 | Live rules                      | 79                                                                                                                                      | `src/rules/index.ts`                         |

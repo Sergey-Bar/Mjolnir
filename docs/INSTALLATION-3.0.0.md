@@ -39,7 +39,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@<PINNED_SHA>
-      - uses: Sergey-Bar/Mjolnir@v5
+      - uses: Sergey-Bar/Mjolnir@v6
         with:
           version: 3.0.0
           scope: changed

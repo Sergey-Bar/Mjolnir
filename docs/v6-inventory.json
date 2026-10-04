@@ -3,9 +3,9 @@
   "artifact": "v6-inventory",
   "generatedBy": "npm run docs:v6-inventory",
   "wave": "0",
-  "baseSha": "ce44e0b2641cd72aad437259ec99f8295c7bec1d",
-  "version": "6.0.0-rc.1",
-  "publishedStable": "5.1.0",
+  "baseSha": "23b4b54afae77ac9d1421c4ee9fc6599a3ae8b8e",
+  "version": "6.0.0",
+  "publishedStable": "6.0.0",
   "counts": {
     "srcFiles": 297,
     "testSpecs": 689,

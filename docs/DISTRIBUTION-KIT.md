@@ -25,10 +25,10 @@ every stable release (rc tags never move it — the same ruling as npm's
 
 ```yaml
 # Follow the action's major line (recommended for most users):
-- uses: Sergey-Bar/Mjolnir@v5
+- uses: Sergey-Bar/Mjolnir@v6
 
 # Pin an exact release for a reproducible gate (no surprises on merge):
-- uses: Sergey-Bar/Mjolnir@v5.0.0
+- uses: Sergey-Bar/Mjolnir@v6.0.0
 ```
 
 The scan itself always runs the **published npm package**
@@ -47,7 +47,7 @@ and do not pin a release candidate — it is not on the registry until it ships.
 npx mjolnir-qa@latest
 
 # What a gate should run. Exact, so the run is identical next month:
-npx mjolnir-qa@5.1.0
+npx mjolnir-qa@6.0.0
 ```
 
 The Action has no `latest` alias — GitHub resolves only refs — which is why its
@@ -90,7 +90,7 @@ Checklist (tick with dates, states in the table header):
 | 2   | Draft marketplace listing on the repo Releases page                                     | pending |
 | 3   | Attach screenshots, categories, link README                                             | pending |
 | 4   | **Owner: click Publish**                                                                | pending |
-| 5   | Verify: `uses: Sergey-Bar/Mjolnir@v5` on a scratch repo runs green                      | pending |
+| 5   | Verify: `uses: Sergey-Bar/Mjolnir@v6` on a scratch repo runs green                      | pending |
 
 ## Awesome-list PRs (P1.6)
 
@@ -99,7 +99,7 @@ Draft PR body (shared): "Adds Mjölnir (mjolnir-qa on npm) — a CI tool
 that audits the verification system itself: test suites, Playwright
 configs and CI workflows, for gates that cannot go red. 79 active rules;
 73 corpus-measured FP rates and 6 explicitly unmeasured rules; GitHub Action
-(`Sergey-Bar/Mjolnir@v5`), MCP server, SARIF. MIT."
+(`Sergey-Bar/Mjolnir@v6`), MCP server, SARIF. MIT."
 
 | Channel            | Where it belongs                                                    | State   |
 | ------------------ | ------------------------------------------------------------------- | ------- |
@@ -156,7 +156,7 @@ Body (HN/Reddit/LinkedIn variants — same facts, different tone):
 > score's full deduction table, and refuses to score an empty repo as a 100.
 >
 > Try it: `npx mjolnir-qa@latest` (or in CI, `mjolnir ci install`).
-> GitHub Action: `Sergey-Bar/Mjolnir@v5`. MIT.
+> GitHub Action: `Sergey-Bar/Mjolnir@v6`. MIT.
 
 Comment-strategy note: lead with the FP-rate honesty angle on HN
 (technical audience), the Action pinning story on r/devops, and the
