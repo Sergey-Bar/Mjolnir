@@ -28,19 +28,47 @@
   "generatedAt": "2026-10-04",
   "identity": {
     "state": "WORKING_CANDIDATE",
-    "baseSha": "5888e1c52cd58971e0562cc767d88349d70625e8",
+    "baseSha": "ae5c3cf5fa4fd15bc7985cc254052a5536124b92",
     "candidateSha": null,
     "version": "6.0.0",
     "packageSha256": "4f0770a9fc87769a57d14eb26975689a915ad4f175b43354a6546b8def8bec69",
     "lockfileSha256": "85e9845cb27e3e6394e01b88ba8d91ae947d579c00d0a2b50f5a244a0da0dfd5",
-    "workingTreeSha256": "c80f77e196436618a47108c354fb7e296a700c00f2d2aa4c16732a4697d14877",
-    "changedPathCount": 1,
+    "workingTreeSha256": "5dbb63c969868b4c0893314db51c6de7baaa6ae94503c8bfe40865c13f896539",
+    "changedPathCount": 13,
     "supportEnvelope": "self-hosted; hosted services require explicit consent and separate proof",
     "worktreeInventory": {
-      "changedPaths": ["docs/BLAST-RADIUS-AUDIT.md"],
+      "changedPaths": [
+        "docs/CI-MATRIX.json",
+        "docs/DOMAIN-COVERAGE.json",
+        "docs/ECOSYSTEM-CENSUS.json",
+        "docs/ECOSYSTEM-DISPOSITIONS.json",
+        "docs/ECOSYSTEM-GAPS.md",
+        "docs/FRAMEWORK-MATRIX.json",
+        "docs/LANGUAGE-MATRIX.json",
+        "docs/SURFACE-MATURITY.json",
+        "docs/V6-CURRENT-STATE.md",
+        "docs/V6-GAP-MATRIX.md",
+        "docs/capability-registry.json",
+        "docs/v6-inventory.json",
+        "tests/v6/capability-registry.spec.ts"
+      ],
       "untrackedPaths": []
     },
-    "dirtyFiles": ["docs/BLAST-RADIUS-AUDIT.md"]
+    "dirtyFiles": [
+      "docs/CI-MATRIX.json",
+      "docs/DOMAIN-COVERAGE.json",
+      "docs/ECOSYSTEM-CENSUS.json",
+      "docs/ECOSYSTEM-DISPOSITIONS.json",
+      "docs/ECOSYSTEM-GAPS.md",
+      "docs/FRAMEWORK-MATRIX.json",
+      "docs/LANGUAGE-MATRIX.json",
+      "docs/SURFACE-MATURITY.json",
+      "docs/V6-CURRENT-STATE.md",
+      "docs/V6-GAP-MATRIX.md",
+      "docs/capability-registry.json",
+      "docs/v6-inventory.json",
+      "tests/v6/capability-registry.spec.ts"
+    ]
   },
   "claimRegistry": {
     "path": "docs/claim-registry.json",
