@@ -4,14 +4,14 @@
   "generatedBy": "npm run docs:capability",
   "registryId": "mjolnir-capability-registry",
   "observedAt": "2026-10-04",
-  "baseSha": "698d520e4f231e2a9d47e80acd98d7ebfb18be61",
+  "baseSha": "99f59bdb2040c48f93c6826b2330f886baf4cd1c",
   "counts": {
     "entries": 14,
     "kind:ci-cd-provider": 4,
-    "maturity:M2": 9,
+    "maturity:M2": 6,
     "kind:test-framework": 9,
+    "maturity:M3": 4,
     "maturity:M1": 4,
-    "maturity:M3": 1,
     "kind:test-runner": 1
   },
   "entries": [
@@ -229,7 +229,7 @@
       "adapter": null,
       "executorAdapters": ["src/adapters/typescript.ts"],
       "proven": "M3_FIXTURE_VERIFIED",
-      "maturity": "M2_IMPLEMENTED",
+      "maturity": "M3_FIXTURE_VERIFIED",
       "nextLevelGap": {
         "target": "M4_CORPUS_VERIFIED",
         "missing": [
@@ -407,7 +407,7 @@
       "adapter": null,
       "executorAdapters": ["src/adapters/python.ts"],
       "proven": "M3_FIXTURE_VERIFIED",
-      "maturity": "M2_IMPLEMENTED",
+      "maturity": "M3_FIXTURE_VERIFIED",
       "nextLevelGap": {
         "target": "M4_CORPUS_VERIFIED",
         "missing": [
@@ -520,7 +520,7 @@
       "adapter": null,
       "executorAdapters": ["src/adapters/typescript.ts"],
       "proven": "M3_FIXTURE_VERIFIED",
-      "maturity": "M2_IMPLEMENTED",
+      "maturity": "M3_FIXTURE_VERIFIED",
       "nextLevelGap": {
         "target": "M4_CORPUS_VERIFIED",
         "missing": [

@@ -28,26 +28,38 @@
   "generatedAt": "2026-10-04",
   "identity": {
     "state": "WORKING_CANDIDATE",
-    "baseSha": "0f698bc427336fb0991b6ca706755fdf07999455",
+    "baseSha": "99f59bdb2040c48f93c6826b2330f886baf4cd1c",
     "candidateSha": null,
     "version": "6.0.0",
     "packageSha256": "4f0770a9fc87769a57d14eb26975689a915ad4f175b43354a6546b8def8bec69",
     "lockfileSha256": "85e9845cb27e3e6394e01b88ba8d91ae947d579c00d0a2b50f5a244a0da0dfd5",
-    "workingTreeSha256": "cee42a07717fb99ac983620e9b56b35db0c8c532c8b0b4493b73c5296bd4435d",
-    "changedPathCount": 3,
+    "workingTreeSha256": "309231be8ad0cdc38dd8aa7594caaea6a8b0236dc9257b0f73e96211064f239a",
+    "changedPathCount": 9,
     "supportEnvelope": "self-hosted; hosted services require explicit consent and separate proof",
     "worktreeInventory": {
       "changedPaths": [
-        "docs/ECOSYSTEM-CENSUS.json",
-        "docs/ECOSYSTEM-DISPOSITIONS.json",
-        "docs/ECOSYSTEM-GAPS.md"
+        "docs/CI-MATRIX.json",
+        "docs/DOMAIN-COVERAGE.json",
+        "docs/FRAMEWORK-MATRIX.json",
+        "docs/LANGUAGE-MATRIX.json",
+        "docs/SURFACE-MATURITY.json",
+        "docs/V6-CURRENT-STATE.md",
+        "docs/V6-GAP-MATRIX.md",
+        "docs/capability-registry.json",
+        "docs/v6-inventory.json"
       ],
       "untrackedPaths": []
     },
     "dirtyFiles": [
-      "docs/ECOSYSTEM-CENSUS.json",
-      "docs/ECOSYSTEM-DISPOSITIONS.json",
-      "docs/ECOSYSTEM-GAPS.md"
+      "docs/CI-MATRIX.json",
+      "docs/DOMAIN-COVERAGE.json",
+      "docs/FRAMEWORK-MATRIX.json",
+      "docs/LANGUAGE-MATRIX.json",
+      "docs/SURFACE-MATURITY.json",
+      "docs/V6-CURRENT-STATE.md",
+      "docs/V6-GAP-MATRIX.md",
+      "docs/capability-registry.json",
+      "docs/v6-inventory.json"
     ]
   },
   "claimRegistry": {
