@@ -28,19 +28,45 @@
   "generatedAt": "2026-10-04",
   "identity": {
     "state": "WORKING_CANDIDATE",
-    "baseSha": "88acd1d4d1b21c344cabc59b3e59ef264a2a9cb3",
+    "baseSha": "ce44e0b2641cd72aad437259ec99f8295c7bec1d",
     "candidateSha": null,
     "version": "6.0.0-rc.1",
     "packageSha256": "e7c47696fa2a3e45520a84f0946e4682bcdb0da8fd34039bbf4a247f6a1c9ea7",
     "lockfileSha256": "b4530c8bf73c8215650860133afb02318790b138e280313c69b0feab567777e7",
-    "workingTreeSha256": "0028228ada0e0b77d3bc7ede53310478b43b95d7d007e93842253fa172b84c5b",
-    "changedPathCount": 0,
+    "workingTreeSha256": "28a7157277590dd14a62eac2ec761f7f9617d6df4ab12418062789369cbea4f5",
+    "changedPathCount": 12,
     "supportEnvelope": "self-hosted; hosted services require explicit consent and separate proof",
     "worktreeInventory": {
-      "changedPaths": [],
+      "changedPaths": [
+        "docs/BLAST-RADIUS-AUDIT.md",
+        "docs/CI-MATRIX.json",
+        "docs/DOMAIN-COVERAGE.json",
+        "docs/FRAMEWORK-MATRIX.json",
+        "docs/LANGUAGE-MATRIX.json",
+        "docs/SURFACE-MATURITY.json",
+        "docs/V6-CURRENT-STATE.md",
+        "docs/V6-GAP-MATRIX.md",
+        "docs/adr/0015-dotnet-trx-is-evidence.md",
+        "docs/adr/README.md",
+        "docs/capability-registry.json",
+        "docs/v6-inventory.json"
+      ],
       "untrackedPaths": []
     },
-    "dirtyFiles": []
+    "dirtyFiles": [
+      "docs/BLAST-RADIUS-AUDIT.md",
+      "docs/CI-MATRIX.json",
+      "docs/DOMAIN-COVERAGE.json",
+      "docs/FRAMEWORK-MATRIX.json",
+      "docs/LANGUAGE-MATRIX.json",
+      "docs/SURFACE-MATURITY.json",
+      "docs/V6-CURRENT-STATE.md",
+      "docs/V6-GAP-MATRIX.md",
+      "docs/adr/0015-dotnet-trx-is-evidence.md",
+      "docs/adr/README.md",
+      "docs/capability-registry.json",
+      "docs/v6-inventory.json"
+    ]
   },
   "claimRegistry": {
     "path": "docs/claim-registry.json",

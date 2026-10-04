@@ -7,21 +7,21 @@ contract enforces: **every external import in src/ must belong to the
 allowlist**, and the shipped surface (adapters, rules, flags, formats, exit
 codes) must match this document exactly.
 
-## Inventory: 304 files, 73700 LOC
+## Inventory: 305 files, 73955 LOC
 
 | Area              | Files | LOC   |
 | ----------------- | ----- | ----- |
 | src/rules         | 87    | 12883 |
-| src/engine        | 44    | 12302 |
+| src/engine        | 44    | 12311 |
 | src/commands      | 34    | 12241 |
 | src/v6            | 10    | 6206  |
-| src/(root)        | 8     | 3965  |
+| src/(root)        | 8     | 3971  |
 | src/reporter      | 14    | 3833  |
-| src/forensics     | 17    | 3085  |
+| src/forensics     | 18    | 3307  |
 | src/certification | 6     | 2698  |
 | src/frameworks    | 5     | 2015  |
 | src/adapters      | 11    | 1809  |
-| src/discovery     | 10    | 1776  |
+| src/discovery     | 10    | 1794  |
 | src/gaps          | 2     | 1390  |
 | src/integrations  | 7     | 1153  |
 | src/brand         | 3     | 886   |
@@ -50,8 +50,8 @@ codes) must match this document exactly.
 | src/rules/shared/positions      | 62        |
 | src/cli-io                      | 21        |
 | src/lib/compare                 | 20        |
+| src/forensics/types             | 19        |
 | src/lib/safe-json               | 18        |
-| src/forensics/types             | 18        |
 | src/rules/index                 | 17        |
 | src/reporter/ui                 | 15        |
 | src/engine/adapter              | 14        |

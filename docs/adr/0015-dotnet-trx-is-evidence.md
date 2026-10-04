@@ -3,7 +3,7 @@
 **Status:** accepted · 2026-10-04 · bumps `evidenceSchemaVersion` and
 `forensicsSchemaVersion` to 2
 
-## The problem
+## Context
 
 A rule's runtime evidence level is derived from a real test run report. Which
 reports count is `EVIDENCE_CONVENTIONS` in `src/discovery/evidence-discovery.ts`,
@@ -22,7 +22,7 @@ the ambiguity §16 exists to prevent by making absence a _state_.
 Python had the same shape of problem until `--junitxml` was understood, and
 Java until a JUnit convention existed. .NET was simply the next one.
 
-## The decision
+## Decision
 
 Add TRX as a fifth evidence convention and a parser for it.
 
@@ -45,32 +45,72 @@ Add TRX as a fifth evidence convention and a parser for it.
    project whose tests were never examined, that is the most reassuring possible
    wrong answer, and it was the answer the engine was giving.
 
-## What this deliberately does NOT infer
+## Rejected alternatives
 
-**File paths.** TRX carries `className` as a dotted CLR type name
-(`Shop.Tests.CartTests`) and never a source path. `TestRecord.file` is therefore
-`"unknown"`, exactly as for JUnit. A dotted type name is not a path, and mapping
-one onto the other would invent a source location no run ever reported.
+**A `*.trx` glob in `EVIDENCE_CONVENTIONS`.** The file name
+`dotnet test` writes is `<timestamp>_<machine>.trx`, so nothing about it is
+predictable and the convention has to be the `./TestResults` directory. The
+alternative was teaching discovery to glob, which would have made one convention
+work by a different mechanism than the other four — and the finder and the
+runner would then disagree about what a convention is. The directory is a name,
+and names are what the finder already understands.
 
-The cost is real and is stated here rather than buried: test-level runtime
-corroboration matches a finding's _line_ against a test's declaration span, so
-it stays unavailable for .NET exactly as it is for JUnit. This ADR buys L3 file
-and test-level corroboration for .NET. It does not buy span-level corroboration,
-and no consumer should assume it.
+**Parsing TRX with the JUnit parser.** Both are XML and both describe test runs.
+The shapes are different enough that a shared parser would have been a
+heuristic: JUnit's `<testcase>` nests `<failure>`/`<error>`/`<skipped>`, TRX's
+`<UnitTestResult>` carries an `outcome` attribute and puts the message in an
+`<Output><ErrorInfo>` block. The dangerous failure of one parser for both is not a
+wrong count — it is an EMPTY count, which reads as a passing run.
 
-**Per-attempt history.** A TRX `UnitTestResult` carries ONE outcome. Retries
-appear as `<Execution>` entries under the test definition, cross-referenced by
-id — that is a lookup table, not an ordered attempt log. So each record has
-exactly one attempt and `TRUE-FLAKE` can never fire from this source. The
-alternative, synthesizing a retry from two definitions sharing a name, would
-invent evidence.
+**Mapping `className` onto a file path.** Tempting, because a dotted CLR type
+name looks like a path and test-level corroboration needs one. Rejected: the run
+never reported a path, so any mapping is a guess, and a guess that is sometimes
+right is worse than a recorded `"unknown"` because it fails silently in exactly
+the cases that matter.
 
-**Unknown outcomes.** Every `outcome` value this engine has not seen maps to
-`skipped`, never to `passed`. `skipped` contributes nothing to "the suite passed",
-so the default is the non-claiming direction. A silent default the other way
-would let a new producer's vocabulary manufacture green runs.
+## Enforcement
 
-## Why the version bump
+- `tests/forensics/parse-trx.spec.ts` — 11 assertions over a real TRX fixture,
+  including that the JUnit parser returns **zero** records for it and that
+  dispatch reports `dotnet-trx`. The ordering guarantee is tested, not assumed.
+- `tests/discovery/dotnet-evidence.spec.ts` — `./TestResults` is discovered at
+  depth 1, is not discovered where absent, and is named in the missing-evidence
+  message.
+- `tests/engine/contract-versions.spec.ts` pins both schema versions to `2`. The
+  previous assertions were "is a positive integer", which accepted any value
+  including the one this bump exists to reject.
+- `docs/ENGINE-FREEZE.md` records that both constants carry the `version-bump`
+  policy, so a consumer holding an artifact from a 1.x engine is told the
+  assumption it carries.
+
+## Consequences
+
+No rule, tier, score or finding output changes. `csharp-*` rules are unchanged.
+A repository that already had a recognised run report is unaffected — the new
+convention only ever adds a candidate that did not previously exist, and the
+parser returns nothing for a document that is not TRX.
+
+**What .NET gains, and what it does not.** L3 file- and test-level corroboration
+becomes available. Span-level corroboration does **not**: test-level runtime
+corroboration matches a finding's _line_ against a test's declaration span, and
+TRX carries no line, so \`TestRecord.line\` stays undefined exactly as it does for
+JUnit. A consumer must not assume it.
+
+**\`TRUE_FLAKE\` can never fire from TRX.** A \`UnitTestResult\` carries ONE outcome.
+Retries appear as \`<Execution>\` entries under the test definition, cross-referenced
+by id — a lookup table, not an ordered attempt log — so every record has exactly
+one attempt.
+
+**An unrecognised \`outcome\` maps to \`skipped\`, never to \`passed\`.** \`skipped\`
+contributes nothing to "the suite passed", so the default is the non-claiming
+direction. A silent default the other way would let a new producer's vocabulary
+manufacture green runs.
+
+**Durations are parsed by splitting, not by one pattern.** A single regex needs
+\`^(\\d+):(\\d{2}):(\\d{2})(?:\\.(\\d+))?$\`, and those nested quantifiers are what
+\`security/detect-unsafe-regex\` flags — correctly in general, since this shape is
+the usual ReDoS source. Splitting removes the question instead of asserting the
+pattern is safe today.
 
 Both constants move 1 → 2 because this changes what "the engine reached L3" can
 _mean_: for a .NET repository it can now mean something it previously could not.
@@ -80,13 +120,6 @@ longer holds.
 
 `schemaVersion` and `trustModelVersion` are untouched. The trust ladder did not
 move; only the set of runs that can produce evidence for it grew.
-
-## What this does not change
-
-No rule, tier, score or finding output changes. `csharp-*` rules are unchanged.
-A repository that already had a recognised run report is unaffected — the new
-convention only ever adds a candidate that did not previously exist, and the
-parser returns nothing for a document that is not TRX.
 
 ## What remains open
 
