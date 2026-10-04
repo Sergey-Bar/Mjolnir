@@ -25,15 +25,15 @@ describe("the version ladder", () => {
     expect(result.blockers).toEqual([]);
   });
 
-  it("is five rows, one promise each, one number each", () => {
+  it("is ONE row, one promise each, one number each", () => {
+    // Was "five rows". 7.0 through 10.0 were `deferred` with a theme, a promise,
+    // moves and a kill criterion each, and no owner or date on any of them —
+    // which reads as a schedule nobody committed to. They are retired into
+    // `retiredPrograms`, where their surviving ideas are recorded, and this
+    // assertion is the reason the ladder cannot silently grow them back: a
+    // version row has to be added HERE as well as to the YAML.
     const versions = rows();
-    expect(versions.map((v) => v.version)).toEqual([
-      "6.0",
-      "7.0",
-      "8.0",
-      "9.0",
-      "10.0",
-    ]);
+    expect(versions.map((v) => v.version)).toEqual(["6.0"]);
     for (const row of versions) {
       expect(row.theme, `${row.version} has no theme`).toBeTruthy();
       expect(row.promise, `${row.version} has no promise`).toBeTruthy();
@@ -41,6 +41,29 @@ describe("the version ladder", () => {
         row.moves,
         `${row.version} states no number it moves`,
       ).toBeTruthy();
+    }
+  });
+
+  it("records what the retired ladder was for, so retiring it is not a deletion", () => {
+    const retired = (
+      parsed() as unknown as {
+        retiredPrograms?: Array<{
+          program?: string;
+          survivingIdeas?: unknown[];
+        }>;
+      }
+    ).retiredPrograms;
+    expect(Array.isArray(retired), "no retiredPrograms array").toBe(true);
+    expect(retired ?? []).toHaveLength(1);
+    // Each of the four ideas has to name where it went. A retirement that
+    // discards the thinking is a deletion wearing a retirement's vocabulary.
+    const ideas = (retired?.[0]?.survivingIdeas ?? []) as string[];
+    expect(ideas.length).toBeGreaterThanOrEqual(4);
+    for (const id of ["7.0", "8.0", "9.0", "10.0"]) {
+      expect(
+        ideas.some((i) => i.includes(id)),
+        `the retired ladder's ${id} idea is not recorded anywhere`,
+      ).toBe(true);
     }
   });
 
@@ -95,9 +118,7 @@ describe("the version ladder", () => {
     const result = validateRoadmap(parse(roadmap), {
       missingSources: ["docs/archive/ROADMAP-M26-M50.yaml"],
     });
-    expect(result.errors.join(" ")).toContain(
-      "retiredProgram.archive does not resolve",
-    );
+    expect(result.errors.join(" ")).toContain(".archive does not resolve");
   });
 
   it("blocks on a source git does not track", () => {
@@ -112,34 +133,62 @@ describe("the version ladder", () => {
   });
 
   it("rejects two versions in progress", () => {
-    const broken = JSON.parse(JSON.stringify(parse(roadmap))) as {
-      versions: Array<Row>;
-    };
-    const second = broken.versions[1];
-    expect(second).toBeDefined();
-    if (second === undefined) return;
-    second.status = "in-progress";
-    const result = validateRoadmap(broken);
+    // Built as a SYNTHETIC roadmap rather than by mutating a row of the real
+    // one. The live file has a single version now, so these two tests used to
+    // reach for `versions[1]` and `versions[2]` — and with the ladder retired
+    // those rows are gone, so the assertions silently became tests of nothing.
+    // A rule tested only through a fixture that no longer exists is not tested.
+    const row = (version: string, status: string): Row => ({
+      version,
+      status,
+      theme: "t",
+      promise: "p",
+      moves: "m",
+      killCriterion: "k",
+    });
+    const result = validateRoadmap({
+      schemaVersion: 3,
+      program: "6.0",
+      status: "in-progress",
+      retiredProgram: {
+        id: "M26-M50",
+        status: "RETIRED",
+        archive: "docs/archive/ROADMAP-M26-M50.yaml",
+        deletedLedgers: ["x"],
+        why: "y",
+      },
+      versions: [row("6.0", "in-progress"), row("6.0", "in-progress")],
+    });
     expect(result.errors).toEqual(
       expect.arrayContaining([
-        expect.stringContaining("2 versions are in progress"),
+        expect.stringContaining("versions are in progress"),
       ]),
     );
   });
 
   it("rejects a version with no kill criterion", () => {
-    const broken = JSON.parse(JSON.stringify(parse(roadmap))) as {
-      versions: Array<Row>;
-    };
-    const third = broken.versions[2];
-    expect(third).toBeDefined();
-    if (third === undefined) return;
-    delete third.killCriterion;
-    const result = validateRoadmap(broken);
+    const incomplete = {
+      version: "6.0",
+      status: "in-progress",
+      theme: "t",
+      promise: "p",
+      moves: "m",
+    } as unknown as Row;
+    const result = validateRoadmap({
+      schemaVersion: 3,
+      program: "6.0",
+      status: "in-progress",
+      retiredProgram: {
+        id: "M26-M50",
+        status: "RETIRED",
+        archive: "docs/archive/ROADMAP-M26-M50.yaml",
+        deletedLedgers: ["x"],
+        why: "y",
+      },
+      versions: [incomplete],
+    });
     expect(result.errors).toEqual(
-      expect.arrayContaining([
-        expect.stringContaining("8.0 has no killCriterion"),
-      ]),
+      expect.arrayContaining([expect.stringContaining("has no killCriterion")]),
     );
   });
 });
