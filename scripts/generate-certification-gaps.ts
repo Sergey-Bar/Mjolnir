@@ -64,7 +64,16 @@ function emptyEvidence(
     precision: { tp: 0, fp: 0, n: 0 },
     sensitivity: { tp: 0, fn: 0, n: 0 },
     regressionFixtures: 0,
-    corpusDiversity: { uniqueRepos: 0, maxSingleRepoShare: 1 },
+    // All-zero evidence, so every gate fails — which is the point of this
+    // placeholder: it is what an UNCERTIFIED cell looks like to the validator,
+    // and the gaps report is built from the gates that reject it.
+    corpusDiversity: {
+      uniqueRepos: 0,
+      maxSingleRepoShare: 1,
+      uniqueFrameworkVersions: 0,
+      maxSingleSizeBandShare: 1,
+      sizeBand: 0,
+    },
     distinctShapes: 0,
   };
 }

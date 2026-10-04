@@ -18,6 +18,8 @@ import {
   CONCEPT_RECALL_WILSON_LOWER_MIN,
   CELL_RECALL_WILSON_LOWER_MIN,
   PRECISION_MAX_SINGLE_REPO_SHARE,
+  PRECISION_MIN_UNIQUE_FRAMEWORK_VERSIONS,
+  PRECISION_MAX_SINGLE_SIZE_BAND_SHARE,
   PRECISION_MIN_UNIQUE_REPOS,
   validateCell,
   validateConcept,
@@ -53,7 +55,13 @@ function passingCell(over: Partial<CellEvidence> = {}): CellEvidence {
     precision: { tp: 40, fp: 0, n: 40 },
     sensitivity: { tp: 24, fn: 0, n: 24 },
     regressionFixtures: 3,
-    corpusDiversity: { uniqueRepos: 6, maxSingleRepoShare: 0.25 },
+    corpusDiversity: {
+      uniqueRepos: 6,
+      maxSingleRepoShare: 0.25,
+      uniqueFrameworkVersions: 3,
+      maxSingleSizeBandShare: 0.4,
+      sizeBand: 1,
+    },
     distinctShapes: 5,
     ...over,
   };
@@ -179,7 +187,13 @@ describe("every gate reports itself, so a gap report can name what is open", () 
     // one repository is not evidence about hard-coded waits.
     const verdict = validateCell(
       passingCell({
-        corpusDiversity: { uniqueRepos: 1, maxSingleRepoShare: 1 },
+        corpusDiversity: {
+          uniqueRepos: 1,
+          maxSingleRepoShare: 1,
+          uniqueFrameworkVersions: 1,
+          maxSingleSizeBandShare: 1,
+          sizeBand: 1,
+        },
       }),
     );
     const f = verdict.gates.find((g) => g.gate === "F");
@@ -188,6 +202,73 @@ describe("every gate reports itself, so a gap report can name what is open", () 
     expect(f?.reasons.join(" ")).toContain(
       String(PRECISION_MAX_SINGLE_REPO_SHARE),
     );
+  });
+
+  it("three repositories on ONE framework version is not three versions of evidence", () => {
+    // The failure `uniqueRepos` cannot see: a set of repositories can agree on a
+    // version by being forks of each other, by sharing a lockfile, or by all
+    // pinning the same release. `uniqueRepos: 6` then reads as breadth while
+    // every row came from one version — and a rate measured only against Jest 29
+    // is a statement about Jest 29.
+    const verdict = validateCell(
+      passingCell({
+        corpusDiversity: {
+          uniqueRepos: 6,
+          maxSingleRepoShare: 0.25,
+          uniqueFrameworkVersions: 1,
+          maxSingleSizeBandShare: 0.4,
+          sizeBand: 1,
+        },
+      }),
+    );
+    const f = verdict.gates.find((g) => g.gate === "F");
+    expect(f?.passed).toBe(false);
+    expect(f?.reasons.join(" ")).toContain(
+      String(PRECISION_MIN_UNIQUE_FRAMEWORK_VERSIONS),
+    );
+  });
+
+  it("one project-size band may not supply the cell", () => {
+    // Size is a second way for a cell to be narrower than it looks: a set of
+    // small repositories can agree on a rate that does not survive contact with
+    // a monorepo, without any single repo dominating by row count.
+    const verdict = validateCell(
+      passingCell({
+        corpusDiversity: {
+          uniqueRepos: 6,
+          maxSingleRepoShare: 0.3,
+          uniqueFrameworkVersions: 3,
+          maxSingleSizeBandShare: 0.9,
+          sizeBand: 2,
+        },
+      }),
+    );
+    const f = verdict.gates.find((g) => g.gate === "F");
+    expect(f?.passed).toBe(false);
+    expect(f?.reasons.join(" ")).toContain(
+      String(PRECISION_MAX_SINGLE_SIZE_BAND_SHARE),
+    );
+  });
+
+  it("an ABSENT axis is reported as absent, not as zero", () => {
+    // The distinction that makes the new fields worth requiring. A missing
+    // `uniqueFrameworkVersions` read as `undefined < 2` would produce the same
+    // sentence as a measured 1, and the two call for different work: one is a
+    // recording omission, the other is a finding about the evidence.
+    //
+    // The cast is deliberate and is the point: a record lives in JSON, which does
+    // not enforce the interface, so the shape a real record can arrive in is
+    // wider than the type. That gap is exactly what this asserts.
+    const partialAxis = {
+      uniqueRepos: 6,
+      maxSingleRepoShare: 0.25,
+    } as unknown as NonNullable<CellEvidence["corpusDiversity"]>;
+    const verdict = validateCell(passingCell({ corpusDiversity: partialAxis }));
+    const reasons = verdict.gates
+      .find((g) => g.gate === "F")
+      ?.reasons.join(" ");
+    expect(reasons).toContain("uniqueFrameworkVersions is absent");
+    expect(reasons).toContain("maxSingleSizeBandShare is absent");
   });
 
   it("F does not apply to a sensitivity-only reading of the same cell", () => {
