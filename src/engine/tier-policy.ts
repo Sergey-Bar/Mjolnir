@@ -79,6 +79,44 @@ export const QUARANTINE_CAP: TierCap = {
 export const CORE_FLOOR: TierFloor = { evidenceLevel: "E1" };
 
 /**
+ * Which rules may void the suite's pass claim, and why each one earns it.
+ *
+ * `RuleMeta.suiteInvalidating` caps the score into the UNWORTHY band regardless
+ * of exposure — a finding that means "the green you are reporting does not
+ * cover what it claims". That cap is real and load-bearing: density
+ * normalisation must not be able to average away the fact that the suite did
+ * not run.
+ *
+ * What was missing is any check on the DECLARATION. `suiteInvalidating: true` is
+ * a rule asserting something about itself, and self-assertion is precisely what
+ * the rest of this file exists to bound. So the capability is an allowlist: a
+ * rule may claim it only with a stated reason here, and `doctor`'s
+ * registry-sanity check rejects the claim otherwise.
+ *
+ * Both entries are the same mechanism in two languages — a focused test makes
+ * the runner skip every other test, so the suite reports green without having
+ * run. That is not "a finding that weakens one test"; it is the difference
+ * between evidence and its absence. A rule that merely suspects slowness does
+ * not belong here, and adding one to this file is the review that admitting it
+ * requires.
+ */
+export const SUITE_INVALIDATING_JUSTIFICATIONS: Readonly<
+  Record<string, string>
+> = {
+  "QA-PW-003":
+    "`test.only()` in an e2e spec. The runner skips every other test, so a " +
+    "green run is a report about one test. Two-test repo or two-thousand, the " +
+    "claim is equally uncovered.",
+  "QA-TEST-001":
+    "`test.only()` in a unit spec. Same mechanism as QA-PW-003: the focused " +
+    "test's neighbours never ran, and nothing in the output says so.",
+  "QA-PY-001":
+    "pytest `-k`/`-m` selection committed alongside a focused marker. Same " +
+    "mechanism in a different runner: the selection is invisible in a passing " +
+    "exit code.",
+};
+
+/**
  * The policy for a tier.
  *
  * `undefined` returns an EMPTY policy, and this is a decision, not a
