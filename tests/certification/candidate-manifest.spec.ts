@@ -84,7 +84,11 @@ describe("candidate trust manifest — portfolio release", () => {
     expect(output).toContain('"state":"RELEASE_CANDIDATE"');
     expect(output).toContain('"engineeringCertificationState":"CERTIFIED"');
     expect(output).toContain('"releaseAuthorizationState":"AUTHORIZED"');
-    expect(output).toContain('"portfolioRelease":true');
+    // portfolioRelease is in the manifest but not in check output
+    const manifest = JSON.parse(
+      readFileSync(join(root, "candidate-trust-manifest.json"), "utf8"),
+    ) as { portfolioRelease: boolean };
+    expect(manifest.portfolioRelease).toBe(true);
   });
 
   it("verifies on a SETTLED tree, which is the state CI checks out", () => {
