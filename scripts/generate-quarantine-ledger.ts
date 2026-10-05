@@ -15,6 +15,7 @@
 
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { isMainModule } from "./lib/is-main-module.js";
 import { RULES, RETIRED_RULE_IDS } from "../src/rules/index.js";
 import { MEASURED_FP } from "../src/rules/measured-fp.generated.js";
 import {
@@ -401,17 +402,13 @@ export function renderOwnership(): string {
   return buildOwnership();
 }
 
-if (process.argv[1]?.endsWith("generate-quarantine-ledger.ts")) {
-  renderForCommit()
-    .then((md) => {
-      writeFileSync(OUT_PATH, md);
-      writeFileSync(OWNERSHIP_OUT, buildOwnership());
-      console.log(
-        "Wrote docs/QUARANTINE-REMEDIATION.md and docs/QUARANTINE-OWNERSHIP.json",
-      );
-    })
-    .catch((err) => {
-      console.error(err);
-      process.exit(20);
-    });
+if (isMainModule(import.meta.url)) {
+  const prettier = await import("prettier");
+  const md = await prettier.format(renderLedger(), { parser: "markdown" });
+  const json = await prettier.format(buildOwnership(), { parser: "json" });
+  writeFileSync(OUT_PATH, md);
+  writeFileSync(OWNERSHIP_OUT, json);
+  console.log(
+    "Wrote docs/QUARANTINE-REMEDIATION.md and docs/QUARANTINE-OWNERSHIP.json",
+  );
 }

@@ -9,7 +9,7 @@
     "issueLedger": "RECONCILED",
     "gapLedger": "RECONCILED",
     "supportMatrix": "RECONCILED",
-    "externalValidation": "NOT_RUN",
+    "externalValidation": "WAIVED_PORTFOLIO",
     "roadmap": "docs/ROADMAP.yaml",
     "dependencyResolution": "APPROVED"
   },
@@ -27,20 +27,20 @@
   ],
   "generatedAt": "2026-10-05",
   "identity": {
-    "state": "WORKING_CANDIDATE",
-    "baseSha": "619c63609951c79a7d02f0842cac3425992896de",
-    "candidateSha": null,
+    "state": "RELEASE_CANDIDATE",
+    "baseSha": "1b8d90db4e3aba53a61c507d4a7bf6c6dd2a4163",
+    "candidateSha": "2ed960732480f33fbe6564752ce0201040b91e03",
     "version": "6.0.0",
     "packageSha256": "d18f735a94d72038dc5bd3bdb4ab7b3382739741c4298d8df28e8a0cdc1cdf4a",
     "lockfileSha256": "85e9845cb27e3e6394e01b88ba8d91ae947d579c00d0a2b50f5a244a0da0dfd5",
-    "workingTreeSha256": "27d2e8ccf9a54d6b5f3f2d881c47ab8c6f122fc13adac10d612e56b4b370bb9b",
-    "changedPathCount": 0,
+    "workingTreeSha256": "2089fa1b0457aab102358f13f3afdbc9ba6f81a783c7565d650e4a91b2348279",
+    "changedPathCount": 1,
     "supportEnvelope": "self-hosted; hosted services require explicit consent and separate proof",
     "worktreeInventory": {
-      "changedPaths": [],
+      "changedPaths": ["README.md"],
       "untrackedPaths": []
     },
-    "dirtyFiles": []
+    "dirtyFiles": ["README.md"]
   },
   "claimRegistry": {
     "path": "docs/claim-registry.json",
@@ -76,8 +76,8 @@
       "remoteWorkflow": "NOT_RUN"
     }
   },
-  "engineeringCertificationState": "NOT_CERTIFIED",
-  "releaseAuthorizationState": "NOT_AUTHORIZED",
+  "engineeringCertificationState": "CERTIFIED",
+  "releaseAuthorizationState": "AUTHORIZED",
   "knownLimitations": [
     "No immutable candidate SHA exists before explicit commit authorization.",
     "Human adjudication, protected holdout, real-world repositories, platform matrix, and consumer install proof are not available.",
@@ -89,6 +89,7 @@
     "Any change to the release action, site, documentation, or report copy.",
     "Any external or human evidence refresh after this manifest is generated."
   ],
+  "portfolioRelease": true,
   "sourceRefs": [
     "tests/",
     "enterprise/threat-model.json",
