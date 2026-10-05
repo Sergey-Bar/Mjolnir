@@ -149,7 +149,7 @@ describe("candidate trust manifest — portfolio release", () => {
     expect(result.stdout).toContain('"determination":"READY"');
   });
 
-  it("waives external readiness dimensions in portfolio mode", () => {
+  it("blocks every unproven external readiness dimension", () => {
     const dir = mkdtempSync(join(tmpdir(), "mjolnir-candidate-readiness-"));
     try {
       const manifest = JSON.parse(
