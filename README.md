@@ -15,7 +15,8 @@
 [![node](https://img.shields.io/badge/node-%E2%89%A5%2022.18-1F6F7C.svg?style=flat-square&labelColor=0A1119)](https://nodejs.org)
 
 ```bash
-npx mjolnir-qa@6.0.0
+npx mjolnir-qa@latest
+# or pin: npx mjolnir-qa@6.0.0
 ```
 
 [**Interactive walkthrough**](https://sergey-bar.github.io/Mjolnir/) · [Docs](https://sergey-bar.github.io/Mjolnir/) · [CHANGELOG](CHANGELOG.md) · [Video](assets/video/mjolnir-demo.mp4)
@@ -49,10 +50,10 @@ Mjölnir reads your test suite, your CI workflows, and (when available) the repo
 
 ```bash
 # 1. Scan — Trust Report, exits 1 on gate findings
-npx mjolnir-qa@6.0.0
+npx mjolnir-qa@latest
 
 # 2. Block in CI — scan only what your branch changed
-npx mjolnir-qa@6.0.0 --scope changed
+npx mjolnir-qa@latest --scope changed
 
 # 3. Fix and re-verify — safe auto-fixes, each re-scanned to prove it landed
 mjolnir fix
@@ -61,7 +62,7 @@ mjolnir fix
 **Prove the fix with a baseline, then delta:**
 
 ```bash
-npx mjolnir-qa@6.0.0 --save-baseline   # once: writes .mjolnir/baseline.json
+npx mjolnir-qa@latest --save-baseline   # once: writes .mjolnir/baseline.json
 # … make the fix …
 mjolnir ci verify                 # RESOLVED (gone) / NEW (introduced)
 ```
@@ -160,7 +161,8 @@ Every finding in a handoff carries its boundary: **E2** = deterministic, apply f
 <img src="assets/readme/closing.svg" alt="Run it on your repo." width="100%" />
 
 ```bash
-npx mjolnir-qa@6.0.0
+npx mjolnir-qa@latest
+# or pin: npx mjolnir-qa@6.0.0
 ```
 
 [Read the guide](https://sergey-bar.github.io/Mjolnir/guide/getting-started) · [Docs](https://sergey-bar.github.io/Mjolnir/) · [npm](https://www.npmjs.com/package/mjolnir-qa)
