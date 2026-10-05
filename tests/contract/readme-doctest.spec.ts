@@ -156,8 +156,7 @@ describe("every `mjolnir` command in the README actually runs", () => {
 describe("the README's `explain` sample is the real thing", () => {
   /**
    * The portfolio release README is intentionally short and does not include
-   * the full `mjolnir explain QA-CI-001` transcript. The doctest coverage
-   * for `explain` output lives in tests/commands/explain.spec.ts instead.
+   * the full `mjolnir explain QA-CI-001` transcript.
    */
   it("skipped — portfolio README omits the explain sample", () => {
     expect(true).toBe(true);

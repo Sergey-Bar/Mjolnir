@@ -28,19 +28,19 @@
   "generatedAt": "2026-10-05",
   "identity": {
     "state": "RELEASE_CANDIDATE",
-    "baseSha": "2ed960732480f33fbe6564752ce0201040b91e03",
+    "baseSha": "1b8d90db4e3aba53a61c507d4a7bf6c6dd2a4163",
     "candidateSha": "2ed960732480f33fbe6564752ce0201040b91e03",
     "version": "6.0.0",
     "packageSha256": "d18f735a94d72038dc5bd3bdb4ab7b3382739741c4298d8df28e8a0cdc1cdf4a",
     "lockfileSha256": "85e9845cb27e3e6394e01b88ba8d91ae947d579c00d0a2b50f5a244a0da0dfd5",
-    "workingTreeSha256": "7b9dcdd33d6fe9cc2a00942fe956f8cd7698ca0480069925e26cab90c6acd8e3",
+    "workingTreeSha256": "2089fa1b0457aab102358f13f3afdbc9ba6f81a783c7565d650e4a91b2348279",
     "changedPathCount": 1,
     "supportEnvelope": "self-hosted; hosted services require explicit consent and separate proof",
     "worktreeInventory": {
-      "changedPaths": ["scripts/lib/candidate-decision.mjs"],
+      "changedPaths": ["README.md"],
       "untrackedPaths": []
     },
-    "dirtyFiles": ["scripts/lib/candidate-decision.mjs"]
+    "dirtyFiles": ["README.md"]
   },
   "claimRegistry": {
     "path": "docs/claim-registry.json",

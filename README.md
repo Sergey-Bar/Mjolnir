@@ -79,7 +79,7 @@ mjolnir ci verify                 # RESOLVED (gone) / NEW (introduced)
 | **Python**       | Skipped tests (`QA-PY-002`), `time.sleep()` (`QA-PY-005`), tautological assertions (`QA-PY-012`)                    |
 | **Java / C#**    | Disabled tests, hard sleeps, no assertions, brittle selectors                                                       |
 
-Full catalog: `mjolnir explain --list --md` or [what-it-checks](https://sergey-bar.github.io/Mjolnir/guide/what-it-checks).
+Full catalog: `mjolnir explain --list --md` or [what-it-checks](https://sergey-bar.github.io/Mjolnir/guide/what-it-checks). **73 of 79 rules carry a measured false-positive rate.**
 
 ---
 
