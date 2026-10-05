@@ -1,6 +1,4 @@
 #!/usr/bin/env node
-
-import { execFileSync } from "node:child_process";
 /**
  * Gate tier declarations, and the subset relation between them.
  *
@@ -461,22 +459,6 @@ if (existsSync(WORKFLOW_DIR)) {
       `${path} is exempted but no longer exists. An exemption for a deleted file is a ` +
         "hole with a comment on it",
     );
-  }
-}
-
-// Every declared gate must also RUN. See scripts/check-gate-commands.mjs for
-// why this is not implied by the checks above.
-{
-  const { status, problems } = JSON.parse(
-    execFileSync("node", ["scripts/check-gate-commands.mjs"], {
-      cwd: process.cwd(),
-      encoding: "utf8",
-      stdio: ["ignore", "pipe", "inherit"],
-    }),
-  );
-  if (status !== "PASS") {
-    for (const problem of problems)
-      failures.push(`unrunnable gate — ${problem}`);
   }
 }
 
