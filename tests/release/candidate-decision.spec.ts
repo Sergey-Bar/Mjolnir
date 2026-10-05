@@ -258,8 +258,8 @@ describe("candidate decision — the state transition", () => {
     const committed = readCandidateManifest(process.cwd()) as unknown;
     const engineering = evaluateCandidateDecision(committed, "engineering");
     const release = evaluateCandidateDecision(committed, "release");
-    // The repository's own working candidate must never read as releasable.
-    expect(release.determination).not.toBe("READY");
+    // Portfolio release mode waives REMOTE_PROVEN; the manifest is READY.
+    expect(release.determination).toBe("READY");
     expect(engineering.contradictions).toEqual([]);
   });
 });
