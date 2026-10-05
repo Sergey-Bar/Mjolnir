@@ -28,19 +28,19 @@
   "generatedAt": "2026-10-05",
   "identity": {
     "state": "RELEASE_CANDIDATE",
-    "baseSha": "1b8d90db4e3aba53a61c507d4a7bf6c6dd2a4163",
+    "baseSha": "fcc4cb74837cad8f675f5f4aa4d2624b3f7ebe7f",
     "candidateSha": "2ed960732480f33fbe6564752ce0201040b91e03",
     "version": "6.0.0",
     "packageSha256": "d18f735a94d72038dc5bd3bdb4ab7b3382739741c4298d8df28e8a0cdc1cdf4a",
     "lockfileSha256": "85e9845cb27e3e6394e01b88ba8d91ae947d579c00d0a2b50f5a244a0da0dfd5",
-    "workingTreeSha256": "2089fa1b0457aab102358f13f3afdbc9ba6f81a783c7565d650e4a91b2348279",
-    "changedPathCount": 1,
+    "workingTreeSha256": "7ce9e60c4d91d72747c0a61efa247f015b960beca08fa5ad7c0c086d164562ba",
+    "changedPathCount": 0,
     "supportEnvelope": "self-hosted; hosted services require explicit consent and separate proof",
     "worktreeInventory": {
-      "changedPaths": ["README.md"],
+      "changedPaths": [],
       "untrackedPaths": []
     },
-    "dirtyFiles": ["README.md"]
+    "dirtyFiles": []
   },
   "claimRegistry": {
     "path": "docs/claim-registry.json",
