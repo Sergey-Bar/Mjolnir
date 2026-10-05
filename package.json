@@ -62,6 +62,7 @@
     "rules:quality:check": "tsx scripts/v6/check-rule-quality.ts",
     "workflow:scripts": "node scripts/check-workflow-scripts.mjs",
     "gates:check": "node scripts/check-gate-tiers.mjs",
+    "gates:commands": "node scripts/check-gate-commands.mjs",
     "exemptions:ceilings": "node scripts/check-exemption-ceilings.mjs",
     "ledger:check": "tsx scripts/version-capability-ledger.ts --check",
     "ledger:write": "tsx scripts/version-capability-ledger.ts",

@@ -28,19 +28,19 @@
   "generatedAt": "2026-10-05",
   "identity": {
     "state": "WORKING_CANDIDATE",
-    "baseSha": "f99ffca562d212f9457a817eb36631bfded422cf",
+    "baseSha": "b568a547012d6dfbb69ed5b7b7f74d6972702acb",
     "candidateSha": null,
     "version": "6.0.0",
-    "packageSha256": "4f0770a9fc87769a57d14eb26975689a915ad4f175b43354a6546b8def8bec69",
+    "packageSha256": "d18f735a94d72038dc5bd3bdb4ab7b3382739741c4298d8df28e8a0cdc1cdf4a",
     "lockfileSha256": "85e9845cb27e3e6394e01b88ba8d91ae947d579c00d0a2b50f5a244a0da0dfd5",
-    "workingTreeSha256": "2cbc3d1258aa1999e069ef6567dfec9d9ea86de517792bf1c296f73a520797a9",
-    "changedPathCount": 0,
+    "workingTreeSha256": "8134d898dc26fe7033fe781b7883f1eaa32d3a2cc64c2dc72d863eee7cc3c0d5",
+    "changedPathCount": 1,
     "supportEnvelope": "self-hosted; hosted services require explicit consent and separate proof",
     "worktreeInventory": {
-      "changedPaths": [],
+      "changedPaths": ["package.json"],
       "untrackedPaths": []
     },
-    "dirtyFiles": []
+    "dirtyFiles": ["package.json"]
   },
   "claimRegistry": {
     "path": "docs/claim-registry.json",
