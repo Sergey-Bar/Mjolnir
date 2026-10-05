@@ -28,19 +28,19 @@
   "generatedAt": "2026-10-05",
   "identity": {
     "state": "WORKING_CANDIDATE",
-    "baseSha": "b568a547012d6dfbb69ed5b7b7f74d6972702acb",
+    "baseSha": "fa35d2b9ef8af814fc2ec3df1b605c40eab22fbf",
     "candidateSha": null,
     "version": "6.0.0",
     "packageSha256": "d18f735a94d72038dc5bd3bdb4ab7b3382739741c4298d8df28e8a0cdc1cdf4a",
     "lockfileSha256": "85e9845cb27e3e6394e01b88ba8d91ae947d579c00d0a2b50f5a244a0da0dfd5",
-    "workingTreeSha256": "8134d898dc26fe7033fe781b7883f1eaa32d3a2cc64c2dc72d863eee7cc3c0d5",
+    "workingTreeSha256": "27d2e8ccf9a54d6b5f3f2d881c47ab8c6f122fc13adac10d612e56b4b370bb9b",
     "changedPathCount": 1,
     "supportEnvelope": "self-hosted; hosted services require explicit consent and separate proof",
     "worktreeInventory": {
-      "changedPaths": ["package.json"],
+      "changedPaths": ["docs/MANUAL-SCRIPTS.md"],
       "untrackedPaths": []
     },
-    "dirtyFiles": ["package.json"]
+    "dirtyFiles": ["docs/MANUAL-SCRIPTS.md"]
   },
   "claimRegistry": {
     "path": "docs/claim-registry.json",
