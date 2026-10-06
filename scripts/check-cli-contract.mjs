@@ -442,15 +442,24 @@ const SCRIPTS = pkg.scripts ?? {};
 /** The first interpreter + entry + argv of a script body. */
 function commandOf(body) {
   if (typeof body !== "string") return null;
-  const m =
-    /(?:^|\s)(?:node|npx\s+tsx|tsx)\s+((?:--?[\w-]+(?:=[^\s]+)?\s+)*)((?:[\w.@/-]+)\.(?:mjs|cjs|js|ts|mts|tsx))((?:\s+[^\s|&]+)*)/.exec(
-      body,
-    );
-  if (m === null) return null;
-  const flags = m[1].trim();
-  const argv = (m[3] ?? "").trim();
-  if (argv.includes("--prefix")) return null;
-  return `${m[2]} ${flags} ${argv}`.trim().replace(/\s+/g, " ");
+  // Split into two simpler patterns to avoid ReDoS from nested quantifiers
+  const patterns = [
+    // node script.ext
+    /(?:^|\s)node\s+((?:[\w.@/-]+)\.(?:mjs|cjs|js|ts|mts|tsx))((?:\s+[^\s|&]+)*)/,
+    // npx tsx script.ext
+    /(?:^|\s)npx\s+tsx\s+((?:[\w.@/-]+)\.(?:mjs|cjs|js|ts|mts|tsx))((?:\s+[^\s|&]+)*)/,
+    // tsx script.ext
+    /(?:^|\s)tsx\s+((?:[\w.@/-]+)\.(?:mjs|cjs|js|ts|mts|tsx))((?:\s+[^\s|&]+)*)/,
+  ];
+  for (const pattern of patterns) {
+    const m = pattern.exec(body);
+    if (m !== null) {
+      const argv = (m[2] ?? "").trim();
+      if (argv.includes("--prefix")) return null;
+      return `${m[1]} ${argv}`.trim().replace(/\s+/g, " ");
+    }
+  }
+  return null;
 }
 
 const byCommand = new Map();
