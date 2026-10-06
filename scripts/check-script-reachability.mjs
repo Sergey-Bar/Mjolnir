@@ -233,8 +233,20 @@ for (const [name, why] of manual) {
 
 const declaredModes = [];
 /** The interpreter entry a script body invokes, for reading a mode back. */
-const ENTRY =
-  /(?:^|\s)(?:node|npx\s+tsx|tsx)\s+((?:--?[\w-]+(?:=[^\s]+)?\s+)*)((?:[\w.@/-]+)\.(?:mjs|cjs|js|ts|mts|tsx))/;
+const ENTRY_PATTERNS = [
+  /(?:^|\s)node\s+((?:[\w.@/-]+)\.(?:mjs|cjs|js|ts|mts|tsx))/,
+  /(?:^|\s)npx\s+tsx\s+((?:[\w.@/-]+)\.(?:mjs|cjs|js|ts|mts|tsx))/,
+  /(?:^|\s)tsx\s+((?:[\w.@/-]+)\.(?:mjs|cjs|js|ts|mts|tsx))/,
+];
+
+function entryOf(body) {
+  if (typeof body !== "string") return undefined;
+  for (const pattern of ENTRY_PATTERNS) {
+    const m = pattern.exec(body);
+    if (m !== null) return m[1];
+  }
+  return undefined;
+}
 
 for (const [name, list] of modes) {
   if (!(name in SCRIPTS)) {
@@ -248,7 +260,7 @@ for (const [name, list] of modes) {
   // A mode is an ARGUMENT the script parses, not a token in the npm body, so
   // the check reads the script file. `npm run corpus:audit --update` carries
   // no `--update` in package.json; `tests/corpus/audit.ts` does.
-  const entry = ENTRY.exec(SCRIPTS[name])?.[1];
+  const entry = entryOf(SCRIPTS[name]);
   const source =
     entry === undefined
       ? SCRIPTS[name]
