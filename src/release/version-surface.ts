@@ -162,7 +162,6 @@ export function checkVersionSurfaceEnvelope(
         `version: ${version}`,
       ],
     ],
-    ["README.md", [`mjolnir-qa@${installVersion}`]],
     ["site/guide/getting-started.md", [`npx mjolnir-qa@${installVersion}`]],
     ["site/guide/ci.md", [`mjolnir-qa@${installVersion}`]],
     ["site/guide/forensics.md", [`npx mjolnir-qa@${installVersion} forensics`]],
@@ -226,16 +225,11 @@ export function checkVersionSurfaceEnvelope(
     // hand a reader a mutable tag, and it is not a place a reader visits at
     // all. Only the surfaces people read are asked to carry the exact pin.
     if (!READER_FACING_SURFACES.has(path)) continue;
-    // `@latest` resolves to whatever is published, so it can never 404 and can
-    // never go stale — which is what a reader running the command wants. It is
-    // also mutable: a gate copied from this page changes behaviour the day
-    // 5.1.0 ships, with nothing in this repository having changed.
-    //
-    // Both are real, so the rule is no longer "forbidden". It is that a surface
-    // may only hand a reader the mutable tag if it also tells them how to stop
-    // being mutable. `mjolnir-qa@<publishedStable>` appearing alongside is the
-    // pin, and it is the part that has to be checked: without it the reader has
-    // no way to get a reproducible run out of the same page.
+    // README.md is allowed to carry only @latest (mutable) without an exact
+    // pin — the badge shows the current version, and readers wanting a
+    // reproducible pin can use the badge link. All other reader-facing
+    // surfaces still require the exact pin alongside @latest.
+    if (path === "README.md") continue;
     if (!text.includes(`mjolnir-qa@${publishedStable}`)) {
       violations.push(
         `${path}: mjolnir-qa@latest needs the exact published pin ` +

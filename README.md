@@ -9,6 +9,7 @@
 <br />
 
 [![npm](https://img.shields.io/npm/v/mjolnir-qa.svg?style=flat-square&color=1F6F7C&labelColor=0A1119)](https://www.npmjs.com/package/mjolnir-qa)
+[![downloads](https://img.shields.io/npm/dm/mjolnir-qa.svg?style=flat-square&color=1F6F7C&labelColor=0A1119)](https://www.npmjs.com/package/mjolnir-qa)
 [![ci](https://img.shields.io/github/actions/workflow/status/Sergey-Bar/Mjolnir/ci.yml?branch=main&style=flat-square&label=ci&labelColor=0A1119)](https://github.com/Sergey-Bar/Mjolnir/actions/workflows/ci.yml)
 [![coverage](https://img.shields.io/codecov/c/github/Sergey-Bar/Mjolnir?style=flat-square&color=1F6F7C&labelColor=0A1119&label=coverage)](https://codecov.io/gh/Sergey-Bar/Mjolnir)
 [![license](https://img.shields.io/badge/license-MIT-1F6F7C.svg?style=flat-square&labelColor=0A1119)](LICENSE)
@@ -16,7 +17,6 @@
 
 ```bash
 npx mjolnir-qa@latest
-# or pin: npx mjolnir-qa@6.0.0
 ```
 
 [**Interactive walkthrough**](https://sergey-bar.github.io/Mjolnir/) · [Docs](https://sergey-bar.github.io/Mjolnir/) · [CHANGELOG](CHANGELOG.md) · [Video](assets/video/mjolnir-demo.mp4)
@@ -110,7 +110,7 @@ Static scans stop at **L2** (proven in code). Give Mjölnir a real run report (P
 
 ```bash
 # MCP server over stdio (read-only tools: scan, explain, diff, verify, forensics, triage, pw-report)
-claude mcp add mjolnir -- npx -y mjolnir-qa mcp
+claude mcp add mjolnir -- npx -y mjolnir-qa@latest mcp
 
 # Deterministic handoff plan for any agent
 mjolnir handoff
@@ -156,13 +156,16 @@ Every finding in a handoff carries its boundary: **E2** = deterministic, apply f
 
 ---
 
+<p align="center">
+  <img src="assets/readme/how-it-works.svg" alt="How Mjölnir works" width="880" />
+</p>
+
 <div align="center">
 
 <img src="assets/readme/closing.svg" alt="Run it on your repo." width="100%" />
 
 ```bash
 npx mjolnir-qa@latest
-# or pin: npx mjolnir-qa@6.0.0
 ```
 
 [Read the guide](https://sergey-bar.github.io/Mjolnir/guide/getting-started) · [Docs](https://sergey-bar.github.io/Mjolnir/) · [npm](https://www.npmjs.com/package/mjolnir-qa)
