@@ -443,7 +443,7 @@ const SCRIPTS = pkg.scripts ?? {};
 function commandOf(body) {
   if (typeof body !== "string") return null;
   const m =
-    /(?:^|\s|\|\|\s)(?:node|npx\s+tsx|tsx)\s+((?:--?[\w-]+(?:=[^\s]+)?\s+)*)((?:[\w.@/-]+)\.(?:mjs|cjs|js|ts|mts|tsx))((?:\s+[^\s|&]+)*)/.exec(
+    /(?:^|\s)(?:node|npx\s+tsx|tsx)\s+((?:--?[\w-]+(?:=[^\s]+)?\s+)*)((?:[\w.@/-]+)\.(?:mjs|cjs|js|ts|mts|tsx))((?:\s+[^\s|&]+)*)/.exec(
       body,
     );
   if (m === null) return null;

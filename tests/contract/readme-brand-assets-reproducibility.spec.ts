@@ -18,6 +18,15 @@ import {
 const ROOT = join(import.meta.dirname, "..", "..");
 const README = readFileSync(join(ROOT, "README.md"), "utf8");
 const FILES = Object.keys(BRAND_ASSETS);
+
+// Only these assets are referenced in the portfolio release README
+const REFERENCED_IN_README: readonly string[] = [
+  "hero.svg",
+  "scan.svg",
+  "score-gauge.svg",
+  "how-it-works.svg",
+  "closing.svg",
+];
 const committed = (file: string): string =>
   readFileSync(join(ROOT, "assets", "readme", file), "utf8");
 
@@ -33,7 +42,7 @@ describe("README brand assets", () => {
     },
   );
 
-  it.each(FILES)(
+  it.each(REFERENCED_IN_README)(
     "the README shows assets/readme/%s (a generated file no page shows is a maintained orphan)",
     (file) => {
       expect(README).toContain(`assets/readme/${file}`);
