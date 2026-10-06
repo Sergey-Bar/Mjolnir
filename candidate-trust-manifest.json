@@ -28,19 +28,19 @@
   "generatedAt": "2026-10-06",
   "identity": {
     "state": "RELEASE_CANDIDATE",
-    "baseSha": "17aa73dc3f327a7d8e4fd51deeb29b3b231c151f",
+    "baseSha": "7d85649cdc84b51f521b2fc05c67efa809e5dbd6",
     "candidateSha": "2ed960732480f33fbe6564752ce0201040b91e03",
     "version": "6.0.0",
-    "packageSha256": "d18f735a94d72038dc5bd3bdb4ab7b3382739741c4298d8df28e8a0cdc1cdf4a",
-    "lockfileSha256": "85e9845cb27e3e6394e01b88ba8d91ae947d579c00d0a2b50f5a244a0da0dfd5",
-    "workingTreeSha256": "1d54df930cb24f120659b979bbf6c49c15f343fd574987e28b25e3eb2a2be5bd",
-    "changedPathCount": 0,
+    "packageSha256": "9eedd3a30b3148135a19f54a15f273cd1fb8cf83dfb57ddc40def877093906c4",
+    "lockfileSha256": "16678b09e3257e0aa75273e5ec49d881c52a867b7e5f4a1ec43bd617250284e0",
+    "workingTreeSha256": "8c2da473cb1966ea8c706dcac28e7a6e84bf1c8174f2038fb7e39c27fbbbd799",
+    "changedPathCount": 3,
     "supportEnvelope": "self-hosted; hosted services require explicit consent and separate proof",
     "worktreeInventory": {
-      "changedPaths": [],
-      "untrackedPaths": []
+      "changedPaths": ["package-lock.json", "package.json"],
+      "untrackedPaths": ["alerts3.json"]
     },
-    "dirtyFiles": []
+    "dirtyFiles": ["alerts3.json", "package-lock.json", "package.json"]
   },
   "claimRegistry": {
     "path": "docs/claim-registry.json",
