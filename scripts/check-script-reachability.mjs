@@ -234,7 +234,7 @@ for (const [name, why] of manual) {
 const declaredModes = [];
 /** The interpreter entry a script body invokes, for reading a mode back. */
 const ENTRY =
-  /(?:^|\s|\|\|\s)(?:node|npx\s+tsx|tsx)\s+(?:--?[\w-]+(?:=[^\s]+)?\s+)*((?:[\w.@/-]+)\.(?:mjs|cjs|js|ts|mts|tsx))/;
+  /(?:^|\s)(?:node|npx\s+tsx|tsx)\s+((?:--?[\w-]+(?:=[^\s]+)?\s+)*)((?:[\w.@/-]+)\.(?:mjs|cjs|js|ts|mts|tsx))/;
 
 for (const [name, list] of modes) {
   if (!(name in SCRIPTS)) {
