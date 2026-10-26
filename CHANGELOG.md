@@ -25,6 +25,17 @@ once shipped, so this file is the record of what changed between versions.
   rewrite were wrong and are corrected: `QA-CI-008` is "always-success step
   masks failures", not "mutable Action refs", and the YAML example named
   detections no rule makes (`--maxfail=0`, `--workers=1`, `@main`).
+- **README specs restored, not weakened.** The same rewrite had cut three
+  contract specs to match it: `readme-doctest` (which runs every README
+  command and checks the `explain QA-CI-001` transcript) became
+  `expect(true).toBe(true)`, `readme-samples` asserted the samples were
+  _absent_, and `readme-commands` grew a ten-verb exemption list. Those specs
+  were the only tests reaching several command paths, so function coverage
+  fell to 98.58 % against a 98.67 % ratchet floor. The specs are restored
+  verbatim from 6.0.0, and the command table, the explain transcript and the
+  two terminal samples come back as collapsed `<details>` blocks in a
+  Reference section, which keeps the page short. Functions are at 98.76 %;
+  the suite runs 87 more tests.
 - **Version surface.** `checkVersionSurfaceEnvelope` read an inline-code
   install command (`` `npx mjolnir-qa@X` ``) as `` X` ``, so an unpublished
   version written in backticks was never reported. The terminator set now
