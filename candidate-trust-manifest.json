@@ -25,22 +25,34 @@
     "Approve the hosted, enterprise, and agent threat-model boundaries.",
     "Approve human adjudication and design-partner evidence collection."
   ],
-  "generatedAt": "2026-10-06",
+  "generatedAt": "2026-10-26",
   "identity": {
     "state": "RELEASE_CANDIDATE",
-    "baseSha": "6ea1d79d3f8574d9aa55eacffa8fb088c90ff915",
+    "baseSha": "a156a9b775e1968823f19589d544a87a3cd7ac3f",
     "candidateSha": "2ed960732480f33fbe6564752ce0201040b91e03",
     "version": "6.0.0",
     "packageSha256": "9eedd3a30b3148135a19f54a15f273cd1fb8cf83dfb57ddc40def877093906c4",
-    "lockfileSha256": "16678b09e3257e0aa75273e5ec49d881c52a867b7e5f4a1ec43bd617250284e0",
-    "workingTreeSha256": "5411942dd0792d274b9f0f76fc53f6394f4d4edb4279f24b5f54afb8817ed345",
-    "changedPathCount": 1,
+    "lockfileSha256": "69f7614ada84b173ea77406f6c06c65b3d63972b1aef7216e3c4ddefc7988857",
+    "workingTreeSha256": "22bb87bae7b570aa83c943c773a53cffff23c6c6f9a7ea846ad53b19d98a60fb",
+    "changedPathCount": 5,
     "supportEnvelope": "self-hosted; hosted services require explicit consent and separate proof",
     "worktreeInventory": {
-      "changedPaths": ["alerts_final.json"],
+      "changedPaths": [
+        "CHANGELOG.md",
+        "README.md",
+        "tests/contract/readme-commands.spec.ts",
+        "tests/contract/readme-doctest.spec.ts",
+        "tests/contract/readme-samples.spec.ts"
+      ],
       "untrackedPaths": []
     },
-    "dirtyFiles": ["alerts_final.json"]
+    "dirtyFiles": [
+      "CHANGELOG.md",
+      "README.md",
+      "tests/contract/readme-commands.spec.ts",
+      "tests/contract/readme-doctest.spec.ts",
+      "tests/contract/readme-samples.spec.ts"
+    ]
   },
   "claimRegistry": {
     "path": "docs/claim-registry.json",

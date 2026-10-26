@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "recordedAt": "2026-09-29",
-  "description": "Upper bounds for the two figures that must only improve. The core tier is the launch set (docs/ANTI-CREEP.md); the unmeasured count is the corpus backlog. Falling behind is normal, moving backwards is not. See scripts/v6/check-promotion-throughput.mjs.",
-  "core": 0,
+  "recordedAt": "2026-10-26",
+  "description": "Upper bounds for the two figures that must only improve. The core tier is the launch set (docs/ANTI-CREEP.md); the unmeasured count is the corpus backlog. Falling behind is normal, moving backwards is not. See scripts/v6/check-promotion-throughput.mjs. core moved 0 -> 2 on 2026-10-26: ABSORBED from 6.0.0, whose CHANGELOG entry records the ANTI-CREEP-EXCEPTION for QA-PW-117 and QA-JV-101. The bound was never moved after that release, so the ratchet only passed while a stale [Unreleased] block below 6.0.0 still carried the marker.",
+  "core": 2,
   "unmeasured": 6,
   "unmeasuredIds": [
     "QA-CI-013",
