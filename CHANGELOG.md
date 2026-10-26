@@ -9,6 +9,45 @@ Rule behavior changes (new rules, FP-rate changes against the corpus,
 severity changes) are first-class entries here — rule IDs are immutable
 once shipped, so this file is the record of what changed between versions.
 
+## [Unreleased]
+
+### Fixed: `main` was red on every CI run since 2026-10-06
+
+- **Lockfile.** `package-lock.json` had been regenerated on one platform and
+  lost the linux/darwin `lightningcss` binaries, so `npm ci` failed on the
+  Node 24 job and on any fresh install. Restored with
+  `scripts/complete-lockfile.mjs`; `npm run lockfile:platforms` passes.
+- **README contracts.** The 6.0.0 README rewrite dropped the release-status
+  section, the `Status` heading, the documentation table, the roadmap link,
+  the census sentinels, the rule table, the WORTHINESS alt text and the
+  "a CI step fails" wording on exit `2` — every one pinned by a contract spec,
+  13 failures in all. They are back in the short layout. Two claims in the
+  rewrite were wrong and are corrected: `QA-CI-008` is "always-success step
+  masks failures", not "mutable Action refs", and the YAML example named
+  detections no rule makes (`--maxfail=0`, `--workers=1`, `@main`).
+- **Version surface.** `checkVersionSurfaceEnvelope` read an inline-code
+  install command (`` `npx mjolnir-qa@X` ``) as `` X` ``, so an unpublished
+  version written in backticks was never reported. The terminator set now
+  includes the backtick, matching the sync routine.
+- **Weekly SARIF scan.** `sarif-code-scanning.yml` scans `.` and had failed
+  every run since 2026-09-28 with exit `2`: `mjolnir.config.json` excluded
+  `tests/golden/**`, which covers the real spec `tests/golden/golden.spec.ts`,
+  so the scan honestly reported PARTIAL. The exclude is narrowed to the
+  fixture repo, `tests/golden/repo/**`, and `repo-hygiene.spec.ts` now asserts
+  the whole-repo scan is complete.
+- **Promotion ratchet.** `docs/RULE-PROMOTION-LEDGER.json` still bounded
+  `core` at `0` after 6.0.0 promoted `QA-PW-117` and `QA-JV-101`. The ratchet
+  passed only because a stale `[Unreleased]` block below the 6.0.0 heading
+  still carried that release's anti-creep exception marker; a new entry at the
+  top turned it red. The growth is ABSORBED (bound `0 → 2`, the same convention
+  as `docs/ANTI-CREEP-BASELINE.json`), and the licensed-growth arm, which the
+  committed tree no longer reaches, is now driven by a fixture pair. (This
+  entry spells the marker in lower case on purpose: the gate matches the
+  upper-case token anywhere in the top entry, so quoting it would license
+  growth that nobody declared.)
+- Regenerated: `docs/BLAST-RADIUS-AUDIT.md`, `docs/CARVE-MANIFEST.json`,
+  `candidate-trust-manifest.json`.
+
 ## [6.0.0] — 2026-10-04
 
 <!-- ANTI-CREEP-EXCEPTION: The launch set grew from 0 to 2 — QA-PW-117 and QA-JV-101 both earned core at n=35 with a 9.89% Wilson upper bound against the 10% ceiling, every row adjudicated by hand against a pinned corpus commit. Law 1 requires an equal-size removal or a recorded exception. Nothing was removed, deliberately: the quarantine population is what keeps unmeasured rules out of default scans, and promoting two rules by demoting two measured ones would have traded measured accuracy for a smaller number. The growth is arithmetic, not preference. -->
