@@ -29,6 +29,7 @@ import { deriveCompletion } from "./completion.js";
 import {
   beginDegradationWindow,
   degradationsSince,
+  recordDegradation,
   summarizeDegradations,
   type DegradationCount,
 } from "./degradation-ledger.js";
@@ -1077,8 +1078,17 @@ export function applyPostScanProcessing(
   // are persisted on the result and consumed from here on.
   let evidenceRecords: EvidenceRecord[] = [];
   if (discoveredReport && discoveredReport.report.analysisComplete === true) {
+    // All or nothing. `stampRuntimeCorroboration` mutates findings in place,
+    // so a throw part-way used to leave some findings at a runtime trust level
+    // (up to L5) and the rest static, with nothing recording that the step
+    // failed. The two fields it writes are snapshotted and restored on
+    // failure, and the loss is counted.
+    const before = findings.map((f) => ({
+      runtimeCorroboration: f.runtimeCorroboration,
+      trustLevel: f.trustLevel,
+    }));
     try {
-      evidenceRecords = buildEvidenceRecords(
+      const records = buildEvidenceRecords(
         discoveredReport.report,
         discoveredReport.path,
       );
@@ -1088,9 +1098,19 @@ export function applyPostScanProcessing(
         workspace.root,
       );
       forensicVerdicts = summarizeForensicVerdicts(discoveredReport.report);
+      evidenceRecords = records;
     } catch {
-      /* corrupt report — no runtime evidence */
+      findings.forEach((f, i) => {
+        const prev = before[i];
+        if (prev?.runtimeCorroboration === undefined)
+          delete f.runtimeCorroboration;
+        else f.runtimeCorroboration = prev.runtimeCorroboration;
+        if (prev?.trustLevel === undefined) delete f.trustLevel;
+        else f.trustLevel = prev.trustLevel;
+      });
+      forensicVerdicts = undefined;
       evidenceRecords = [];
+      recordDegradation("runtime-corroboration-failed");
     }
   }
   return {

@@ -32,6 +32,7 @@ import {
   digestOf,
   EVIDENCE_STORE_VERSION,
   EvidenceStore,
+  withLock,
 } from "../../src/store/evidence-store.js";
 
 function newStore(): { store: EvidenceStore; dir: string } {
@@ -343,6 +344,46 @@ describe("concurrent writers", () => {
       const history = store.history();
       expect(history.torn).toBe(0);
       expect(history.entries).toEqual(digests);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("a live lock is never bypassed: a timeout throws and the owner's lock survives", () => {
+    // The loop gave up after 200 × 2 ms, then ran the write UNLOCKED and
+    // deleted the other writer's lock in its `finally`. A live lock is only
+    // stale after 30 s, so any writer holding it for more than ~0.4 s let a
+    // second writer interleave appends and strip the first one's lock.
+    const dir = mkdtempSync(join(tmpdir(), "mj-store-lock-"));
+    const lockPath = join(dir, "store.lock");
+    try {
+      writeFileSync(lockPath, ""); // a live owner: fresh mtime
+      let ran = false;
+      expect(() =>
+        withLock(
+          lockPath,
+          () => {
+            ran = true;
+          },
+          50,
+        ),
+      ).toThrow(/lock/);
+      expect(ran, "the critical section ran without the lock").toBe(false);
+      expect(existsSync(lockPath), "the owner's lock was deleted").toBe(true);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("a stale lock is still stolen", () => {
+    const dir = mkdtempSync(join(tmpdir(), "mj-store-lock-"));
+    const lockPath = join(dir, "store.lock");
+    try {
+      writeFileSync(lockPath, "");
+      const old = new Date(Date.now() - 60_000);
+      utimesSync(lockPath, old, old);
+      expect(withLock(lockPath, () => 42, 50)).toBe(42);
+      expect(existsSync(lockPath)).toBe(false);
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }

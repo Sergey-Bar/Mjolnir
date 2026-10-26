@@ -11,6 +11,44 @@ once shipped, so this file is the record of what changed between versions.
 
 ## [Unreleased]
 
+### Fixed: the P0/P1 findings of the maintenance review (#732)
+
+Each has a regression test that failed before its commit.
+
+- **SARIF results pointed one directory too high.** `SRCROOT` had no trailing
+  `/` (SARIF 2.1.0 §3.14.14), so RFC 3986 resolution of `src/a.ts` against
+  `file:///repo` landed on `file:///src/a.ts` in every Code Scanning upload.
+- **Failing .NET tests disappeared from TRX runs.** A `UnitTestResult` body
+  over 4,000 characters (normal with StdOut and a stack trace) did not match,
+  so the failure was dropped and the run read greener than it was.
+- **Quadratic parsing of untrusted input.** JUnit `<failure>` tags without a
+  closer took 63 s for 2.2 MB, and `countTestDeclarations` took 152 s for
+  300,000 blank lines (it runs on every scanned file). Both are linear now.
+- **Exit codes.** `--save-baseline` no longer corrupts `--json` output, never
+  saves a partial scan, and reports a failed save as `2` (not `1`) after the
+  report. `fix` and `explain --plan` exit `2` on a partial scan. An invalid
+  config exits `10` on every verb, not `20`. `ci verify` gates new findings
+  through the same matrix as `scan`, so `--blocking` and the E0 exemption
+  apply. `explain --evidence` exits `2`, not `1`, on an incomplete report.
+- **MCP workspace root.** With `MJOLNIR_WORKSPACE_ROOT` set, a symlink or
+  junction inside the root that pointed outside it was accepted, and a child
+  named `..cache` was rejected. Both sides are now real paths. Without the
+  variable the read-only tools stay open, as before; the server header no
+  longer claims otherwise.
+- **Evidence store lock.** A live lock was bypassed after ~0.4 s: the write
+  ran unlocked and deleted the owner's lock. It now waits until the lock
+  could be stale and otherwise times out without running.
+- **Half-applied runtime corroboration.** A throw part-way through left some
+  findings at a runtime trust level (up to L5). Findings are restored and the
+  new `runtime-corroboration-failed` degradation is recorded.
+- **Action output.** `sarif_file` was nested under `findings:` in `action.yml`
+  and was always empty for consumers.
+
+Deferred, recorded on #732: the same `^\s*` pattern in three detectors also
+reports the wrong line (the blank line above the declaration); fixing it
+changes line attribution, so it ships with a `detectorRevision` bump and a
+corpus re-measure.
+
 ### Fixed: `main` was red on every CI run since 2026-10-06
 
 - **Lockfile.** `package-lock.json` had been regenerated on one platform and

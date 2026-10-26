@@ -336,11 +336,22 @@ function safeReaddir(dir: string): string[] {
  * window is generous on purpose: stealing a live writer's lock is recoverable
  * (the content-addressed write is atomic either way), while a wedged store is
  * not.
+ *
+ * A LIVE lock is waited on, never bypassed. The loop used to give up after
+ * 200 × 2 ms and run `fn` anyway, then delete the owner's lock in `finally`.
+ * The wait now lasts until the lock could have gone stale, and a lock that is
+ * still held after that is a timeout: `fn` does not run and the owner's file
+ * is left alone. `waitMs` exists for tests; production uses the default.
  */
-function withLock<T>(lockPath: string, fn: () => T): T {
+export function withLock<T>(
+  lockPath: string,
+  fn: () => T,
+  waitMs: number = LOCK_STALE_MS + 1_000,
+): T {
   mkdirSync(join(lockPath, ".."), { recursive: true });
   let acquired = false;
-  for (let attempt = 0; attempt < 200 && !acquired; attempt++) {
+  const deadline = Date.now() + waitMs;
+  while (!acquired) {
     try {
       // wx: exclusive. Exactly one writer wins.
       closeSync(openSync(lockPath, "wx"));
@@ -361,6 +372,12 @@ function withLock<T>(lockPath: string, fn: () => T): T {
           /* another waiter stole it first */
         }
         continue;
+      }
+      if (Date.now() >= deadline) {
+        throw new Error(
+          `evidence-store: timed out after ${waitMs} ms waiting for ${lockPath}, held by a live writer`,
+          { cause: error },
+        );
       }
       // A held lock: back off with a busy wait. This path is rare (a handful
       // of appends per scan) and the alternative — an async API — would

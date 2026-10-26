@@ -130,6 +130,15 @@ export const DEGRADATION_REASONS = [
    * to police hardest.
    */
   "workflow-parse-failed",
+  /**
+   * Runtime corroboration threw while stamping findings from a run report.
+   *
+   * The stamping mutates findings in place, so the pipeline restores every
+   * finding to its static trust level and records this reason: the run report
+   * existed and was readable, and the scan did not use it. Without the record
+   * the result looked like a complete scan with partial runtime evidence.
+   */
+  "runtime-corroboration-failed",
 ] as const;
 
 export type DegradationReason = (typeof DEGRADATION_REASONS)[number];

@@ -153,3 +153,72 @@ describe("duration parsing", () => {
     expect(one("00:00:00.0015000")).toBe(1);
   });
 });
+
+describe("TRX: a long result body is not a missing result", () => {
+  // The result scanner capped each `<UnitTestResult>` body at 4,000 chars.
+  // A body longer than that — normal for a failing .NET test with StdOut and
+  // a stack trace — did not match at all, so the regex skipped ahead and the
+  // failed test vanished from the run. That is the false-green direction:
+  // the run read as greener than it was, with no partial signal.
+  const doc = (stdout: string): string =>
+    [
+      '<?xml version="1.0" encoding="utf-8"?>',
+      '<TestRun id="r" name="run" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">',
+      "<Results>",
+      '<UnitTestResult testId="a" testName="LongFailure" outcome="Failed" duration="00:00:01.0000000">',
+      `<Output><StdOut>${stdout}</StdOut><ErrorInfo><Message>expected 1 but was 2</Message><StackTrace>at X</StackTrace></ErrorInfo></Output>`,
+      "</UnitTestResult>",
+      '<UnitTestResult testId="b" testName="ShortPass" outcome="Passed" duration="00:00:00.0010000" />',
+      "</Results>",
+      "</TestRun>",
+    ].join("\n");
+
+  it("keeps a failed result whose body exceeds 4,000 characters, with its message", () => {
+    const records = parseTrxXml(doc("x".repeat(20_000)));
+    const byTitle = new Map(records.map((r) => [r.title, r]));
+    expect(records.map((r) => r.title).sort()).toEqual([
+      "LongFailure",
+      "ShortPass",
+    ]);
+    expect(byTitle.get("LongFailure")?.attempts[0]?.status).toBe("failed");
+    expect(byTitle.get("LongFailure")?.errors?.[0]).toContain(
+      "expected 1 but was 2",
+    );
+    expect(byTitle.get("ShortPass")?.attempts[0]?.status).toBe("passed");
+  });
+
+  it("a self-closing result does not swallow the next one", () => {
+    const records = parseTrxXml(doc("short"));
+    expect(records).toHaveLength(2);
+  });
+});
+
+describe("JUnit: unclosed <failure> tags inside one testcase are linear", () => {
+  // The <testcase> scan was made linear (QA-11), but the <failure>/<error>
+  // scan inside it still used a lazy `[\s\S]*?</failure>` regex. Inside one
+  // testcase holding N unclosed `<failure` openers every opener rescanned
+  // the rest: 220 KB already cost ~0.5 s and it grows with the square, so a
+  // hostile 2 MB report would take close to a minute of synchronous CPU.
+  // A linear scan does this in well under a second; the bound below is
+  // loose enough for a slow runner and far below the quadratic cost.
+  it("parses 200,000 unclosed failure openers in bounded time", () => {
+    const xml =
+      '<testsuite><testcase name="t" classname="c">' +
+      "<failure x>".repeat(200_000) +
+      "</testcase></testsuite>";
+    const start = performance.now();
+    const records = parseJunitXml(xml);
+    expect(performance.now() - start).toBeLessThan(5_000);
+    expect(records).toHaveLength(1);
+    expect(records[0]?.attempts[0]?.status).toBe("failed");
+  });
+
+  it("still reads a closed failure's message and body", () => {
+    const records = parseJunitXml(
+      '<testsuite><testcase name="t" classname="c">' +
+        '<failure message="boom">stack here</failure>' +
+        "</testcase></testsuite>",
+    );
+    expect(records[0]?.errors).toEqual(["boom", "stack here"]);
+  });
+});

@@ -151,7 +151,13 @@ describe("renderSarif", () => {
       }>;
     };
     const run = defined(sarif.runs[0], "sarif.runs[0]");
-    expect(run.originalUriBaseIds.SRCROOT?.uri).toBe("file:///repo");
+    // SARIF 2.1.0 §3.14.14: a base uri MUST end with `/`. Without it RFC
+    // 3986 resolution drops the last segment, so every result resolved one
+    // directory too high (the `repo` segment was lost).
+    expect(run.originalUriBaseIds.SRCROOT?.uri).toBe("file:///repo/");
+    expect(new URL("src/a.ts", run.originalUriBaseIds.SRCROOT?.uri).href).toBe(
+      "file:///repo/src/a.ts",
+    );
     const firstRule = defined(
       run.tool.driver.rules[0],
       "run.tool.driver.rules[0]",
@@ -175,7 +181,16 @@ describe("renderSarif", () => {
     const sarif = JSON.parse(renderSarif(makeResult({}), href)) as {
       runs: Array<{ originalUriBaseIds: Record<string, { uri: string }> }>;
     };
-    expect(sarif.runs[0]?.originalUriBaseIds.SRCROOT?.uri).toBe(href);
+    expect(sarif.runs[0]?.originalUriBaseIds.SRCROOT?.uri).toBe(`${href}/`);
+  });
+
+  it("SRCROOT does not gain a second slash when the base already ends with one", () => {
+    const sarif = JSON.parse(renderSarif(makeResult({}), "file:///repo/")) as {
+      runs: Array<{ originalUriBaseIds: Record<string, { uri: string }> }>;
+    };
+    expect(sarif.runs[0]?.originalUriBaseIds.SRCROOT?.uri).toBe(
+      "file:///repo/",
+    );
   });
 
   // ── Bug-audit M7: SARIF 2.1.0 schema honesty ─────────────────────────

@@ -183,12 +183,33 @@ export function parseTrxXml(xml: string): TestRecord[] {
   }
 
   const records: TestRecord[] = [];
-  const resultRe =
-    /<UnitTestResult\b([^>]*)>([\s\S]{0,4000}?)(?=<UnitTestResult\b|<\/Results>)/gi;
-  let m: RegExpExecArray | null;
-  while ((m = resultRe.exec(xml)) !== null) {
-    const attrs = m[1] ?? "";
-    const inner = m[2] ?? "";
+  // A linear scan, not one regex over the whole body. The previous pattern
+  // capped a body at 4,000 characters (`[\s\S]{0,4000}?`), and a result whose
+  // body was longer — normal for a failing test with StdOut and a stack trace —
+  // simply did not match, so the failed test disappeared from the run. The
+  // body now runs to the next result or to `</Results>`, whichever is first;
+  // only the slice handed to `messageOf` is bounded.
+  const startRe = /<UnitTestResult\b/gi;
+  const starts: number[] = [];
+  let s: RegExpExecArray | null;
+  while ((s = startRe.exec(xml)) !== null) {
+    starts.push(s.index);
+    if (starts.length > 200_000) break;
+  }
+  const resultsEnd = xml.search(/<\/Results>/i);
+  for (let i = 0; i < starts.length; i++) {
+    const start = starts[i] as number;
+    const tagEnd = xml.indexOf(">", start);
+    if (tagEnd === -1) break;
+    const selfClosing = xml[tagEnd - 1] === "/";
+    const attrs = xml.slice(
+      start + "<UnitTestResult".length,
+      selfClosing ? tagEnd - 1 : tagEnd,
+    );
+    const next = starts[i + 1] ?? -1;
+    let bodyEnd = next === -1 ? xml.length : next;
+    if (resultsEnd > tagEnd && resultsEnd < bodyEnd) bodyEnd = resultsEnd;
+    const inner = selfClosing ? "" : xml.slice(tagEnd + 1, bodyEnd);
     const testName = attr(attrs, "testName") ?? attr(attrs, "testId");
     if (testName === undefined) continue;
     const status = mapTrxOutcome(attr(attrs, "outcome"));
@@ -197,7 +218,8 @@ export function parseTrxXml(xml: string): TestRecord[] {
       status,
       durationMs: parseDuration(attr(attrs, "duration")),
     };
-    const error = messageOf(inner, 0);
+    const messageAt = inner.search(/<Message\b/i);
+    const error = messageAt === -1 ? undefined : messageOf(inner, messageAt);
     records.push({
       file: "unknown",
       title: testName,

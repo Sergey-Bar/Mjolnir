@@ -1,4 +1,4 @@
-import { mkdirSync, mkdtempSync, rmSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, symlinkSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, describe, expect, it, vi } from "vitest";
@@ -54,5 +54,36 @@ describe("MCP workspace boundary", () => {
       args: { ruleId: "QA-PW-004" },
     });
     expect(noFixtures.error?.code).not.toBe(MCP_ERRORS.INVALID_PARAMS);
+  });
+
+  it("a symlink inside the root that points outside it is rejected", async () => {
+    vi.resetModules();
+    const outside = mkdtempSync(join(tmpdir(), "mjolnir-mcp-outside-"));
+    try {
+      // "junction" needs no privilege on Windows and is ignored elsewhere.
+      symlinkSync(outside, join(root, "escape"), "junction");
+      const { handleToolCall } = await import("../../src/mcp/server.js");
+      const escaped = await handleToolCall({
+        id: 7,
+        name: "scan",
+        args: { path: join(root, "escape") },
+      });
+      expect(escaped.error?.code).toBe(MCP_ERRORS.INVALID_PARAMS);
+    } finally {
+      rmSync(join(root, "escape"), { recursive: true, force: true });
+      rmSync(outside, { recursive: true, force: true });
+    }
+  });
+
+  it("a child whose name starts with `..` is inside the root", async () => {
+    vi.resetModules();
+    mkdirSync(join(root, "..cache"), { recursive: true });
+    const { handleToolCall } = await import("../../src/mcp/server.js");
+    const dotted = await handleToolCall({
+      id: 8,
+      name: "scan",
+      args: { path: join(root, "..cache") },
+    });
+    expect(dotted.error?.code).not.toBe(MCP_ERRORS.INVALID_PARAMS);
   });
 });

@@ -96,6 +96,27 @@ import { currentCommit } from "./lib/git-utils.js";
 import { parseArgsOrUsage, validateScanTarget } from "./cli.js";
 
 /**
+ * The one catch for a scan-backed verb.
+ *
+ * An invalid `mjolnir.config.json` is the USER's error and exits 10 (usage),
+ * as `scan` always did. `fix`, `ci verify` and `explain --plan` each had
+ * their own catch that only knew the internal-error arm, so the same config
+ * typo exited 20 and printed "this is a bug in Mjölnir" on three verbs.
+ */
+function verbFailure(
+  error: unknown,
+  io: { err: Output },
+  debug: boolean,
+): number {
+  if (error instanceof ConfigValidationError) {
+    io.err(error.message);
+    return EXIT_USAGE;
+  }
+  internalErrorMessage(error, io.err, debug);
+  return EXIT_INTERNAL;
+}
+
+/**
  * The one place a run's gate level is resolved from `--blocking`, then
  * `mjolnir.config.json`, then the shipped default.
  *
@@ -363,29 +384,45 @@ export async function runScanCommand(
     // failure is reported as one rather than swallowed — the scan succeeded,
     // the snapshot did not, and a reader who is told "captured" when nothing
     // was written is exactly the false-green this product exists to catch.
+    //
+    // Three rules, each a fixed defect:
+    //   - the confirmation goes to stderr on a machine format, or it lands in
+    //     front of the JSON/SARIF on stdout and the output does not parse;
+    //   - a partial scan is never saved: a truncated before-state makes every
+    //     finding it missed read as RESOLVED later;
+    //   - a failed save still prints the report and exits 2 (the run did not
+    //     do what it was asked), never 1, which means "findings at the gate".
+    let baselineFailed = false;
     if (args.saveBaseline) {
       const outPath = join(target, DEFAULT_BASELINE_PATH);
-      try {
-        const saved = saveBaseline(
-          result,
-          currentCommit(target) ?? "unknown",
-          outPath,
-        );
-        io.out(
-          renderBaselineSaved(DEFAULT_BASELINE_PATH, result.findings.length, {
-            ...(saved.backupPath !== undefined
-              ? { backupPath: saved.backupPath }
-              : {}),
-          }),
-        );
-      } catch (saveErr) {
+      const notice = args.format === "terminal" ? io.out : io.err;
+      if (result.partial) {
         io.err(
-          `baseline save FAILED — ${saveErr instanceof Error ? saveErr.message : String(saveErr)}`,
+          "baseline NOT saved — this scan is partial, and a truncated before-state would report every finding it missed as RESOLVED. Re-run without the time budget.",
         );
-        io.err(
-          "The scan completed; the snapshot was not written. Fix the path permissions and re-run with `--save-baseline`.",
-        );
-        return EXIT_FINDINGS;
+      } else {
+        try {
+          const saved = saveBaseline(
+            result,
+            currentCommit(target) ?? "unknown",
+            outPath,
+          );
+          notice(
+            renderBaselineSaved(DEFAULT_BASELINE_PATH, result.findings.length, {
+              ...(saved.backupPath !== undefined
+                ? { backupPath: saved.backupPath }
+                : {}),
+            }),
+          );
+        } catch (saveErr) {
+          io.err(
+            `baseline save FAILED — ${saveErr instanceof Error ? saveErr.message : String(saveErr)}`,
+          );
+          io.err(
+            "The scan completed; the snapshot was not written. Fix the path permissions and re-run with `--save-baseline`.",
+          );
+          baselineFailed = true;
+        }
       }
     }
 
@@ -470,6 +507,7 @@ export async function runScanCommand(
 
     if (result.partial) return EXIT_PARTIAL;
     for (const w of warnings) io.err(w);
+    if (baselineFailed) return EXIT_PARTIAL;
     return scanExitCode({
       partial: false,
       findings: result.findings,
@@ -485,12 +523,7 @@ export async function runScanCommand(
         : {}),
     });
   } catch (err) {
-    if (err instanceof ConfigValidationError) {
-      io.err(err.message);
-      return EXIT_USAGE;
-    }
-    internalErrorMessage(err, io.err, args?.debug === true);
-    return EXIT_INTERNAL;
+    return verbFailure(err, io, args?.debug === true);
   }
 }
 
@@ -513,12 +546,14 @@ export async function runFixCommand(
     const result = await runScan({ ...args, target, strict: true });
     const fixes = planAndApplyFixes(result, target, { dryRun });
     io.out(renderFixReport(fixes, dryRun));
+    // A fix plan built from a partial scan has not seen every file, so it
+    // cannot report "nothing failed" as clean.
+    if (result.partial) return EXIT_PARTIAL;
     return fixes.some((f) => f.status === "failed")
       ? EXIT_FINDINGS
       : EXIT_CLEAN;
   } catch (err) {
-    internalErrorMessage(err, io.err, args?.debug === true);
-    return EXIT_INTERNAL;
+    return verbFailure(err, io, args?.debug === true);
   }
 }
 export async function runVerifyCommand(
@@ -540,12 +575,20 @@ export async function runVerifyCommand(
     io.out(renderVerifyDigest(digest));
     if (result.partial) return EXIT_PARTIAL;
     if (!digest.hasBaseline) return EXIT_PARTIAL;
-    return digest.new.some((f) => f.severity === "error")
-      ? EXIT_FINDINGS
-      : EXIT_CLEAN;
+    // The NEW findings go through the same exit matrix as `scan`, so
+    // `--blocking`, `config.gate` and the advisory (E0) exemption all apply.
+    // This verb used to compute its own "any new error" code and ignored all
+    // three: `--blocking none` still failed, and an E0 error finding that
+    // `scan` never gates on failed `ci verify`.
+    const { config } = loadConfig(target, { knownRuleIds: KNOWN_RULE_IDS });
+    return scanExitCode({
+      partial: false,
+      findings: diffAgainstBaseline(result, baseline).newFindings,
+      gate: resolveGateLevel(args.blocking, config),
+      isAdvisory: isAdvisoryFinding,
+    });
   } catch (err) {
-    internalErrorMessage(err, io.err, args?.debug === true);
-    return EXIT_INTERNAL;
+    return verbFailure(err, io, args?.debug === true);
   }
 }
 export async function runPrCommentCommand(
@@ -639,19 +682,26 @@ export async function runHandoverCommand(
     let forensics: ReturnType<typeof buildHandover> extends never
       ? never
       : Parameters<typeof buildHandover>[1] = null;
+    let forensicsFailed = false;
     const resultsDir = join(target, "test-results");
     if (existsSync(resultsDir)) {
       try {
         forensics = runForensics(resultsDir, { writeFlakyMd: false }).report;
-      } catch {
-        /* no run data — static map only */
+      } catch (forensicsErr) {
+        // runForensics turns hostile or corrupt reports into zero records,
+        // so a throw here is a real failure. It used to be swallowed into a
+        // static-only map with exit 0, which hid it entirely.
+        io.err(
+          `warning: test-results/ could not be read (${errorMessage(forensicsErr)}) — the map below is static-only.`,
+        );
+        forensicsFailed = true;
       }
     }
     io.out(renderHandover(buildHandover(result, forensics)));
+    if (result.partial || forensicsFailed) return EXIT_PARTIAL;
     return EXIT_CLEAN;
   } catch (err) {
-    internalErrorMessage(err, io.err, args?.debug === true);
-    return EXIT_INTERNAL;
+    return verbFailure(err, io, args?.debug === true);
   }
 }
 export function runPwReportCommand(
@@ -848,7 +898,9 @@ export function runEvidenceArm(
     const { report } = runForensics(resolve(target), { writeFlakyMd });
     if (asJson) io.out(JSON.stringify(report, null, 2));
     else io.out(asMd ? renderTriageMd(report) : renderTriage(report));
-    return report.analysisComplete === false ? EXIT_FINDINGS : EXIT_CLEAN;
+    // An incomplete run report is INCONCLUSIVE (2), not "findings" (1): the
+    // analysis did not reach part of the evidence it was pointed at.
+    return report.analysisComplete === false ? EXIT_PARTIAL : EXIT_CLEAN;
   } catch (err) {
     internalErrorMessage(err, io.err, argv.includes("--debug"));
     return EXIT_INTERNAL;

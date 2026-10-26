@@ -288,11 +288,14 @@ describe("runScanCommand / main dispatch", () => {
     expect(srcroot, "SRCROOT base uri must be present").toMatch(/^file:\/\//);
     if (srcroot === undefined) return;
     // fileURLToPath decodes percent-encoding and normalizes to the
-    // platform path — the result must be exactly the scanned target.
+    // platform path — the result must be exactly the scanned target. The
+    // base ends with `/` (SARIF §3.14.14), so the trailing separator is
+    // stripped before comparing.
     expect(
-      fileURLToPath(srcroot),
+      fileURLToPath(srcroot).replace(/[\\/]+$/, ""),
       "SRCROOT must resolve to the scanned target",
     ).toBe(dir);
+    expect(srcroot.endsWith("/"), "SRCROOT must end with `/`").toBe(true);
     // At least one result carries the uriBaseId resolving against it.
     const withBaseId = run.results.flatMap((r) =>
       r.locations.map((l) => l.physicalLocation.artifactLocation.uriBaseId),

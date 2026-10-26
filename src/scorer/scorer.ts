@@ -291,11 +291,17 @@ export function countTestDeclarations(text: string, codeText?: string): number {
     // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/rules/redos-gate.spec.ts
     /\b(?:it|test)(?:\.\w+)*\s*(?:\(|`)/g,
     // Python: def test_…
-    // eslint-disable-next-line security/detect-unsafe-regex -- bounded literal pattern (no quantifier exchange surface) — ReDoS is authoritatively gated by regexp/no-super-linear-backtracking (error in the ratchet) + tests/rules/redos-gate.spec.ts
-    /^\s*(?:async\s+)?def\s+test_\w*/gm,
+    //
+    // `[ \t]*`, never `\s*`, after a multiline `^`: `\s` also matches a
+    // newline, so every line start could consume every following blank line
+    // before backtracking — O(n²) on a file of blank lines (300k lines
+    // measured 152 s, in synchronous code the scan deadline cannot interrupt).
+    // Indentation never spans lines, so the counts are identical.
+    // eslint-disable-next-line security/detect-unsafe-regex -- star-height heuristic only: every quantifier is over [ \t] or \w and cannot cross a line; linearity is asserted by count-test-declarations.spec.ts
+    /^[ \t]*(?:async[ \t]+)?def[ \t]+test_\w*/gm,
     // Java / C# attributes and annotations
-    /^\s*@Test\b/gm,
-    /^\s*\[(?:Test|Fact|Theory|TestMethod)\b/gm,
+    /^[ \t]*@Test\b/gm,
+    /^[ \t]*\[(?:Test|Fact|Theory|TestMethod)\b/gm,
   ];
   let count = 0;
   for (const re of patterns) {

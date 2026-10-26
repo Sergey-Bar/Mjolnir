@@ -88,18 +88,34 @@ export function parseJunitXml(xml: string): TestRecord[] {
 
     const errors: string[] = [];
     if (failed) {
-      const failRe =
-        /<(?:failure|error)\b([^>]*)>([\s\S]*?)<\/(?:failure|error)\s*>/gi;
-      let failMatch: RegExpExecArray | null;
-      while ((failMatch = failRe.exec(inner)) !== null) {
-        const attrsStr = failMatch[1] ?? "";
+      // Linear, like the <testcase> scan above: a lazy `[\s\S]*?</failure>`
+      // regex rescanned the rest of the testcase from every unclosed opener,
+      // which measured 63 s for 200,000 openers (2.2 MB). Each opener's body
+      // runs to the next matching closer; the first opener with no closer
+      // ends the scan, because no later opener can be closed either.
+      const openRe = /<(?:failure|error)\b/gi;
+      const endRe = /<\/(?:failure|error)\s*>/gi;
+      let open: RegExpExecArray | null;
+      while ((open = openRe.exec(inner)) !== null) {
+        const gt = inner.indexOf(">", open.index);
+        if (gt === -1) break;
+        const attrsStr = inner.slice(open.index, gt);
+        if (attrsStr.endsWith("/")) {
+          // Self-closing: handled by selfCloseRe below.
+          openRe.lastIndex = gt + 1;
+          continue;
+        }
+        endRe.lastIndex = gt + 1;
+        const end = endRe.exec(inner);
+        if (end === null) break;
         const msgAttrMatch = /\smessage\s*=\s*"([^"]*)"/i.exec(attrsStr);
         const msgAttr = msgAttrMatch?.[1];
         if (msgAttr) errors.push(sanitizeErrorText(decodeEntities(msgAttr)));
-        const body = failMatch[2]?.trim();
+        const body = inner.slice(gt + 1, end.index).trim();
         if (body && body !== msgAttr) {
           errors.push(sanitizeErrorText(decodeEntities(body)));
         }
+        openRe.lastIndex = end.index + end[0].length;
       }
       const selfCloseRe = /<(?:failure|error)\b([^>]*)\/>/gi;
       let scMatch: RegExpExecArray | null;

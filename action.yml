@@ -4,8 +4,8 @@
 # documented amendment to the repo's root contract
 # (tests/contract/repo-hygiene.spec.ts), never a silent one.
 #
-# Consumers pin a MAJOR tag — `uses: Sergey-Bar/Mjolnir@v5` at the time of
-# writing, matching `publishedStable` in package.json. The separate
+# Consumers pin a MAJOR tag — `uses: Sergey-Bar/Mjolnir@v<major>`, where the
+# major is that of `publishedStable` in package.json. The separate
 # action-tags workflow moves that tag only after a stable, non-RC release, and
 # derives the major from the tag being pushed; a hardcoded number here is
 # exactly the defect that comment used to be, because a reader pinned a major
@@ -121,12 +121,12 @@ outputs:
   findings:
     description: "Finding count from the JSON report (format: json only, else empty)"
     value: ${{ steps.scan.outputs.findings }}
-    # Underscore, never hyphen: a hyphenated name is unreadable in an
-    # expression (`outputs.sarif` minus `file` evaluates to 0), so every
-    # consumer of it silently takes the false branch.
-    sarif_file:
-      description: "Path of the SARIF report when format is sarif, else empty"
-      value: ${{ steps.scan.outputs.sarif_file }}
+  # Underscore, never hyphen: a hyphenated name is unreadable in an
+  # expression (`outputs.sarif` minus `file` evaluates to 0), so every
+  # consumer of it silently takes the false branch.
+  sarif_file:
+    description: "Path of the SARIF report when format is sarif, else empty"
+    value: ${{ steps.scan.outputs.sarif_file }}
   trust_report_file:
     description: "Path of the generated unified PR report (mjolnir-comment.md)"
     value: ${{ steps.pr-report.outputs.file }}
@@ -199,7 +199,7 @@ runs:
         if ! npm view "mjolnir-qa@$MJ_VERSION" version >/dev/null 2>&1; then
           echo "::error::mjolnir-qa@$MJ_VERSION is not published on the npm registry."
           echo "::error::A release candidate exists only in this repository until it is published."
-          echo "::error::Pin 'version:' to a published version (for example 3.0.0), or drop the input to use the default."
+          echo "::error::Pin 'version:' to a published version (\`npm view mjolnir-qa versions\` lists them), or drop the input to use the default."
           exit 10
         fi
 
