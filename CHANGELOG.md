@@ -45,6 +45,13 @@ once shipped, so this file is the record of what changed between versions.
   entry spells the marker in lower case on purpose: the gate matches the
   upper-case token anywhere in the top entry, so quoting it would license
   growth that nobody declared.)
+- **Dependency advisories.** With `npm ci` failing, `npm run audit:ci` had
+  never been reached; it now ran and failed on `zod` (high, GHSA-mrhx-c7xc-m3w5,
+  via lighthouse → puppeteer-core → chromium-bidi) and `fast-uri` (moderate).
+  The site lockfile carried a `vite` advisory (high, GHSA-vfpm-58rq-9qcg). All
+  three are lockfile-only `npm audit fix` updates inside the declared ranges,
+  in dev tooling only — nothing in the published package changes.
+  `lockfile:platforms` passes for both lockfiles.
 - Regenerated: `docs/BLAST-RADIUS-AUDIT.md`, `docs/CARVE-MANIFEST.json`,
   `candidate-trust-manifest.json`.
 

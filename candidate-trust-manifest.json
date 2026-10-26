@@ -28,40 +28,26 @@
   "generatedAt": "2026-10-26",
   "identity": {
     "state": "RELEASE_CANDIDATE",
-    "baseSha": "0ff020d526ecc70d6b96700edb8d29a6fe085055",
+    "baseSha": "ee2b99cce20dc33b0d72a9c3d79af5170b1c876b",
     "candidateSha": "2ed960732480f33fbe6564752ce0201040b91e03",
     "version": "6.0.0",
     "packageSha256": "9eedd3a30b3148135a19f54a15f273cd1fb8cf83dfb57ddc40def877093906c4",
-    "lockfileSha256": "988fce53f615275c8693d7974bf137f9ef959f7dab0cd7ee75f1286f75edfe02",
-    "workingTreeSha256": "13245922a4fef0563868364ea50c4f9ac5c2e8aad96a0efd39f72eb36d884105",
-    "changedPathCount": 10,
+    "lockfileSha256": "69f7614ada84b173ea77406f6c06c65b3d63972b1aef7216e3c4ddefc7988857",
+    "workingTreeSha256": "795ba15f3b1a323e7b10ccd6ce092a57856123fb7a646234b9da5bdb9cfc7bcd",
+    "changedPathCount": 3,
     "supportEnvelope": "self-hosted; hosted services require explicit consent and separate proof",
     "worktreeInventory": {
       "changedPaths": [
         "CHANGELOG.md",
-        "README.md",
-        "docs/BLAST-RADIUS-AUDIT.md",
-        "docs/CARVE-MANIFEST.json",
-        "docs/RULE-PROMOTION-LEDGER.json",
-        "mjolnir.config.json",
         "package-lock.json",
-        "src/release/version-surface.ts",
-        "tests/contract/promotion-ratchet.spec.ts",
-        "tests/contract/repo-hygiene.spec.ts"
+        "site/package-lock.json"
       ],
       "untrackedPaths": []
     },
     "dirtyFiles": [
       "CHANGELOG.md",
-      "README.md",
-      "docs/BLAST-RADIUS-AUDIT.md",
-      "docs/CARVE-MANIFEST.json",
-      "docs/RULE-PROMOTION-LEDGER.json",
-      "mjolnir.config.json",
       "package-lock.json",
-      "src/release/version-surface.ts",
-      "tests/contract/promotion-ratchet.spec.ts",
-      "tests/contract/repo-hygiene.spec.ts"
+      "site/package-lock.json"
     ]
   },
   "claimRegistry": {
