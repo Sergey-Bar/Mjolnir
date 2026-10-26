@@ -202,7 +202,10 @@ export function checkVersionSurfaceEnvelope(
         let offset = content.indexOf(prefix);
         while (offset >= 0) {
           const start = offset + prefix.length;
-          const end = content.slice(start).search(/[\s"']/u);
+          // Backtick-terminated too: an inline-code install command
+          // (`npx mjolnir-qa@X`) must be read as `X`, not `X\``, or the
+          // unpublished-version check silently passes on Markdown surfaces.
+          const end = content.slice(start).search(/[\s"'`]/u);
           const candidate = content.slice(
             start,
             end < 0 ? undefined : start + end,
