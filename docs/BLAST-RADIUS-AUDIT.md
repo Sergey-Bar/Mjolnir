@@ -7,17 +7,17 @@ contract enforces: **every external import in src/ must belong to the
 allowlist**, and the shipped surface (adapters, rules, flags, formats, exit
 codes) must match this document exactly.
 
-## Inventory: 306 files, 74253 LOC
+## Inventory: 306 files, 74430 LOC
 
 | Area              | Files | LOC   |
 | ----------------- | ----- | ----- |
 | src/rules         | 88    | 13123 |
-| src/engine        | 44    | 12372 |
+| src/engine        | 44    | 12401 |
 | src/commands      | 34    | 12241 |
 | src/v6            | 10    | 6206  |
-| src/(root)        | 8     | 3971  |
-| src/reporter      | 14    | 3833  |
-| src/forensics     | 18    | 3307  |
+| src/(root)        | 8     | 4023  |
+| src/reporter      | 14    | 3840  |
+| src/forensics     | 18    | 3345  |
 | src/certification | 6     | 2698  |
 | src/frameworks    | 5     | 2015  |
 | src/adapters      | 11    | 1809  |
@@ -25,14 +25,14 @@ codes) must match this document exactly.
 | src/gaps          | 2     | 1390  |
 | src/integrations  | 7     | 1153  |
 | src/brand         | 3     | 886   |
+| src/mcp           | 3     | 853   |
 | src/release       | 5     | 827   |
-| src/mcp           | 3     | 825   |
 | src/lib           | 9     | 735   |
 | src/plugins       | 4     | 715   |
-| src/store         | 2     | 665   |
+| src/store         | 2     | 682   |
 | src/bench         | 4     | 592   |
 | src/config        | 3     | 559   |
-| src/scorer        | 3     | 505   |
+| src/scorer        | 3     | 511   |
 | src/traceability  | 2     | 441   |
 | src/scope         | 2     | 427   |
 | src/trust         | 2     | 399   |

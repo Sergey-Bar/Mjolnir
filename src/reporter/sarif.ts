@@ -265,8 +265,9 @@ export function renderSarif(result: ScanResult, repoRootUri?: string): string {
   // raw path and its href produce the same uri.
   //
   // The trailing `/` is required (SARIF 2.1.0 §3.14.14). RFC 3986
-  // resolution of `src/a.ts` against `file:///repo` drops `repo`, so
-  // without it every Code Scanning result pointed one directory too high.
+  // resolution of a relative artifact uri against `file:///repo` drops
+  // `repo`, so without it every Code Scanning result pointed one directory
+  // too high.
   const srcRoot = (uri: string): string => {
     const encoded = uri
       .replaceAll("\\", "/")

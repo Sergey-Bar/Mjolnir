@@ -28,30 +28,32 @@
   "generatedAt": "2026-10-26",
   "identity": {
     "state": "RELEASE_CANDIDATE",
-    "baseSha": "a156a9b775e1968823f19589d544a87a3cd7ac3f",
+    "baseSha": "f373fabb8c5a46b9ae7a4dd55c5a387e50adaa99",
     "candidateSha": "2ed960732480f33fbe6564752ce0201040b91e03",
     "version": "6.0.0",
     "packageSha256": "9eedd3a30b3148135a19f54a15f273cd1fb8cf83dfb57ddc40def877093906c4",
     "lockfileSha256": "69f7614ada84b173ea77406f6c06c65b3d63972b1aef7216e3c4ddefc7988857",
-    "workingTreeSha256": "22bb87bae7b570aa83c943c773a53cffff23c6c6f9a7ea846ad53b19d98a60fb",
-    "changedPathCount": 5,
+    "workingTreeSha256": "63ae0a185f4c104e79e248209d2360bc4838dd3fd06f2d7ee0dcb9cc1546277c",
+    "changedPathCount": 6,
     "supportEnvelope": "self-hosted; hosted services require explicit consent and separate proof",
     "worktreeInventory": {
       "changedPaths": [
         "CHANGELOG.md",
-        "README.md",
-        "tests/contract/readme-commands.spec.ts",
-        "tests/contract/readme-doctest.spec.ts",
-        "tests/contract/readme-samples.spec.ts"
+        "docs/BLAST-RADIUS-AUDIT.md",
+        "docs/V6-CURRENT-STATE.md",
+        "docs/v6-inventory.json",
+        "src/reporter/sarif.ts",
+        "tests/reporters/reporters.spec.ts"
       ],
       "untrackedPaths": []
     },
     "dirtyFiles": [
       "CHANGELOG.md",
-      "README.md",
-      "tests/contract/readme-commands.spec.ts",
-      "tests/contract/readme-doctest.spec.ts",
-      "tests/contract/readme-samples.spec.ts"
+      "docs/BLAST-RADIUS-AUDIT.md",
+      "docs/V6-CURRENT-STATE.md",
+      "docs/v6-inventory.json",
+      "src/reporter/sarif.ts",
+      "tests/reporters/reporters.spec.ts"
     ]
   },
   "claimRegistry": {

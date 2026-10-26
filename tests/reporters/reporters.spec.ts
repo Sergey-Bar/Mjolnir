@@ -153,7 +153,7 @@ describe("renderSarif", () => {
     const run = defined(sarif.runs[0], "sarif.runs[0]");
     // SARIF 2.1.0 §3.14.14: a base uri MUST end with `/`. Without it RFC
     // 3986 resolution drops the last segment, so every result resolved one
-    // directory too high (`file:///repo` + `src/a.ts` = `file:///src/a.ts`).
+    // directory too high (the `repo` segment was lost).
     expect(run.originalUriBaseIds.SRCROOT?.uri).toBe("file:///repo/");
     expect(new URL("src/a.ts", run.originalUriBaseIds.SRCROOT?.uri).href).toBe(
       "file:///repo/src/a.ts",
