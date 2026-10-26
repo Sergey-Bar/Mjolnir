@@ -15,7 +15,10 @@
  * - parameter size caps; ONE scan in flight (serialized queue) reusing
  *   the pipeline's own budgets; zero network (no fetches anywhere); no
  *   shell execution beyond Mjölnir's own verbs.
- * - filesystem boundary = scan target + `.mjolnir/` (same as CLI).
+ * - filesystem boundary: the tools are read-only, and with no further
+ *   configuration they accept any path the parent process passes (the
+ *   parent is the trust boundary). `MJOLNIR_WORKSPACE_ROOT` confines every
+ *   path argument to that directory, symlinks resolved.
  * - the plugin trust gate applies unchanged (--enable-plugins is NOT
  *   exposed over MCP: tools run with the gate CLOSED unless the server
  *   was started with MJOLNIR_ENABLE_PLUGINS=1 in its own environment).
@@ -23,8 +26,8 @@
 
 import { Buffer } from "node:buffer";
 import { createHash } from "node:crypto";
-import { existsSync } from "node:fs";
-import { isAbsolute, join, relative, resolve } from "node:path";
+import { existsSync, realpathSync } from "node:fs";
+import { isAbsolute, join, relative, resolve, sep } from "node:path";
 
 import { runScan } from "../engine/scan-pipeline.js";
 import { errorMessage } from "../cli-io.js";
@@ -46,15 +49,40 @@ const MAX_PARAM_BYTES = 64 * 1024;
 const MAX_DURATION_MS = 3_600_000;
 const DEFAULT_MAX_DURATION_MS = 600_000;
 const PROTOCOL_VERSION = "2025-06-18";
+
+/** The real path of `p`, or its lexical resolution when it does not exist. */
+function realOrResolved(p: string): string {
+  try {
+    return realpathSync.native(resolve(p));
+  } catch {
+    return resolve(p);
+  }
+}
+
+/**
+ * The optional workspace root. When set, every path argument must resolve
+ * INSIDE it after symlinks are followed.
+ *
+ * Unset is open by design and is documented that way in the header: the MCP
+ * tools are read-only and the stdio parent is the trust boundary. Setting
+ * `MJOLNIR_WORKSPACE_ROOT` is how a host confines them.
+ */
 const CONFIGURED_ROOT = process.env.MJOLNIR_WORKSPACE_ROOT
-  ? resolve(process.env.MJOLNIR_WORKSPACE_ROOT)
+  ? realOrResolved(process.env.MJOLNIR_WORKSPACE_ROOT)
   : null;
 
 function isPathAllowed(path: string): boolean {
   if (!CONFIGURED_ROOT) return true;
-  const candidate = resolve(path);
-  const rel = relative(CONFIGURED_ROOT, candidate);
-  return rel === "" || (!rel.startsWith("..") && !isAbsolute(rel));
+  // Real paths on BOTH sides: a symlink (or Windows junction) inside the root
+  // that points outside it used to pass, because the check compared the
+  // lexical path the link sits at, not where it leads.
+  const rel = relative(CONFIGURED_ROOT, realOrResolved(path));
+  // `..` as a whole segment only. `startsWith("..")` also rejected a real
+  // child directory named `..cache`.
+  return (
+    rel === "" ||
+    (rel !== ".." && !rel.startsWith(`..${sep}`) && !isAbsolute(rel))
+  );
 }
 
 export interface McpToolCall {
