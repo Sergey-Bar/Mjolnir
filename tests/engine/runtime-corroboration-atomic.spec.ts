@@ -98,10 +98,10 @@ describe("a failed corroboration leaves no half-stamped findings", () => {
       expect(f.runtimeCorroboration?.level).not.toBe("defect");
     }
     expect(
-      result.analysisStatus.reasons.some((r) =>
+      (result.analysisStatus.reasons ?? []).some((r) =>
         r.includes("runtime-corroboration-failed"),
       ),
-      `reasons: ${result.analysisStatus.reasons.join(", ")}`,
+      `reasons: ${(result.analysisStatus.reasons ?? []).join(", ")}`,
     ).toBe(true);
   });
 });

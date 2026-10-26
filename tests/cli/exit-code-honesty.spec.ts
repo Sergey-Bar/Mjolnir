@@ -34,21 +34,22 @@ import {
   runScanCommand,
   runVerifyCommand,
 } from "../../src/cli.js";
+import type { Output } from "../../src/cli-io.js";
 
 let dir: string;
 
 function capture(): {
-  io: { out: (s: string) => void; err: (s: string) => void };
+  io: { out: Output; err: Output };
   out: string[];
   err: string[];
 } {
   const out: string[] = [];
   const err: string[] = [];
-  return {
-    io: { out: (s) => out.push(s), err: (s) => err.push(s) },
-    out,
-    err,
-  };
+  const sink =
+    (into: string[]): Output =>
+    (...parts: unknown[]) =>
+      into.push(parts.map(String).join(" "));
+  return { io: { out: sink(out), err: sink(err) }, out, err };
 }
 
 beforeEach(() => {
