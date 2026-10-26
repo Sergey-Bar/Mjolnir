@@ -10,9 +10,9 @@
  *
  * Every failure arm is synthetic and driven through `--root`-style fixtures.
  * The shipped tree exercises only the pass path, because both figures are at
- * their best values today (the 6.0 demotion emptied core; 6 rules are
- * unmeasured), and a ratchet that has only ever passed has not been shown to
- * be a ratchet.
+ * their recorded bounds today (core holds the two 6.0.0 promotions, absorbed
+ * into the ledger; 6 rules are unmeasured), and a ratchet that has only ever
+ * passed has not been shown to be a ratchet.
  */
 
 import { execFileSync } from "node:child_process";
@@ -118,20 +118,20 @@ describe("the promotion ratchet reports rather than only enforcing", () => {
     expect(report.launchSet.tier).toBe("core");
 
     /**
-     * `netChange` is 1, not ≤ 0: `QA-PW-117` was promoted to core on
-     * 2026-10-03, which is Law 1 growth against a baseline of 0. The unreleased
-     * changelog carries an `ANTI-CREEP-EXCEPTION` for it, which is the law's own
-     * second condition — and condition 1 (an equal-size removal) is unavailable
-     * here, because the launch set held nothing to remove.
+     * `netChange` is 0: the two 6.0.0 core promotions (`QA-PW-117`,
+     * `QA-JV-101`) were licensed by the `ANTI-CREEP-EXCEPTION` in the 6.0.0
+     * entry, and the ledger's `core` bound was moved 0 → 2 after that release
+     * (ABSORBED, the same convention `docs/ANTI-CREEP-BASELINE.json` records).
+     * With no growth there is nothing to license, so `licensed` is `null` — not
+     * `true`, which would claim a licence that is not being used.
      *
-     * So the report states the licence rather than reporting a violation and an
-     * exit code at the same time. A gate that prints `netChange: 1` against
-     * `mustBe: ≤ 0` and exits 0 teaches a reader to look past both lines.
+     * The licensed-growth arm is still exercised against a fixture below, so
+     * absorbing the baseline does not leave that branch untested.
      */
-    expect(report.launchSet.netChange).toBe(2);
+    expect(report.launchSet.netChange).toBe(0);
     expect(report.launchSet.mustBe).toBe("≤ 0");
-    expect(report.launchSet.licensed, output).toBe(true);
-    expect(report.launchSet.license).toContain("ANTI-CREEP-EXCEPTION");
+    expect(report.launchSet.licensed, output).toBeNull();
+    expect(report.launchSet.license).toBeNull();
 
     expect(report.tiers.map((t) => t.tier)).toEqual([
       "quarantine",
@@ -155,6 +155,36 @@ describe("the promotion ratchet reports rather than only enforcing", () => {
     expect(baseline.unmeasuredIds).toHaveLength(baseline.unmeasured);
     for (const id of baseline.unmeasuredIds)
       expect(id).toMatch(/^QA-[A-Z]+-\d+$/);
+  });
+
+  it("launch-set growth is not a law-1 failure when the unreleased entry licenses it", () => {
+    // The second condition of law 1. Growth with an ANTI-CREEP-EXCEPTION in
+    // the CURRENT entry is licensed. The committed tree no longer exercises
+    // this arm (6.0.0's growth was absorbed into the baseline), so it is
+    // driven here — paired with the same fixture minus the marker, so the
+    // assertion is about the licence and not about whatever else the
+    // fixture root happens to lack (the core-tier evidence records).
+    const fixture = (changelog: string): string => {
+      const dir = mkdtempSync(join(tmpdir(), "mjolnir-promotion-"));
+      scratch.push(dir);
+      mkdirSync(join(dir, "docs"), { recursive: true });
+      cpSync(BASELINE, join(dir, "docs", "RULE-PROMOTION-LEDGER.json"));
+      driftedBaseline(dir, { core: committedBaseline().core - 1 });
+      writeFileSync(join(dir, "CHANGELOG.md"), changelog, "utf8");
+      return dir;
+    };
+    const entry = (body: string): string =>
+      `# Changelog\n\n## [Unreleased]\n\n${body}\n\n## [1.0.0] — 2020-01-01\n\n- old\n`;
+    const licensed = runCheck(
+      fixture(
+        entry(
+          "<!-- ANTI-CREEP-EXCEPTION: fixture growth with its reason -->\n\n- a promotion",
+        ),
+      ),
+    );
+    const unlicensed = runCheck(fixture(entry("- a promotion")));
+    expect(unlicensed.output).toContain("the launch set grew");
+    expect(licensed.output).not.toContain("the launch set grew");
   });
 
   it("a launch set bigger than the baseline fails", () => {
