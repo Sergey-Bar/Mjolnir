@@ -97,3 +97,27 @@ describe("maskTypeScriptBasic — template interpolation correctness", () => {
     expect(countTestDeclarations(raw, codeView)).toBe(1);
   });
 });
+
+describe("countTestDeclarations is linear on hostile input", () => {
+  // `/^\s*…/gm` lets `\s*` consume newlines from every line start, so a file
+  // of blank lines is O(n²): 100k lines measured 3.9 s, and the 1 MB file cap
+  // extrapolates to minutes of synchronous CPU the scan deadline cannot
+  // interrupt. Scanned files are untrusted input. `[ \t]*` keeps each attempt
+  // on one line and counts the same declarations.
+  it("counts through 300,000 blank lines in bounded time", () => {
+    const text =
+      "\n".repeat(300_000) + "def test_x():\n    pass\n@Test\n[Fact]\n";
+    const start = performance.now();
+    const count = countTestDeclarations(text);
+    expect(performance.now() - start).toBeLessThan(2_000);
+    expect(count).toBe(3);
+  });
+
+  it("still counts indented declarations (tabs and spaces)", () => {
+    expect(
+      countTestDeclarations(
+        "class T:\n\tdef test_a(self): pass\n    async def test_b(self): pass\n  @Test\n  [Theory]\n",
+      ),
+    ).toBe(4);
+  });
+});
