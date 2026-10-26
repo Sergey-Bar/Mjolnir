@@ -153,3 +153,42 @@ describe("duration parsing", () => {
     expect(one("00:00:00.0015000")).toBe(1);
   });
 });
+
+describe("TRX: a long result body is not a missing result", () => {
+  // The result scanner capped each `<UnitTestResult>` body at 4,000 chars.
+  // A body longer than that — normal for a failing .NET test with StdOut and
+  // a stack trace — did not match at all, so the regex skipped ahead and the
+  // failed test vanished from the run. That is the false-green direction:
+  // the run read as greener than it was, with no partial signal.
+  const doc = (stdout: string): string =>
+    [
+      '<?xml version="1.0" encoding="utf-8"?>',
+      '<TestRun id="r" name="run" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">',
+      "<Results>",
+      '<UnitTestResult testId="a" testName="LongFailure" outcome="Failed" duration="00:00:01.0000000">',
+      `<Output><StdOut>${stdout}</StdOut><ErrorInfo><Message>expected 1 but was 2</Message><StackTrace>at X</StackTrace></ErrorInfo></Output>`,
+      "</UnitTestResult>",
+      '<UnitTestResult testId="b" testName="ShortPass" outcome="Passed" duration="00:00:00.0010000" />',
+      "</Results>",
+      "</TestRun>",
+    ].join("\n");
+
+  it("keeps a failed result whose body exceeds 4,000 characters, with its message", () => {
+    const records = parseTrxXml(doc("x".repeat(20_000)));
+    const byTitle = new Map(records.map((r) => [r.title, r]));
+    expect(records.map((r) => r.title).sort()).toEqual([
+      "LongFailure",
+      "ShortPass",
+    ]);
+    expect(byTitle.get("LongFailure")?.attempts[0]?.status).toBe("failed");
+    expect(byTitle.get("LongFailure")?.errors?.[0]).toContain(
+      "expected 1 but was 2",
+    );
+    expect(byTitle.get("ShortPass")?.attempts[0]?.status).toBe("passed");
+  });
+
+  it("a self-closing result does not swallow the next one", () => {
+    const records = parseTrxXml(doc("short"));
+    expect(records).toHaveLength(2);
+  });
+});
