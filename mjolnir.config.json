@@ -1,7 +1,7 @@
 {
   "exclude": [
     "tests/fixtures/**",
-    "tests/golden/**",
+    "tests/golden/repo/**",
     "examples/**",
     "scratch/**",
     ".kilo/**",

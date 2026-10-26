@@ -412,3 +412,28 @@ describe("lifecycle scripts are documented (SC-7)", () => {
     ).toEqual([]);
   });
 });
+
+describe("the whole-repository self-scan is complete", () => {
+  // sarif-code-scanning.yml scans `.`, not `src`, and failed every week from
+  // 2026-09-28: `mjolnir.config.json` excluded `tests/golden/**`, which covers
+  // the real spec `tests/golden/golden.spec.ts` as well as the fixture repo
+  // under it. An excluded test file is an honest `scope-ignored` reason, so
+  // the scan reported PARTIAL and exited 2. The ci.yml self-scan reads `src`
+  // only and could not see it. This asserts the workflow's own contract.
+  it("`mjolnir .` is not PARTIAL (no tracked test file is excluded)", () => {
+    const out = execFileSync(
+      process.execPath,
+      [join(ROOT, "dist", "cli.mjs"), ".", "--json"],
+      { cwd: ROOT, encoding: "utf8", maxBuffer: 256 * 1024 * 1024 },
+    );
+    const report = JSON.parse(out) as {
+      partial: boolean;
+      scopeIntegrity: { scopeVerdict: string; reasons?: string[] };
+    };
+    expect(
+      report.scopeIntegrity.reasons ?? [],
+      "the repo's own config excludes a test file the scanner would claim",
+    ).toEqual([]);
+    expect(report.partial).toBe(false);
+  });
+});
