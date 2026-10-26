@@ -263,6 +263,25 @@ export function renderSarif(result: ScanResult, repoRootUri?: string): string {
   // (a `~`-containing Windows 8.3 path became `%257E` on CI), so valid
   // escapes are restored after encoding. The result is idempotent: a
   // raw path and its href produce the same uri.
+  //
+  // The trailing `/` is required (SARIF 2.1.0 §3.14.14). RFC 3986
+  // resolution of `src/a.ts` against `file:///repo` drops `repo`, so
+  // without it every Code Scanning result pointed one directory too high.
+  const srcRoot = (uri: string): string => {
+    const encoded = uri
+      .replaceAll("\\", "/")
+      .split("/")
+      .map((seg) =>
+        seg === ""
+          ? ""
+          : encodeURI(seg)
+              .replaceAll("%25", "%")
+              .replaceAll("#", "%23")
+              .replaceAll("?", "%3F"),
+      )
+      .join("/");
+    return encoded.endsWith("/") ? encoded : `${encoded}/`;
+  };
   const sarif = {
     $schema: "https://json.schemastore.org/sarif-2.1.0.json",
     version: ["2", "1", "0"].join("."),
@@ -271,20 +290,7 @@ export function renderSarif(result: ScanResult, repoRootUri?: string): string {
         ? {
             ...run,
             originalUriBaseIds: {
-              SRCROOT: {
-                uri: repoRootUri
-                  .replaceAll("\\", "/")
-                  .split("/")
-                  .map((seg) =>
-                    seg === ""
-                      ? ""
-                      : encodeURI(seg)
-                          .replaceAll("%25", "%")
-                          .replaceAll("#", "%23")
-                          .replaceAll("?", "%3F"),
-                  )
-                  .join("/"),
-              },
+              SRCROOT: { uri: srcRoot(repoRootUri) },
             },
           }
         : run,
