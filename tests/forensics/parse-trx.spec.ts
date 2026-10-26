@@ -192,3 +192,33 @@ describe("TRX: a long result body is not a missing result", () => {
     expect(records).toHaveLength(2);
   });
 });
+
+describe("JUnit: unclosed <failure> tags inside one testcase are linear", () => {
+  // The <testcase> scan was made linear (QA-11), but the <failure>/<error>
+  // scan inside it still used a lazy `[\s\S]*?</failure>` regex. Inside one
+  // testcase holding N unclosed `<failure` openers every opener rescanned
+  // the rest: 220 KB already cost ~0.5 s and it grows with the square, so a
+  // hostile 2 MB report would take close to a minute of synchronous CPU.
+  // A linear scan does this in well under a second; the bound below is
+  // loose enough for a slow runner and far below the quadratic cost.
+  it("parses 200,000 unclosed failure openers in bounded time", () => {
+    const xml =
+      '<testsuite><testcase name="t" classname="c">' +
+      "<failure x>".repeat(200_000) +
+      "</testcase></testsuite>";
+    const start = performance.now();
+    const records = parseJunitXml(xml);
+    expect(performance.now() - start).toBeLessThan(5_000);
+    expect(records).toHaveLength(1);
+    expect(records[0]?.attempts[0]?.status).toBe("failed");
+  });
+
+  it("still reads a closed failure's message and body", () => {
+    const records = parseJunitXml(
+      '<testsuite><testcase name="t" classname="c">' +
+        '<failure message="boom">stack here</failure>' +
+        "</testcase></testsuite>",
+    );
+    expect(records[0]?.errors).toEqual(["boom", "stack here"]);
+  });
+});
