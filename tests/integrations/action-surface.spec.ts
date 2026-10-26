@@ -397,3 +397,30 @@ describe("ci-install action template agrees with the real action.yml", () => {
     }
   });
 });
+
+describe("action.yml outputs are all top-level", () => {
+  // `sarif_file` was indented under `findings:`, so it parsed as a child key
+  // of that output rather than as an output. A consumer reading
+  // `steps.<id>.outputs.sarif_file` always got an empty string, and an
+  // upload-sarif step keyed on it silently uploaded nothing.
+  it.each(["exit_code", "findings", "sarif_file", "trust_report_file"])(
+    "%s is declared with a description and a value",
+    (name) => {
+      const output = action.outputs?.[name];
+      expect(output, `outputs.${name} is not a top-level output`).toBeDefined();
+      expect(typeof output?.description).toBe("string");
+      expect(output?.value).toMatch(
+        /^\$\{\{ steps\.[\w-]+\.outputs\.\w+ \}\}$/,
+      );
+    },
+  );
+
+  it("no output carries a nested output", () => {
+    for (const [name, output] of Object.entries(action.outputs ?? {})) {
+      expect(
+        Object.keys(output).sort(),
+        `outputs.${name} has keys beyond description/value`,
+      ).toEqual(["description", "value"]);
+    }
+  });
+});
