@@ -28,29 +28,19 @@
   "generatedAt": "2026-10-27",
   "identity": {
     "state": "RELEASE_CANDIDATE",
-    "baseSha": "3aec97aa0d1f60e7c8f7de3a1f90be96a22f11a4",
+    "baseSha": "d989f38bda8ada4ec5e05c1cdef42cfb026c31f7",
     "candidateSha": "2ed960732480f33fbe6564752ce0201040b91e03",
     "version": "6.0.0",
-    "packageSha256": "fac56e08a67cef415929b052b465c057761d90a4bfd209c4c2734031cb89b632",
+    "packageSha256": "bc9f03f1fa8316074e4e020ce807b18b69938e5434cbee435e31b26afcc760f9",
     "lockfileSha256": "69f7614ada84b173ea77406f6c06c65b3d63972b1aef7216e3c4ddefc7988857",
-    "workingTreeSha256": "c5a37910fafafe83597214736fdfc7309f50bf902e400760aab0553fa2676f98",
-    "changedPathCount": 4,
+    "workingTreeSha256": "59faa3da3b2d9307575d718551d86ded02567eb0df0c515b9768420d32b691e5",
+    "changedPathCount": 1,
     "supportEnvelope": "self-hosted; hosted services require explicit consent and separate proof",
     "worktreeInventory": {
-      "changedPaths": [
-        ".coderabbit.yaml",
-        ".husky/commit-msg",
-        ".prettierignore",
-        "sonar-project.properties"
-      ],
+      "changedPaths": ["CHANGELOG.md"],
       "untrackedPaths": []
     },
-    "dirtyFiles": [
-      ".coderabbit.yaml",
-      ".husky/commit-msg",
-      ".prettierignore",
-      "sonar-project.properties"
-    ]
+    "dirtyFiles": ["CHANGELOG.md"]
   },
   "claimRegistry": {
     "path": "docs/claim-registry.json",
