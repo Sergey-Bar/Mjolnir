@@ -166,18 +166,11 @@ const committed = new Set(Object.keys(COMMITTED));
  * to be byte-identical on regeneration, so nothing was stale — but the gate
  * that would have said so now exists.
  *
- * The rest are the second kind, and deleting them unilaterally is not this
- * gate's call: an `author-wave3.mts` is a record of how a wave's fixtures
- * were made, which is provenance a reviewer may want. So they are listed with
- * a reason, and a NEW unreferenced script fails.
- *
- * Those 24 `HISTORY` entries moved to `scripts/archive/` rather than staying
- * beside the five `TOOL` ones. Both were listed, and the list was the only
- * thing distinguishing them — so a reader of `scripts/` saw twenty-four
- * one-shot fixture authors sitting next to five things a human runs, with
- * nothing in the directory itself to say which was which. `HISTORY` is now a
- * PATH: a reader of `scripts/` sees tools, and a reader of
- * `scripts/archive/` sees the record of how they were made.
+ * The rest were the second kind: 24 one-shot fixture authors and
+ * adjudicators, listed here as `HISTORY` and later moved under
+ * `scripts/archive/`. Their output is committed and none of them ran, so
+ * the maintenance review (#732) deleted them; `git show 05af655:<path>`
+ * recovers any one. A NEW unreferenced script still fails.
  */
 const ORPHAN_SCRIPTS = {
   "scripts/certification-surface-cells.ts":
@@ -196,61 +189,12 @@ const ORPHAN_SCRIPTS = {
     "MODE — the verdict-building arm of `npm run check-fixture-quad --verdicts`, spawned by `scripts/v6/check-fixture-quad.ts` with a resolved absolute path. It stays a separate file because it is 250 lines of top-level side effect; wrapping it in a module boundary would be a refactor of working code to satisfy a naming rule.",
   "scripts/resample-unmeasured.ts":
     "MODE — the re-measurement arm of `npm run corpus:audit --resample`, imported and called by `tests/corpus/audit.ts` under the same `import.meta.url` guard that keeps an import from firing a networked re-measure. Listed here because the manifest names the audit, not the arm.",
-  "scripts/compute-release.mjs":
-    "TOOL — pure release-bump decision logic kept for planning and reporting. The header states it does not publish, version, tag or update any branch, and that a release-publishing CLI wrapper was the intended caller. That wrapper was never written, so the logic is currently reachable by nobody — the honest description of an unwired tool, and a candidate for either a wrapper or deletion.",
   "scripts/corpus-pairs.ts":
     "TOOL — builds the side-by-side pair view the human classifier uses to keep verdicts consistent across a cross-language rule family. Its output is a review aid, not a gate, so it is invoked by hand during a corpus pass.",
   "scripts/list-unimported-modules.mjs":
     "TOOL — the regenerator for THIS file's script list, named in the guard's header. Run by a human when a script is added or removed; it prints only the diff a reviewer needs.",
   "scripts/release-changelog.mjs":
     "TOOL — a deterministic CHANGELOG transform for a reviewed release branch. The Release Candidate workflow VALIDATES the resulting version and changelog rather than invoking this helper, which is what the header says and what the workflow does. A human runs it on a release branch.",
-  "scripts/archive/adjudicate-fixtures-0609.mts":
-    "HISTORY — one-shot adjudicator from the 2026-06-09 fixture pass. Its verdicts are committed in tests/corpus/verdicts/; the tool that wrote them is the record of how.",
-  "scripts/archive/adjudicate-harvest-0609.mts":
-    "HISTORY — the harvest half of the same 2026-06-09 pass.",
-  "scripts/archive/apply-depth-adjudications.ts":
-    "HISTORY — the P8 depth-sweep applier. It patches `strategyJustification` into the rule sources from a hand-authored table; the patch is applied, the table is in the source, and re-running it is a no-op. Kept because the table is the adjudication record.",
-  "scripts/archive/author-closure-final.mts":
-    "HISTORY — one-shot fixture author for the closure pass.",
-  "scripts/archive/author-closure-fixtures.mts":
-    "HISTORY — one-shot fixture author for the closure pass.",
-  "scripts/archive/author-fixtures-0609.mts":
-    "HISTORY — one-shot fixture author for the 2026-06-09 pass.",
-  "scripts/archive/author-pw116.mts":
-    "HISTORY — one-shot author for QA-PW-116's fixtures.",
-  "scripts/archive/author-wave10.mts":
-    "HISTORY — one-shot fixture author for wave 10.",
-  "scripts/archive/author-wave2.mts":
-    "HISTORY — one-shot fixture author for wave 2.",
-  "scripts/archive/author-wave3.mts":
-    "HISTORY — one-shot fixture author for wave 3.",
-  "scripts/archive/author-wave4.mts":
-    "HISTORY — one-shot fixture author for wave 4.",
-  "scripts/archive/author-wave5.mts":
-    "HISTORY — one-shot fixture author for wave 5.",
-  "scripts/archive/author-wave6.mts":
-    "HISTORY — one-shot fixture author for wave 6.",
-  "scripts/archive/author-wave7.mts":
-    "HISTORY — one-shot fixture author for wave 7.",
-  "scripts/archive/author-wave8.mts":
-    "HISTORY — one-shot fixture author for wave 8.",
-  "scripts/archive/author-wave9.mts":
-    "HISTORY — one-shot fixture author for wave 9.",
-  "scripts/archive/omitted-tier.mts":
-    "HISTORY — a five-line probe that printed the omitted-tier default, kept because its answer is quoted in src/rules/measurement.ts's header.",
-  "scripts/archive/overlap-audit.mts":
-    "HISTORY — a one-off overlap audit whose findings are recorded in the gap matrix.",
-  "scripts/archive/rev-dump.mts": "HISTORY — a review-dump helper.",
-  "scripts/archive/sync-census-0609.mts":
-    "HISTORY — one-shot census sync for the 2026-06-09 pass.",
-  "scripts/archive/sync-sarif-version.cjs":
-    "HISTORY — a manual SARIF version sync, superseded by the release workflow's own version stamping.",
-  "scripts/archive/sync-smithery-version.cjs":
-    "HISTORY — a manual smithery version sync, same.",
-  "scripts/archive/unmeasured-map.mts":
-    "HISTORY — a one-off map of unmeasured rules; the answer is now the `recallStatus` column in the capability matrix.",
-  "scripts/archive/verdict-census.mts":
-    "HISTORY — a one-off verdict census; superseded by docs/RULE-CAPABILITY-MATRIX.md.",
 };
 
 /**

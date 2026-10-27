@@ -33,7 +33,7 @@ M26-M50 retirement deleted along with the ledgers it named; its sections §1–�
 are the six `EXTERNAL_PENDING` rows below.
 
 What that deletion left behind was the checker: `scripts/check-external-evidence.ts`
-read that document, so `npm run docs:external-evidence` exited 2 with a setup
+read that document, so the `docs:external-evidence` script (since removed) exited 2 with a setup
 error and `npm run certify:integrity` could not complete. **The checker and its
 `certify:integrity` leaf have since been removed.** The rows below are untouched
 and are the whole surviving record.

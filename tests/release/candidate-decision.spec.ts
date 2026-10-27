@@ -17,7 +17,7 @@ import { describe, expect, it } from "vitest";
 import {
   evaluateCandidateDecision,
   manifestContradictions,
-} from "../../scripts/lib/candidate-decision";
+} from "../../scripts/lib/candidate-decision.mjs";
 import { readCandidateManifest } from "../../scripts/candidate-manifest.mjs";
 import { decideRelease } from "../../src/release/decision.js";
 

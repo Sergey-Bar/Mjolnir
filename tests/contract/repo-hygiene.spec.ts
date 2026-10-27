@@ -452,6 +452,19 @@ describe("removed clutter stays removed (maintenance review #732)", () => {
     "assets/readme/homepage-linkedin-aurora.gif",
     ".github/workflows/jekyll-gh-pages.yml",
     ".claude/launch.json",
+    // Task 4 (script surface). One-shot fixture authors and adjudicators whose
+    // output is committed (`git show 05af655:scripts/archive/<name>` recovers
+    // any of them), two scratch probes and a typed wrapper nothing imported,
+    // a tombstone that checked nothing, a remediation drill hard-wired to a
+    // branch that no longer exists, and release-bump logic with no caller.
+    "scripts/archive",
+    "scripts/lib/omitted-measured.ts",
+    "scripts/lib/test001-probe.ts",
+    "scripts/lib/coverage-exemption-ledger.ts",
+    "scripts/lib/candidate-decision.ts",
+    "scripts/retired-external-evidence.ts",
+    "scripts/verify-remediation-isolation.mjs",
+    "scripts/compute-release.mjs",
   ];
   it.each(REMOVED)("%s is not tracked", (path) => {
     expect(gitLsFiles(path), `${path} is tracked again`).toEqual([]);

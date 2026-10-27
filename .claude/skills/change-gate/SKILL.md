@@ -29,19 +29,19 @@ and stop at the first match unless a second row also applies.
 
 | Changed path | Run |
 | --- | --- |
-| `src/rules/**`, `src/rules/index.ts` | `npm run frontier:contracts`, `npm run check-fixture-quad`, `npm run rules:quality:check`, `npm run test`, `npm run detector-hashes:update`, `npm run docs:regen`, `npm run self-scan` |
+| `src/rules/**`, `src/rules/index.ts` | `npx vitest run tests/contract/`, `npm run check-fixture-quad`, `npm run rules:quality:check`, `npm run test`, `npm run detector-hashes:update`, `npm run docs:regen`, `npm run self-scan` |
 | `tests/fixtures/**` | `npm run check-fixture-quad`, `npm run test` |
 | `src/cli.ts`, `src/commands/**`, `action.yml`, `action-pr.yml` | `npm run check-cli-contract`, `npm run verbs:budget`, `npm run ci-local:parity` — the CLI contract is frozen |
 | `package.json` scripts, anything in `scripts/**` | `npm run scripts:reachable`, `npm run script:paths`, `npm run entry-points:check`, `npm run gates:check`, `npm run config:consumers` |
 | A new or renamed gate in `gates/*.json` | `npm run gates:check`, `npm run gates:claim-integrity` |
 | `.github/workflows/**`, `action.yml` | `npm run workflow:scripts`, `npm run ci:standard`, `npm run ci-local:parity` |
 | README, `docs/**` prose, `site/**` | `npm run docs:regen`, `npm run claims:prose`, `npm run check-concepts` |
-| `CLAUDE.md` or the laws | `npm run frontier:contracts` — `docs-consistency` reads the law text verbatim and asserts the quoting sites moved with it |
+| `CLAUDE.md` or the laws | `npx vitest run tests/contract/` — `docs-consistency` reads the law text verbatim and asserts the quoting sites moved with it |
 | `docs/claim-registry.json`, any documented capability | `npm run claims:check`, `npm run claims:revalidate`, `npm run claim:budget` |
 | `src/v6/**`, capability registry, QA-IR | `npm run registry:check`, `npm run qa-ir:parity`, `npm run docs:provenance-drift` |
 | Release machinery, `candidate-trust-manifest.json` | `npm run candidate:manifest:check`, `npm run release:verify`, `npm run check-version` |
 | Anything touching scoring, thresholds or severity | `npm run thresholds:parity`, `npm run report:honesty`, `npm run golden:update` (read the diff) |
-| `src/mcp/**` | `npm run test:mcp:parity` |
+| `src/mcp/**` | `npx vitest run tests/mcp/parity.spec.ts` |
 | **Anything you are not sure about** | `npm run check` |
 
 ## Before finishing, always
