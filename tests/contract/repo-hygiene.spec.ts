@@ -437,3 +437,52 @@ describe("the whole-repository self-scan is complete", () => {
     expect(report.partial).toBe(false);
   });
 });
+
+describe("removed clutter stays removed (maintenance review #732)", () => {
+  // Each entry was tracked with no reader: a stale 4.0.0 copy of the
+  // capability manifest, a one-off report nothing linked, exported stash
+  // patches that only apply at their old base commits (still in history), a
+  // 4.85 MB GIF no page referenced, a workflow whose only step was an echo,
+  // and an editor launch config hard-coding another machine's worktree.
+  // Git history keeps every one of them; the tree does not need to.
+  const REMOVED = [
+    "enterprise-output",
+    "QA",
+    "archive",
+    "assets/readme/homepage-linkedin-aurora.gif",
+    ".github/workflows/jekyll-gh-pages.yml",
+    ".claude/launch.json",
+  ];
+  it.each(REMOVED)("%s is not tracked", (path) => {
+    expect(gitLsFiles(path), `${path} is tracked again`).toEqual([]);
+  });
+
+  it("package.json carries no allowScripts entry for a version that is not installed", () => {
+    const pkg = JSON.parse(
+      readFileSync(join(ROOT, "package.json"), "utf8"),
+    ) as { allowScripts?: Record<string, boolean> };
+    const lock = JSON.parse(
+      readFileSync(join(ROOT, "package-lock.json"), "utf8"),
+    ) as { packages: Record<string, { version?: string }> };
+    for (const spec of Object.keys(pkg.allowScripts ?? {})) {
+      const at = spec.lastIndexOf("@");
+      const name = spec.slice(0, at);
+      const version = spec.slice(at + 1);
+      expect(
+        lock.packages[`node_modules/${name}`]?.version,
+        `allowScripts names ${spec}, which the lockfile does not install`,
+      ).toBe(version);
+    }
+  });
+
+  it("CHANGELOG.md has exactly one [Unreleased] section, and it is the first", () => {
+    const changelog = readFileSync(join(ROOT, "CHANGELOG.md"), "utf8");
+    const headings = [...changelog.matchAll(/^## (.+)$/gm)].map((m) => m[1]);
+    expect(headings[0]).toMatch(/^\[Unreleased\]/);
+    expect(
+      headings.filter((h) => h?.startsWith("[Unreleased]")),
+      "a second [Unreleased] block is swept into the next release by " +
+        "scripts/release-changelog.mjs",
+    ).toHaveLength(1);
+  });
+});

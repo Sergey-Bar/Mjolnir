@@ -11,6 +11,36 @@ once shipped, so this file is the record of what changed between versions.
 
 ## [Unreleased]
 
+### Removed: tracked files with no reader
+
+Six paths were tracked and read by nothing. Git history keeps all of them,
+and `repo-hygiene.spec.ts` now fails if any returns:
+
+- `enterprise-output/`: a 4.0.0 copy of `capability-manifest.json` with no reference.
+- `QA/`: one 2026-09-06 report that only linked to itself.
+- `archive/`: five exported stash patches. Their own README records each as
+  superseded, and they apply only at their old base commits.
+- `assets/readme/homepage-linkedin-aurora.gif`: 4.85 MB, referenced nowhere.
+- `.github/workflows/jekyll-gh-pages.yml`: a workflow whose only step was an
+  `echo`, plus its tier exemption.
+- `.claude/launch.json`: hard-coded another machine's worktree path; now gitignored.
+
+Also fixed:
+
+- **CHANGELOG.** A second `## [Unreleased]` block (about 1,000 lines of
+  6.0.0 working notes) sat below `[6.0.0]`, where the release script would
+  have swept it into the next version. It is now titled as the 6.0.0
+  development log, and a test asserts exactly one `[Unreleased]`, first.
+- **Stale references.** Removed a `package.json` `allowScripts` entry for
+  `@vitest/coverage-istanbul@5.0.1`, which the lockfile does not install.
+  Fixed the commit-msg hook's `.commitlintrc.json` reference (the file is
+  `.cjs`), the `.prettierignore` entries for retired M26 files, two Sonar
+  paths that do not exist, and the CodeRabbit workflow count.
+
+Kept on purpose: `PRODUCT-ENHANCEMENT-ANALYSIS.md` is a pinned redirect to
+its archive copy (`GAP-V6-007`, two specs), and `kilo.json` is the
+documented shared skills wiring (`docs/EXTERNAL-CONFIG.md`).
+
 ### Fixed: the P0/P1 findings of the maintenance review (#732)
 
 Each has a regression test that failed before its commit.
@@ -177,7 +207,12 @@ The check RAN and was RECORDED as unsatisfied. It was not treated as blocking
 because `vars.STABLE_RELEASE_AUTHORIZED` is `true`: a decision someone made and
 wrote down, not a check that passed.
 
-## [Unreleased]
+### Development log: 6.0.0-rc.1 → 6.0.0
+
+The working notes written between the release candidate and the cut. They
+sat under a second `## [Unreleased]` heading below this release, which
+`scripts/release-changelog.mjs` would have swept into the next version as if
+it were new work. They are history of 6.0.0 and are kept verbatim below.
 
 ### Two core rules, measured: QA-PW-117 and QA-JV-101 - `ANTI-CREEP-EXCEPTION`
 

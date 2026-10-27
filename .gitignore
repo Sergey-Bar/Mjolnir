@@ -105,4 +105,6 @@ graphify-out/
 .claude/skills/playwright-best-practices
 .claude/skills/typescript-advanced-types
 .claude/skills/vitest
+# Editor launch configs hard-code a machine's own paths.
+.claude/launch.json
 codex/Brag
