@@ -11,6 +11,45 @@ once shipped, so this file is the record of what changed between versions.
 
 ## [Unreleased]
 
+### Removed: scripts and npm aliases that nothing ran
+
+Files under `scripts/`, 169 → 138. Tracked npm scripts, 147 → 140.
+`git show 05af655:<path>` recovers any deleted file.
+
+- **`scripts/archive/` (24 files).** One-shot fixture authors and
+  adjudicators from 2026-06 to 6.0. Their output is committed and none of
+  them ran; they were kept only as `HISTORY` entries in the orphan-script
+  list, and that list and the archive lint block are gone with them.
+- **Orphans:**
+  - `scripts/lib/omitted-measured.ts` and `scripts/lib/test001-probe.ts`:
+    scratch probes with zero references.
+  - `scripts/lib/coverage-exemption-ledger.ts`: a typed wrapper nothing
+    imported.
+  - `scripts/lib/candidate-decision.ts`: reachable only through an
+    extensionless import that resolved to the `.mjs` anyway. Its spec now
+    imports the `.mjs`, typed by the existing `.d.mts`.
+  - `scripts/compute-release.mjs` and its spec: release-bump logic whose
+    orphan entry said "reachable by nobody".
+  - `scripts/verify-remediation-isolation.mjs` (`verify:isolation`): a drill
+    hard-wired to a branch that no longer exists.
+  - `scripts/retired-external-evidence.ts` (`docs:external-evidence`): a
+    tombstone that exited 0 and checked nothing. The three documents that
+    named it now call it "the `docs:external-evidence` script (since
+    removed)".
+- **Aliases for suites `npm test` already runs:** `frontier:contracts`,
+  `test:integration`, `test:mcp:parity`, `test:release` and
+  `artifact:deterministic`. Three of their `docs/MANUAL-SCRIPTS.md` rows were
+  false: `test:mcp:parity` did not "need a live MCP client", `test:release`
+  needed no credentials, and `test:integration` was never "kept out of the
+  certify chain". All three ran in every `npm test`. The agent skills now name
+  the commands the aliases stood for.
+- **`docs/CI-STANDARD.md`** credited the compatibility lanes with
+  `npm run test:integration`. They run `npm test`, and the row now says so.
+
+Not done, on inspection: `check-promotion-throughput.mjs` keeps running under
+`tsx`, because it imports `src/commands/doctor.ts` and plain `node` cannot load
+it.
+
 ### Removed: tracked files with no reader
 
 Six paths were tracked and read by nothing. Git history keeps all of them,

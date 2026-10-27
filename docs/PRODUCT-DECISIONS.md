@@ -249,7 +249,7 @@ form this decision takes now that its request document is gone.
 
 The gate that used to back the count no longer runs at all, and has now been
 removed. `scripts/check-external-evidence.ts` read `docs/EXTERNAL-EVIDENCE-REQUEST.md`,
-which the 6.0 M26-M50 retirement deleted, so `npm run docs:external-evidence`
+which the 6.0 M26-M50 retirement deleted, so the `docs:external-evidence` script (since removed)
 exited 2 with a setup error and `npm run certify:integrity` could not complete.
 Its `EXTERNAL_BOX_CEILING = 39` was a number about a file that no longer exists.
 

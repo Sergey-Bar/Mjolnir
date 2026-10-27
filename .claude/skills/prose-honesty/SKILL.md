@@ -38,7 +38,7 @@ would rot exactly like the stale entries in `.mjolnirignore` and
 So there is no list. After any prose pass:
 
 ```
-npm run frontier:contracts
+npx vitest run tests/contract/
 ```
 
 That runs `docs-consistency`, which reads the asserted surfaces and the
@@ -67,7 +67,7 @@ style pass, because they are the shapes an **unearned claim** takes:
 4. **Check the rewrite against the original claims.** A name, number, date,
    quote or citation must come from the source or the writer. If a sentence
    needs a detail that is missing, ask — do not invent one.
-5. Run `npm run frontier:contracts`.
+5. Run `npx vitest run tests/contract/`.
 6. Report which sentences changed and confirm the fact-set is identical.
 
 Show your work: the first rewrite, a short note on anything that still sounds

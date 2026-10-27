@@ -8,7 +8,7 @@ which layer it replaces.
 | ---------------------- | ------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
 | PR feedback            | `npm run build && node dist/cli.mjs . --format json`          | Findings at the configured gate block; partial is an explicit advisory with `outcome=partial` |
 | Required quality       | `npm run test:coverage:ci && npm run coverage:ratchet`        | Blocks on the primary Ubuntu/Node 22 job                                                      |
-| Compatibility          | `npm run build && npm run test:integration`                   | Ubuntu/Windows/macOS lanes; no duplicate coverage                                             |
+| Compatibility          | `npm test`                                                    | Windows and macOS on Node 22, Ubuntu on Node 24; uninstrumented, so no duplicate coverage run |
 | Security and artifacts | `npm run audit:ci`, CodeQL, OSV, Socket, generated-docs drift | Blocks on the named security job                                                              |
 | Release readiness      | `npm run release:decision`                                    | Release workflow/manual release path only; not a normal PR gate                               |
 

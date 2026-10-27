@@ -1,5 +1,5 @@
 /**
- * `artifact:deterministic` — two runs of an HTML artifact over an
+ * Artifact determinism — two runs of an HTML artifact over an
  * unchanged repository produce byte-identical bytes.
  *
  * BITTERSWEET `BW-106`. The dashboard embedded `new Date()` in the

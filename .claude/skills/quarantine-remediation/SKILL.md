@@ -93,7 +93,7 @@ retired as noise; the distinction is the whole policy.
 ## Then run what the change invalidates
 
 ```
-npm run frontier:contracts          # registry contract, tier enforcement
+npx vitest run tests/contract/          # registry contract, tier enforcement
 npm run rules:promotion:check       # the D5 ratchet — core growth needs a demotion
 npm run docs:quarantine-ledger      # regenerate the ledger from the live registry
 npm run docs:regen                  # counts, capability matrix, FP-audit table

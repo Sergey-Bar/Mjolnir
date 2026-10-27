@@ -82,7 +82,7 @@ Not the whole 8-minute suite — `change-gate` maps a diff to the minimum set.
 For a rule change that is:
 
 ```
-npm run frontier:contracts      # tests/contract/ — registry, fixture firewall, ID-immutability
+npx vitest run tests/contract/      # tests/contract/ — registry, fixture firewall, ID-immutability
 npm run check-fixture-quad      # the census, and it fails on an over-claim of M3
 npm run rules:quality:check
 npm run test                    # data-driven fixture tests

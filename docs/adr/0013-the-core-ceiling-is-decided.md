@@ -165,7 +165,7 @@ itself to, and a rule can earn the tier without shipping anything.
 
 **The external-evidence gate is broken and this ADR does not fix it.**
 `scripts/check-external-evidence.ts` reads `docs/EXTERNAL-EVIDENCE-REQUEST.md`,
-deleted by the 6.0 M26-M50 retirement, so `npm run docs:external-evidence` exits
+deleted by the 6.0 M26-M50 retirement, so the `docs:external-evidence` script (since removed) exits
 2 and `npm run certify:integrity` cannot complete. Its `EXTERNAL_BOX_CEILING = 39`
 is a number about a file that no longer exists, and the runbook that survives has
 18 rows. Re-homing it is a decision with a product answer, not a doc fix.
