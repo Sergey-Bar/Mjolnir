@@ -118,7 +118,7 @@ reviews:
     # two that have caught real defects here.
     - "@astral-sh/ast-grep/cli" # structural rules the regexes miss
     - "shellcheck" # every gate here is a shell one-liner
-    - "actionlint" # 17 workflows, all shell-heavy
+    - "actionlint" # every workflow, all shell-heavy
     - "detect-secrets" # the token and registry material
 
   path_filters: []

@@ -45,11 +45,6 @@ export const EXEMPT_FROM_TIERS = new Map([
       "Action; runs no npm script",
   ],
   [
-    ".github/workflows/jekyll-gh-pages.yml",
-    "compatibility shim — one echo step documenting that pages.yml owns " +
-      "deployment; no gate",
-  ],
-  [
     ".github/workflows/demo-video.yml",
     "manual-only render — needs Chromium and minutes of video encoding, and " +
       "its own header excludes it from standing CI deliberately",

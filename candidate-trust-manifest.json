@@ -25,35 +25,31 @@
     "Approve the hosted, enterprise, and agent threat-model boundaries.",
     "Approve human adjudication and design-partner evidence collection."
   ],
-  "generatedAt": "2026-10-26",
+  "generatedAt": "2026-10-27",
   "identity": {
     "state": "RELEASE_CANDIDATE",
-    "baseSha": "f373fabb8c5a46b9ae7a4dd55c5a387e50adaa99",
+    "baseSha": "3aec97aa0d1f60e7c8f7de3a1f90be96a22f11a4",
     "candidateSha": "2ed960732480f33fbe6564752ce0201040b91e03",
     "version": "6.0.0",
-    "packageSha256": "9eedd3a30b3148135a19f54a15f273cd1fb8cf83dfb57ddc40def877093906c4",
+    "packageSha256": "fac56e08a67cef415929b052b465c057761d90a4bfd209c4c2734031cb89b632",
     "lockfileSha256": "69f7614ada84b173ea77406f6c06c65b3d63972b1aef7216e3c4ddefc7988857",
-    "workingTreeSha256": "63ae0a185f4c104e79e248209d2360bc4838dd3fd06f2d7ee0dcb9cc1546277c",
-    "changedPathCount": 6,
+    "workingTreeSha256": "c5a37910fafafe83597214736fdfc7309f50bf902e400760aab0553fa2676f98",
+    "changedPathCount": 4,
     "supportEnvelope": "self-hosted; hosted services require explicit consent and separate proof",
     "worktreeInventory": {
       "changedPaths": [
-        "CHANGELOG.md",
-        "docs/BLAST-RADIUS-AUDIT.md",
-        "docs/V6-CURRENT-STATE.md",
-        "docs/v6-inventory.json",
-        "src/reporter/sarif.ts",
-        "tests/reporters/reporters.spec.ts"
+        ".coderabbit.yaml",
+        ".husky/commit-msg",
+        ".prettierignore",
+        "sonar-project.properties"
       ],
       "untrackedPaths": []
     },
     "dirtyFiles": [
-      "CHANGELOG.md",
-      "docs/BLAST-RADIUS-AUDIT.md",
-      "docs/V6-CURRENT-STATE.md",
-      "docs/v6-inventory.json",
-      "src/reporter/sarif.ts",
-      "tests/reporters/reporters.spec.ts"
+      ".coderabbit.yaml",
+      ".husky/commit-msg",
+      ".prettierignore",
+      "sonar-project.properties"
     ]
   },
   "claimRegistry": {
