@@ -19,7 +19,7 @@ if [ $? -ne 0 ]; then
   echo "  COMMIT MESSAGE FAILED — format: <type>(<scope>): <subject>"
   echo "  Examples:  fix(cli): exit 2 must never block a partial scan"
   echo "            docs(rules): regenerate COUNT-LOCK after corpus update"
-  echo "  See .commitlintrc.json for the full rule set."
+  echo "  See .commitlintrc.cjs for the full rule set."
   echo ""
   exit 1
 fi
