@@ -37,6 +37,7 @@ import {
   stripAnsiForSummary,
 } from "../reporter/github.js";
 import { escapeMarkdown } from "./pr-comment.js";
+import { mdCodeSpan } from "../reporter/pr-report-shared.js";
 
 export interface SummaryOptions {
   /** Force the summary to stdout even when $GITHUB_STEP_SUMMARY is set. */
@@ -167,7 +168,7 @@ export function renderStepSummary(
         ? `${options.pathPrefix.replace(/\/$/, "")}/${f.file}`
         : f.file;
       lines.push(
-        `- **${escapeMarkdown(f.ruleId)}** \`${escapeMarkdown(path)}:${f.line}\` — ${escapeMarkdown(stripAnsiForSummary(f.message))}`,
+        `- **${escapeMarkdown(f.ruleId)}** ${mdCodeSpan(`${path}:${f.line}`)} — ${escapeMarkdown(stripAnsiForSummary(f.message))}`,
       );
       lines.push(`  - Fix: ${escapeMarkdown(stripAnsiForSummary(f.fix))}`);
     }

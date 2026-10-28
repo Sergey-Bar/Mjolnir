@@ -19,6 +19,7 @@ import type { Finding, ScanResult } from "../types.js";
 import { deriveEvidenceLevel } from "../types.js";
 import { sanitizeData } from "../reporter/theme.js";
 import {
+  mdCodeSpan,
   renderUnifiedReport as _renderUnifiedReport,
   type UnifiedReportOptions,
 } from "../reporter/pr-report-shared.js";
@@ -66,9 +67,10 @@ export function evidenceTag(f: Finding): string {
 export function findingLine(f: Finding): string {
   const icon =
     f.severity === "error" ? "🔴" : f.severity === "warning" ? "🟡" : "🔵";
-  const fix = escapeMarkdown(f.fix);
-  const fixBody = looksLikeCode(f.fix) ? `\`${fix}\`` : `_${fix}_`;
-  return `${icon} **${escapeMarkdown(f.ruleId)}** \`${escapeMarkdown(f.file)}:${f.line}\` — ${escapeMarkdown(f.message)} ${escapeMarkdown(`[${evidenceTag(f)}]`)}\n  Fix: ${fixBody}`;
+  const fixBody = looksLikeCode(f.fix)
+    ? mdCodeSpan(f.fix)
+    : `_${escapeMarkdown(f.fix)}_`;
+  return `${icon} **${escapeMarkdown(f.ruleId)}** ${mdCodeSpan(`${f.file}:${f.line}`)} — ${escapeMarkdown(f.message)} ${escapeMarkdown(`[${evidenceTag(f)}]`)}\n  Fix: ${fixBody}`;
 }
 
 /**

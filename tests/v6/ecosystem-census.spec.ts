@@ -308,6 +308,8 @@ describe("ADR 0010 rule 3 — the staleness trigger", () => {
     ]);
     expect(normalizeMajors(["v4"])).toEqual(["4"]);
     expect(normalizeMajors(["catalog:"])).toEqual([]);
+    // Numeric, not code-unit, order: "10" sorts after "9".
+    expect(normalizeMajors(["10.1", "9", "100"])).toEqual(["9", "10", "100"]);
   });
 
   it("extracts a major from a version or a range", () => {

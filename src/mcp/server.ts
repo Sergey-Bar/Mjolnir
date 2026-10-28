@@ -139,7 +139,8 @@ export const MCP_TOOLS = [
         ruleId: { type: "string", description: "e.g. QA-PW-101" },
         fixturesRoot: {
           type: "string",
-          description: "Root directory for fixture lookups (defaults to cwd).",
+          description:
+            "Root directory for fixture lookups (defaults to <cwd>/tests/fixtures, as for `mjolnir explain`).",
         },
       },
       required: ["ruleId"],
@@ -383,7 +384,11 @@ export async function handleToolCall(call: McpToolCall): Promise<McpResponse> {
       }
       const fixturesRoot =
         (typeof rawFixturesRoot === "string" ? rawFixturesRoot : undefined) ??
-        process.cwd();
+        // The CLI's `--fixtures-root` default. `explainRule` reads
+        // `<root>/<ruleId>/must-fire`, so defaulting to the bare cwd found no
+        // fixture from a checkout and every MCP explain came back without the
+        // example finding `mjolnir explain` prints.
+        join(process.cwd(), "tests", "fixtures");
       const explanation = explainRule(ruleId, fixturesRoot);
       if (!explanation.ok) {
         return {

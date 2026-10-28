@@ -135,14 +135,18 @@ describe("T5: no site in src/ inherits the ambient locale", () => {
     const rel = file.slice(SRC_ROOT.length + 1).replaceAll("\\", "/");
     it(`src/${rel} calls no unpinned locale-aware comparison`, () => {
       const code = stripComments(readFileSync(file, "utf8"));
-      // A call with ONE argument reads the process default locale. A call
-      // with a second argument is pinned and allowed. `compare.ts` itself is
+      // A call with ONE argument reads the process default locale, and so does
+      // one whose locale argument is `undefined` (`localeCompare(b, undefined,
+      // { numeric: true })` slipped past a one-argument pattern). A call with
+      // a real second argument is pinned and allowed. `compare.ts` itself is
       // the definition site of the pinned form.
       if (rel === "lib/compare.ts") {
         expect(code).toMatch(/\.localeCompare\(b, locale\)/);
         return;
       }
-      const unpinned = code.match(/\.localeCompare\([^,)]*\)/g);
+      const unpinned = code.match(
+        /\.localeCompare\([^,)]*(?:\)|,\s*undefined\b)/g,
+      );
       expect(
         unpinned,
         `src/${rel} calls localeCompare with no locale argument: ${unpinned?.join(", ")}. ` +

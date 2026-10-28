@@ -38,7 +38,15 @@ export function stampRuntimeCorroboration(
     let n = p.replace(/\\/g, "/");
     if (scanRoot) {
       const root = scanRoot.replace(/\\/g, "/").replace(/\/?$/, "/");
-      if (n.startsWith(root)) n = n.slice(root.length);
+      const head = n.slice(0, root.length);
+      // A drive-letter root is a Windows path, and Windows paths are
+      // case-insensitive: a report written from `c:\repo` names the same
+      // files as a scan of `C:\Repo`. Compared case-sensitively, the root was
+      // never stripped and every verdict missed its finding.
+      const sameRoot = /^[a-z]:\//i.test(root)
+        ? head.toLowerCase() === root.toLowerCase()
+        : head === root;
+      if (sameRoot) n = n.slice(root.length);
     }
     return n.replace(/^\.\//, "").replace(/^\/+/, "");
   };

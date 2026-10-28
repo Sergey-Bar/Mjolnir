@@ -23,6 +23,7 @@ import {
 } from "../../src/mcp/server.js";
 import type { ScanResult } from "../../src/types.js";
 import { CONTRACT_VERSION } from "../../src/engine/machine-contract.js";
+import { explainRule, type ExplainResult } from "../../src/commands/explain.js";
 
 const createdDirs: string[] = [];
 function tmpRepo(prefix: string): string {
@@ -546,6 +547,24 @@ describe("explain tool — read-only metadata", () => {
       args: { ruleId: "QA-ZZ-999" },
     });
     expect(res.error?.code).toBe(MCP_ERRORS.INVALID_PARAMS);
+  });
+
+  it("finds the rule's own fixture from a checkout, as `mjolnir explain` does", async () => {
+    // The default root was the bare cwd, where `<ruleId>/must-fire` never
+    // exists, so the example finding the CLI prints was always missing here.
+    const res = await handleToolCall({
+      id: 14,
+      name: "explain",
+      args: { ruleId: "QA-PW-101" },
+    });
+    const viaCli = explainRule(
+      "QA-PW-101",
+      join(process.cwd(), "tests", "fixtures"),
+    );
+    expect(viaCli.exampleFinding).toBeDefined();
+    expect((res.result as ExplainResult).exampleFinding).toEqual(
+      viaCli.exampleFinding,
+    );
   });
 });
 

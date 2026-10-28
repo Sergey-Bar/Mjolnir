@@ -502,9 +502,13 @@ describe("step summary", () => {
       }),
     );
     expect(md).toContain("QA-EVIL\\|001");
-    // escapeMarkdown backslash-escapes < > ` | — the code span cannot
-    // terminate and the HTML tag cannot parse.
-    expect(md).toContain("a\\</script\\>\\`b.spec.ts");
+    // A path is a code span, fenced with one backtick more than the longest
+    // run inside it, so data cannot end the span and the tag inside it is
+    // inert text. It used to be backslash-escaped, but escapes are literal in
+    // a code span: the reader saw the backslashes, and the backtick in the
+    // path still closed the span early.
+    expect(md).toContain("``a</script>`b.spec.ts:3``");
+    expect(md).not.toContain("a\\</script");
     expect(md).toContain("\\`backticks\\`");
     // The details envelope survives: no unescaped </details> from data.
     expect(md.match(/<\/details>/g)).toHaveLength(1);

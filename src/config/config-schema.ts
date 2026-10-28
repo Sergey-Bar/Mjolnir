@@ -57,8 +57,20 @@ export const MJOLNIR_CONFIG_SCHEMA = {
       },
     },
     plugins: {
-      type: "object" as const,
-      additionalProperties: true,
+      type: "array" as const,
+      items: {
+        anyOf: [
+          { type: "string" as const },
+          {
+            type: "object" as const,
+            required: ["package"],
+            properties: {
+              package: { type: "string" as const },
+              prefix: { type: "string" as const },
+            },
+          },
+        ],
+      },
     },
   },
   additionalProperties: false,
@@ -180,8 +192,28 @@ export function validateConfigSchema(config: unknown): ConfigValidationResult {
   }
 
   if (cfg["plugins"] !== undefined) {
-    if (cfg["plugins"] === null || typeof cfg["plugins"] !== "object") {
-      errors.push("plugins must be an object or array");
+    // The loader reads package names and `{ "package": ... }` objects out of
+    // an array (src/plugins/load.ts) and passes over anything else without a
+    // word, so `"plugins": { "acme": {} }` loaded cleanly and ran nothing.
+    if (!Array.isArray(cfg["plugins"])) {
+      errors.push(
+        `plugins must be an array of package names or { "package": "<name>" } objects, got ${typeof cfg["plugins"]}`,
+      );
+    } else {
+      for (let i = 0; i < cfg["plugins"].length; i++) {
+        const entry = cfg["plugins"][i] as unknown;
+        const declared =
+          typeof entry === "string" ||
+          (entry !== null &&
+            typeof entry === "object" &&
+            !Array.isArray(entry) &&
+            typeof (entry as Record<string, unknown>)["package"] === "string");
+        if (!declared) {
+          errors.push(
+            `plugins[${i}] must be a package name or { "package": "<name>" }, got ${JSON.stringify(entry)}`,
+          );
+        }
+      }
     }
   }
 

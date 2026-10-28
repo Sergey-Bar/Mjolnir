@@ -37,6 +37,7 @@ import {
 } from "../reporter/presentation.js";
 import { palette, scoreGauge } from "../reporter/theme.js";
 import { escapeMarkdown } from "./pr-comment.js";
+import { mdCodeSpan } from "../reporter/pr-report-shared.js";
 import { loadSavedReport, reportExists } from "./report-io.js";
 import { errorMessage } from "../cli-io.js";
 
@@ -147,7 +148,7 @@ export function ruleCopyBlock(
   const f = group.findings[0] as Finding;
   const occurrences = group.findings
     .slice(0, OCCURRENCE_CAP)
-    .map((x) => `- \`${escapeMarkdown(x.file)}:${x.line}\``)
+    .map((x) => `- ${mdCodeSpan(`${x.file}:${x.line}`)}`)
     .join("\n");
   const overflow =
     group.findings.length > OCCURRENCE_CAP
@@ -336,7 +337,7 @@ export function renderHandoff(
     lines.push("");
     for (const f of g.findings.slice(0, OCCURRENCE_CAP)) {
       lines.push(
-        `- \`${escapeMarkdown(f.file)}:${f.line}\` — ${escapeMarkdown(f.message)}`,
+        `- ${mdCodeSpan(`${f.file}:${f.line}`)} — ${escapeMarkdown(f.message)}`,
       );
     }
     if (g.findings.length > OCCURRENCE_CAP) {

@@ -384,7 +384,7 @@ describe("QA-10: hostile finding metadata renders inert", () => {
     expect(sanitizeData("a\tb\nc")).toBe("a\tb\nc");
   });
 
-  it("markdown PR comment escapes pipes, backticks and script tags", () => {
+  it("markdown PR comment keeps hostile metadata inert", () => {
     const finding: Finding = {
       ruleId: "QA-TEST-003",
       category: "QA-TEST",
@@ -406,12 +406,18 @@ describe("QA-10: hostile finding metadata renders inert", () => {
       scope: "all",
     } as unknown as ScanResult);
     const line = body.split("\n").find((l) => l.includes("spec.ts")) ?? "";
-    expect(line).toContain("\\|");
-    expect(line).toContain("b\\`c");
-    expect(line).toContain("\\<script\\>");
-    // the filename's own backtick is escaped — only findingLine's code
-    // span delimiters remain unescaped
-    expect(line.match(/(?<!\\)`/g) ?? []).toHaveLength(2);
+    // The message is prose, so its markup is backslash-escaped.
+    expect(line).toContain(
+      "msg with \\| pipe and \\<script\\>alert\\(1\\)\\</script\\>",
+    );
+    // The path is a code span. Backslash escapes are literal text inside one,
+    // so the old `b\`c` closed the span early and let the rest of the path
+    // render as markup. The fence is now a backtick run longer than any run
+    // inside, so the path's own backtick cannot close it.
+    const span = "``a</script>|b`c.spec.ts:1``";
+    expect(line).toContain(span);
+    // Outside that one span, no raw markup survives.
+    expect(line.replace(span, "")).not.toMatch(/(?<!\\)[<|`]/);
   });
 });
 

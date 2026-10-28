@@ -239,8 +239,11 @@ describe("renderPrComment — rendering against fixture scan results", () => {
         }),
       ]),
     );
-    // A fix with code punctuation reads as code — code span.
-    expect(body).toMatch(/`await expect\\\(locator\\\)/);
+    // A fix with code punctuation reads as code — code span, with nothing
+    // escaped inside it: backslashes in a code span render literally, which
+    // is what this assertion used to require.
+    expect(body).toContain("`await expect(locator)");
+    expect(body).not.toMatch(/`await expect\\\(/);
     // A prose fix has no code punctuation — italic, not a code span.
     expect(body).toContain("_Just delete the unused variable._");
   });

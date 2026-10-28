@@ -17,6 +17,7 @@ import {
   renderDiffSection,
   renderArtifactIntegrity,
   renderUnifiedReport,
+  mdCodeSpan,
 } from "../../src/reporter/pr-report-shared.js";
 import type {
   Finding,
@@ -631,6 +632,81 @@ describe("renderUnifiedReport", () => {
     );
     expect(out).toContain("INCOMPLETE");
     expect(out).not.toContain("WORTHY");
+  });
+
+  it("says why a complete but uncorroborated scan is not a verdict", () => {
+    // The banner used to name only `analysisStatus.reasons`. On a complete
+    // default scan those are the quarantine coverage note and nothing else,
+    // so every clean PR comment read "INCOMPLETE. an unreported reason".
+    const out = renderUnifiedReport(
+      result({
+        analysisStatus: {
+          discovery: "complete",
+          rules: "complete",
+          skippedFiles: 0,
+          durationMs: 5,
+          rulesWithheld: 34,
+          reasons: ["coverage:quarantine:34"],
+        },
+        trustSummary: {
+          level: "L0",
+          confidence: 1,
+          evidenceCoverage: 0,
+          inconclusiveRate: 0,
+          provisionalRuleIds: [],
+          ceilingReasons: [],
+        },
+      }),
+    );
+    expect(out).toContain("INCOMPLETE");
+    expect(out).toContain(
+      "34 × quarantine-tier rule(s) withheld, as in every default scan",
+    );
+    expect(out).toContain(
+      "no runtime evidence corroborates this run, so an empty result is an observation, not a verdict",
+    );
+    expect(out).not.toContain("an unreported reason");
+  });
+
+  it("does not blame a genuinely partial scan on missing evidence", () => {
+    const out = renderUnifiedReport(
+      result({
+        partial: true,
+        analysisStatus: {
+          discovery: "partial",
+          rules: "complete",
+          skippedFiles: 0,
+          durationMs: 5,
+          reasons: ["discovery-truncated"],
+        },
+      }),
+    );
+    expect(out).toContain("discovery stopped before it covered the tree");
+    expect(out).not.toContain("no runtime evidence corroborates");
+  });
+
+  describe("mdCodeSpan", () => {
+    it("fences plain text with one backtick and escapes nothing inside", () => {
+      expect(mdCodeSpan("src/__snapshots__/app/(auth).spec.ts:3")).toBe(
+        "`src/__snapshots__/app/(auth).spec.ts:3`",
+      );
+    });
+
+    it("fences one backtick longer than the longest run inside", () => {
+      expect(mdCodeSpan("a`b")).toBe("``a`b``");
+      expect(mdCodeSpan("a``b`c")).toBe("```a``b`c```");
+    });
+
+    it("pads text that would touch the fence", () => {
+      expect(mdCodeSpan("`start")).toBe("`` `start ``");
+      expect(mdCodeSpan("end`")).toBe("`` end` ``");
+      expect(mdCodeSpan(" both ")).toBe("`  both  `");
+    });
+
+    it("stays on one line and never renders an empty span", () => {
+      expect(mdCodeSpan("a\nb\r\nc")).toBe("`a b c`");
+      expect(mdCodeSpan("")).toBe("` `");
+    });
   });
 
   it("does not call a full scan's empty finding set a clean PR", () => {

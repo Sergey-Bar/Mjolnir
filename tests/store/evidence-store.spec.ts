@@ -271,6 +271,27 @@ describe("recovery", () => {
       rmSync(dir, { recursive: true, force: true });
     }
   });
+
+  it("an unreadable records directory fails the audit instead of passing it empty", () => {
+    const { store, dir } = newStore();
+    try {
+      // A file where the records directory belongs makes readdir fail with
+      // ENOTDIR, which used to read as "no records" and audit clean.
+      writeFileSync(join(dir, "records"), "");
+      expect(() => store.audit()).toThrow(/ENOTDIR/);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("a store with no records yet still audits as empty", () => {
+    const { store, dir } = newStore();
+    try {
+      expect(store.audit()).toEqual({ total: 0, corrupt: [] });
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
 });
 
 describe("compare-and-swap", () => {

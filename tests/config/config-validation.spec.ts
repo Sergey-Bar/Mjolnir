@@ -37,9 +37,12 @@ describe("MJOLNIR_CONFIG_SCHEMA", () => {
     expect(ignore.items.required).toContain("reason");
   });
 
-  it("defines plugins object", () => {
+  it("defines plugins as an array of names or { package } objects", () => {
     const plugins = MJOLNIR_CONFIG_SCHEMA.properties.plugins;
-    expect(plugins.type).toBe("object");
+    expect(plugins.type).toBe("array");
+    expect(plugins.items.anyOf).toContainEqual(
+      expect.objectContaining({ type: "object", required: ["package"] }),
+    );
   });
 });
 
@@ -97,8 +100,10 @@ describe("validateConfigSchema", () => {
       expect(result.valid).toBe(true);
     });
 
-    it("accepts plugins object", () => {
-      const result = validateConfigSchema({ plugins: { myPlugin: {} } });
+    it("accepts plugins declared by name or as { package } objects", () => {
+      const result = validateConfigSchema({
+        plugins: ["mjolnir-plugin-acme", { package: "./local", prefix: "LOC" }],
+      });
       expect(result.valid).toBe(true);
     });
 
@@ -115,7 +120,7 @@ describe("validateConfigSchema", () => {
             expires: "2027-01-01",
           },
         ],
-        plugins: {},
+        plugins: [],
       });
       expect(result.valid).toBe(true);
     });
@@ -229,10 +234,28 @@ describe("validateConfigSchema", () => {
       expect(result.errors.some((e) => e.includes("unknown"))).toBe(true);
     });
 
-    it("rejects non-object plugins", () => {
-      const result = validateConfigSchema({ plugins: "bad" });
+    it("rejects non-array plugins", () => {
+      // An object here used to pass, and the loader then ran nothing: it only
+      // reads arrays, so the plugin the operator declared silently did not load.
+      for (const plugins of ["bad", { myPlugin: {} }, null]) {
+        const result = validateConfigSchema({ plugins });
+        expect(result.valid, JSON.stringify(plugins)).toBe(false);
+        expect(
+          result.errors.some((e) => e.startsWith("plugins must be an array")),
+        ).toBe(true);
+      }
+    });
+
+    it("rejects a plugin entry the loader would skip", () => {
+      const result = validateConfigSchema({
+        plugins: ["ok", 7, { name: "acme" }, ["nested"]],
+      });
       expect(result.valid).toBe(false);
-      expect(result.errors.some((e) => e.includes("plugins"))).toBe(true);
+      expect(result.errors).toEqual([
+        'plugins[1] must be a package name or { "package": "<name>" }, got 7',
+        'plugins[2] must be a package name or { "package": "<name>" }, got {"name":"acme"}',
+        'plugins[3] must be a package name or { "package": "<name>" }, got ["nested"]',
+      ]);
     });
 
     it("collects multiple errors", () => {

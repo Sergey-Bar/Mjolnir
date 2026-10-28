@@ -204,7 +204,9 @@ function hashDir(
         hash.update(entry.name);
         hash.update(readFileSync(full));
       } catch {
-        // unreadable → skip
+        // The file's bytes are missing from the fingerprint, so a detector
+        // change inside it can no longer invalidate the cache.
+        recordDegradation("rules-tree-file-unreadable");
       }
     }
   }

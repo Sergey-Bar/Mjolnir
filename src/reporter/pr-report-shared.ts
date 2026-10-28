@@ -67,6 +67,33 @@ function escMd(s: string): string {
   return sanitizeData(s).replace(/([\\`*_{}[\]()#+!|<>])/g, "\\$1");
 }
 
+/**
+ * A Markdown code span for untrusted text.
+ *
+ * Backslash escapes are literal inside a code span, so `escMd` there rendered
+ * `__snapshots__` as `\_\_snapshots\_\_` and `app/(auth)` as `app/\(auth\)`.
+ * A span cannot be broken out of with formatting characters, only with a
+ * backtick run, so it is fenced with one backtick more than the longest run
+ * inside (CommonMark 6.1) and padded where the text would otherwise touch the
+ * fence. Kept to one line, because a newline would end the list item.
+ */
+export function mdCodeSpan(raw: string): string {
+  const text = sanitizeData(raw).replace(/[\r\n]+/g, " ");
+  if (text.trim() === "") return "` `";
+  const longest = Math.max(
+    0,
+    ...[...text.matchAll(/`+/g)].map((m) => m[0].length),
+  );
+  const fence = "`".repeat(longest + 1);
+  const pad =
+    text.startsWith("`") ||
+    text.endsWith("`") ||
+    (text.startsWith(" ") && text.endsWith(" "))
+      ? " "
+      : "";
+  return `${fence}${pad}${text}${pad}${fence}`;
+}
+
 function looksLikeCode(s: string): boolean {
   return /[(;={]|await |expect\(/.test(s);
 }
@@ -91,10 +118,10 @@ function evidenceTagLine(f: Finding): string {
 function findingLineMd(f: Finding): string {
   const icon =
     f.severity === "error" ? "🔴" : f.severity === "warning" ? "🟡" : "🔵";
-  const fix = escMd(f.fix);
-  const fixBody = looksLikeCode(f.fix) ? `\`${fix}\`` : `_${fix}_`;
-  const safePath = escMd(f.file).replace(/[\r\n]+/g, " ");
-  return `${icon} **${escMd(f.ruleId)}** \`${safePath}:${f.line}\` — ${escMd(f.message)} ${escMd(`[${evidenceTagLine(f)}]`)}\n  Fix: ${fixBody}`;
+  const fixBody = looksLikeCode(f.fix)
+    ? mdCodeSpan(f.fix)
+    : `_${escMd(f.fix)}_`;
+  return `${icon} **${escMd(f.ruleId)}** ${mdCodeSpan(`${f.file}:${f.line}`)} — ${escMd(f.message)} ${escMd(`[${evidenceTagLine(f)}]`)}\n  Fix: ${fixBody}`;
 }
 
 /**
@@ -130,6 +157,13 @@ const REASON_PHRASES: ReadonlyArray<[prefix: string, phrase: string]> = [
   ["identity-incomplete", "the run could not be bound to the tree it analysed"],
   ["degraded:", "capability was lost to a swallowed error"],
   ["truncated:", "the scan was cut short"],
+  // Not a failure of the run: the quarantine tier is withheld from every
+  // default scan, and `--include-warn` runs it. Said in words because the raw
+  // token reached every clean PR comment as "an unreported reason".
+  [
+    "coverage:quarantine:",
+    "quarantine-tier rule(s) withheld, as in every default scan (`--include-warn` runs them)",
+  ],
 ];
 
 /**
@@ -383,10 +417,12 @@ export function renderUnifiedReport(
     provisionalRuleIds: [],
     ceilingReasons: [],
   };
-  const incomplete =
-    isIncompleteResult(result) ||
-    !result.trustSummary ||
-    (summary.level === "L0" && summary.evidenceCoverage === 0);
+  const analysisIncomplete = isIncompleteResult(result) || !result.trustSummary;
+  // trust-classification's NO_EVIDENCE: a complete scan that nothing
+  // corroborates. Its empty result is an observation, not a verdict, so it is
+  // never rendered as clean.
+  const noEvidence = summary.level === "L0" && summary.evidenceCoverage === 0;
+  const incomplete = analysisIncomplete || noEvidence;
 
   // ─── Hero header ───
   // The alt text is `alt=""`: an `<img>` whose alt duplicates the adjacent
@@ -407,9 +443,20 @@ export function renderUnifiedReport(
   }
   if (incomplete) {
     const reasons = result.analysisStatus?.reasons ?? [];
+    const explained = [
+      ...(reasons.length > 0 ? [humanizeReasons(reasons)] : []),
+      // A complete scan reaches this banner too, when nothing corroborates it.
+      // Its reasons can then be a coverage note and nothing else, which named
+      // a reason for the banner that was not the reason.
+      ...(!analysisIncomplete && noEvidence
+        ? [
+            "no runtime evidence corroborates this run, so an empty result is an observation, not a verdict",
+          ]
+        : []),
+    ];
     lines.push(
       `> [!WARNING]
-> **Analysis status: INCOMPLETE.** ${reasons.length > 0 ? humanizeReasons(reasons) : "The scan did not complete a trustworthy analysis."}`,
+> **Analysis status: INCOMPLETE.** ${explained.length > 0 ? explained.join("; ") : "The scan did not complete a trustworthy analysis."}`,
     );
     lines.push("");
   }

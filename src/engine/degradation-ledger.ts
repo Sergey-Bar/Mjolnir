@@ -139,6 +139,24 @@ export const DEGRADATION_REASONS = [
    * the result looked like a complete scan with partial runtime evidence.
    */
   "runtime-corroboration-failed",
+  /**
+   * A `pom.xml` or `build.gradle(.kts)` could not be read during framework
+   * detection, so the frameworks it declares went undetected while the scan
+   * read as a confident detection. The Java sibling of
+   * `python-manifest-unreadable`.
+   */
+  "java-manifest-unreadable",
+  /**
+   * A `.csproj` (or the directory listing them) could not be read during
+   * framework detection. The C# sibling of `python-manifest-unreadable`.
+   */
+  "csharp-project-unreadable",
+  /**
+   * A rule source file could not be read while building the detector
+   * fingerprint, so its bytes are missing from the digest. The file-level
+   * sibling of `rules-tree-listing-unreadable`, with the same stale-cache risk.
+   */
+  "rules-tree-file-unreadable",
 ] as const;
 
 export type DegradationReason = (typeof DEGRADATION_REASONS)[number];

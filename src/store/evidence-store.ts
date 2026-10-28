@@ -319,11 +319,19 @@ export class EvidenceStore {
   }
 }
 
+/**
+ * The entries of `dir`, or none when it does not exist.
+ *
+ * Only absence is an empty store. Any other failure (a permission error, a
+ * records path that is not a directory) also used to read as "no records",
+ * and `audit()` then reported an unreadable store as an intact empty one.
+ */
 function safeReaddir(dir: string): string[] {
   try {
     return readdirSync(dir);
-  } catch {
-    return [];
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException).code === "ENOENT") return [];
+    throw err;
   }
 }
 

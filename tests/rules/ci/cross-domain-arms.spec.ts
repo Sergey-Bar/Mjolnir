@@ -20,16 +20,21 @@ const procState = vi.hoisted(() => ({ failLsFiles: false, statFailFor: "" }));
 
 vi.mock("node:fs", async (importOriginal) => {
   const actual = await importOriginal<typeof import("node:fs")>();
-  const statSync = ((path: string, ...rest: unknown[]) => {
-    if (procState.statFailFor && String(path) === procState.statFailFor) {
-      throw new Error("stat failed (simulated)");
-    }
-    return (actual.statSync as unknown as (...a: unknown[]) => unknown)(
-      path,
-      ...rest,
-    );
-  }) as typeof actual.statSync;
-  return { ...actual, statSync };
+  // `allLinesOf` reads the file through `lstatSync`, so a mock of `statSync`
+  // alone never reached it and the vanishing-file arm below read the file
+  // normally. Both are intercepted.
+  const failing = <T extends (...a: never[]) => unknown>(real: T): T =>
+    ((path: string, ...rest: unknown[]) => {
+      if (procState.statFailFor && String(path) === procState.statFailFor) {
+        throw new Error("stat failed (simulated)");
+      }
+      return (real as unknown as (...a: unknown[]) => unknown)(path, ...rest);
+    }) as unknown as T;
+  return {
+    ...actual,
+    statSync: failing(actual.statSync),
+    lstatSync: failing(actual.lstatSync),
+  };
 });
 
 vi.mock("node:child_process", async (importOriginal) => {
@@ -467,6 +472,8 @@ describe("scope/changed per-file diff failures", () => {
     // fully changed and every other file keeps exact line attribution.
     expect(diff.degraded).toBe(false);
     expect(diff.changed["vanishing.spec.ts"]).toBeDefined();
+    expect(diff.fullyChanged?.has("vanishing.spec.ts")).toBe(true);
+    expect(diff.fullyChanged?.has("base.spec.ts") ?? false).toBe(false);
   });
 
   it("degrades to diff-failed when the untracked listing fails", () => {

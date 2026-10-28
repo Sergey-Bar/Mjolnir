@@ -26,6 +26,7 @@ import {
   runRulesCommand,
   runScanCommand,
   runSuppressions,
+  runVerifyCommand,
 } from "../../src/cli.js";
 function capture() {
   const out: string[] = [];
@@ -224,7 +225,7 @@ describe("runScanCommand output options", () => {
     expect(cap.errText()).toContain("Invalid mjolnir config");
   });
 
-  it("warns on stderr when severityOverrides names an unknown rule", async () => {
+  it("warns on stderr, once, when severityOverrides names an unknown rule", async () => {
     writeCleanSpec();
     writeFileSync(
       join(dir, "mjolnir.config.json"),
@@ -232,7 +233,31 @@ describe("runScanCommand output options", () => {
     );
     const cap = capture();
     expect(await runScanCommand([dir, "--json"], cap.io)).toBe(0);
-    expect(cap.errText()).toContain("names no registered rule");
+    // The scan reports config warnings through `onConfigWarning`, and the
+    // handler used to print its own copy of the same list after the report.
+    expect(cap.errText().split("names no registered rule")).toHaveLength(2);
+  });
+
+  it("reports config warnings on fix, ci verify and handover too", async () => {
+    // These verbs called runScan without hooks, so the same warning `scan`
+    // prints never reached their users.
+    writeCleanSpec();
+    writeFileSync(
+      join(dir, "mjolnir.config.json"),
+      JSON.stringify({ ingore: [] }),
+    );
+    for (const [verb, run, argv] of [
+      ["fix", runFixCommand, [dir, "--dry-run"]],
+      ["ci verify", runVerifyCommand, [dir]],
+      ["handover", runHandoverCommand, [dir]],
+    ] as const) {
+      const cap = capture();
+      await run([...argv], cap.io);
+      expect(
+        cap.errText().split('unknown top-level key "ingore"'),
+        verb,
+      ).toHaveLength(2);
+    }
   });
 
   it("degrades milestone recording to a warning when stats.json is unwritable", async () => {
