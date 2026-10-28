@@ -11,6 +11,23 @@ once shipped, so this file is the record of what changed between versions.
 
 ## [Unreleased]
 
+### Fixed: the `ci install` Action template pins an Action that works
+
+- **It pinned `4a588bc`, a pull-request branch commit that `main` never
+  contained.** That commit's `action.yml` installed `mjolnir-qa@latest`, called
+  the retired `trust-report` verb and wrote `mjolnir-trust-report.md`. The
+  template's publish job reads `mjolnir-comment.md`, so no workflow it
+  generated ever published a comment. It now pins the merge commit of the fix
+  above, on `main`.
+- **The template passes `version:`**, the published version the generating
+  package resolves, which is the npx template's pin. Omitting it ran the pinned
+  Action's own default: the stable published when that commit was made, which
+  can predate the formats its steps call.
+- **`ci install` printed the pin as a separately typed SHA with 41 hex
+  digits**, which names no commit. It now prints the template's own value.
+- Recognition ignores the `version:` value and still recognises 6.0.0's
+  template, which had no such line.
+
 ### Fixed: the Action, `ci install` and the PR workflow render their reports again
 
 The v6 carve retired `summary` and `pr-comment` onto `scan --format
@@ -90,10 +107,6 @@ Still open:
 
 - The Action runs the published package, so Action users get this with the
   next release, which moves the `version` default to it.
-- The `ci install` Action template pins an Action commit that is not on
-  `main`, and its `action.yml` installs `latest` and calls the retired
-  `trust-report`. The pin can only name a commit that exists, so it moves to
-  this fix's merge commit in a follow-up.
 - The floating `v6` Action tag was never created, because the tag job for
   v6.0.0 was cancelled. The docs recommend `Sergey-Bar/Mjolnir@v6`, which does
   not resolve yet.

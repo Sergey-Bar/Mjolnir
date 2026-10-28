@@ -9,7 +9,7 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { ciInstall } from "../../src/integrations/ci-install.js";
+import { ACTION_REF, ciInstall } from "../../src/integrations/ci-install.js";
 import { runForensics } from "../../src/forensics/run.js";
 
 let dir: string;
@@ -29,9 +29,7 @@ describe("ciInstall", () => {
     const text = readFileSync(res.written, "utf8");
     expect(text).toContain("name: Mjölnir");
     // Action-based by default (P1): the root action.yml, fail-on none.
-    expect(text).toContain(
-      "Sergey-Bar/Mjolnir@4a588bc62d517bc85fc44c0eae64c6587d3bf70b",
-    );
+    expect(text).toContain(`uses: ${ACTION_REF}`);
     expect(text).toContain("fail-on: none");
     expect(text).toContain(
       "Advisory mode — findings are reported, never blocking.",
@@ -49,9 +47,7 @@ describe("ciInstall", () => {
     // standalone gate script (defense-in-depth read) is still exercised
     // by generated-artifacts-validity's executed-gate cases.
     expect(text).toContain("fail-on: error");
-    expect(text).toContain(
-      "Sergey-Bar/Mjolnir@4a588bc62d517bc85fc44c0eae64c6587d3bf70b",
-    );
+    expect(text).toContain(`uses: ${ACTION_REF}`);
   });
 
   it("renders warning gate (action template)", () => {

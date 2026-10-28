@@ -19,6 +19,7 @@ import {
   runScanCommand,
   runSuppressions,
 } from "../../src/cli.js";
+import { ACTION_REF } from "../../src/integrations/ci-install.js";
 describe("parseArgs", () => {
   it("applies defaults", () => {
     expect(parseArgs([])).toMatchObject({
@@ -105,13 +106,14 @@ describe("runCiInstall", () => {
     expect(code).toBe(0);
     expect(cap.text()).toContain("Created");
     expect(cap.text()).toContain("Action-based template");
+    // The message names the pin the template writes. It was typed out
+    // separately, and the copy had a 41st hex digit.
+    expect(cap.text()).toContain(`uses ${ACTION_REF} (immutable pin)`);
     const workflow = readFileSync(
       join(dir, ".github", "workflows", "mjolnir.yml"),
       "utf8",
     );
-    expect(workflow).toContain(
-      "Sergey-Bar/Mjolnir@4a588bc62d517bc85fc44c0eae64c6587d3bf70b",
-    );
+    expect(workflow).toContain(`uses: ${ACTION_REF}`);
     expect(workflow).toContain("fail-on: none");
     expect(workflow).toContain(
       "Advisory mode — findings are reported, never blocking.",
