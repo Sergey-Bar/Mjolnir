@@ -32,10 +32,10 @@ jobs:
       actions: read
     uses: "google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@b1d267aea5211fa648d9d442fa64b90dbdcbdd36" # v2.7.0
     with:
-      # Example of specifying custom arguments
+      # osv-scanner 2.7.0 removed `--skip-git`; the flag failed the job with
+      # "flag provided but not defined" before any scan ran.
       scan-args: |-
         -r
-        --skip-git
         ./
   scan-pr:
     if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
