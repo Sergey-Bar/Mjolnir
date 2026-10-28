@@ -11,6 +11,27 @@ once shipped, so this file is the record of what changed between versions.
 
 ## [Unreleased]
 
+## [6.1.0] — 2026-10-28
+
+A minor release from the second half of the maintenance review. Most of it
+fixes behaviour that was wrong without saying so: report text that rendered as
+escaped markup, warnings that printed twice or not at all, reads that failed
+and were counted as successes, and release workflows that could publish when
+told not to. No verb, flag, Action input or MCP tool was added or removed.
+
+### Upgrade notes
+
+Two config checks are now strict and exit 10 with the entry named. Both
+configurations used to load and then silently do nothing, so a config that
+fails here was already not doing what it said.
+
+- `ignore[].expires` must be a calendar date, `YYYY-MM-DD`. A date-time
+  (`2026-09-01T00:00:00Z`) or an unpadded date (`2026-9-1`) left the
+  suppression inactive; write the date alone.
+- `plugins` must be an array of package names or `{ "package": "…" }`
+  objects. An object such as `{ "acme": {} }` loaded no plugin; write
+  `["acme"]`.
+
 ### Fixed: the scheduled OSV scan runs again
 
 - **OSV-Scanner 2.7.0 removed `--skip-git`**, so the push and scheduled scans
