@@ -28,37 +28,19 @@
   "generatedAt": "2026-10-28",
   "identity": {
     "state": "RELEASE_CANDIDATE",
-    "baseSha": "4679b8492ce25acc82b12f743017d734c0dabf51",
+    "baseSha": "e6611b9e658879873fb4a34bf6560bb6dcf646d5",
     "candidateSha": "2ed960732480f33fbe6564752ce0201040b91e03",
     "version": "6.0.1",
     "packageSha256": "1b9e02f270e79bf3f822ddbb85981ec2341c9fa4b6e2307a438ef4de53fbd4b3",
     "lockfileSha256": "d2a2568d903cd241dc2ce78b5b5307cce823aad0df81ab440be571401acfa0cf",
-    "workingTreeSha256": "3ac270a6171c6ad651aa3ce60deefeee43fa2baeebeeafa7fc298dfc9d68b853",
-    "changedPathCount": 8,
+    "workingTreeSha256": "e13afeb87a574f0ad913de68664b98da399eb410de05d773208bef7aa87ed8df",
+    "changedPathCount": 0,
     "supportEnvelope": "self-hosted; hosted services require explicit consent and separate proof",
     "worktreeInventory": {
-      "changedPaths": [
-        "CHANGELOG.md",
-        "docs/BLAST-RADIUS-AUDIT.md",
-        "src/cli.ts",
-        "src/discovery/ecosystem-detection.ts",
-        "src/engine/scan-pipeline.ts",
-        "src/mcp/server.ts",
-        "tests/cli/help.spec.ts",
-        "tests/contract/no-uncounted-degradation.spec.ts"
-      ],
+      "changedPaths": [],
       "untrackedPaths": []
     },
-    "dirtyFiles": [
-      "CHANGELOG.md",
-      "docs/BLAST-RADIUS-AUDIT.md",
-      "src/cli.ts",
-      "src/discovery/ecosystem-detection.ts",
-      "src/engine/scan-pipeline.ts",
-      "src/mcp/server.ts",
-      "tests/cli/help.spec.ts",
-      "tests/contract/no-uncounted-degradation.spec.ts"
-    ]
+    "dirtyFiles": []
   },
   "claimRegistry": {
     "path": "docs/claim-registry.json",
