@@ -29,6 +29,12 @@ export interface ChangedLines {
 
 export interface DiffResult {
   changed: ChangedLines;
+  /**
+   * Files whose every line counts as changed: untracked files that could not
+   * be read. Each one still has an entry in `changed`, so a consumer that only
+   * lists the changed files sees it too.
+   */
+  fullyChanged?: ReadonlySet<string>;
   /** True when git data was unavailable — findings fall back to full files. */
   degraded: boolean;
   reason?: string;
@@ -142,6 +148,7 @@ export function computeChangedScope(
   ].sort();
 
   const changed: ChangedLines = {};
+  const fullyChanged = new Set<string>();
   // Audit M5: batched per-file diffs. The loop used to spawn TWO git
   // processes per changed file (committed diff + working diff) — a
   // 2,000-file branch paid 4,000 process spawns, dominating the whole
@@ -212,9 +219,12 @@ export function computeChangedScope(
         // early-return degraded the ENTIRE scope to full-file
         // attribution, silently discarding precise line data for every
         // other changed file because a single file could not be read.
-        changed[file] = new Set(
-          Array.from({ length: LIMITS_MAX_LINES }, (_, i) => i + 1),
-        );
+        //
+        // "Fully changed" is a mark, not a materialised set of line
+        // numbers: that used to be a million-entry Set per such file, tens
+        // of megabytes each, and still not every line.
+        fullyChanged.add(file);
+        changed[file] = lines;
         continue;
       }
       for (const l of all) lines.add(l);
@@ -222,11 +232,12 @@ export function computeChangedScope(
     changed[file] = lines;
   }
 
-  return { changed, degraded: false };
+  return {
+    changed,
+    ...(fullyChanged.size > 0 ? { fullyChanged } : {}),
+    degraded: false,
+  };
 }
-
-/** Sentinel size for "fully changed" — bounded, mirrors LIMITS.maxFileBytes scale. */
-const LIMITS_MAX_LINES = 1_000_000;
 
 /** Every 1-based line number of an untracked file (it is all new). */
 function allLinesOf(root: string, file: string): number[] | null {
@@ -303,6 +314,7 @@ export function filterToChanged(
 ): Finding[] {
   if (diff.degraded) return findings;
   return findings.filter((f) => {
+    if (diff.fullyChanged?.has(f.file)) return true;
     const lines = diff.changed[f.file];
     if (!lines) return false; // file unchanged → pre-existing debt
     // A finding counts as "new" if its line, or any line within a small

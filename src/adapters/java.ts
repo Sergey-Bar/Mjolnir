@@ -78,7 +78,9 @@ export const javaAdapter: LanguageAdapter = {
           }
         }
       } catch {
-        /* unreadable — skip */
+        // The frameworks this pom declares go undetected; counted, as for
+        // an unreadable Python manifest, so the detection is not confident.
+        recordDegradation("java-manifest-unreadable");
       }
     }
 
@@ -106,7 +108,7 @@ export const javaAdapter: LanguageAdapter = {
           }
         }
       } catch {
-        /* unreadable — skip */
+        recordDegradation("java-manifest-unreadable");
       }
     }
 

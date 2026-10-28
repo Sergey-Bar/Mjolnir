@@ -93,6 +93,65 @@ describe("loadConfig", () => {
     expect(() => loadConfig(dir)).toThrow(/expires/);
   });
 
+  it("rejects an expiry that is not a YYYY-MM-DD calendar day", () => {
+    // Every value here parses with `new Date()`, which is what load-time
+    // validation used to check. `isSuppressionActive` reads none of them as
+    // the day the author meant: the first two left the entry silently
+    // inactive, and the impossible days silently rolled into March.
+    for (const expires of [
+      "2027-01-01T00:00:00Z",
+      "2027-1-1",
+      "2027-02-30",
+      "2026-02-29",
+    ]) {
+      writeFileSync(
+        join(dir, "mjolnir.config.json"),
+        JSON.stringify({ ignore: [{ ruleId: "R", reason: "x", expires }] }),
+      );
+      expect(() => loadConfig(dir), expires).toThrow(
+        `"expires" must be an ISO date (YYYY-MM-DD), got "${expires}"`,
+      );
+    }
+  });
+
+  it("accepts a leap day that exists", () => {
+    writeFileSync(
+      join(dir, "mjolnir.config.json"),
+      JSON.stringify({
+        ignore: [{ ruleId: "R", reason: "x", expires: "2028-02-29" }],
+      }),
+    );
+    expect(
+      loadConfig(dir, { now: new Date("2028-02-28T12:00:00Z") }).warnings,
+    ).toEqual([]);
+  });
+
+  it("warns about an expired entry on the boundary isSuppressionActive uses", () => {
+    writeFileSync(
+      join(dir, "mjolnir.config.json"),
+      JSON.stringify({
+        ignore: [{ ruleId: "R", reason: "x", expires: "2026-09-10" }],
+      }),
+    );
+    const before = new Date("2026-09-09T23:59:59Z");
+    const onTheDay = new Date("2026-09-10T00:00:00Z");
+    expect(loadConfig(dir, { now: before }).warnings).toEqual([]);
+    expect(loadConfig(dir, { now: onTheDay }).warnings.join("\n")).toContain(
+      'ignore for R has expired (expires "2026-09-10")',
+    );
+    // The warning and the loader's verdict are the same question.
+    const entry = { ruleId: "R", reason: "x", expires: "2026-09-10" };
+    expect(isSuppressionActive(entry, before)).toBe(true);
+    expect(isSuppressionActive(entry, onTheDay)).toBe(false);
+  });
+
+  it("names the file it actually loaded in the unknown-key warning", () => {
+    writeFileSync(join(dir, ".mjolnir.json"), JSON.stringify({ ingore: [] }));
+    expect(loadConfig(dir).warnings.join("\n")).toContain(
+      '.mjolnir.json has an unknown top-level key "ingore"',
+    );
+  });
+
   it("throws on invalid JSON", () => {
     writeFileSync(join(dir, "mjolnir.config.json"), "{ nope");
     expect(() => loadConfig(dir)).toThrow(/Invalid mjolnir config/);

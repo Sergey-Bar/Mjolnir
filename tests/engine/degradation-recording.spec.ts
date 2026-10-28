@@ -37,6 +37,8 @@ import {
 } from "../../src/engine/degradation-ledger.js";
 import { deriveCompletion } from "../../src/engine/completion.js";
 import { pythonAdapter } from "../../src/adapters/python.js";
+import { javaAdapter } from "../../src/adapters/java.js";
+import { csharpAdapter } from "../../src/adapters/csharp.js";
 import { parseJavaAst } from "../../src/engine/tree-sitter-ast.js";
 
 const ROOT = join(import.meta.dirname, "..", "..");
@@ -100,6 +102,38 @@ describe("the python adapter counts a manifest it could not read", () => {
     expect(windowReasons(marker)).not.toContain("python-manifest-unreadable");
     expect(detected.frameworks).toContain("pytest");
     expect(detected.unknown).toBe(false);
+  });
+});
+
+describe("the Java and C# adapters count a manifest they could not read", () => {
+  // Same technique as the python case above: a DIRECTORY with the
+  // manifest's name exists, and reading it as a file fails on every platform.
+  it.each([
+    ["java", "pom.xml", "java-manifest-unreadable"],
+    ["java", "build.gradle", "java-manifest-unreadable"],
+    ["csharp", "App.csproj", "csharp-project-unreadable"],
+  ] as const)("%s: an unreadable %s is recorded", (adapter, name, reason) => {
+    const root = tempDir();
+    mkdirSync(join(root, name));
+    const marker = beginDegradationWindow();
+    (adapter === "java" ? javaAdapter : csharpAdapter).detectFrameworks(root);
+    expect(windowReasons(marker)).toContain(reason);
+  });
+
+  it("readable manifests record nothing", () => {
+    const root = tempDir();
+    writeFileSync(
+      join(root, "pom.xml"),
+      "<project><dependency><artifactId>junit-jupiter</artifactId></dependency></project>",
+    );
+    writeFileSync(
+      join(root, "App.csproj"),
+      '<Project><ItemGroup><PackageReference Include="xunit" /></ItemGroup></Project>',
+    );
+    const marker = beginDegradationWindow();
+    expect(javaAdapter.detectFrameworks(root).frameworks).toContain("junit");
+    expect(csharpAdapter.detectFrameworks(root).frameworks).toContain("xunit");
+    expect(windowReasons(marker)).toEqual([]);
   });
 });
 

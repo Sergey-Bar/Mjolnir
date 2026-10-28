@@ -180,6 +180,28 @@ describe("filterToChanged", () => {
     expect(filterToChanged([finding("a.test.ts", 7)], diff)).toHaveLength(1);
   });
 
+  it("keeps every finding in a fully changed file, at any line", () => {
+    // The mark replaced a materialised Set of a million line numbers, which
+    // also silently dropped a finding past line 1,000,000.
+    const diff = {
+      degraded: false,
+      changed: { "u.test.ts": new Set<number>(), "a.test.ts": new Set([3]) },
+      fullyChanged: new Set(["u.test.ts"]),
+    };
+    const kept = filterToChanged(
+      [
+        finding("u.test.ts", 1),
+        finding("u.test.ts", 1_000_001),
+        finding("a.test.ts", 40),
+      ],
+      diff,
+    );
+    expect(kept.map((f) => `${f.file}:${f.line}`)).toEqual([
+      "u.test.ts:1",
+      "u.test.ts:1000001",
+    ]);
+  });
+
   it("drops findings far below any changed line", () => {
     const diff = {
       degraded: false,

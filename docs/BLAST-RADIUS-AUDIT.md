@@ -7,34 +7,34 @@ contract enforces: **every external import in src/ must belong to the
 allowlist**, and the shipped surface (adapters, rules, flags, formats, exit
 codes) must match this document exactly.
 
-## Inventory: 306 files, 74583 LOC
+## Inventory: 306 files, 74785 LOC
 
 | Area              | Files | LOC   |
 | ----------------- | ----- | ----- |
 | src/rules         | 88    | 13123 |
-| src/engine        | 44    | 12408 |
-| src/commands      | 34    | 12241 |
-| src/v6            | 10    | 6206  |
-| src/(root)        | 8     | 4096  |
-| src/reporter      | 14    | 3840  |
-| src/forensics     | 18    | 3345  |
+| src/engine        | 44    | 12436 |
+| src/commands      | 34    | 12245 |
+| src/v6            | 10    | 6209  |
+| src/(root)        | 8     | 4113  |
+| src/reporter      | 14    | 3887  |
+| src/forensics     | 18    | 3355  |
 | src/certification | 6     | 2698  |
 | src/frameworks    | 5     | 2015  |
-| src/adapters      | 11    | 1809  |
+| src/adapters      | 11    | 1814  |
 | src/discovery     | 10    | 1794  |
 | src/gaps          | 2     | 1390  |
 | src/integrations  | 7     | 1223  |
 | src/brand         | 3     | 886   |
-| src/mcp           | 3     | 853   |
+| src/mcp           | 3     | 858   |
 | src/release       | 5     | 830   |
 | src/lib           | 9     | 735   |
 | src/plugins       | 4     | 715   |
-| src/store         | 2     | 682   |
+| src/store         | 2     | 690   |
+| src/config        | 3     | 622   |
 | src/bench         | 4     | 592   |
-| src/config        | 3     | 559   |
 | src/scorer        | 3     | 511   |
 | src/traceability  | 2     | 441   |
-| src/scope         | 2     | 427   |
+| src/scope         | 2     | 439   |
 | src/trust         | 2     | 399   |
 | src/playwright    | 2     | 332   |
 | src/benchmark     | 2     | 174   |
@@ -56,8 +56,8 @@ codes) must match this document exactly.
 | src/reporter/ui                 | 15        |
 | src/engine/adapter              | 14        |
 | src/lib/fs-atomic               | 14        |
+| src/engine/degradation-ledger   | 13        |
 | src/rules/measured-fp.generated | 13        |
-| src/engine/degradation-ledger   | 12        |
 | src/rules/measurement           | 12        |
 | src/discovery/ignores           | 10        |
 

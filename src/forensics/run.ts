@@ -251,6 +251,7 @@ export function runForensics(
   }
 
   let flakyMdPath: string | undefined;
+  let flakyMdWriteError: string | undefined;
   if ((options.writeFlakyMd ?? true) && report.totalTests > 0) {
     // Bug-audit M2: for a single report FILE the old code joined the file
     // path with "FLAKY.md" → `<file>/FLAKY.md` is not writable — yet the
@@ -262,8 +263,9 @@ export function runForensics(
       // Atomic (audit S9): a crash mid-write left a truncated FLAKY.md at the
       // real path, and the next triage read served confident nonsense from it.
       writeFileAtomic(flakyMdPath, renderFlakyMd(report));
-    } catch {
+    } catch (e) {
       flakyMdPath = undefined;
+      flakyMdWriteError = e instanceof Error ? e.message : String(e);
     }
   }
 
@@ -276,7 +278,7 @@ export function runForensics(
           (report.totalNetworkObservations ?? 0) > 0 &&
           options.writeFlakyMd !== false
         ? "FLAKY.md was not written — network observations do not establish test outcomes."
-        : renderFlakyMdNotWritten(options),
+        : renderFlakyMdNotWritten(options, flakyMdWriteError),
   ].join("\n");
 
   return { report, output, flakyMdPath };
@@ -287,11 +289,19 @@ function renderFlakyMdHint(): string {
 }
 
 /** Honest fallback for every case where FLAKY.md was NOT written (M2). */
-function renderFlakyMdNotWritten(options: ForensicsOptions): string {
+function renderFlakyMdNotWritten(
+  options: ForensicsOptions,
+  writeError?: string,
+): string {
   if (options.writeFlakyMd === false) {
     return "FLAKY.md not written (--no-flaky-md).";
   }
-  return "FLAKY.md was not written — nothing recognized to report (or the target directory is not writable).";
+  // A failed write used to share the "nothing recognized" line, so a report
+  // with real results and an unwritable directory read as an empty one.
+  if (writeError !== undefined) {
+    return `FLAKY.md could not be written: ${writeError}`;
+  }
+  return "FLAKY.md was not written — nothing recognized to report.";
 }
 
 /**

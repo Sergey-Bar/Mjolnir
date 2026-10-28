@@ -23,6 +23,7 @@ import { join } from "node:path";
 import { sharedWalk } from "../discovery/shared-walk.js";
 import { computeCodeText } from "../engine/code-text.js";
 import { parseCSharpAst } from "../engine/tree-sitter-ast.js";
+import { recordDegradation } from "../engine/degradation-ledger.js";
 import { runRuleIsolated } from "../engine/shared-run-rules.js";
 import {
   frameworkFilterApplies,
@@ -75,11 +76,13 @@ export const csharpAdapter: LanguageAdapter = {
             }
           }
         } catch {
-          /* unreadable — skip this csproj */
+          recordDegradation("csharp-project-unreadable");
         }
       }
     } catch {
-      /* unreadable — skip */
+      // The project files were never listed, so no framework they declare
+      // was looked for.
+      recordDegradation("csharp-project-unreadable");
     }
     if (frameworks.size === 0) return { frameworks: [], unknown: true };
     return { frameworks: [...frameworks], unknown: false };

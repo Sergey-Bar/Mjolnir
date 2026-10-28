@@ -16,7 +16,7 @@ export interface IgnoreEntry {
   ruleId: string;
   files?: string[];
   reason: string;
-  /** ISO date; omitted means the suppression has no expiry. */
+  /** ISO calendar date (YYYY-MM-DD); omitted means the suppression has no expiry. */
   expires?: string;
 }
 
@@ -74,7 +74,11 @@ export class ConfigValidationError extends Error {
 
 export function loadConfig(
   root: string,
-  options: { knownRuleIds?: ReadonlySet<string> } = {},
+  options: {
+    knownRuleIds?: ReadonlySet<string>;
+    /** Clock for the expired-suppression warning; defaults to now. */
+    now?: Date;
+  } = {},
 ): {
   config: QADoctorConfig;
   path: string | null;
@@ -96,7 +100,12 @@ export function loadConfig(
         p,
         (v): v is QADoctorConfig => isRecord(v),
       );
-      const warnings = validate(parsed, options.knownRuleIds);
+      const warnings = validate(
+        parsed,
+        options.knownRuleIds,
+        options.now,
+        name,
+      );
       return { config: parsed, path: p, warnings };
     } catch (err) {
       // JSON.parse throws SyntaxError and readFileSync throws Error — the
@@ -116,6 +125,8 @@ export function loadConfig(
 function validate(
   cfg: QADoctorConfig,
   knownRuleIds?: ReadonlySet<string>,
+  now: Date = new Date(),
+  fileName = "mjolnir.config.json",
 ): string[] {
   const warnings: string[] = [];
 
@@ -173,19 +184,20 @@ function validate(
     // degraded to "expired" (or to active, depending on the comparison
     // direction) with no signal. Reject it at load time with a fixable
     // message instead.
-    if (
-      ign.expires !== undefined &&
-      Number.isNaN(new Date(ign.expires).getTime())
-    ) {
+    //
+    // The check is the same parser `isSuppressionActive` uses. It used to be
+    // `new Date(expires)`, which also accepts "2026-09-01T12:00:00Z" and
+    // "2026-9-1". `isSuppressionActive` cannot read either, so those entries
+    // loaded cleanly and were then silently inactive, with no expired warning.
+    // "2026-02-30" passed both checks and quietly meant March 2.
+    if (ign.expires !== undefined && Number.isNaN(utcMidnight(ign.expires))) {
       throw new Error(
-        `ignore for ${ign.ruleId}: "expires" must be an ISO date, got "${ign.expires}"`,
+        `ignore for ${ign.ruleId}: "expires" must be an ISO date (YYYY-MM-DD), got "${ign.expires}"`,
       );
     }
-    if (
-      ign.expires !== undefined &&
-      !Number.isNaN(new Date(ign.expires).getTime()) &&
-      new Date(ign.expires).getTime() < Date.now()
-    ) {
+    // The warning asks the same question the suppression ledger asks, so
+    // "expired" here and in `mjolnir scan --suppressions` cannot disagree.
+    if (ign.expires !== undefined && !isSuppressionActive(ign, now)) {
       warnings.push(
         `warning: ignore for ${ign.ruleId} has expired (expires "${ign.expires}") — the entry is kept but currently inactive.`,
       );
@@ -197,7 +209,7 @@ function validate(
   for (const key of Object.keys(cfg)) {
     if (!KNOWN_CONFIG_KEYS.has(key)) {
       warnings.push(
-        `warning: mjolnir.config.json has an unknown top-level key "${key}" — ignored (typo? see README §Configuration).`,
+        `warning: ${fileName} has an unknown top-level key "${key}" — ignored (typo? see README §Configuration).`,
       );
     }
   }
@@ -251,15 +263,34 @@ export function isSuppressionActive(
   return utcMidnight(ign.expires) > utcMidnightOf(now);
 }
 
-/** UTC-midnight timestamp of an ISO date string (YYYY-MM-DD). */
+/**
+ * UTC-midnight timestamp of an ISO calendar date (YYYY-MM-DD), or NaN.
+ *
+ * NaN for anything that is not a real calendar day, so a load-time check and
+ * the active/expired verdict share one parser and cannot disagree.
+ */
 function utcMidnight(isoDate: string): number {
   // Require strict YYYY-MM-DD format. Date-time strings like
   // "2026-09-01T23:59:59Z" would be silently truncated to UTC midnight,
   // causing the expiry to compare incorrectly against the calendar day.
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(isoDate)) return NaN;
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(isoDate);
   if (!m) return NaN;
-  return Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+  const year = Number(m[1]);
+  const month = Number(m[2]) - 1;
+  const day = Number(m[3]);
+  const t = Date.UTC(year, month, day);
+  // Date.UTC rolls an impossible day forward ("2026-02-30" is March 2) and
+  // maps years 0-99 to 1900-1999. A round trip that does not land on the
+  // same calendar day means the input was not one.
+  const back = new Date(t);
+  if (
+    back.getUTCFullYear() !== year ||
+    back.getUTCMonth() !== month ||
+    back.getUTCDate() !== day
+  ) {
+    return NaN;
+  }
+  return t;
 }
 
 /** UTC-midnight timestamp of a Date (calendar day, timezone-independent). */

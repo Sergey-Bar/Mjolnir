@@ -11,6 +11,45 @@ once shipped, so this file is the record of what changed between versions.
 
 ## [Unreleased]
 
+### Fixed: report rendering, config validation and swallowed errors
+
+- **Paths and code-like fixes in the PR comment, step summary and handoff are
+  real code spans.** Backslash escapes are literal inside a code span, so
+  `__snapshots__` rendered as `\_\_snapshots\_\_`, and a backtick in a path
+  closed the span early. The fence is now longer than any backtick run inside.
+- **The INCOMPLETE banner on a complete scan with no runtime evidence says
+  so**, and the quarantine coverage note is written out in words. The banner
+  used to name "an unreported reason".
+- **`ignore[].expires` must be a calendar date, `YYYY-MM-DD` (exit 10
+  otherwise).** A date-time or `2026-9-1` loaded, then left the suppression
+  silently inactive with no expired warning, and `2026-02-30` quietly meant
+  March 2. The expired warning now uses the same check as
+  `mjolnir scan --suppressions`.
+- **`plugins` must be an array of package names or `{ "package": … }`
+  objects (exit 10 otherwise).** An object, or an entry of another shape,
+  loaded cleanly and the loader ran nothing.
+- **Config warnings print once.** `scan` printed each one twice, and `fix`,
+  `ci verify` and `handover` dropped them. Those three now also send the
+  plugin gate notice to their own stderr.
+- **MCP `explain` finds the rule's fixture from a checkout**, defaulting to
+  `<cwd>/tests/fixtures` as `mjolnir explain` does. It never returned the
+  example finding the CLI prints.
+- **Runtime corroboration matches Windows report paths whose case differs
+  from the scan root** (`c:\repo` and `C:\Repo`). Each verdict missed its
+  finding.
+- **`--changed` marks an unreadable untracked file as fully changed** instead
+  of building a million-entry line set for it, which also dropped any finding
+  past line 1,000,000.
+- **Swallowed reads are counted:** an unreadable `pom.xml`, `build.gradle` or
+  `.csproj` (`java-manifest-unreadable`, `csharp-project-unreadable`) and an
+  unreadable rule source file in the detector fingerprint
+  (`rules-tree-file-unreadable`). The evidence store's audit fails on an
+  unreadable records directory instead of reporting an empty, intact store,
+  and `forensics` says why `FLAKY.md` could not be written.
+- **Census version majors sort numerically without the ambient locale**, and
+  the deterministic-ordering contract now also catches a `localeCompare`
+  whose locale argument is `undefined`.
+
 ### Fixed: the stable release publishes the artifact it verified
 
 - **The first 6.0.1 publish run pushed `v6.0.1` and moved `v6`, then failed

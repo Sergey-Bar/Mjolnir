@@ -302,7 +302,7 @@
       }
     },
     "src/v6/ecosystem-census.ts": {
-      "lines": 1942,
+      "lines": 1945,
       "exports": 44,
       "importedBy": [
         "scripts/v6/check-ecosystem.ts",

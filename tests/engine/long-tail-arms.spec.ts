@@ -176,7 +176,8 @@ describe("scope/changed degradation paths", () => {
       // superset) — instead of discarding line precision for the whole
       // scope. The scope stays precise.
       expect(diff.degraded).toBe(false);
-      expect(diff.changed["big.spec.ts"]?.size).toBeGreaterThan(0);
+      expect(diff.changed["big.spec.ts"]).toBeDefined();
+      expect(diff.fullyChanged?.has("big.spec.ts")).toBe(true);
     },
   );
 });

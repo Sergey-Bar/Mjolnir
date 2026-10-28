@@ -460,8 +460,11 @@ export function normalizeMajors(versions: readonly string[]): string[] {
     const major = versionMajor(version);
     if (major !== null) majors.add(major);
   }
-  return [...majors].sort((a, b) =>
-    a.localeCompare(b, undefined, { numeric: true }),
+  // Majors are digit runs (`versionMajor`), so they compare as numbers.
+  // `localeCompare(b, undefined, { numeric: true })` read the ambient locale,
+  // which deterministic-ordering.spec.ts bans, in a form its pattern missed.
+  return [...majors].sort(
+    (a, b) => Number(a) - Number(b) || compareCodePoints(a, b),
   );
 }
 

@@ -191,3 +191,32 @@ describe("runtime-corroboration branch coverage (line 81 — testsExecuted === 0
     expect(findings[0]?.runtimeCorroboration?.level).toBe("file");
   });
 });
+
+describe("scan-root stripping", () => {
+  it("strips a Windows root that differs from the report's only in case", () => {
+    // A report written from `c:\work\repo` names the same files as a scan of
+    // `C:\Work\Repo`. Compared case-sensitively, the root stayed on every
+    // report path and no verdict ever met its finding.
+    const f = finding();
+    const count = stampRuntimeCorroboration(
+      [f],
+      report({
+        verdicts: [verdict({ file: "c:\\work\\repo\\e2e\\shop.spec.ts" })],
+      }),
+      "C:\\Work\\Repo",
+    );
+    expect(count).toBe(1);
+    expect(f.runtimeCorroboration?.level).toBe("file");
+  });
+
+  it("keeps a POSIX root case-sensitive, where the case names another directory", () => {
+    const f = finding();
+    const count = stampRuntimeCorroboration(
+      [f],
+      report({ verdicts: [verdict({ file: "/work/repo/e2e/shop.spec.ts" })] }),
+      "/Work/Repo",
+    );
+    expect(count).toBe(0);
+    expect(f.runtimeCorroboration).toBeUndefined();
+  });
+});

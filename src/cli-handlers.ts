@@ -23,7 +23,7 @@ import {
 import { scanExitCode, isAtGate, type GateLevel } from "./claim-evidence.js";
 import { isAdvisoryFinding } from "./types.js";
 import type { Finding, ScanResult } from "./types.js";
-import type { CliArgs } from "./engine/scan-pipeline.js";
+import type { CliArgs, ScanHooks } from "./engine/scan-pipeline.js";
 import { runScan, KNOWN_RULE_IDS } from "./engine/scan-pipeline.js";
 import { buildMachineContract } from "./engine/machine-contract.js";
 
@@ -114,6 +114,20 @@ function verbFailure(
   }
   internalErrorMessage(error, io.err, debug);
   return EXIT_INTERNAL;
+}
+
+/**
+ * The notices a scan reports about itself, sent to the verb's own stderr.
+ *
+ * `fix`, `ci verify` and `handover` called `runScan` with no hooks, so a
+ * config warning (an unknown key, an expired suppression) never reached the
+ * user on those verbs, and the plugin gate notice bypassed `io.err`.
+ */
+function scanNotices(io: { err: Output }): ScanHooks {
+  return {
+    onConfigWarning: (message) => io.err(message),
+    onGateNotice: (notice) => io.err(notice),
+  };
 }
 
 /**
@@ -424,9 +438,8 @@ export async function runScanCommand(
     const result = await runScan(
       { ...args, target },
       {
-        onConfigWarning: (message) => io.err(message),
+        ...scanNotices(io),
         onProgress: (e) => progress.onEvent(e),
-        onGateNotice: (notice) => io.err(notice),
         ...(args.debug
           ? {
               onRuleCrash: (ruleId: string, file: string, error: unknown) => {
@@ -501,8 +514,10 @@ export async function runScanCommand(
     // The config is loaded ONCE and the gate level resolved from it once.
     // `--score`, the report and the exit code must all agree about which
     // findings gate, and three separate reads of the same config is how they
-    // stop agreeing.
-    const { config, warnings } = loadConfig(target, {
+    // stop agreeing. Its warnings are not printed here: the scan already
+    // reported them through `onConfigWarning`, and printing this copy too
+    // put every config warning on stderr twice.
+    const { config } = loadConfig(target, {
       knownRuleIds: KNOWN_RULE_IDS,
     });
     for (const d of args.deprecatedFlags ?? []) {
@@ -571,7 +586,6 @@ export async function runScanCommand(
     }
 
     if (result.partial) return EXIT_PARTIAL;
-    for (const w of warnings) io.err(w);
     if (baselineFailed) return EXIT_PARTIAL;
     return scanExitCode({
       partial: false,
@@ -608,7 +622,10 @@ export async function runFixCommand(
     const target = resolve(args.target);
     const invalid = validateScanTarget(target, io.err);
     if (invalid !== null) return invalid;
-    const result = await runScan({ ...args, target, strict: true });
+    const result = await runScan(
+      { ...args, target, strict: true },
+      scanNotices(io),
+    );
     const fixes = planAndApplyFixes(result, target, { dryRun });
     io.out(renderFixReport(fixes, dryRun));
     // A fix plan built from a partial scan has not seen every file, so it
@@ -633,7 +650,7 @@ export async function runVerifyCommand(
     const target = resolve(args.target);
     const invalid = validateScanTarget(target, io.err);
     if (invalid !== null) return invalid;
-    const result = await runScan({ ...args, target });
+    const result = await runScan({ ...args, target }, scanNotices(io));
     const baselinePath = join(target, DEFAULT_BASELINE_PATH);
     const baseline = loadBaseline(baselinePath, (w) => io.err(w));
     const digest = buildVerifyDigest(result, baseline);
@@ -745,7 +762,7 @@ export async function runHandoverCommand(
     const target = resolve(args.target);
     const invalid = validateScanTarget(target, io.err);
     if (invalid !== null) return invalid;
-    const result = await runScan({ ...args, target });
+    const result = await runScan({ ...args, target }, scanNotices(io));
     let forensics: ReturnType<typeof buildHandover> extends never
       ? never
       : Parameters<typeof buildHandover>[1] = null;

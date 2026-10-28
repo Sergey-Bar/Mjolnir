@@ -14,7 +14,13 @@
  *    path already produced.
  */
 
-import { existsSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -66,6 +72,20 @@ describe("`forensics <report-file>` FLAKY.md honesty (M2)", () => {
     expect(flakyMdPath).toBeUndefined();
     expect(output).not.toContain("Full details in FLAKY.md");
     expect(output).toContain("--no-flaky-md");
+  });
+
+  it("says why when FLAKY.md cannot be written, instead of calling the report empty", () => {
+    // A directory where FLAKY.md belongs makes the write fail. The output
+    // used to share the "nothing recognized to report" line with an empty
+    // report, so real results read as none.
+    mkdirSync(join(dir, "FLAKY.md"));
+    const reportFile = join(dir, "junit.xml");
+    writeFileSync(reportFile, JUNIT);
+    const { flakyMdPath, output, report } = runForensics(reportFile);
+    expect(report.totalTests).toBeGreaterThan(0);
+    expect(flakyMdPath).toBeUndefined();
+    expect(output).toContain("FLAKY.md could not be written: ");
+    expect(output).not.toContain("nothing recognized to report");
   });
 });
 
