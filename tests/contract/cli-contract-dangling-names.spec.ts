@@ -206,3 +206,53 @@ describe("a dangling npm-script name", () => {
     expect(result.code).toBe(0);
   });
 });
+
+/**
+ * A removed verb behind every launcher a CI step uses.
+ *
+ * The removed-verb check matched `mjolnir <verb>` only. The Action launches
+ * the CLI as `npx "$MJ_PACKAGE" <verb>`, the `ci install` template as
+ * `npx …/mjolnir-qa-<version>.tgz <verb>` and this repository's workflows as
+ * `node dist/cli.mjs <verb>`, so after the v6 carve retired `summary` and
+ * `pr-comment` all of them kept calling the two verbs, and all of them exited
+ * 10 on every run, for weeks, while this gate passed.
+ */
+describe("a removed verb in a live surface, whatever launches it", () => {
+  // Built from parts for the same reason as `invocation()` above: written out
+  // whole, each line would be a live consumer of a removed verb in a tracked
+  // file, and the repository-wide arm below would report this spec.
+  const verb = ["pr", "comment"].join("-");
+  const LAUNCHES = [
+    ["the built entry", `node dist/cli.mjs ${verb} --from mjolnir.json`],
+    ["the Action's tarball variable", `npx --yes "$MJ_PACKAGE" ${verb}`],
+    [
+      "a pinned tarball",
+      `npx --yes https://registry.npmjs.org/mjolnir-qa/-/mjolnir-qa-6.0.0.tgz ${verb}`,
+    ],
+    ["a templated tarball", `npx mjolnir-qa-\${VERSION}.tgz ${verb}`],
+    ["the pinned package", `npx mjolnir-qa@6.0.0 ${verb}`],
+    ["the package", `npx mjolnir-qa ${verb}`],
+    ["the binary", `mjolnir ${verb}`],
+  ] as const;
+
+  it.each(LAUNCHES)("is a failure through %s", (_label, line) => {
+    const dir = fixtureTree({
+      "CI.md": `# CI\n\n\`\`\`yaml\n- run: ${line}\n\`\`\`\n`,
+    });
+
+    const { code, output } = runCheck(dir);
+
+    expect(code, output).toBe(1);
+    expect(output).toContain("docs/CI.md");
+    expect(output).toContain(`invokes \`${verb}\``);
+  });
+
+  it("is not a failure for the format that replaced it", () => {
+    const dir = fixtureTree({
+      "CI.md":
+        '# CI\n\n```yaml\n- run: npx --yes "$MJ_PACKAGE" mjolnir.json --format pr-comment\n```\n',
+    });
+
+    expect(runCheck(dir).code).toBe(0);
+  });
+});

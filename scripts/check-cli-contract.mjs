@@ -321,8 +321,17 @@ const CAPTURED_ARTEFACTS = new Set([
  * catch the same class of dangling name, and a file exempt from one that still
  * trips the other is an exemption made by accident rather than by decision. The
  * list is by name, not by pattern, so it can be argued with per file.
+ *
+ * `docs/MIGRATION-3.0.0.md` is the 3.0.0 line's upgrade procedure, and every
+ * command in it is pinned to `mjolnir-qa@3.0.0`, where each verb it names
+ * exists. The removed-verb check found it the day it learned to read
+ * `mjolnir-qa@<version> <verb>`; rewriting it to 6.0 spellings would make a
+ * 3.0.0 consumer's instructions wrong for the version they are told to pin.
  */
-const FROZEN_REPORTS = new Set(["docs/RELEASE-3.0.0-READINESS.md"]);
+const FROZEN_REPORTS = new Set([
+  "docs/RELEASE-3.0.0-READINESS.md",
+  "docs/MIGRATION-3.0.0.md",
+]);
 
 /** Every markdown, workflow and Action file this repository publishes. */
 const surfaces = [];
@@ -411,9 +420,23 @@ function isLiveSurface(file) {
 // prefix into this pattern would also put a non-existent `npm run <name>` in
 // this file, which `docs-consistency.spec.ts` correctly reports as a reader
 // being told to run something that does not exist.
+//
+// A CI step names the CLI by whatever launches it, not by `mjolnir`: the built
+// entry (`node dist/cli.mjs <verb>`), the Action's tarball variable
+// (`npx "$MJ_PACKAGE" <verb>`), a pinned tarball (`npx …/mjolnir-qa-6.0.0.tgz
+// <verb>`) or the package itself (`npx mjolnir-qa@6.0.0 <verb>`). The v6 carve
+// retired two verbs that the Action, both `ci install` templates and this
+// repository's PR workflow all still called, and every one of them exited 10
+// on every run, because this pattern knew only the first spelling.
+const LAUNCHER = [
+  String.raw`\bmjolnir`,
+  String.raw`\bcli\.[mc]?[jt]s["']?`,
+  String.raw`"\$MJ_PACKAGE"`,
+  String.raw`\bmjolnir-qa(?:@[^\s"']+|-[^\s"']+?\.tgz)?["']?`,
+].join("|");
 const REMOVED_PATTERN = removed.length
   ? new RegExp(
-      `\\bmjolnir\\s+(${removed
+      `(?:${LAUNCHER})\\s+(${removed
         .map((v) => v.replace(/[.*+?^${}()|[\]\\-]/g, "\\$&"))
         .join("|")})\\b`,
     )
@@ -426,7 +449,7 @@ if (REMOVED_PATTERN !== null) {
     const m = REMOVED_PATTERN.exec(text);
     if (m !== null) {
       failures.push(
-        `${rel(file)}: names \`mjolnir ${m[1]}\`, which docs/cli-contract.json ` +
+        `${rel(file)}: \`${m[0]}\` invokes \`${m[1]}\`, which docs/cli-contract.json ` +
           "removes. A removed verb in a live surface is a consumer following " +
           "a command that no longer exists.",
       );

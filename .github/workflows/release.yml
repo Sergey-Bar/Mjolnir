@@ -215,8 +215,11 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p release-assets
-          node dist/cli.mjs release-trust --json > release-assets/release-trust.json
-          node dist/cli.mjs release-trust > release-assets/release-trust.txt
+          # `ci release-trust`, as stable-release.yml already runs it. The bare
+          # `release-trust` verb was retired onto `ci` in the v6 carve, so this
+          # step exited 10 on every release candidate cut since.
+          node dist/cli.mjs ci release-trust --json > release-assets/release-trust.json
+          node dist/cli.mjs ci release-trust > release-assets/release-trust.txt
       # Sentry release + source maps. The ordering is load-bearing: this must
       # run AFTER `npm run build` and BEFORE the `package` step below.
       # `sentry sourcemaps inject` stamps a debug id into dist/ IN PLACE, and

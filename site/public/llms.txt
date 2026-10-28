@@ -2,7 +2,7 @@
 
 > Mjölnir (npm: mjolnir-qa) analyzes test source, CI workflows and existing test-run reports for verification weaknesses. It provides source-located findings, evidence explanations, baseline comparison and read-only MCP tools. It does not execute tests or prove application correctness.
 
-Created by Sergey Bar. Node.js >=22.18. MIT licensed. CLI examples pin 5.0.0.
+Created by Sergey Bar. Node.js >=22.18. MIT licensed. CLI examples pin 6.0.0.
 
 ## Start here
 

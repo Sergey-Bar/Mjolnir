@@ -38,7 +38,7 @@ Requires Node.js ≥ 22.18. For clients supporting this configuration shape:
   "mcpServers": {
     "mjolnir": {
       "command": "npx",
-      "args": ["-y", "mjolnir-qa@5.0.0", "mcp"]
+      "args": ["-y", "mjolnir-qa@6.0.0", "mcp"]
     }
   }
 }
@@ -50,10 +50,10 @@ Tools: `scan`, `explain`, `diff`, `verify`, `forensics`, `triage`, `pw-report`. 
 
 1. Inspect repository scope and obtain a scan.
 2. Read the rule explanation and relevant source before choosing a fix.
-3. Capture the before-state with `npx mjolnir-qa@5.0.0 baseline`; this CLI action writes `.mjolnir/baseline.json` and is separate from read-only MCP tools.
+3. Capture the before-state with `npx mjolnir-qa@6.0.0 --save-baseline`; this CLI action writes `.mjolnir/baseline.json` and is separate from read-only MCP tools.
 4. Apply a scoped fix using the agent's editing tools. Confirm the context of E1 heuristic findings.
 5. Run relevant tests separately.
-6. Run `npx mjolnir-qa@5.0.0 verify` and inspect resolved, new, unchanged and inconclusive results.
+6. Run `npx mjolnir-qa@6.0.0 ci verify` and inspect resolved, new, unchanged and inconclusive results.
 7. Report what the test runner established separately from what Mjölnir established.
 
 ## Interpretation boundaries

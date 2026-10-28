@@ -84,7 +84,7 @@ function cleanSurfaces(): Surfaces {
     } else if (path === "site/guide/ci.md") {
       surfaces[path] = `npx mjolnir-qa@${STABLE}\n`;
     } else if (path === "site/guide/forensics.md") {
-      surfaces[path] = `npx mjolnir-qa@${STABLE} forensics\n`;
+      surfaces[path] = `npx mjolnir-qa@${STABLE} explain --evidence\n`;
     } else if (path === "docs/DISTRIBUTION-KIT.md") {
       surfaces[path] = `npx mjolnir-qa@${STABLE}\n`;
     } else {
