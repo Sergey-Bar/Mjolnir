@@ -48,7 +48,7 @@ inputs:
     required: false
     default: "all"
   strict:
-    description: "Include quarantine-tier rules in the scan (--strict)"
+    description: "Include quarantine-tier rules in the scan (--include-warn)"
     required: false
     default: "false"
   format:
@@ -217,7 +217,9 @@ runs:
       run: |
         ARGS=("$MJ_PATH")
         if [ "$MJ_SCOPE" = "changed" ]; then ARGS+=(--scope changed); fi
-        if [ "$MJ_STRICT" = "true" ]; then ARGS+=(--strict); fi
+        # `--include-warn` is the 6.0 spelling; `--strict` still works but prints
+        # a deprecation notice into every consumer's log.
+        if [ "$MJ_STRICT" = "true" ]; then ARGS+=(--include-warn); fi
         case "$MJ_FORMAT" in
           json)         ARGS+=(--json) ;;
           sarif)        ARGS+=(--format sarif) ;;
@@ -292,9 +294,16 @@ runs:
 
     # ── Trust Report consumption (WI-9, plan §13) ──────────────────────
     # Zero trust semantics HERE: every number below is rendered by the
-    # published CLI from a saved canonical --json report (`trust-report
-    # --from`). The action only moves bytes. The capture scan uses
-    # --blocking none so reporting can never change the gate result.
+    # published CLI from a saved canonical --json report (`mjolnir.json
+    # --format pr-comment|github-summary`). The action only moves bytes. The
+    # capture scan uses --blocking none so reporting can never change the gate
+    # result.
+    #
+    # 6.0.0 called the verbs those formats replaced. They no longer exist, so
+    # the report step exited 10 and failed every consumer's job, on a clean
+    # scan as well as a dirty one. tests/integrations/ci-render-commands.spec.ts
+    # now runs each command below against the real CLI, because the specs that
+    # matched these lines as text were satisfied by a command that cannot run.
 
     # Every reporting step below is `always()`. The scan step exits non-zero on
     # findings, and a step whose `if:` omits `always()` is implicitly also
@@ -317,7 +326,7 @@ runs:
       run: |
         ARGS=("$MJ_PATH" --json --blocking none)
         if [ "$MJ_SCOPE" = "changed" ]; then ARGS+=(--scope changed); fi
-        if [ "$MJ_STRICT" = "true" ]; then ARGS+=(--strict); fi
+        if [ "$MJ_STRICT" = "true" ]; then ARGS+=(--include-warn); fi
         set +e
         MJ_PACKAGE="https://registry.npmjs.org/mjolnir-qa/-/mjolnir-qa-${MJ_VERSION}.tgz"
         npx --yes "$MJ_PACKAGE" "${ARGS[@]}" > mjolnir.json
@@ -333,10 +342,11 @@ runs:
       shell: bash
       env:
         MJ_VERSION: ${{ inputs.version }}
-        MJ_COMMIT: ${{ github.sha }}
       run: |
+        # The comment states the commit only when this checkout is the commit
+        # the report was scanned at; the CLI checks, so nothing is passed in.
         MJ_PACKAGE="https://registry.npmjs.org/mjolnir-qa/-/mjolnir-qa-${MJ_VERSION}.tgz"
-        npx --yes "$MJ_PACKAGE" pr-comment --from mjolnir.json --version "$MJ_VERSION" --commit "$MJ_COMMIT" > mjolnir-comment.md
+        npx --yes "$MJ_PACKAGE" mjolnir.json --format pr-comment > mjolnir-comment.md
         echo "file=mjolnir-comment.md" >> "$GITHUB_OUTPUT"
 
     - name: Emit annotations + step summary
@@ -345,12 +355,13 @@ runs:
       env:
         MJ_VERSION: ${{ inputs.version }}
       run: |
-        # summary streams findings as GitHub annotations to stdout (when
-        # GITHUB_ACTIONS=true) and the step summary to
-        # $GITHUB_STEP_SUMMARY — the CLI's own CI surface, zero action-
-        # side rendering logic.
+        # One annotation per finding goes to stdout, where the runner reads
+        # them, and the CLI appends the step summary to $GITHUB_STEP_SUMMARY
+        # itself: the CLI's own CI surface, zero action-side rendering logic.
+        # Piping stdout into the summary file as well, which 6.0.0 did, copies
+        # every annotation command into the summary as text.
         MJ_PACKAGE="https://registry.npmjs.org/mjolnir-qa/-/mjolnir-qa-${MJ_VERSION}.tgz"
-        npx --yes "$MJ_PACKAGE" summary mjolnir.json --stdout | tee "${GITHUB_STEP_SUMMARY:-/dev/null}"
+        npx --yes "$MJ_PACKAGE" mjolnir.json --format github-summary
 
     - name: Post unified report as PR comment
       if: >-

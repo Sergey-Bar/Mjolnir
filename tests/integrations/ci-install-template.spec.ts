@@ -224,6 +224,54 @@ describe("v1 template recognition (upgrade path)", () => {
   });
 });
 
+/**
+ * The upgrade the 6.0.0 workflows need, tested on the files 6.0.0 wrote.
+ *
+ * The fixtures are the byte-exact output of the PUBLISHED `mjolnir-qa@6.0.0`
+ * (`ci install --no-action`, and `ci install --gate error`), not a
+ * reconstruction from this source: a recogniser checked against its own idea
+ * of the old template proves nothing about the files users have. Their npx
+ * reporting steps call the retired verbs and fail on every run, so
+ * `ci install` must replace them without `--force`, which would also replace
+ * files people did customise.
+ */
+describe("6.0.0-generated workflows are recognised for the upgrade", () => {
+  const fixture = (name: string): string =>
+    readFileSync(join(ROOT, "tests", "integrations", "fixtures", name), "utf8");
+
+  it("the npx workflow 6.0.0 wrote is ours, though its version and steps differ", () => {
+    const published = fixture("ci-install-6.0.0-npx.yml.txt");
+    expect(published).toContain("mjolnir-qa-6.0.0.tgz summary mjolnir.json");
+    expect(isKnownTemplate(published)).toBe(true);
+    // Recognised as v2, not because v3 happens to match it.
+    expect(published).not.toBe(TEMPLATE("advisory"));
+  });
+
+  it("the Action workflow 6.0.0 wrote is ours", () => {
+    expect(
+      isKnownTemplate(fixture("ci-install-6.0.0-action-error.yml.txt")),
+    ).toBe(true);
+  });
+
+  it("the pinned version and line endings are not customisations", () => {
+    const current = TEMPLATE("error");
+    expect(
+      isKnownTemplate(
+        current.replace(/mjolnir-qa-[^/]+?\.tgz/g, "mjolnir-qa-5.1.0.tgz"),
+      ),
+    ).toBe(true);
+    expect(isKnownTemplate(current.replace(/\n/g, "\r\n"))).toBe(true);
+  });
+
+  it("a v2 workflow with one more edit is still somebody's file", () => {
+    const edited = fixture("ci-install-6.0.0-npx.yml.txt").replace(
+      "timeout-minutes: 10",
+      "timeout-minutes: 30",
+    );
+    expect(isKnownTemplate(edited)).toBe(false);
+  });
+});
+
 describe("template parity with the dogfooded .github/workflows/mjolnir.yml (B2.6)", () => {
   const dogfood: Workflow = parse(
     readFileSync(join(ROOT, ".github", "workflows", "mjolnir.yml"), "utf8"),

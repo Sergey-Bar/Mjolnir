@@ -59,9 +59,10 @@ describe("action.yml Trust Report consumption (WI-9, plan §13)", () => {
     const gen = ACTION.runs.steps.find(
       (s) => s.name === "Generate unified PR report",
     );
-    expect(gen?.run).toContain("pr-comment --from mjolnir.json");
-    expect(gen?.run).toContain('--commit "$MJ_COMMIT"');
-    expect(gen?.env?.["MJ_COMMIT"]).toBe("${{ github.sha }}");
+    expect(gen?.run).toContain("mjolnir.json --format pr-comment");
+    // The commit is checked by the CLI against the checkout; passing it in was
+    // how a stale report could be stamped with the current HEAD.
+    expect(gen?.run).not.toContain("--commit");
     expect(gen?.if).toContain(
       "inputs.annotations == 'true' || inputs.pr-comment == 'true' ||",
     );
@@ -75,11 +76,11 @@ describe("action.yml Trust Report consumption (WI-9, plan §13)", () => {
     expect(capture?.if).toContain("inputs.format != 'json'");
   });
 
-  it("annotations stream through the CLI's own summary verb (zero action-side semantics)", () => {
+  it("annotations stream through the CLI's own github-summary format (zero action-side semantics)", () => {
     const step = ACTION.runs.steps.find(
       (s) => s.name === "Emit annotations + step summary",
     );
-    expect(step?.run).toContain("summary mjolnir.json");
+    expect(step?.run).toContain("mjolnir.json --format github-summary");
   });
 
   it("PR comment upserts by marker, only on pull_request events", () => {

@@ -74,7 +74,9 @@ describe("mjolnir.yml (the PR feedback loop workflow)", () => {
       steps.some((step) => step.run?.includes("dist/cli.mjs . --format json")),
     ).toBe(true);
     expect(
-      steps.some((step) => step.run?.includes("dist/cli.mjs pr-comment")),
+      steps.some((step) =>
+        step.run?.includes("dist/cli.mjs mjolnir.json --format pr-comment"),
+      ),
     ).toBe(true);
     expect(
       readFileSync(join(ROOT, ".github", "workflows", "mjolnir.yml"), "utf8"),
@@ -87,9 +89,11 @@ describe("mjolnir.yml (the PR feedback loop workflow)", () => {
     const upload = steps.find((step) =>
       step.uses?.startsWith("actions/upload-artifact"),
     );
-    expect(render?.["continue-on-error"]).toBe(true);
-    expect(render?.run).toContain('--commit "$MJ_COMMIT"');
-    expect(render?.env?.["MJ_COMMIT"]).toBe("${{ github.sha }}");
+    // A render that fails turns the job red. Under `continue-on-error` and
+    // `exit 0` this step called a retired verb on every pull request and
+    // nothing showed it.
+    expect(render?.["continue-on-error"]).toBeUndefined();
+    expect(render?.run).toContain("exit 1");
     expect(render?.run).toContain("<!-- mjolnir-report:v2 -->");
     expect(upload?.with).toMatchObject({
       name: "mjolnir-report",

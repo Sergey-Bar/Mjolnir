@@ -316,20 +316,28 @@ describe("root action.yml (Marketplace surface) is locked", () => {
   });
 
   it("publishes one unified v2 report from the saved JSON artifact", () => {
+    // Whether these commands RUN is tests/integrations/ci-render-commands.spec.ts;
+    // this pins what they render from. A `pr-comment --from` line satisfied the
+    // old version of this assertion while exiting 10 on every run.
     expect(ACTION).not.toContain("Generate Trust Report");
-    expect(ACTION).toContain("pr-comment --from mjolnir.json");
-    expect(ACTION).toContain('--commit "$MJ_COMMIT"');
-    expect(ACTION).toContain("${{ github.sha }}");
+    expect(ACTION).toContain(
+      'npx --yes "$MJ_PACKAGE" mjolnir.json --format pr-comment > mjolnir-comment.md',
+    );
     expect(ACTION).toContain("<!-- mjolnir-report:v2 -->");
     expect(ACTION).not.toContain("mjolnir-trust-report:v1");
     expect(action.inputs["trust-artifact"]?.default).toBe("false");
   });
 
-  it("streams summary output while tee writes the GitHub step summary", () => {
+  it("lets the CLI write the step summary, and never pipes annotations into it", () => {
     const summary = action.runs.steps.find(
       (s) => s.name === "Emit annotations + step summary",
     );
-    expect(summary?.run).toContain('tee "${GITHUB_STEP_SUMMARY:-/dev/null}"');
+    expect(summary?.run).toContain(
+      'npx --yes "$MJ_PACKAGE" mjolnir.json --format github-summary',
+    );
+    // stdout carries the annotation commands; a `tee` into the summary file
+    // copied each of them into the summary as literal text.
+    expect(summary?.run).not.toMatch(/\|\s*tee/);
     expect(summary?.run).not.toContain(">/dev/null 2>&1");
   });
 });
