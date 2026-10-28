@@ -23,6 +23,7 @@ import { describe, expect, it } from "vitest";
 import { parse } from "yaml";
 
 import {
+  ACTION_TEMPLATE,
   TEMPLATE,
   gateScript,
   indentBlock,
@@ -261,6 +262,12 @@ describe("6.0.0-generated workflows are recognised for the upgrade", () => {
       ),
     ).toBe(true);
     expect(isKnownTemplate(current.replace(/\n/g, "\r\n"))).toBe(true);
+    // The Action template carries the same pin as an input.
+    const action = ACTION_TEMPLATE("error");
+    expect(action).toMatch(/\n {10}version: "[^"]+"\n/);
+    expect(
+      isKnownTemplate(action.replace(/(\n {10}version: )"[^"]+"/, '$1"9.9.9"')),
+    ).toBe(true);
   });
 
   it("a v2 workflow with one more edit is still somebody's file", () => {

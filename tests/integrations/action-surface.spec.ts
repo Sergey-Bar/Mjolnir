@@ -392,17 +392,33 @@ describe("ci-install action template agrees with the real action.yml", () => {
     }
   });
 
-  it("the enforcing template never floats the version", () => {
-    // The template used to pin `version: ${CLI_VERSION}` — the working
-    // version, which is not on npm while the candidate is a release
-    // candidate, so a generated workflow could not install what it asked for.
-    // The input is now omitted and the Action's own default (the published
-    // stable) applies, which is the one value that always resolves.
-    for (const gate of ["error", "warning"] as GateLevel[]) {
+  it("the template pins the published version that generated it, never a floating one", () => {
+    // `version:` was the working version, which is not on npm while the
+    // candidate is a release candidate, so a generated workflow could not
+    // install what it asked for. It was then omitted, which ran whatever the
+    // pinned Action defaulted to: the stable published when THAT commit was
+    // made, which can be a CLI without the formats its own steps call. It is
+    // now the published version the generating package resolves, the same pin
+    // the npx template uses.
+    const pkg = JSON.parse(
+      readFileSync(join(ROOT, "package.json"), "utf8"),
+    ) as { publishedStable: string };
+    expect(pkg.publishedStable).not.toContain("-");
+    for (const gate of GATES) {
       const text = ACTION_TEMPLATE(gate);
       expect(text, gate).not.toContain("@latest");
-      expect(text, gate).not.toMatch(/version: \d+\.\d+\.\d+/);
+      expect(text, gate).toContain(`version: "${pkg.publishedStable}"`);
     }
+  });
+
+  it("the pinned Action is the first commit whose action.yml renders the saved report", () => {
+    // 4a588bc, the previous pin, was a pull-request branch commit that `main`
+    // never contained; it installed `latest` and called a retired verb. A
+    // shallow CI checkout cannot prove ancestry, so the pin is held to the
+    // value recorded with its reason in ci-install.ts.
+    expect(ACTION_REF).toBe(
+      "Sergey-Bar/Mjolnir@6bf46a0e64e2f3ee16266d8456d1b16e5ae16214",
+    );
   });
 });
 

@@ -163,10 +163,12 @@ export function isKnownTemplate(content: string): boolean {
   return (
     GATES.some((g) => {
       const npx = canonicalWorkflow(TEMPLATE(g));
+      const action = canonicalWorkflow(ACTION_TEMPLATE(g));
       return (
         file === npx ||
         file === templateV2(npx) ||
-        file === canonicalWorkflow(ACTION_TEMPLATE(g))
+        file === action ||
+        file === actionTemplateWithoutVersion(action)
       );
     }) || file.includes(indentBlock(SUMMARY_SCRIPT_V1, 10))
   );
@@ -174,14 +176,23 @@ export function isKnownTemplate(content: string): boolean {
 
 /**
  * A generated workflow with the parts that legitimately change between
- * releases blanked: line endings, the pinned package version and the pinned
- * Action SHA.
+ * releases blanked: line endings, the pinned package version (in the npx
+ * tarball and in the Action's `version:` input) and the pinned Action SHA.
  */
 function canonicalWorkflow(text: string): string {
   return text
     .replace(/\r\n/g, "\n")
     .replace(/mjolnir-qa-[0-9A-Za-z.+-]+?\.tgz/g, "mjolnir-qa-<version>.tgz")
+    .replace(/(\n {10}version: )"[^"\n]*"/g, '$1"<version>"')
     .replace(/Sergey-Bar\/Mjolnir@[0-9a-f]{40}/g, "Sergey-Bar/Mjolnir@<sha>");
+}
+
+/**
+ * The action template through 6.0.0, which passed no `version:` and so ran
+ * whatever its pinned Action defaulted to.
+ */
+function actionTemplateWithoutVersion(canonical: string): string {
+  return canonical.replace('\n          version: "<version>"', "");
 }
 
 /**
@@ -327,13 +338,23 @@ ${
 const GATES: readonly GateLevel[] = ["advisory", "error", "warning"];
 
 /**
- * The action-ref the action-based template pins (P1: distribution).
- * The current `v3` major is maintained on every stable release by the
- * dedicated Action tag workflow. The generated workflow pins an immutable
- * Action SHA, never @latest.
+ * The Action the action-based template pins: a commit on `main`, by SHA,
+ * because a generated workflow must never resolve a mutable ref.
+ *
+ * It is the merge commit of #740, the first commit on `main` whose
+ * `action.yml` renders the saved report with `--format pr-comment` and
+ * `--format github-summary`. The pin it replaced, 4a588bc, was a pull-request
+ * branch commit that `main` never contained: its `action.yml` installed
+ * `mjolnir-qa@latest` and called the retired `trust-report` verb, and every
+ * workflow `ci install` generated ran it. A pin can only name a commit that
+ * already exists, so it moves in the change AFTER the Action it points at.
+ *
+ * The template passes `version:` because the Action's own default is the
+ * published stable AT THIS COMMIT, which may be an older CLI than the one that
+ * generated the workflow.
  */
 export const ACTION_REF =
-  "Sergey-Bar/Mjolnir@4a588bc62d517bc85fc44c0eae64c6587d3bf70b";
+  "Sergey-Bar/Mjolnir@6bf46a0e64e2f3ee16266d8456d1b16e5ae16214";
 
 /**
  * The action-based workflow for one gate level (P1.3): the root
@@ -357,8 +378,11 @@ export const ACTION_REF =
  *     finish is not a pass — see the exit-code contract in docs/VERSIONING.md.
  *  3. `version:` was pinned to the engine's working version, which while the
  *     candidate is a release candidate is not on npm, so the generated
- *     workflow could not install what it asked for. The input is omitted now
- *     and the Action's own default (the published stable) applies.
+ *     workflow could not install what it asked for. It was then omitted,
+ *     which handed the choice to the pinned Action's default, the stable that
+ *     was published when that commit was made. It now names the published
+ *     version the installing package resolves, the same pin the npx template
+ *     uses.
  */
 export const ACTION_TEMPLATE = (gate: GateLevel): string => `name: Mjölnir
 
@@ -388,6 +412,7 @@ jobs:
         continue-on-error: true
         uses: ${ACTION_REF}
         with:
+          version: "${INSTALL_VERSION}"
           scope: changed
           format: json
           fail-on: ${gate === "advisory" ? "none" : gate}

@@ -54,7 +54,11 @@ import {
 } from "./integrations/sentry.js";
 import { loadSuppressions, renderSuppressions } from "./config/suppressions.js";
 import { ConfigValidationError } from "./config/config.js";
-import { ciInstall, type GateLevel } from "./integrations/ci-install.js";
+import {
+  ACTION_REF,
+  ciInstall,
+  type GateLevel,
+} from "./integrations/ci-install.js";
 import { runStdioTransport } from "./mcp/transport.js";
 
 /**
@@ -517,10 +521,12 @@ export function runCiInstall(
     return EXIT_USAGE;
   }
   io.out(`${result.existed ? "Updated" : "Created"} ${result.written}`);
+  // The pin is read from the template, never restated: a typed-out copy here
+  // named a 41-character SHA, which no commit has.
   io.out(
     noAction
       ? `Plain-npx template (--no-action). Gate: ${gate}.`
-      : `Action-based template: uses Sergey-Bar/Mjolnir@4a588bc62d517bc85fc44c0eae64c6587d3bf70b0 (immutable pin). Gate: ${gate}.`,
+      : `Action-based template: uses ${ACTION_REF} (immutable pin). Gate: ${gate}.`,
   );
   io.out(
     gate === "advisory"
