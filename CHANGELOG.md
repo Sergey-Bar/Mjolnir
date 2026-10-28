@@ -11,6 +11,64 @@ once shipped, so this file is the record of what changed between versions.
 
 ## [Unreleased]
 
+### Changed: every devDependency is an exact pin, and current
+
+`npm outdated` now lists only the two blocked upgrades below. Runtime
+`dependencies` and `peerDependencies` keep their ranges on purpose: they
+resolve inside every user's install, and an exact pin there would force
+duplicate copies and stop transitive security patches from reaching users.
+
+- **Pinned and updated.** Every devDependency in the root, the
+  `packages/playwright-reporter` workspace and `site/` is now an exact
+  version, taken to its latest release inside the existing major. This
+  covers Playwright 1.64.1 (and `playwright-core`, which two scripts import
+  directly, at the same version), Sentry 11.9.0, Vitest 5.0.5, ESLint
+  10.13.0, typescript-eslint 8.72.1, Prettier 3.9.10, tsdown 0.23.3 and
+  Lighthouse 13.6.0.
+- **commitlint 19 → 21.** The two majors break nothing here. 20 makes the
+  body line-length rule skip URL lines, and 21 drops Node 18 and 20. 21's
+  parser does read a body line that opens with `word: ` as a footer, which
+  `footer-leading-blank` then rejects. Across the last 150 commits on `main`
+  that rejected 2 that 19 accepted, and `.commitlintrc.cjs` now says how to
+  avoid it.
+- **vitepress 2.0.0-alpha.19 → alpha.21.** There is no stable 2.x, and 1.6.4
+  would be a downgrade. The site still renders 99 pages, its 44 tests and
+  doctor pass, and `home.data.ts` no longer trips the warning Vite prints for
+  its planned native config loader.
+- **The reporter's TypeScript 7 is gone.** Its build resolves the root
+  compiler, and building with and without the nested 7.0.2 gives
+  byte-identical output. Removing it ends what read as a split toolchain and
+  drops the compiler's 20 native binaries.
+- **Lockfile 589 → 461 entries.** Everything that left had no dependent in
+  the new tree, and the file still has the linux, darwin and win32 variants
+  every native package needs.
+- **`scripts/complete-lockfile.mjs` no longer resurrects removed packages.** It
+  restored every key the known-good lockfile had, so `siginfo` and
+  `stackback` sat in the committed lockfile with nothing depending on them.
+  It now restores only platform entries the tree still wants, and has tests.
+- **Dependabot.** Minor and patch updates come back as weekly grouped PRs:
+  runtime and tooling separately, plus the site, which had no entry and
+  received only security updates. 5.0.0 ignored them to cut noise, but with
+  every version locked an ignored update is never taken, which is how the
+  tree fell behind. Each blocked upgrade states when it was re-verified and a
+  review-by date.
+
+Still blocked, re-verified 2026-10-28, review by 2027-01-26:
+
+- `web-tree-sitter` 0.27.1 cannot load the Java or C# grammars of
+  `tree-sitter-wasms` 0.1.13, still its latest release, and 0.25.6 can.
+- TypeScript 7 has no JS API for ts-morph, and typescript-eslint 8.72.1 still
+  requires TypeScript below 6.1.
+
+Decided against, on inspection:
+
+- **Moving Lighthouse into `site/`.** The root deliberately holds Lighthouse,
+  axe-core and Playwright for `site:lighthouse` and `site:audit`, so the site
+  build that CI and Pages run installs only vitepress. Lighthouse's dependency
+  closure is 137 lockfile entries, which would be added to every site build.
+- **Dropping `axe-core`.** It looked unused only because `site:audit` loads
+  `axe.min.js` by path.
+
 ### Removed: scripts and npm aliases that nothing ran
 
 Files under `scripts/`, 169 → 138. Tracked npm scripts, 147 → 140.
