@@ -28,46 +28,38 @@
   "generatedAt": "2026-10-28",
   "identity": {
     "state": "RELEASE_CANDIDATE",
-    "baseSha": "32189189a6e7d32b7d86444651cc113f35cecc70",
+    "baseSha": "8315362513e0c78dfd71c94c1f970dce3acc9aad",
     "candidateSha": "2ed960732480f33fbe6564752ce0201040b91e03",
     "version": "6.0.1",
     "packageSha256": "1b9e02f270e79bf3f822ddbb85981ec2341c9fa4b6e2307a438ef4de53fbd4b3",
     "lockfileSha256": "d2a2568d903cd241dc2ce78b5b5307cce823aad0df81ab440be571401acfa0cf",
-    "workingTreeSha256": "656eae731c7b170fc071fe218358ff080dedf9cee9cb58fcc1ccdfa3006b51b7",
-    "changedPathCount": 13,
+    "workingTreeSha256": "965ba2fe6e7b1d1629348262c35862910feb72b42525b11e542ecf0e6982147f",
+    "changedPathCount": 9,
     "supportEnvelope": "self-hosted; hosted services require explicit consent and separate proof",
     "worktreeInventory": {
       "changedPaths": [
-        ".github/workflows/action-tags.yml",
-        ".github/workflows/ci.yml",
-        ".github/workflows/mjolnir.yml",
-        ".github/workflows/release.yml",
-        ".github/workflows/stable-release.yml",
-        ".github/workflows/stress.yml",
         "CHANGELOG.md",
         "docs/BLAST-RADIUS-AUDIT.md",
-        "src/integrations/ci-install.ts",
-        "tests/integrations/ci-install-template.spec.ts",
-        "tests/integrations/ci-self-scan-workflow.spec.ts",
-        "tests/integrations/release-workflow.spec.ts",
-        "tests/integrations/stable-release-workflow.spec.ts"
+        "src/cli.ts",
+        "src/discovery/ecosystem-detection.ts",
+        "src/engine/scan-pipeline.ts",
+        "src/mcp/server.ts",
+        "tests/cli/help.spec.ts",
+        "tests/contract/no-uncounted-degradation.spec.ts",
+        "tests/discovery/ecosystem-detection.spec.ts"
       ],
       "untrackedPaths": []
     },
     "dirtyFiles": [
-      ".github/workflows/action-tags.yml",
-      ".github/workflows/ci.yml",
-      ".github/workflows/mjolnir.yml",
-      ".github/workflows/release.yml",
-      ".github/workflows/stable-release.yml",
-      ".github/workflows/stress.yml",
       "CHANGELOG.md",
       "docs/BLAST-RADIUS-AUDIT.md",
-      "src/integrations/ci-install.ts",
-      "tests/integrations/ci-install-template.spec.ts",
-      "tests/integrations/ci-self-scan-workflow.spec.ts",
-      "tests/integrations/release-workflow.spec.ts",
-      "tests/integrations/stable-release-workflow.spec.ts"
+      "src/cli.ts",
+      "src/discovery/ecosystem-detection.ts",
+      "src/engine/scan-pipeline.ts",
+      "src/mcp/server.ts",
+      "tests/cli/help.spec.ts",
+      "tests/contract/no-uncounted-degradation.spec.ts",
+      "tests/discovery/ecosystem-detection.spec.ts"
     ]
   },
   "claimRegistry": {

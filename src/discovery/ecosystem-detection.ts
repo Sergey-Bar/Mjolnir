@@ -44,17 +44,18 @@ function detectSignals(rootDir: string): EcosystemSignals {
     buildGradle:
       existsSync(join(rootDir, "build.gradle")) ||
       existsSync(join(rootDir, "build.gradle.kts")),
-    csproj:
-      existsSync(join(rootDir, "*.csproj")) ||
-      (() => {
-        try {
-          return readdirSync(rootDir).some(
-            (f) => f.endsWith(".csproj") || f.endsWith(".sln"),
-          );
-        } catch {
-          return false;
-        }
-      })(),
+    csproj: (() => {
+      // `existsSync(join(rootDir, "*.csproj"))` stood in front of this and
+      // could never help: existsSync does not expand globs, so it looked for
+      // a file literally named `*.csproj`.
+      try {
+        return readdirSync(rootDir).some(
+          (f) => f.endsWith(".csproj") || f.endsWith(".sln"),
+        );
+      } catch {
+        return false;
+      }
+    })(),
     gemfile: existsSync(join(rootDir, "Gemfile")),
     cargoToml: existsSync(join(rootDir, "Cargo.toml")),
   };

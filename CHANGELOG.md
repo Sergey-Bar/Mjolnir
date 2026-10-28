@@ -11,6 +11,18 @@ once shipped, so this file is the record of what changed between versions.
 
 ## [Unreleased]
 
+### Fixed: flag suggestions name only flags that exist
+
+- **`mjolnir scan` suggests only flags it accepts.** `--dry-run` and
+  `--version` were offered as "Did you mean" right after being rejected, and
+  ten accepted flags (`--staged`, `--blocking`, `--enable-plugins`, …) were
+  never suggested. A spec now reads the parser to hold the two lists together.
+- **Dead code removed:** the `ci install` line that shadowed the `ci`
+  subcommand table, an unreachable `ci --help` arm, an `existsSync` given a
+  glob it cannot expand, and two copies of the scan time-budget constants,
+  which the CLI and the MCP server now import from the pipeline that applies
+  them.
+
 ### Fixed: CI and release workflows
 
 - **A stable release publishes to `latest` directly** (`release.yml`). It

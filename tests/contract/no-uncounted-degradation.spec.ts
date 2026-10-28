@@ -463,7 +463,7 @@ const ALLOWED_VALUE_RETURNS: ReadonlyArray<{
   },
   {
     file: "discovery/ecosystem-detection.ts",
-    line: 54,
+    line: 55,
     direction: "reducing",
     reason:
       "A root whose .csproj files cannot be listed reports no .NET " +

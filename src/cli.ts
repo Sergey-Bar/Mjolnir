@@ -38,6 +38,8 @@ export const {
   OVERLAP_META_BY_RULE_ID,
   EVIDENCE_OVERRIDES,
   SUITE_INVALIDATING_RULE_IDS,
+  DEFAULT_MAX_DURATION_MS,
+  MAX_DURATION_MS,
 } = pipeline;
 export type { ScanHooks, CliArgs } from "./engine/scan-pipeline.js";
 import type { CliArgs } from "./engine/scan-pipeline.js";
@@ -85,9 +87,6 @@ export interface UsageErrorDetail {
   /** The flag whose value was rejected (`--tone` for `--tone loud`). */
   flag?: string | undefined;
 }
-
-export const DEFAULT_MAX_DURATION_MS = 600_000;
-export const MAX_DURATION_MS = 3_600_000;
 
 export function parseArgs(
   argv: string[],
@@ -239,11 +238,22 @@ export function parseArgs(
   return args;
 }
 
-/** Scan flags that exist — the "did you mean" candidate pool. */
-const KNOWN_SCAN_FLAGS = [
+/**
+ * Scan flags that exist — the "did you mean" candidate pool.
+ *
+ * Every flag `parseArgs` accepts, and nothing it rejects. The pool had
+ * drifted both ways: ten accepted flags were missing, and `--dry-run` and
+ * `--version` were in it although a scan rejects them, so `mjolnir scan
+ * --dry-run` answered `unknown flag "--dry-run"` and then suggested it.
+ * tests/cli/help.spec.ts reads `parseArgs` to hold the two lists together.
+ */
+export const KNOWN_SCAN_FLAGS = [
   "--json",
   "--format",
   "--verbose",
+  "--suppressions",
+  "--suppression-gate",
+  "--policy",
   "--scope",
   "--base",
   "--max-duration",
@@ -258,12 +268,16 @@ const KNOWN_SCAN_FLAGS = [
   "--record-milestones",
   "--save-baseline",
   "--cache",
+  "--no-progress",
+  "--category",
+  "--score",
+  "--require-full-coverage",
+  "--staged",
+  "--blocking",
+  "--enable-plugins",
   "--monorepo",
   "--help",
   "-h",
-  "--version",
-  "-v",
-  "--dry-run",
 ];
 
 /** Hand-rolled Levenshtein distance (plan M2: no new dependencies). */
@@ -697,8 +711,6 @@ export async function main(
     io.out(renderCiSubcommandHelp());
     return EXIT_USAGE;
   }
-  if (argv[0] === "ci" && argv[1] === "install")
-    return runCiInstall(argv.slice(2), io);
   // The v6 collapse's MOVE arm (plan §3): five top-level verbs become
   // `ci <subcommand>`.
   //
@@ -708,12 +720,13 @@ export async function main(
   // are the sharpest case: they were separate top-level verbs, so `mjolnir
   // integrity` and `mjolnir ci verify` read as two products, and the surface
   // they belonged to was invisible from the command list.
+  //
+  // A bare `ci` and `ci --help` are answered above, so every `ci` that
+  // reaches this point names a subcommand, and the table is the only
+  // dispatcher. `ci install` used to have its own line ahead of the table,
+  // which made the table's `install` entry dead.
   if (argv[0] === "ci") {
-    const sub = argv[1];
-    if (sub === undefined || sub === "--help" || sub === "-h") {
-      io.out(renderCiSubcommandHelp());
-      return sub === undefined ? EXIT_USAGE : EXIT_CLEAN;
-    }
+    const sub = argv[1] as string;
     const entry = CI_SUBCOMMANDS[sub];
     if (entry === undefined) {
       io.err(`mjolnir ci: unknown subcommand "${sub}".`);
