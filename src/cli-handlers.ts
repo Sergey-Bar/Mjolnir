@@ -6,9 +6,9 @@
  * (Task 6: renderScanOutput helper).
  */
 
-import { existsSync } from "node:fs";
+import { existsSync, statSync } from "node:fs";
 
-import { join, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import process from "node:process";
 import { pathToFileURL } from "node:url";
 
@@ -22,7 +22,7 @@ import {
 // The one exit-code matrix (plan V5-002).
 import { scanExitCode, isAtGate, type GateLevel } from "./claim-evidence.js";
 import { isAdvisoryFinding } from "./types.js";
-import type { Finding } from "./types.js";
+import type { Finding, ScanResult } from "./types.js";
 import type { CliArgs } from "./engine/scan-pipeline.js";
 import { runScan, KNOWN_RULE_IDS } from "./engine/scan-pipeline.js";
 import { buildMachineContract } from "./engine/machine-contract.js";
@@ -59,7 +59,7 @@ import {
   MILESTONE_MESSAGES,
 } from "./commands/stats.js";
 import { renderPrComment } from "./commands/pr-comment.js";
-import { renderStepSummary } from "./commands/summary.js";
+import { renderStepSummary, runSummaryCommand } from "./commands/summary.js";
 // The `explain` arms' implementations. `cross-file` and `triage` live in
 // `commands/milestone.ts` alongside the other milestone commands; they are
 // imported here because the plan relocates them onto `explain` as flags, and
@@ -189,10 +189,12 @@ export function renderScanOutput(
     // reports the same churn forever.
     const baseline = loadBaseline(join(target, DEFAULT_BASELINE_PATH));
     const diff = baseline ? diffAgainstBaseline(result, baseline) : undefined;
+    const commit = commitBoundTo(result, target);
     io.out(
       renderPrComment(result, {
         ...(diff ? { diff } : {}),
         version: CLI_VERSION,
+        ...(commit !== undefined ? { commit } : {}),
       }),
     );
   } else if (args.format === "github-summary") {
@@ -314,6 +316,67 @@ export async function runSuppressionGate(
   return runSuppressionGateCommand(argv, io);
 }
 
+/**
+ * The commit a rendered report may claim, or undefined when it cannot claim one.
+ *
+ * The scan records the HEAD it analysed (`runIdentity.commit`). A report states
+ * that commit only when the repository at `dir` is still at it, so a report
+ * rendered from another commit's JSON reads `unknown` instead of borrowing an
+ * identity nothing here can confirm. The retired `pr-comment --from` verb took
+ * the commit from a `--commit` argument; the formats that replaced it check the
+ * checkout instead, which needs no flag and cannot be handed the wrong value.
+ */
+export function commitBoundTo(
+  result: ScanResult,
+  dir: string,
+): string | undefined {
+  const recorded = result.runIdentity?.commit;
+  if (recorded === undefined) return undefined;
+  return currentCommit(dir, { nullable: true }) === recorded
+    ? recorded
+    : undefined;
+}
+
+/**
+ * `--format github-summary|pr-comment <report.json>`: render a SAVED report.
+ *
+ * The v6 collapse retired `summary <report>` and `pr-comment --from <report>`
+ * onto these two formats and shipped only the half that scans. Every CI
+ * consumer renders the `--json` report its scan step already wrote: the
+ * Action, both `ci install` templates and this repository's own PR workflow.
+ * All of them kept calling the retired verbs, and all of them exited 10. A
+ * second scan is not a substitute, because the comment has to describe the
+ * result the gate read rather than one that happens to agree with it.
+ *
+ * Delegation, not reimplementation, which is the rule `--suppression-gate`
+ * follows. Each retired verb's command still owns its contract, exit codes
+ * included. The render never gates and exits 0. A report that cannot be read
+ * exits 2 for the summary and 10 for the comment, as those verbs did.
+ *
+ * Returns null when the request is a scan: another format, or a target that
+ * is not a file.
+ */
+export function renderSavedReport(
+  args: CliArgs,
+  target: string,
+  io: { out: Output; err: Output },
+): Promise<number> | number | null {
+  if (args.format !== "github-summary" && args.format !== "pr-comment") {
+    return null;
+  }
+  if (!isRegularFile(target)) return null;
+  if (args.format === "github-summary") return runSummaryCommand([target], io);
+  return runPrCommentCommand(["--from", target, "--version", CLI_VERSION], io);
+}
+
+function isRegularFile(path: string): boolean {
+  try {
+    return statSync(path).isFile();
+  } catch {
+    return false;
+  }
+}
+
 export async function runScanCommand(
   argv: string[],
   io: { out: Output; err: Output } = { out, err },
@@ -323,6 +386,8 @@ export async function runScanCommand(
     return EXIT_USAGE;
   }
   const target = resolve(args.target);
+  const savedRender = renderSavedReport(args, target, io);
+  if (savedRender !== null) return savedRender;
   const invalid = validateScanTarget(target, io.err);
   if (invalid !== null) return invalid;
   // ── The v6 collapse's REPLACE arm (plan §3) ────────────────────────────
@@ -603,13 +668,15 @@ export async function runPrCommentCommand(
       return EXIT_USAGE;
     }
     try {
-      const saved = loadSavedReport(resolve(fromPath));
+      const reportPath = resolve(fromPath);
+      const saved = loadSavedReport(reportPath);
       const option = (flag: string): string | undefined => {
         const index = argv.indexOf(flag);
         return index >= 0 ? argv[index + 1] : undefined;
       };
       const version = option("--version");
-      const commit = option("--commit");
+      const commit =
+        option("--commit") ?? commitBoundTo(saved, dirname(reportPath));
       const repoUrl = option("--repo-url");
       io.out(
         renderPrComment(saved, {

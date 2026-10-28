@@ -37,23 +37,38 @@ Turns a saved `--json` report into GitHub CI output. One emitter, one
 code path — the scan itself never prints annotations.
 
 ```bash
-mjolnir --json > mjolnir.json && mjolnir scan --format github-summary mjolnir.json
+mjolnir --json > mjolnir.json && mjolnir scan mjolnir.json --format github-summary
 ```
 
 - **Annotations** (one per finding) go to stdout only when
   `GITHUB_ACTIONS=true`. Messages are truncated (~250 chars) with a
   pointer to the step summary; full text lives in the summary.
-- **Step summary** markdown goes to `$GITHUB_STEP_SUMMARY` when set:
-  score + verdict band, a text score bar, the dimensions table,
-  collapsible per-severity finding groups with `Fix:` lines, and an
+- **Step summary** markdown goes to `$GITHUB_STEP_SUMMARY` when set, and to
+  stdout otherwise: score + verdict band, a text score bar, the dimensions
+  table, collapsible per-severity finding groups with `Fix:` lines, and an
   honesty notice for partial/no-score reports (`reason:
 "no-tests-found"` never fabricates a number).
-- **Flags**: `--stdout` forces stdout; `--path-prefix <dir>` re-scopes
-  finding paths for subdirectory scans.
-- **Exit codes**: `0` on success. `1` findings at or above the gate. `2`
-  **inconclusive** — a partial scan or an unsupported surface; a CI step
-  should fail on it, not skip it. `10` missing file argument. See
+- **Exit codes**: `0` once rendered. The render never gates: the scan that
+  wrote the report already returned its own exit code. `2` the report is not
+  valid JSON or not a Mjölnir report. `10` the file does not exist. See
   [exit codes](./exit-codes.md).
+
+Pointed at a directory instead of a report, `--format github-summary` scans it
+and prints the step summary markdown to stdout, with the scan's exit code.
+
+## `mjolnir scan --format pr-comment [mjolnir.json]`
+
+Turns a saved `--json` report into the pull-request comment, without a second
+scan, so the comment describes the result the gate read.
+
+```bash
+mjolnir --json > mjolnir.json && mjolnir scan mjolnir.json --format pr-comment > comment.md
+```
+
+The comment states the commit the scan recorded only while the repository
+holding the report is still at that commit; otherwise it reads `unknown`. Exit
+`0` once rendered, `10` when the report cannot be read. Pointed at a
+directory, it scans and renders, with the scan's exit code.
 
 ## Live scan progress
 

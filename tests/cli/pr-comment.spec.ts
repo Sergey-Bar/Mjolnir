@@ -6,6 +6,7 @@
  * scan results, independent of any real GitHub PR or network call.
  */
 
+import { execFileSync } from "node:child_process";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -22,7 +23,12 @@ import {
   diffAgainstBaseline,
   buildBaseline,
 } from "../../src/commands/baseline.js";
-import { runPrCommentCommand } from "../../src/cli-handlers.js";
+import {
+  commitBoundTo,
+  runPrCommentCommand,
+  runScanCommand,
+} from "../../src/cli-handlers.js";
+import type { Output } from "../../src/cli-io.js";
 import type { Finding, ScanResult } from "../../src/types.js";
 
 function finding(overrides: Partial<Finding>): Finding {
@@ -567,4 +573,181 @@ describe("renderPrComment — utility exports coverage", () => {
     });
     expect(body).toContain("abc1234");
   });
+});
+
+/**
+ * The comment's commit is checked against the checkout, never passed in.
+ *
+ * The retired verb took `--commit <sha>` and printed whatever it was given, so
+ * a stale report rendered in a later checkout was stamped with that checkout's
+ * HEAD. The saved-report render states the commit the scan recorded, and only
+ * while the repository holding the report is still at it.
+ */
+describe("the comment states a commit only when the checkout confirms it", () => {
+  function repository(): { dir: string; head: string } {
+    const dir = mkdtempSync(join(tmpdir(), "mjolnir-pr-commit-"));
+    const git = (...args: string[]): string =>
+      execFileSync(
+        "git",
+        [
+          "-c",
+          "user.name=t",
+          "-c",
+          "user.email=t@t",
+          "-c",
+          "core.autocrlf=false",
+          ...args,
+        ],
+        { cwd: dir, encoding: "utf8" },
+      ).trim();
+    git("init", "-q");
+    writeFileSync(join(dir, "a.txt"), "a\n");
+    git("add", "-A");
+    git("commit", "-q", "-m", "a");
+    return { dir, head: git("rev-parse", "HEAD") };
+  }
+
+  function recorded(commit?: string): ScanResult {
+    return scanResult([], undefined, {
+      runIdentity: {
+        scanId: "scan-1",
+        inputFingerprint: "i",
+        rulesDigest: "r",
+        configFingerprint: "c",
+        engineVersion: "0.0.0",
+        ...(commit !== undefined ? { commit } : {}),
+      },
+    });
+  }
+
+  it("binds the recorded commit while the checkout is at it", () => {
+    const { dir, head } = repository();
+    try {
+      expect(commitBoundTo(recorded(head), dir)).toBe(head);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("binds nothing once the checkout has moved on", () => {
+    const { dir } = repository();
+    try {
+      expect(commitBoundTo(recorded("f".repeat(40)), dir)).toBeUndefined();
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("binds nothing without a recorded commit or outside a repository", () => {
+    const { dir, head } = repository();
+    const outside = mkdtempSync(join(tmpdir(), "mjolnir-pr-norepo-"));
+    try {
+      expect(commitBoundTo(recorded(), dir)).toBeUndefined();
+      expect(commitBoundTo(recorded(head), outside)).toBeUndefined();
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+      rmSync(outside, { recursive: true, force: true });
+    }
+  });
+
+  it("--from renders the checked commit into the comment", async () => {
+    const { dir, head } = repository();
+    try {
+      const fresh = join(dir, "fresh.json");
+      writeFileSync(fresh, JSON.stringify(recorded(head)), "utf8");
+      const stale = join(dir, "stale.json");
+      writeFileSync(stale, JSON.stringify(recorded("f".repeat(40))), "utf8");
+      const render = async (path: string): Promise<string> => {
+        const out: string[] = [];
+        const code = await runPrCommentCommand(["--from", path], {
+          out: (value: unknown) => out.push(String(value)),
+          err: () => undefined,
+        });
+        expect(code).toBe(0);
+        return out.join("\n");
+      };
+      expect(await render(fresh)).toContain(`| Commit | \`${head}\` |`);
+      expect(await render(stale)).toContain("| Commit | `unknown` |");
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+});
+
+describe("scan --format pr-comment, in process", () => {
+  const sink = (): { io: { out: Output; err: Output }; text: () => string } => {
+    const out: string[] = [];
+    return {
+      io: { out: (value) => out.push(String(value)), err: () => undefined },
+      text: () => out.join("\n"),
+    };
+  };
+
+  it("a saved report target renders that report, without a scan", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "mjolnir-pr-saved-"));
+    try {
+      const report = join(dir, "mjolnir.json");
+      writeFileSync(
+        report,
+        JSON.stringify(scanResult([finding({ ruleId: "QA-PW-101" })])),
+        "utf8",
+      );
+      const cap = sink();
+      expect(
+        await runScanCommand([report, "--format", "pr-comment"], cap.io),
+      ).toBe(0);
+      expect(cap.text().startsWith(PR_COMMENT_MARKER)).toBe(true);
+      expect(cap.text()).toContain("QA-PW-101");
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("a target that does not exist is the scan's usage error, not a report", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "mjolnir-pr-missing-"));
+    try {
+      const errors: string[] = [];
+      const code = await runScanCommand(
+        [join(dir, "nope.json"), "--format", "pr-comment"],
+        { out: () => undefined, err: (line) => errors.push(String(line)) },
+      );
+      expect(code).toBe(10);
+      expect(errors.join("\n")).toContain("does not exist");
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("a live scan of a repository states the commit it scanned", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "mjolnir-pr-live-"));
+    try {
+      const git = (...args: string[]): string =>
+        execFileSync(
+          "git",
+          [
+            "-c",
+            "user.name=t",
+            "-c",
+            "user.email=t@t",
+            "-c",
+            "core.autocrlf=false",
+            ...args,
+          ],
+          { cwd: dir, encoding: "utf8" },
+        ).trim();
+      writeFileSync(join(dir, "a.spec.ts"), "it('a', () => {});\n");
+      git("init", "-q");
+      git("add", "-A");
+      git("commit", "-q", "-m", "a");
+      const cap = sink();
+      expect(
+        await runScanCommand([dir, "--format", "pr-comment"], cap.io),
+      ).toBeLessThan(10);
+      expect(cap.text()).toContain(
+        `| Commit | \`${git("rev-parse", "HEAD")}\` |`,
+      );
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  }, 60_000);
 });
