@@ -11,6 +11,11 @@ once shipped, so this file is the record of what changed between versions.
 
 ## [Unreleased]
 
+### Fixed: the scheduled OSV scan runs again
+
+- **OSV-Scanner 2.7.0 removed `--skip-git`**, so the push and scheduled scans
+  failed before scanning. The flag is gone; pull-request scans never passed it.
+
 ### Fixed: flag suggestions name only flags that exist
 
 - **`mjolnir scan` suggests only flags it accepts.** `--dry-run` and
