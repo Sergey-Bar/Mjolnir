@@ -100,11 +100,22 @@ describe("stable release workflow", () => {
     expect(identityStep?.env?.GIT_COMMITTER_NAME).toBe("github-actions[bot]");
   });
 
-  it("moves only the current v3 Action major after a stable release", () => {
+  it("moves the release's own Action major, and never backwards", () => {
     const run = workflow.jobs.tag?.steps
       ?.map((step) => step.run ?? "")
       .join("\n");
-    expect(run).toContain('if [[ "$MAJOR" != "3" ]]');
+    // This asserted the defect. The step moved `v3` and exited for every
+    // other major, and its tag push uses the job token, which starts no other
+    // workflow, so action-tags.yml never ran: `@v6`, the pin the docs
+    // recommend, had no path to existence.
+    expect(run).not.toContain('"$MAJOR" != "3"');
+    expect(run).toContain('MAJOR="${VERSION%%.*}"');
+    expect(run).toContain('[[ "$MAJOR" =~ ^[1-9][0-9]*$ ]]');
+    // A patch on an older minor must not drag the major back to it.
+    expect(run).toContain(
+      `NEWEST=$(git tag --list "v$MAJOR.*" | grep -Ev -- '-rc\\.' | sort -V | tail -n 1)`,
+    );
+    expect(run).toContain('if [[ "$NEWEST" != "$TAG" ]]; then');
     expect(run).toContain('git tag -f "v$MAJOR" "$TAG_COMMIT"');
     expect(run).toContain('git push origin "refs/tags/v$MAJOR" --force');
   });

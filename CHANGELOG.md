@@ -11,6 +11,57 @@ once shipped, so this file is the record of what changed between versions.
 
 ## [Unreleased]
 
+## [6.0.1] — 2026-10-28
+
+A patch release. 6.0.0 shipped a GitHub Action whose report step calls a
+command the same release removed, so every job that used the Action failed,
+whatever the scan found. This release repairs that, along with the findings of
+the maintenance review that followed. Each change fixes behaviour that did not
+match its documentation or its contract. No verb, flag or Action input was
+added or removed.
+
+**Upgrading from 6.0.0:**
+
+- **The Action.** Pin `Sergey-Bar/Mjolnir@v6.0.1`, or `@v6`, which the stable
+  release workflow now moves to the newest 6.x release. The `version` input
+  defaults to `6.0.1`.
+- **`mjolnir ci install`.** Run `npx mjolnir-qa@6.0.1 ci install` again with
+  the same flags. It recognises the workflow 6.0.0 wrote and replaces its
+  broken steps; a workflow you edited still needs `--force`.
+- **Exit codes now match the contract.** `fix` and `explain --plan` return `2`
+  on a partial scan, `explain --evidence` returns `2` rather than `1` on an
+  incomplete report, an invalid config returns `10` rather than `20` on every
+  verb, and `ci verify` now honours `--blocking` and the E0 exemption. A
+  pipeline that keyed on the old codes can change colour.
+
+### Fixed: the stable release moves the Action's major tag
+
+- **`stable-release.yml` moved `v3` and nothing else.** The step that follows a
+  stable tag with the `vN` Action tag exited early for every major but 3, and a
+  spec required it to. Its tag push uses the job token, which starts no other
+  workflow, so `action-tags.yml` never ran either. That is why
+  `Sergey-Bar/Mjolnir@v6`, the pin the documentation recommends, does not
+  resolve. The step now derives the major from the tag, and leaves the major
+  where it is when a newer release on that line already exists.
+
+### Fixed: the release record
+
+- **5.1.0 was never published.** Its changelog section was cut and its stable
+  run reached the tag approval, which nobody gave, and 6.0.0 shipped first.
+  There is no `v5.1.0` tag and no 5.1.0 on npm. `docs/PUBLISHING.md` listed it
+  as published with links to a registry page and a GitHub release that do not
+  exist, and the roadmap called it shipped. Both now say what happened, and the
+  5.1.0 section of this file says so too.
+- **The run still waiting at that approval was cancelled.** If it had been
+  approved, it would have tagged 5.1.0 and published it as npm `latest`, over
+  6.0.0.
+- **Install commands that were left behind.** The site's guided proof and its
+  agent guide pinned 5.0.0, where the guided proof's `ci verify` does not
+  exist. `docs/guide/PERSONAS.md` pinned 6.0.0-rc.1, which was never
+  published, and sent readers to `stats` for per-rule FP rates; `stats` is the
+  fix-tracking ledger and the rates are `explain --list`. None of these files
+  is covered by `version:surface:sync`, so they now name 6.0.1 by hand.
+
 ### Fixed: the `ci install` Action template pins an Action that works
 
 - **It pinned `4a588bc`, a pull-request branch commit that `main` never
@@ -1688,6 +1739,11 @@ exactly what the new one does, it reports the deprecation with its replacement,
 and the replacement itself never warns.
 
 ## [5.1.0] — 2026-10-02
+
+> **Never published.** This section was cut on its release branch, but the
+> stable release run waited at the tag approval and was not approved, and 6.0.0
+> shipped first, carrying everything below. There is no `v5.1.0` tag and no
+> 5.1.0 on npm.
 
 ### Two subtractions declined, because the surface they would remove says something the replacement does not
 

@@ -39,11 +39,11 @@ re-runs or reports honestly, exactly like CI does.
 Run this command to register the local Mjölnir MCP server:
 
 ```bash
-claude mcp add mjolnir -- npx -y mjolnir-qa@5.0.0 mcp
+claude mcp add mjolnir -- npx -y mjolnir-qa@6.0.1 mcp
 ```
 
 Use Node.js 22.18 or later. For another MCP client, configure
-`npx` as the command with arguments `-y mjolnir-qa@5.0.0 mcp`.
+`npx` as the command with arguments `-y mjolnir-qa@6.0.1 mcp`.
 Provide the repository path when requesting a scan.
 
 Ask the agent to inspect findings, explain their evidence, and compare the

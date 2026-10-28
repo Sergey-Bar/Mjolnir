@@ -108,8 +108,13 @@ gh workflow run stable-release.yml --ref release/v3.0.0 -f dry_run=false
 ```
 
 The stable workflow creates an annotated tag without force, publishes the exact
-audited tarball to npm `latest` with OIDC provenance, and creates or repairs the
-GitHub Release. RC and historical tags are never moved.
+audited tarball to npm `latest` with OIDC provenance, moves the `vN` Action tag
+to the release when it is the newest on its major line, and creates or repairs
+the GitHub Release. RC and historical tags are never moved.
+
+The tag job pushes with the job token, which starts no other workflow, so
+`action-tags.yml` does not run for a tag this workflow creates. Its manual
+dispatch is the repair path for a major tag that needs moving by hand.
 
 ## Verification
 
@@ -168,16 +173,22 @@ No additional lifecycle hook may be added without an equivalent row explaining w
 - installation: [`INSTALLATION-3.0.0.md`](INSTALLATION-3.0.0.md)
 - migration: [`MIGRATION-3.0.0.md`](MIGRATION-3.0.0.md)
 - rollback: [`ROLLBACK-3.0.0.md`](ROLLBACK-3.0.0.md)
-- `3.0.0`, `4.0.0`, `5.0.0` and `5.1.0` are already published; do not
-  republish or retag them for the current working tree.
-- current working version: `6.0.0`; its release is cut from protected `main`
+- `3.0.0`, `4.0.0`, `5.0.0` and `6.0.0` are published; do not republish or
+  retag them for the current working tree.
+- `5.1.0` was never published. Its changelog section was cut and its stable
+  run waited at the tag approval, which was not given, and 6.0.0 shipped
+  first. There is no `v5.1.0` tag and no 5.1.0 on npm.
+- `6.0.0` was not published by either release workflow: its npm entry has no
+  provenance attestation, its GitHub Release has no assets, and its `v6`
+  Action tag was never created.
+- current working version: `6.0.1`; its release is cut from protected `main`
   after the tree is landed there.
 - `npm run release:decision` is the machine-readable final decision gate.
-- npm `latest` is **6.0.0** after this stable promotion; package publication does not imply Trust certification.
-- registry evidence: [`mjolnir-qa@5.1.0`](https://www.npmjs.com/package/mjolnir-qa/v/5.1.0) and npm attestations.
-- GitHub Release evidence: [`v5.1.0`](https://github.com/Sergey-Bar/Mjolnir/releases/tag/v5.1.0).
-- protected `main`: the merge commit that carried 5.1.0, observed at tag time.
-- historical `v3.0.0`, `v4.0.0`, `v5.0.0` and `v5.1.0`: remain published and
+- npm `latest` is **6.0.1** after this stable promotion; package publication does not imply Trust certification.
+- registry evidence: [`mjolnir-qa@6.0.1`](https://www.npmjs.com/package/mjolnir-qa/v/6.0.1) and its npm provenance attestation.
+- GitHub Release evidence: [`v6.0.1`](https://github.com/Sergey-Bar/Mjolnir/releases/tag/v6.0.1), with the tarball, SBOM and release-trust record attached.
+- protected `main`: the commit that carries 6.0.1, which the tag points at.
+- historical `v3.0.0`, `v4.0.0`, `v5.0.0` and `v6.0.0`: remain published and
   immutable; a tag alone is not a new release.
 - historical `v2.0.3`: `460c7d71e67d54d667414ff36e6f100d604b6185`, retained unchanged; a tag alone is not an installable release.
 - automatic publishing from `main`: disabled.

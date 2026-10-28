@@ -6,13 +6,15 @@ works from; when planning changes, this page changes with it. Nothing on
 this page is a promise with a deadline; each item is a direction with an
 entry condition.
 
-> **Release status:** package 6.0.0 is the current stable line. 3.0.0, 4.0.0
-> and 5.0.0 remain published and immutable; a tag alone is not a new release,
-> and republishing an existing version is not a path forward.
+> **Release status:** package 6.0.1 is the current stable line. 3.0.0, 4.0.0,
+> 5.0.0 and 6.0.0 remain published and immutable; a tag alone is not a new
+> release, and republishing an existing version is not a path forward.
 
 ## Where Mjölnir is now
 
-- **v6.0.0 — current stable.** Two words and one number: a
+- **v6.0.1 — current stable.** It repairs the CI reporting 6.0.0 shipped
+  broken: the Action's report step, the `ci install` workflow and the PR
+  comment all called a command the release had removed. The 6.0 line: a
   first run reads `GATE` or `WARN` per finding and nothing else, and it names
   the command that turns the scan into a blocking check. The `core` /
   `extended` / `quarantine` tiers, the `E0–E2` evidence rungs and the `L0–L5`
@@ -27,13 +29,13 @@ entry condition.
   quarantined, never silently shipped.
   `mjolnir share` writes one self-contained HTML trust report — no server, no
   network, byte-stable under the deterministic clock.
-- **v5.1.0 — shipped, superseded.** The reporting surface is checked against the
-  working tree rather than against a plan, and each check is a gate in
-  `npm run certify`. A silent capability loss is disclosed through a
-  degradation ledger rather than absorbed, and a verdict is never published
-  without a measurement behind it. Package publication does not imply Trust
-  certification: the release-readiness record is separate and still names
-  what is open.
+- **v5.1.0 — prepared, never published; 6.0.0 superseded it.** The reporting
+  surface is checked against the working tree rather than against a plan, and
+  each check is a gate in `npm run certify`. A silent capability loss is
+  disclosed through a degradation ledger rather than absorbed, and a verdict is
+  never published without a measurement behind it. All of it shipped in
+  6.0.0. Package publication does not imply Trust certification: the
+  release-readiness record is separate and still names what is open.
 - JSON report (`schemaVersion: 1`), exit codes and CLI surface are
   [frozen contracts](/reference/exit-codes).
 - The scan core is deterministic and zero-network: the same input

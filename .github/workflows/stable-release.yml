@@ -303,12 +303,25 @@ jobs:
           test -n "$TAG_COMMIT" || { echo "::error::no tag commit produced by the identity step"; exit 1; }
           VERSION="${TAG#v}"
           MAJOR="${VERSION%%.*}"
-          if [[ "$MAJOR" != "3" ]]; then
-            echo "No current Action tag update for v$MAJOR; the current Action major is v3."
+          # The major comes from the tag. This step used to exit for every major
+          # but 3, and the tag push above uses the job token, which starts no
+          # other workflow, so action-tags.yml never ran either: no stable
+          # release after 3.x moved its `vN`, and the `@v6` the docs recommend
+          # did not resolve.
+          [[ "$MAJOR" =~ ^[1-9][0-9]*$ ]] || {
+            echo "::error::cannot derive an Action major from $TAG"
+            exit 1
+          }
+          # `vN` follows the NEWEST stable release on its line, so a patch cut on
+          # an older minor cannot move it backwards.
+          NEWEST=$(git tag --list "v$MAJOR.*" | grep -Ev -- '-rc\.' | sort -V | tail -n 1)
+          if [[ "$NEWEST" != "$TAG" ]]; then
+            echo "v$MAJOR stays where it is: $NEWEST is newer than $TAG."
             exit 0
           fi
           git tag -f "v$MAJOR" "$TAG_COMMIT"
           git push origin "refs/tags/v$MAJOR" --force
+          echo "moved v$MAJOR to $TAG_COMMIT"
 
   publish-npm:
     needs: [verify, tag]
