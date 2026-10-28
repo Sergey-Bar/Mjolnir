@@ -28,27 +28,19 @@
   "generatedAt": "2026-10-28",
   "identity": {
     "state": "RELEASE_CANDIDATE",
-    "baseSha": "0da18378c39183e5c2f1a59bc867324d39c9a8cb",
+    "baseSha": "4a773e46fa346015dd2457ebaab4d903c12243d9",
     "candidateSha": "2ed960732480f33fbe6564752ce0201040b91e03",
     "version": "6.0.1",
     "packageSha256": "1b9e02f270e79bf3f822ddbb85981ec2341c9fa4b6e2307a438ef4de53fbd4b3",
     "lockfileSha256": "d2a2568d903cd241dc2ce78b5b5307cce823aad0df81ab440be571401acfa0cf",
-    "workingTreeSha256": "fd4d8b3ab43f2f1707ec38c1583faca91d203723d9098ec1aced2d2c77c43dea",
-    "changedPathCount": 3,
+    "workingTreeSha256": "d977bfb86dc0089cf59b58e495d636578ee49a23e1ce396cabef73b3ef37949d",
+    "changedPathCount": 1,
     "supportEnvelope": "self-hosted; hosted services require explicit consent and separate proof",
     "worktreeInventory": {
-      "changedPaths": [
-        ".github/workflows/stable-release.yml",
-        "CHANGELOG.md",
-        "tests/integrations/stable-release-workflow.spec.ts"
-      ],
+      "changedPaths": [".github/workflows/stable-release.yml"],
       "untrackedPaths": []
     },
-    "dirtyFiles": [
-      ".github/workflows/stable-release.yml",
-      "CHANGELOG.md",
-      "tests/integrations/stable-release-workflow.spec.ts"
-    ]
+    "dirtyFiles": [".github/workflows/stable-release.yml"]
   },
   "claimRegistry": {
     "path": "docs/claim-registry.json",
