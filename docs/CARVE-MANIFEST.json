@@ -181,7 +181,7 @@
       }
     },
     "src/release/version-surface.ts": {
-      "lines": 403,
+      "lines": 406,
       "exports": 8,
       "importedBy": [
         "scripts/check-version-surface.ts",

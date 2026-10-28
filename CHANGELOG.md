@@ -11,6 +11,93 @@ once shipped, so this file is the record of what changed between versions.
 
 ## [Unreleased]
 
+### Fixed: the Action, `ci install` and the PR workflow render their reports again
+
+The v6 carve retired `summary` and `pr-comment` onto `scan --format
+github-summary` and `scan --format pr-comment`, and shipped only the half of
+each that scans. Every CI consumer renders the `--json` report its scan step
+saved. All of them kept calling the retired verbs, which exit 10:
+
+- **The Action.** Its report step runs by default, so v6.0.0 failed every
+  consumer's job, on a clean scan as well as a dirty one. Its summary step
+  failed too.
+- **`ci install --no-action`.** The generated summary and comment steps are
+  `continue-on-error`, so they failed without a sound: no annotations and no
+  PR comment, on any run.
+- **This repository's PR workflow**, which has posted "Mjölnir report
+  unavailable" on every pull request since 6.0.0.
+
+What changed:
+
+- **`scan --format github-summary <report.json>` and `scan --format pr-comment
+<report.json>` render a saved report**, as `site/reference/cli.md` already
+  said they did. They delegate to the retired verbs' own code, so the
+  contracts are the verbs': annotations on stdout inside GitHub Actions, the
+  summary written to `$GITHUB_STEP_SUMMARY`, and a render that never gates.
+  No verb or flag was added. A directory target still scans.
+- **The comment's commit is checked, not passed in.** It states the commit the
+  scan recorded only while the checkout is at that commit, and `unknown`
+  otherwise. The Action used to hand `--commit "$GITHUB_SHA"` to a verb that
+  printed whatever it was given. The live `--format pr-comment` render, which
+  always said `unknown`, now states the commit it scanned.
+- **The Action's summary step no longer pipes stdout into the summary**, which
+  copied every annotation command into it as text. Its `strict` input passes
+  `--include-warn` instead of the deprecated `--strict`, which printed a
+  deprecation notice into every consumer's log.
+- **`ci install` recognises the workflows 6.0.0 wrote**, so re-running it
+  replaces their broken steps without `--force`. Recognition required byte
+  equality with the current template, so the pinned version alone made every
+  earlier release's file read as hand-customised. Line endings, the pinned
+  version and the Action SHA are now ignored, and any other edit still refuses.
+- **The PR workflow's render step fails the job when the render fails**,
+  instead of `exit 0` under `continue-on-error`. Its fallback report for a
+  failed analysis now validates: it carried `"reason":"analysis-failed"`, which
+  the report validator rejects, so the one report written for that case could
+  never be rendered.
+- **A `--include-warn` scan's report loads again.** With the quarantine tier
+  running, nothing is withheld, and `rulesWithheld` said 0 while
+  `withheldRuleIds` still named the whole tier. The loader rejects a report
+  that contradicts itself, so the Action's `strict: true` would have failed
+  every render even with the verbs fixed, and no saved-report command could
+  read such a report. Lifecycle resolution also read those rules as withheld,
+  so a quarantine-tier finding that a strict scan had fixed resolved as
+  `INCONCLUSIVE(rule-withheld)`.
+
+The same defect in three more places, found by the widened gate below:
+
+- `release.yml` ran `release-trust`, retired onto `ci release-trust`, so that
+  step exits 10 when it runs. `stable-release.yml` already used `ci`.
+- `site/guide/forensics.md` told readers to run `npx mjolnir-qa@6.0.0
+forensics`, and the version-surface check required that line. Both now say
+  `explain --evidence`.
+- `docs/AI-DISCOVERY.md` pinned 5.0.0 and named the retired `baseline` and
+  `verify`. It now pins 6.0.0 with `--save-baseline` and `ci verify`, and
+  `site/public/llms.txt` says 6.0.0 too.
+
+Why nothing caught it:
+
+- **`check-cli-contract` matched only `mjolnir <verb>`.** CI steps launch the
+  CLI as `npx "$MJ_PACKAGE"`, `npx …/mjolnir-qa-<version>.tgz`, `npx
+mjolnir-qa@<version>` or `node dist/cli.mjs`, and it now reads all of them.
+  `docs/MIGRATION-3.0.0.md` joins the frozen-report list: its commands pin
+  3.0.0, where those verbs exist.
+- **Four specs asserted the command text**, and text is satisfied by a command
+  that cannot run. `tests/integrations/ci-render-commands.spec.ts` takes each
+  consumer's command from the file that ships it and runs it against the CLI,
+  and checks every scan argument the Action can pass.
+
+Still open:
+
+- The Action runs the published package, so Action users get this with the
+  next release, which moves the `version` default to it.
+- The `ci install` Action template pins an Action commit that is not on
+  `main`, and its `action.yml` installs `latest` and calls the retired
+  `trust-report`. The pin can only name a commit that exists, so it moves to
+  this fix's merge commit in a follow-up.
+- The floating `v6` Action tag was never created, because the tag job for
+  v6.0.0 was cancelled. The docs recommend `Sergey-Bar/Mjolnir@v6`, which does
+  not resolve yet.
+
 ### Changed: every devDependency is an exact pin, and current
 
 `npm outdated` now lists only the two blocked upgrades below. Runtime
