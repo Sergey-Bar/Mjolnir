@@ -29,7 +29,11 @@ import { createHash } from "node:crypto";
 import { existsSync, realpathSync } from "node:fs";
 import { isAbsolute, join, relative, resolve, sep } from "node:path";
 
-import { runScan } from "../engine/scan-pipeline.js";
+import {
+  DEFAULT_MAX_DURATION_MS,
+  MAX_DURATION_MS,
+  runScan,
+} from "../engine/scan-pipeline.js";
 import { errorMessage } from "../cli-io.js";
 import { ENGINE_VERSION as CLI_VERSION } from "../engine/version.js";
 import { buildMachineContract } from "../engine/machine-contract.js";
@@ -46,8 +50,6 @@ import { summarizePwRun, renderPwRunSummary } from "../commands/pw-report.js";
 
 /** Hard caps (§21 threat model: parameter size + resource bounds). */
 const MAX_PARAM_BYTES = 64 * 1024;
-const MAX_DURATION_MS = 3_600_000;
-const DEFAULT_MAX_DURATION_MS = 600_000;
 const PROTOCOL_VERSION = "2025-06-18";
 
 /** The real path of `p`, or its lexical resolution when it does not exist. */
