@@ -11,6 +11,25 @@ once shipped, so this file is the record of what changed between versions.
 
 ## [Unreleased]
 
+### Fixed: the stable release publishes the artifact it verified
+
+- **The first 6.0.1 publish run pushed `v6.0.1` and moved `v6`, then failed
+  before `npm publish`.** The verified artifact holds `release-artifact/` and
+  `release-assets/`, so `upload-artifact` keeps both directories, and the
+  publish job downloaded it into `release-artifact`, one level too deep:
+  `sha256sum: release-artifact/mjolnir-qa-6.0.1.tgz: No such file or
+directory`. The GitHub-release job and both resume jobs read the same wrong
+  layout. All four now download into the workspace root, and a spec reads the
+  upload paths and holds every consumer to them.
+- **The resumed GitHub release attaches the release-trust record**, which the
+  first-attempt release already required.
+- **Both publish jobs read no `.npmrc`**, as `release.yml` does, so the
+  placeholder token `setup-node` writes there cannot stand in for OIDC trusted
+  publishing.
+- **The SBOM checksum records a relative path**, like the tarball's. It
+  recorded the runner's absolute workspace path, and checked out only because
+  every job ran on the same path.
+
 ## [6.0.1] — 2026-10-28
 
 A patch release. 6.0.0 shipped a GitHub Action whose report step calls a

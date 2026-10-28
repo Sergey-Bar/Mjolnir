@@ -33,6 +33,7 @@ const workflow = parse(source) as {
         uses?: string;
         run?: string;
         env?: Record<string, string>;
+        with?: Record<string, unknown>;
       }>;
     }
   >;
@@ -139,6 +140,56 @@ describe("stable release workflow", () => {
       "inputs.artifact_run_id != '' && vars.NPM_PUBLISH == 'true'",
     );
     expect(source).toContain("resume-release:");
+  });
+
+  it("every job reads the stable artifact where the upload put it", () => {
+    // upload-artifact roots an archive at the common ancestor of what it
+    // uploads. This one carries `release-artifact/` and `release-assets/`, so
+    // it holds both directories, and a download INTO `release-artifact` nests
+    // the tarball at `release-artifact/release-artifact/<tgz>`. The first 6.0.1
+    // publish run pushed its tag and then failed on exactly that path, before
+    // `npm publish`; the GitHub-release job and both resume jobs read the same
+    // wrong layout. Every consumer downloads into the workspace root.
+    const upload = workflow.jobs.verify?.steps?.find((s) =>
+      s.uses?.startsWith("actions/upload-artifact"),
+    );
+    const uploadPath = upload?.with?.path;
+    const uploaded = (typeof uploadPath === "string" ? uploadPath : "")
+      .split("\n")
+      .map((p) => p.trim())
+      .filter(Boolean);
+    expect(uploaded).toEqual(["release-artifact/", "release-assets/"]);
+    for (const job of ["publish-npm", "github-release"]) {
+      const download = workflow.jobs[job]?.steps?.find((s) =>
+        s.uses?.startsWith("actions/download-artifact"),
+      );
+      expect(download?.with?.path, `${job} download path`).toBe(".");
+    }
+    for (const job of ["resume-npm", "resume-release"]) {
+      const run = workflow.jobs[job]?.steps?.map((s) => s.run ?? "").join("\n");
+      expect(run, job).toContain(
+        'gh run download "$ARTIFACT_RUN_ID" --name "stable-release-$VERSION" --dir .',
+      );
+    }
+    // The trust record sits beside the tarball's directory, never inside it.
+    expect(source).not.toContain("release-artifact/release-assets/");
+    for (const job of ["github-release", "resume-release"]) {
+      const run = workflow.jobs[job]?.steps?.map((s) => s.run ?? "").join("\n");
+      expect(run, job).toContain("test -s release-assets/release-trust.json");
+      expect(run, job).toContain(
+        "release-assets/release-trust.json#release-trust.json",
+      );
+    }
+  });
+
+  it("publishes through OIDC, not setup-node's placeholder token", () => {
+    for (const job of ["publish-npm", "resume-npm"]) {
+      expect(
+        (workflow.jobs[job] as { env?: Record<string, string> } | undefined)
+          ?.env?.NPM_CONFIG_USERCONFIG,
+        job,
+      ).toBe("/dev/null");
+    }
   });
 
   it("materializes an existing immutable tag before packing", () => {
