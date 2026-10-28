@@ -2,7 +2,7 @@
 
 **Generated — do not edit by hand.** Regenerate: `npm run docs:v6-inventory`.
 
-Baseline commit `ed205600730d87c8e74c0715534da2a2a98c6291` · package version `6.0.0` · published stable `6.0.0`.
+Baseline commit `f11e049b1bf2c158b8900ca171a3eb98673ac362` · package version `6.0.1` · published stable `6.0.1`.
 
 This is the truth baseline v6 is built on. It is deliberately blunt: the
 interesting part of a current-state inventory is what the product _cannot_
@@ -28,8 +28,8 @@ demonstrate, not what it contains.
 
 | Fact                            | Value                                                                                                                                   | Source                                       |
 | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
-| Package version                 | `6.0.0`                                                                                                                                 | `package.json`                               |
-| Published stable                | `6.0.0`                                                                                                                                 | `package.json`                               |
+| Package version                 | `6.0.1`                                                                                                                                 | `package.json`                               |
+| Published stable                | `6.0.1`                                                                                                                                 | `package.json`                               |
 | Source files (`src/**.ts`)      | 298                                                                                                                                     | derived                                      |
 | Test specs (`tests/**.spec.ts`) | 692                                                                                                                                     | derived                                      |
 | Live rules                      | 79                                                                                                                                      | `src/rules/index.ts`                         |
