@@ -107,17 +107,12 @@ describe("ci.yml self-scan job", () => {
     ).toBe("always()");
   });
 
-  it("badge generation is scoped with continue-on-error at the step level, not || true", () => {
-    // This is a deliberate regression guard: an earlier draft of this
-    // task wrote `node dist/cli.mjs badge . || true`, which the tool's
-    // own QA-CI-002 rule flags (self-scan then failed on its own repo).
-    // continue-on-error on a genuinely non-blocking step is the honest
-    // fix the rule's own message recommends.
+  it("the self-scan job carries no badge step: the badge command is gone", () => {
+    // The step outlived the removed badge command by writing a placeholder JSON
+    // nothing consumed, under continue-on-error.
     const wf = loadCiWorkflow();
     const steps = wf.jobs["self-scan"]?.steps ?? [];
-    const badgeStep = steps.find((s) => s.run?.includes("badge"));
-    expect(badgeStep, "expected a badge-generation step").toBeDefined();
-    expect(badgeStep?.run).not.toMatch(/\|\|\s*true/);
-    expect(badgeStep?.["continue-on-error"]).toBe(true);
+    expect(steps.some((s) => s.run?.includes("badge"))).toBe(false);
+    expect(steps.some((s) => (s.run ?? "").includes("|| true"))).toBe(false);
   });
 });
