@@ -1,36 +1,70 @@
 # Dependabot is the single automated dependency-update channel (the Renovate
 # stub was removed — running both would double the update PRs).
 # https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+#
+# A major opens its own PR, because each one is a review. Minor and patch
+# updates arrive GROUPED: one PR per group per week.
+#
+# 5.0.0 ignored minor and patch outright, because one PR per package was a
+# rolling wall of noise. The diagnosis was right, but the lockfile pins every
+# version, so an ignored update is never taken at all: by 2026-10
+# `npm outdated` listed 17 packages behind their latest release, two of them
+# blocked. Grouping keeps the noise to one PR per group per week and still
+# lets versions move.
+#
+# Runtime dependencies are grouped apart from tooling: a `ts-morph` or `yaml`
+# minor ships to every user and can change what the detectors see, so it gets
+# its own review rather than riding in with a linter patch.
+#
+# Security updates are configured separately and are unaffected.
 
 version: 2
 updates:
-  # Only a major opens a PR; minor and patch are ignored. Dependabot security
-  # updates are configured separately and are not affected by this.
+  # The root manifest and the packages/* workspaces share one lockfile.
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
       interval: "weekly"
+    groups:
+      runtime-minor-and-patch:
+        dependency-type: "production"
+        update-types: ["minor", "patch"]
+      tooling-minor-and-patch:
+        dependency-type: "development"
+        update-types: ["minor", "patch"]
     ignore:
-      - update-types: ["minor", "patch"]
-      # web-tree-sitter 0.25.6 -> 0.26.x: the 0.26 runtime cannot load the
-      # tree-sitter-wasms grammar WASMs at all (Language.load() throws in
-      # getDylinkMetadata; verified by reproduction — see the DEPENDENCY PIN
-      # header in src/engine/tree-sitter-ast.ts). tree-sitter-wasms' latest
-      # release (0.1.13) predates the 0.26 ABI and ships no compatible
-      # grammars. Re-enable when tree-sitter-wasms ships 0.26-built grammars.
+      # BLOCKED, review by 2027-01-26 (the 90-day review budget).
+      # web-tree-sitter 0.26 and later cannot load the tree-sitter-wasms
+      # grammars: Language.load() throws in getDylinkMetadata. Re-verified on
+      # 2026-10-28: 0.27.1 fails on the Java and C# grammars of
+      # tree-sitter-wasms 0.1.13, which is still its latest release, while
+      # 0.25.6 loads both. See the DEPENDENCY PIN header in
+      # src/engine/tree-sitter-ast.ts. Lift when tree-sitter-wasms ships
+      # grammars built for the newer ABI.
       - dependency-name: "web-tree-sitter"
-      # typescript 6 -> 7: typescript@7 is the native (Go) compiler with NO
-      # JS API (no `main`, no `types` in the package) — ts-morph, which
-      # powers the entire AST precision layer, cannot bind to it; and
-      # typescript-eslint@8.69.0 (latest) still peers <6.1.0. Re-enable when
-      # BOTH typescript-eslint peers >=7 and ts-morph ships a 7-compatible
-      # API adapter.
+        versions: [">=0.26"]
+      # BLOCKED, review by 2027-01-26 (the 90-day review budget).
+      # typescript 7 is the native compiler and has no JS API, so ts-morph,
+      # which powers the AST precision layer, cannot bind to it. Re-verified on
+      # 2026-10-28: typescript-eslint 8.72.1, its latest, still declares the
+      # peer typescript ">=4.8.4 <6.1.0". Lift when both support 7.
       - dependency-name: "typescript"
         versions: [">=7"]
+
+  # The documentation site keeps its own lockfile, so it needs its own entry;
+  # without one it received security updates and nothing else.
+  - package-ecosystem: "npm"
+    directory: "/site"
+    schedule:
+      interval: "weekly"
+    groups:
+      site-minor-and-patch:
+        update-types: ["minor", "patch"]
 
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
-    ignore:
-      - update-types: ["minor", "patch"]
+    groups:
+      actions-minor-and-patch:
+        update-types: ["minor", "patch"]

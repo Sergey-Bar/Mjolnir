@@ -9,7 +9,12 @@
 // they are rebased away. Rejecting them at the hook is cheaper than
 // discovering them at merge time.
 //
-// Severity is numeric (commitlint v19): 2 = error, 1 = warning, 0 = off.
+// Severity is numeric: 2 = error, 1 = warning, 0 = off.
+//
+// commitlint 21 parses footers per the Conventional Commits spec: a body line
+// that begins `word: ` (a token, a colon, a space) is a FOOTER, and
+// `footer-leading-blank` then requires a blank line before it. Rewrap a body
+// sentence so no line starts that way.
 
 module.exports = {
   extends: ["@commitlint/config-conventional"],
