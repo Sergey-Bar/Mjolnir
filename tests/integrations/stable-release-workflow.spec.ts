@@ -86,6 +86,16 @@ describe("stable release workflow", () => {
     expect(verifyRun).toContain(".sbom.spdx.json");
   });
 
+  it("a resume publishes only when dry_run is off and the release is authorized", () => {
+    // `dry_run` defaults to true and the resume path never read it, so a
+    // resume dispatched with the defaults published a dry run's artifact.
+    const resume = workflow.jobs["resume-npm"] as { if?: string } | undefined;
+    const condition = String(resume?.if ?? "");
+    expect(condition).toContain("!inputs.dry_run");
+    expect(condition).toContain("vars.STABLE_RELEASE_AUTHORIZED == 'true'");
+    expect(condition).toContain("inputs.artifact_run_id != ''");
+  });
+
   it("creates immutable stable tags only after approval", () => {
     const tag = workflow.jobs.tag;
     expect(tag?.environment).toBe("release-candidate");
@@ -137,7 +147,7 @@ describe("stable release workflow", () => {
       'gh run download "$ARTIFACT_RUN_ID" --name "stable-release-$VERSION"',
     );
     expect(source).toContain(
-      "inputs.artifact_run_id != '' && vars.NPM_PUBLISH == 'true'",
+      "inputs.artifact_run_id != '' && !inputs.dry_run && vars.NPM_PUBLISH == 'true'",
     );
     expect(source).toContain("resume-release:");
   });

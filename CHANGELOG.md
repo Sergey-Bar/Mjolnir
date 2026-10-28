@@ -11,6 +11,34 @@ once shipped, so this file is the record of what changed between versions.
 
 ## [Unreleased]
 
+### Fixed: CI and release workflows
+
+- **A stable release publishes to `latest` directly** (`release.yml`). It
+  published to `next` and relied on a token-based repair to move `latest`.
+- **A stable-release resume honours `dry_run` and requires
+  `STABLE_RELEASE_AUTHORIZED`.** It ignored both, so a resume dispatched with
+  the default `dry_run: true` published, including a dry run's artifact.
+- **The npm propagation wait polls `latest` as well as the version, for up to
+  ten minutes, and fails by name.** 6.0.1 took over five minutes to appear,
+  and the job timed out.
+- **The Action major-tag workflow moves `vN` to the newest stable `vN.x.y`.**
+  A manual dispatch tagged the head of the dispatching branch, and an older
+  patch tag could move `vN` backwards.
+- **The dogfood PR comment posts only on same-repository pull requests.** On
+  a fork or a manual dispatch the job failed with 403.
+- `github.base_ref` reaches the shell through `env:` rather than script
+  interpolation. The dead badge step and a duplicate `check-version` call are
+  gone, and the nightly stress run no longer starts at the same minute as
+  fuzz.
+- **`ci install` treats a Dependabot action-pin bump as not a
+  customisation.** Only the Mjölnir Action's SHA was ignored, so each bump of
+  `actions/*` made every workflow the previous release generated read as
+  hand-edited. The template's pins follow `mjolnir.yml` again.
+- Action pins bumped: `setup-node` 7.1.0, `upload-artifact` 7.0.2,
+  `download-artifact` 8.0.2, CodeQL 4.39.1, OSV-Scanner 2.7.0, Scorecard
+  2.5.0. The `web-tree-sitter` 0.25.10 bump is not taken: the
+  `package-smoke` spec holds its exact 0.25.6 pin.
+
 ### Fixed: report rendering, config validation and swallowed errors
 
 - **Paths and code-like fixes in the PR comment, step summary and handoff are

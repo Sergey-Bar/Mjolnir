@@ -6,7 +6,7 @@ name: stress
 
 on:
   schedule:
-    - cron: "0 3 * * *" # 03:00 UTC daily
+    - cron: "23 2 * * *" # 02:23 UTC daily; fuzz.yml holds 03:00
   workflow_dispatch:
 
 permissions:

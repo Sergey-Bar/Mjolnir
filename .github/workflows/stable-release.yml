@@ -333,7 +333,7 @@ jobs:
   publish-npm:
     needs: [verify, tag]
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     environment: npm-publish
     permissions:
       contents: read
@@ -374,14 +374,18 @@ jobs:
           else
             test "$(npm view "$PACKAGE_NAME@$VERSION" dist.integrity)" = "$LOCAL_INTEGRITY"
           fi
-          for _ in $(seq 1 30); do
-            if npm view "$PACKAGE_NAME@$VERSION" version >/dev/null 2>&1; then
-              break
+          # npm took over five minutes to show 6.0.1. Both reads are polled, and
+          # the loop fails by name instead of falling through to a bare `test`.
+          for attempt in $(seq 1 60); do
+            if [ "$(npm view "$PACKAGE_NAME@$VERSION" version 2>/dev/null)" = "$VERSION" ] &&
+               [ "$(npm view "$PACKAGE_NAME" dist-tags.latest 2>/dev/null)" = "$VERSION" ]; then
+              exit 0
             fi
+            echo "npm read $attempt/60: $PACKAGE_NAME@$VERSION not yet live as latest"
             sleep 10
           done
-          test "$(npm view "$PACKAGE_NAME@$VERSION" version)" = "$VERSION"
-          test "$(npm view "$PACKAGE_NAME" dist-tags.latest)" = "$VERSION"
+          echo "::error::$PACKAGE_NAME@$VERSION is not live as latest after 10 minutes"
+          exit 1
 
   github-release:
     needs: [verify, tag, publish-npm]
@@ -420,9 +424,13 @@ jobs:
           fi
 
   resume-npm:
-    if: inputs.artifact_run_id != '' && vars.NPM_PUBLISH == 'true'
+    # A resume publishes, so it honours dry_run like the first attempt. It
+    # ignored it, and `dry_run` defaults to true: a resume dispatched with the
+    # defaults published a dry run's artifact. The authorization variable is
+    # required here too, because a dry run's verify job never checked it.
+    if: inputs.artifact_run_id != '' && !inputs.dry_run && vars.NPM_PUBLISH == 'true' && vars.STABLE_RELEASE_AUTHORIZED == 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     environment: npm-publish
     permissions:
       actions: read
@@ -462,14 +470,18 @@ jobs:
           else
             test "$(npm view "$PACKAGE_NAME@$VERSION" dist.integrity)" = "$LOCAL_INTEGRITY"
           fi
-          for _ in $(seq 1 30); do
-            if npm view "$PACKAGE_NAME@$VERSION" version >/dev/null 2>&1; then
-              break
+          # npm took over five minutes to show 6.0.1. Both reads are polled, and
+          # the loop fails by name instead of falling through to a bare `test`.
+          for attempt in $(seq 1 60); do
+            if [ "$(npm view "$PACKAGE_NAME@$VERSION" version 2>/dev/null)" = "$VERSION" ] &&
+               [ "$(npm view "$PACKAGE_NAME" dist-tags.latest 2>/dev/null)" = "$VERSION" ]; then
+              exit 0
             fi
+            echo "npm read $attempt/60: $PACKAGE_NAME@$VERSION not yet live as latest"
             sleep 10
           done
-          test "$(npm view "$PACKAGE_NAME@$VERSION" version)" = "$VERSION"
-          test "$(npm view "$PACKAGE_NAME" dist-tags.latest)" = "$VERSION"
+          echo "::error::$PACKAGE_NAME@$VERSION is not live as latest after 10 minutes"
+          exit 1
 
   resume-release:
     needs: resume-npm

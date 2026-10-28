@@ -388,7 +388,15 @@ jobs:
         shell: bash
         env:
           TARBALL: ${{ needs.verify.outputs.tarball }}
-        run: npm publish "./release-artifact/$TARBALL" --tag next --provenance --ignore-scripts --access public
+          IS_PRERELEASE: ${{ needs.verify.outputs.is_prerelease }}
+        # A stable version publishes to `latest`. It went to `next` and relied on
+        # the token-based repair below to move `latest`, so without NPM_TOKEN a
+        # stable release stayed on the prerelease channel.
+        run: |
+          set -euo pipefail
+          DIST_TAG=next
+          if [ "$IS_PRERELEASE" = "false" ]; then DIST_TAG=latest; fi
+          npm publish "./release-artifact/$TARBALL" --tag "$DIST_TAG" --provenance --ignore-scripts --access public
       - name: Verify the published version is live on npm
         shell: bash
         env:

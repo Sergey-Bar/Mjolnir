@@ -47,18 +47,23 @@ jobs:
           TAG_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
+          # Both paths move vN to the NEWEST stable vN.x.y tag. A dispatch used
+          # GITHUB_SHA, the head of whatever branch it ran from, and a push of
+          # an older patch tag moved vN backwards.
           if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
             [[ "$DISPATCH_MAJOR" =~ ^[1-9][0-9]*$ ]] || {
               echo "::error::major must be a positive integer, got '$DISPATCH_MAJOR'"
               exit 1
             }
             MAJOR="$DISPATCH_MAJOR"
-            TARGET="$GITHUB_SHA"
           else
             VERSION="${GITHUB_REF_NAME#v}"
             MAJOR="${VERSION%%.*}"
-            TARGET="$GITHUB_SHA"
           fi
+          NEWEST=$(git tag --list "v$MAJOR.*" | grep -E "^v$MAJOR\.[0-9]+\.[0-9]+$" | sort -V | tail -n 1 || true)
+          test -n "$NEWEST" || { echo "::error::no stable v$MAJOR.x.y tag exists"; exit 1; }
+          TARGET=$(git rev-parse "$NEWEST^{commit}")
+          echo "v$MAJOR -> $NEWEST ($TARGET)"
           # The major tag follows the release. It was hardcoded to 3, which
           # meant no v4 or v5 could ever be published and the docs' recommended
           # `uses: Sergey-Bar/Mjolnir@vN` had no ref to resolve to. Deriving it

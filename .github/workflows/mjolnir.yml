@@ -131,7 +131,10 @@ jobs:
   # with a worse one.
   publish:
     needs: scan
-    if: ${{ always() && needs.scan.result != 'cancelled' && needs.scan.result != 'skipped' }}
+    # Only a same-repo pull request can comment: a fork's token is read-only, so
+    # the comment call returned 403 and failed the job, and a manual dispatch
+    # has no pull request to comment on.
+    if: ${{ always() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && needs.scan.result != 'cancelled' && needs.scan.result != 'skipped' }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:

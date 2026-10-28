@@ -248,6 +248,19 @@ describe("6.0.0-generated workflows are recognised for the upgrade", () => {
     expect(published).not.toBe(TEMPLATE("advisory"));
   });
 
+  it("a workflow from before a Dependabot pin bump is still ours", () => {
+    // The `actions/*` pins move between releases. Only the Mjölnir Action's
+    // SHA used to be blanked, so every such bump made each workflow the
+    // previous release generated read as hand-customised.
+    const current = TEMPLATE("error");
+    const olderPins = current.replace(
+      /actions\/upload-artifact@[0-9a-f]{40} # v[\d.]+/,
+      "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1",
+    );
+    expect(olderPins).not.toBe(current);
+    expect(isKnownTemplate(olderPins)).toBe(true);
+  });
+
   it("the Action workflow 6.0.0 wrote is ours", () => {
     expect(
       isKnownTemplate(fixture("ci-install-6.0.0-action-error.yml.txt")),

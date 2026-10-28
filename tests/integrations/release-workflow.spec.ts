@@ -247,7 +247,15 @@ describe("release candidate workflow", () => {
     expect(publishStep?.run).toContain(
       'npm publish "./release-artifact/$TARBALL"',
     );
-    expect(publishStep?.run).toContain("--tag next");
+    // A prerelease publishes to `next`, a stable version to `latest`.
+    expect(publishStep?.run).toContain('--tag "$DIST_TAG"');
+    expect(publishStep?.run).toContain("DIST_TAG=next");
+    expect(publishStep?.run).toContain(
+      'if [ "$IS_PRERELEASE" = "false" ]; then DIST_TAG=latest; fi',
+    );
+    expect(publishStep?.env?.IS_PRERELEASE).toBe(
+      "${{ needs.verify.outputs.is_prerelease }}",
+    );
     expect(publishStep?.run).toContain("--provenance");
     expect(publishStep?.run).toContain("--ignore-scripts");
     const commands = steps("publish-npm").map((step) => step.run ?? "");

@@ -299,7 +299,10 @@ jobs:
         run: npm run gates:claim-integrity
 
       - name: Unreleased changelog entry
-        run: npm run check-version -- --base=origin/${{ github.base_ref || 'main' }}
+        # Through env, not interpolated into the script (S-5).
+        env:
+          BASE_REF: ${{ github.base_ref || 'main' }}
+        run: npm run check-version -- --base="origin/$BASE_REF"
 
   # Self-scan gate (§30.2 #7) — activates once rules exist.
   self-scan:
@@ -344,23 +347,12 @@ jobs:
         if: always()
         run: |
           node -e "const fs=require('fs');try{const r=JSON.parse(fs.readFileSync('self-scan.json','utf8'));const n=r.findings.filter(f=>f.severity==='warning').length;fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,'Self-scan warnings (non-blocking) - '+n+'\n')}catch(e){}"
-      - name: Generate badge artifact (Master-Stabilization-Plan Sprint 2 Task 11)
-        continue-on-error: true
-        # Removed with `src/commands/badge.ts` in the v6 carve: the product emits
-        # no shields.io badge, and the PR comment renders HTML cells instead.
-        # `continue-on-error: true` is why this never surfaced as a failure — it
-        # has been exiting 10 silently since the carve.
-        run: |
-          echo "::notice::No badge artifact: the badge command was removed with the v6 carve."
-          echo '{"note":"badge generation retired; see CHANGELOG 5.1.0"}' > mjolnir-badge.json
       - name: Upload self-scan result as a build artifact
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: self-scan-result
-          path: |
-            self-scan.json
-            mjolnir-badge.json
+          path: self-scan.json
           retention-days: 90
 
   # Certification gate (certification-audit Phase 5.5, G2/G5): the doctor
@@ -386,12 +378,9 @@ jobs:
       # re-runs it release-blocking with --rules-touched semantics).
       - name: CHANGELOG integrity gate (WI-12A)
         run: npm run check-version -- --expect-version "$(node -p "require('./package.json').version")"
-      # WI-10 (plan §14): reporter version-sync gate — ADVISORY while the
-      # reporter line is unpublished; becomes blocking after three green
-      # release cycles. The hard-drift case (reporter AHEAD of the root
-      # package; ingestion-contract break) exits 1 even in advisory mode.
-      - name: Reporter version-sync gate (advisory)
-        run: npm run check-version
+      # The reporter version-sync check (WI-10) is one of check-version's four
+      # arms, so the step above already runs it. A second bare call repeated
+      # all four.
       - name: Doctor self-audit gate (exit 0 = all checks pass)
         run: node dist/cli.mjs doctor . --json > doctor-report.json
       - name: G5 determinism self-verify (second run must be byte-identical)
@@ -447,8 +436,10 @@ jobs:
           cache: npm
       - run: npm ci
       - name: Diff detector-hashes manifest against base branch
+        env:
+          BASE_REF: ${{ github.base_ref || 'main' }}
         run: |
-          BASE="$(git merge-base "origin/${{ github.base_ref || 'main' }}" HEAD)"
+          BASE="$(git merge-base "origin/$BASE_REF" HEAD)"
           git show "${BASE}:tests/corpus/detector-hashes.json" > /tmp/detector-hashes-base.json \
             || echo "no base manifest (first landing)"
           if [ -s /tmp/detector-hashes-base.json ]; then
