@@ -404,3 +404,12 @@ describe("ecosystem detection (ENGINE-005)", () => {
     });
   });
 });
+
+describe("detectEcosystem on a root it cannot list", () => {
+  it("reports no .NET signal instead of throwing", () => {
+    const missing = join(tmpdir(), `mjolnir-eco-missing-${process.pid}`);
+    const result = detectEcosystem(missing);
+    expect(result.signals.csproj).toBe(false);
+    expect(result.ecosystem).toBe("unknown");
+  });
+});
