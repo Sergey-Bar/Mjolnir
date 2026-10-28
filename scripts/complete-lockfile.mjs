@@ -22,6 +22,22 @@
  * fields npm writes (integrity, tarball, os, cpu), so the result is the same
  * shape npm would have produced — not a hand-written approximation.
  *
+ * WHAT IS RESTORED, AND WHAT IS NOT
+ *
+ * Only PLATFORM entries (an `os` or `cpu` field) that the current tree still
+ * asks for, at the exact version it asks for. The first version restored every
+ * key the known-good lockfile had and the current one lacked — and a key a
+ * dependency change legitimately removed is exactly such a key, so the tool
+ * resurrected it. That is how `siginfo` and `stackback` (dependencies of a
+ * `why-is-node-running` that vitest no longer pulls in) sat in the committed
+ * lockfile with nothing depending on them. A platform entry wanted at a range
+ * rather than an exact version (`fsevents: "~2.3.3"`) is resolved from the
+ * registry instead.
+ *
+ * A restored platform entry is copied alone, without its dependencies. None in
+ * this tree has any; one that did would produce a lockfile that fails `npm ci`
+ * on that platform, so the tool refuses rather than writing it.
+ *
  * This is the recovery step, not the daily workflow. The daily workflow is
  * `npm run lockfile:platforms`, which fails the build when the lockfile has
  * been platform-reduced, so this has to be run at the moment someone has
@@ -31,88 +47,127 @@
 import { execFileSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
 
-const LOCK = "package-lock.json";
-const knownGoodRef = process.argv[2];
-if (knownGoodRef === undefined) {
-  console.error(
-    "usage: node scripts/complete-lockfile.mjs <known-good-git-ref>",
-  );
-  process.exit(1);
+const isRecord = (value) =>
+  value !== null && typeof value === "object" && !Array.isArray(value);
+
+/** `node_modules/a/node_modules/@s/b` → `@s/b`. */
+function packageName(key) {
+  const marker = "node_modules/";
+  return key.slice(key.lastIndexOf(marker) + marker.length);
 }
 
-const good = JSON.parse(
-  execFileSync("git", ["show", `${knownGoodRef}:${LOCK}`], {
-    encoding: "utf8",
-    maxBuffer: 64 * 1024 * 1024,
-  }),
-);
-const lock = JSON.parse(readFileSync(LOCK, "utf8"));
-
-const goodPackages = good.packages ?? {};
-const packages = lock.packages ?? {};
-
-// 1. Everything the known-good lockfile had, which CI accepted.
-const restored = [];
-for (const [key, entry] of Object.entries(goodPackages)) {
-  if (key in packages) continue;
-  packages[key] = entry;
-  restored.push(key);
+function isPlatformScoped(entry) {
+  return Array.isArray(entry.os) || Array.isArray(entry.cpu);
 }
 
-// 2. Every optional variant named by the dependency tree, minus what we have.
-const wanted = new Map();
-for (const entry of Object.values(packages)) {
-  if (entry === null || typeof entry !== "object") continue;
-  const optionals = entry.optionalDependencies;
-  if (optionals === null || typeof optionals !== "object") continue;
-  for (const [name, range] of Object.entries(optionals)) {
-    if (typeof range !== "string") continue;
-    wanted.set(name, range);
+/**
+ * Complete `lock` against the known-good lockfile `good`. Mutates and returns
+ * `lock`; `view(spec)` is a registry lookup (`npm view <spec> --json`, parsed)
+ * and may throw for a spec the registry cannot resolve.
+ *
+ * @param {{ packages?: Record<string, any> }} lock
+ * @param {{ packages?: Record<string, any> }} good
+ * @param {(spec: string) => any} view
+ * @returns {{ lock: { packages: Record<string, any> }, restored: string[], fetched: string[] }}
+ */
+export function completeLockfile(lock, good, view) {
+  const packages = lock.packages ?? {};
+  const goodPackages = good.packages ?? {};
+
+  // What the CURRENT tree asks for, from every npm-written optional map.
+  const wanted = new Map();
+  for (const entry of Object.values(packages)) {
+    if (!isRecord(entry) || !isRecord(entry.optionalDependencies)) continue;
+    for (const [name, range] of Object.entries(entry.optionalDependencies)) {
+      if (typeof range === "string") wanted.set(name, range);
+    }
   }
+
+  // 1. Platform entries the known-good lockfile had and the current tree still
+  //    wants at that exact version.
+  const restored = [];
+  for (const [key, entry] of Object.entries(goodPackages)) {
+    if (key in packages || !isRecord(entry) || !isPlatformScoped(entry))
+      continue;
+    if (wanted.get(packageName(key)) !== entry.version) continue;
+    if (
+      isRecord(entry.dependencies) &&
+      Object.keys(entry.dependencies).length
+    ) {
+      throw new Error(
+        `complete-lockfile: ${key} has dependencies, which this tool does not ` +
+          "restore; the result would fail `npm ci` on that platform. Complete " +
+          "this lockfile by hand.",
+      );
+    }
+    packages[key] = entry;
+    restored.push(key);
+  }
+
+  // 2. Anything still wanted and missing, resolved from the registry.
+  const fetched = [];
+  for (const [name, range] of wanted) {
+    if (`node_modules/${name}` in packages) continue;
+    let meta;
+    try {
+      meta = view(`${name}@${range}`);
+    } catch {
+      continue; // Not published, or a range we cannot pin. Not fatal.
+    }
+    if (!isRecord(meta) || !isRecord(meta.dist)) continue;
+    packages[`node_modules/${name}`] = {
+      version: meta.version,
+      resolved: meta.dist.tarball,
+      integrity: meta.dist.integrity,
+      ...(meta.license ? { license: meta.license } : {}),
+      ...(Array.isArray(meta.os) ? { os: meta.os } : {}),
+      ...(Array.isArray(meta.cpu) ? { cpu: meta.cpu } : {}),
+      optional: true,
+    };
+    fetched.push(`${name}@${meta.version}`);
+  }
+
+  lock.packages = Object.fromEntries(
+    Object.entries(packages).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)),
+  );
+  return { lock, restored, fetched };
 }
 
-const missing = [...wanted].filter(
-  ([name]) => !(`node_modules/${name}` in packages),
-);
-const fetched = [];
-for (const [name, range] of missing) {
-  let meta;
-  try {
-    meta = JSON.parse(
-      execFileSync("npm", ["view", `${name}@${range}`, "--json"], {
+if (process.argv[1]?.endsWith("complete-lockfile.mjs")) {
+  const LOCK = "package-lock.json";
+  const knownGoodRef = process.argv[2];
+  if (knownGoodRef === undefined) {
+    console.error(
+      "usage: node scripts/complete-lockfile.mjs <known-good-git-ref>",
+    );
+    process.exit(1);
+  }
+  const good = JSON.parse(
+    execFileSync("git", ["show", `${knownGoodRef}:${LOCK}`], {
+      encoding: "utf8",
+      maxBuffer: 64 * 1024 * 1024,
+    }),
+  );
+  const view = (spec) =>
+    JSON.parse(
+      execFileSync("npm", ["view", spec, "--json"], {
         encoding: "utf8",
         maxBuffer: 8 * 1024 * 1024,
         shell: process.platform === "win32",
       }),
     );
-  } catch {
-    continue; // Not published, or a range we cannot pin. Not fatal.
-  }
-  if (meta === null || typeof meta !== "object" || meta.dist === undefined) {
-    continue;
-  }
-  packages[`node_modules/${name}`] = {
-    version: meta.version,
-    resolved: meta.dist.tarball,
-    integrity: meta.dist.integrity,
-    ...(meta.license ? { license: meta.license } : {}),
-    ...(Array.isArray(meta.os) ? { os: meta.os } : {}),
-    ...(Array.isArray(meta.cpu) ? { cpu: meta.cpu } : {}),
-    optional: true,
-  };
-  fetched.push(`${name}@${meta.version}`);
+  const { lock, restored, fetched } = completeLockfile(
+    JSON.parse(readFileSync(LOCK, "utf8")),
+    good,
+    view,
+  );
+  writeFileSync(LOCK, `${JSON.stringify(lock, null, 2)}\n`, "utf8");
+  console.log(
+    JSON.stringify({
+      restoredFromKnownGood: restored.length,
+      fetchedFromRegistry: fetched.length,
+      fetched: fetched.slice(0, 12),
+      totalPackages: Object.keys(lock.packages).length,
+    }),
+  );
 }
-
-lock.packages = Object.fromEntries(
-  Object.entries(packages).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)),
-);
-writeFileSync(LOCK, `${JSON.stringify(lock, null, 2)}\n`, "utf8");
-
-console.log(
-  JSON.stringify({
-    restoredFromKnownGood: restored.length,
-    fetchedFromRegistry: fetched.length,
-    fetched: fetched.slice(0, 12),
-    totalPackages: Object.keys(lock.packages).length,
-  }),
-);
