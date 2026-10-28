@@ -141,7 +141,7 @@ jobs:
         run: npm run coverage:ratchet
       - name: Upload coverage report as a build artifact
         if: matrix.os == 'ubuntu-latest' && matrix.node == 22
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: coverage-report-node-22
           path: coverage/
@@ -355,7 +355,7 @@ jobs:
           echo '{"note":"badge generation retired; see CHANGELOG 5.1.0"}' > mjolnir-badge.json
       - name: Upload self-scan result as a build artifact
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: self-scan-result
           path: |
@@ -419,7 +419,7 @@ jobs:
           '
       - name: Upload doctor report as a build artifact
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: doctor-report
           path: doctor-report.json
