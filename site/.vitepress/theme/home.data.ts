@@ -1,10 +1,10 @@
 import { readFileSync } from "node:fs";
 import { defineLoader } from "vitepress";
-import demo from "../../../assets/video/script.demo.json";
-import full from "../../../assets/readme/demo-report.json";
-import rules from "../../rules/rules.data.json";
-import report from "./generated/report.json";
-import { CI_SYSTEMS, NAMES, NOT_SHOWN } from "./stack";
+import demo from "../../../assets/video/script.demo.json" with { type: "json" };
+import full from "../../../assets/readme/demo-report.json" with { type: "json" };
+import rules from "../../rules/rules.data.json" with { type: "json" };
+import report from "./generated/report.json" with { type: "json" };
+import { CI_SYSTEMS, NAMES, NOT_SHOWN } from "./stack.ts";
 
 export type Span = { t: string; c?: string; b?: boolean };
 export type TermLine = Span[];
