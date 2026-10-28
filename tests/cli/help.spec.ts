@@ -19,6 +19,7 @@ import {
   nearestFlags,
   parseArgs,
   usageErrorMessage,
+  KNOWN_SCAN_FLAGS,
   type Output,
 } from "../../src/cli.js";
 import {
@@ -271,6 +272,32 @@ describe("nearestFlags suggestions", () => {
 
   it("caps the suggestion list", () => {
     expect(nearestFlags("--json", 1)).toHaveLength(1);
+  });
+
+  it("the pool is exactly the flags parseArgs accepts", () => {
+    // Read from the parser itself, so a flag added to one list and not the
+    // other fails here. The pool had drifted both ways: ten accepted flags
+    // were missing, and three rejected ones were offered as suggestions.
+    const source = readFileSync(
+      join(import.meta.dirname, "..", "..", "src", "cli.ts"),
+      "utf8",
+    );
+    const parser = source.slice(
+      source.indexOf("export function parseArgs("),
+      source.indexOf("export const KNOWN_SCAN_FLAGS"),
+    );
+    const accepted = new Set(
+      [...parser.matchAll(/a === "(-[\w-]+)"/g)].map((m) => m[1]),
+    );
+    expect(accepted.size).toBeGreaterThan(20);
+    expect([...KNOWN_SCAN_FLAGS].sort()).toEqual([...accepted].sort());
+  });
+
+  it("never suggests the flag it just rejected", () => {
+    // `mjolnir scan --dry-run` printed `unknown flag "--dry-run"` and then
+    // `Did you mean: --dry-run`.
+    expect(nearestFlags("--dry-run")).not.toContain("--dry-run");
+    expect(nearestFlags("--version")).not.toContain("--version");
   });
 });
 

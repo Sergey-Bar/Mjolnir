@@ -122,8 +122,13 @@ import {
 } from "../plugins/trust-gate.js";
 
 const UNIVERSAL_RULES = RULES.map(asUniversal);
-const DEFAULT_MAX_DURATION_MS = 600_000;
-const MAX_DURATION_MS = 3_600_000;
+/**
+ * The scan time budget: the default, and the ceiling every surface enforces.
+ * Owned here, where the clamp is applied; `cli.ts` and the MCP server import
+ * these rather than keeping copies that only agree by coincidence.
+ */
+export const DEFAULT_MAX_DURATION_MS = 600_000;
+export const MAX_DURATION_MS = 3_600_000;
 
 /** Registered rule IDs — used to warn on unknown severityOverrides keys (M4). */
 export const KNOWN_RULE_IDS: ReadonlySet<string> = new Set(
