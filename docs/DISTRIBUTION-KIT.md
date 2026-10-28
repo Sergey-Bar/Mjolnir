@@ -28,7 +28,7 @@ every stable release (rc tags never move it — the same ruling as npm's
 - uses: Sergey-Bar/Mjolnir@v6
 
 # Pin an exact release for a reproducible gate (no surprises on merge):
-- uses: Sergey-Bar/Mjolnir@v6.0.1
+- uses: Sergey-Bar/Mjolnir@v6.1.0
 ```
 
 The scan itself always runs the **published npm package**
@@ -47,7 +47,7 @@ and do not pin a release candidate — it is not on the registry until it ships.
 npx mjolnir-qa@latest
 
 # What a gate should run. Exact, so the run is identical next month:
-npx mjolnir-qa@6.0.1
+npx mjolnir-qa@6.1.0
 ```
 
 The Action has no `latest` alias — GitHub resolves only refs — which is why its

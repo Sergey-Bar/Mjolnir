@@ -6,15 +6,16 @@ works from; when planning changes, this page changes with it. Nothing on
 this page is a promise with a deadline; each item is a direction with an
 entry condition.
 
-> **Release status:** package 6.0.1 is the current stable line. 3.0.0, 4.0.0,
-> 5.0.0 and 6.0.0 remain published and immutable; a tag alone is not a new
+> **Release status:** package 6.1.0 is the current stable line. 3.0.0, 4.0.0,
+> 5.0.0, 6.0.0 and 6.0.1 remain published and immutable; a tag alone is not a new
 > release, and republishing an existing version is not a path forward.
 
 ## Where Mjölnir is now
 
-- **v6.0.1 — current stable.** It repairs the CI reporting 6.0.0 shipped
-  broken: the Action's report step, the `ci install` workflow and the PR
-  comment all called a command the release had removed. The 6.0 line: a
+- **v6.1.0 — current stable.** It fixes reports, config validation and
+  release workflows that misbehaved silently, and makes two config checks
+  strict (`ignore[].expires` and `plugins`). 6.0.1 repaired the CI reporting
+  6.0.0 shipped broken. The 6.0 line: a
   first run reads `GATE` or `WARN` per finding and nothing else, and it names
   the command that turns the scan into a blocking check. The `core` /
   `extended` / `quarantine` tiers, the `E0–E2` evidence rungs and the `L0–L5`

@@ -19,7 +19,7 @@
 npx mjolnir-qa@latest
 ```
 
-Pin it for reproducible CI: `npx mjolnir-qa@6.0.1`. Requires **Node.js ≥ 22.18** on Windows, macOS or Linux.
+Pin it for reproducible CI: `npx mjolnir-qa@6.1.0`. Requires **Node.js ≥ 22.18** on Windows, macOS or Linux.
 
 [**Interactive walkthrough**](https://sergey-bar.github.io/Mjolnir/) · [Docs](https://sergey-bar.github.io/Mjolnir/) · [CHANGELOG](CHANGELOG.md) · [Video](assets/video/mjolnir-demo.mp4)
 
@@ -29,7 +29,7 @@ Pin it for reproducible CI: `npx mjolnir-qa@6.0.1`. Requires **Node.js ≥ 22.18
 
 ## Release status
 
-The published line is `6.0.1`, and this working tree is that line. The version table is
+The published line is `6.1.0`, and this working tree is that line. The version table is
 [`docs/ROADMAP.yaml`](docs/ROADMAP.yaml). This document does not publish a tag or authorize a release.
 
 ---
@@ -431,7 +431,7 @@ Every finding in a handoff carries its boundary: **E2** = deterministic, apply f
 
 ### Status
 
-**Version 6.0.1 published.** The JSON schema and the exit codes are frozen contracts. What comes next, with no invented dates:
+**Version 6.1.0 published.** The JSON schema and the exit codes are frozen contracts. What comes next, with no invented dates:
 [the public roadmap](https://sergey-bar.github.io/Mjolnir/reference/roadmap).
 
 ---

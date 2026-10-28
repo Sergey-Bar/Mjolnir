@@ -20,13 +20,13 @@ import { LOGOS } from "./logos";
 import { data } from "./home.data";
 import { MONOGRAM } from "./stack";
 
-const COMMAND = "npx mjolnir-qa@6.0.1";
+const COMMAND = "npx mjolnir-qa@6.1.0";
 const CI_COMMAND = `${COMMAND} --scope changed`;
-const MCP_COMMAND = "claude mcp add mjolnir -- npx -y mjolnir-qa@6.0.1 mcp";
+const MCP_COMMAND = "claude mcp add mjolnir -- npx -y mjolnir-qa@6.1.0 mcp";
 const ACTION = [
   "- uses: Sergey-Bar/Mjolnir@v6",
   "  with:",
-  "    version: 6.0.1",
+  "    version: 6.1.0",
   "    scope: changed",
   "    fail-on: error",
 ].join("\n");
