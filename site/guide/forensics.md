@@ -8,11 +8,10 @@ The evidence path reads **real execution data**: Playwright JSON reports,
 Jest JSON (`--json --outputFile`), Vitest JSON (`--reporter=json`) and
 JUnit XML from any runner.
 
-> **The command is between names.** The `forensics` and `triage` verbs are
-> retired in the v6 carve; this capability arrives as
-> `mjolnir explain --evidence <dir>` with the next slice. Everything on
-> this page is already true of the code — only the way you reach it is
-> moving. See [the CLI contract](https://github.com/Sergey-Bar/Mjolnir/blob/main/docs/cli-contract.json)
+> **The command moved.** The `forensics` and `triage` verbs were retired
+> in the v6 carve; the capability is `mjolnir explain --evidence <dir>`.
+> Only the way you reach it changed. See
+> [the CLI contract](https://github.com/Sergey-Bar/Mjolnir/blob/main/docs/cli-contract.json)
 > for the disposition of every verb.
 
 <ForensicsSample which="forensics" />
@@ -37,7 +36,7 @@ This is the difference between the two halves of the tool:
 | `mjolnir explain --evidence <dir>`             | Flakiness leaderboard + quarantine proposal         |
 | `mjolnir explain --playwright ./test-results/` | Playwright run summary — retries / flakes / slowest |
 
-All three accept a directory or a single report file. They read
+Both accept a directory or a single report file. They read
 Playwright's JSON reporter output, Jest's and Vitest's JSON reports, and
 JUnit XML — so pytest, JUnit, TestNG, NUnit and anything else that emits
 JUnit XML all work.
@@ -71,7 +70,7 @@ artifacts after the test step — including when it failed:
 
 - name: Flakiness forensics
   if: always()
-  run: npx mjolnir-qa@6.0.0 forensics ./test-results/
+  run: npx mjolnir-qa@6.0.0 explain --evidence ./test-results/
 ```
 
 `if: always()` matters: the runs worth analysing are exactly the ones

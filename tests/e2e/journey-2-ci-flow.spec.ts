@@ -72,14 +72,15 @@ describe("E2E journey 2: CI PR flow", () => {
       writeSpec("debt.spec.ts", DEBT);
       const scan = runCli([dir, "--json", "--strict"]);
       expect(scan.status).toBe(0);
+      writeFileSync(join(dir, "mjolnir.json"), scan.stdout);
       // Neutralize the Actions-runner env: this test pins the documented
       // "outside GitHub Actions" behavior (summary on stdout, no
-      // annotations); the annotations flow is covered in summary.spec.
-      // `--format` is render-only: it changes the document, never the exit
-      // code. So this is the same scan as the one above (same flags, same
-      // verdict) printed as a step summary rather than JSON.
+      // annotations); the annotations flow is covered in summary.spec and
+      // tests/integrations/ci-render-commands.spec.ts.
+      // The SAVED report, which is what this test's name always claimed: until
+      // the format could read one, the body scanned the tree a second time.
       const { stdout, status } = runCli(
-        [dir, "--format", "github-summary", "--strict"],
+        ["mjolnir.json", "--format", "github-summary"],
         dir,
         {
           GITHUB_ACTIONS: undefined,

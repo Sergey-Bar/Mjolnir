@@ -40,12 +40,16 @@ afterAll(() => {
   for (const dir of scratch) rmSync(dir, { recursive: true, force: true });
 });
 
-function run(argv: string[]): { code: number; out: string; err: string } {
+function run(
+  argv: string[],
+  env: NodeJS.ProcessEnv = {},
+): { code: number; out: string; err: string } {
   try {
     const out = execFileSync(process.execPath, [CLI, ENTRY, ...argv], {
       cwd: ROOT,
       encoding: "utf8",
       maxBuffer: 1 << 26,
+      env: { ...process.env, ...env },
     });
     return { code: 0, out, err: "" };
   } catch (error) {
@@ -57,6 +61,13 @@ function run(argv: string[]): { code: number; out: string; err: string } {
     };
   }
 }
+
+/**
+ * The runner's own variables, blanked. CI runs this suite inside GitHub
+ * Actions, where a github-summary render would otherwise append to the job's
+ * real step summary and print annotations into its log.
+ */
+const OUTSIDE_ACTIONS = { GITHUB_ACTIONS: "", GITHUB_STEP_SUMMARY: "" };
 
 /** A tiny repo with one test and one source file, so a scan has work to do. */
 function fixture(): string {
@@ -221,5 +232,76 @@ describe("the REPLACE arm: verbs became flags on scan", () => {
       new Set(codes).size,
       `exit codes differ by format: ${codes.join(",")}`,
     ).toBe(1);
+  });
+});
+
+/**
+ * The other half of `summary <report>` and `pr-comment --from <report>`.
+ *
+ * Both retired verbs rendered a report a CI step had SAVED. The carve kept
+ * only the half that scans, and every CI consumer renders the saved one, so
+ * the Action, both `ci install` templates and the PR workflow kept calling the
+ * old verbs and exited 10. These hold each format's saved-report mode to the
+ * retired verb's contract: it renders the file it is given, it never gates,
+ * and it answers a broken report exactly as that verb did.
+ */
+describe("the REPLACE arm: a saved report renders without a second scan", () => {
+  function savedReport(): { dir: string; report: string } {
+    const dir = fixture();
+    // A finding at the default gate, so "never gates" is a real claim: the
+    // scan of this tree exits 1, and the render of its report must not.
+    mkdirSync(join(dir, ".github", "workflows"), { recursive: true });
+    writeFileSync(
+      join(dir, ".github", "workflows", "ci.yml"),
+      "name: ci\non: [push]\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - run: npm test | tee test.log\n",
+    );
+    const scan = run([dir, "--json"]);
+    expect(scan.code, "the fixture must carry a gating finding").toBe(1);
+    const report = join(dir, "mjolnir.json");
+    writeFileSync(report, scan.out);
+    return { dir, report };
+  }
+
+  it("--format github-summary <report> renders the summary and never gates", () => {
+    const { report } = savedReport();
+    const { code, out } = run(
+      [report, "--format", "github-summary"],
+      OUTSIDE_ACTIONS,
+    );
+    expect(code).toBe(0);
+    expect(out).toContain("Mjölnir — Verification Trust");
+    expect(out).toContain("QA-CI-009");
+    // Outside GitHub Actions there is no runner to read annotations.
+    expect(out).not.toMatch(/^::/m);
+  });
+
+  it("--format pr-comment <report> renders the comment and never gates", () => {
+    const { report } = savedReport();
+    const { code, out } = run([report, "--format", "pr-comment"]);
+    expect(code).toBe(0);
+    expect(out.startsWith("<!-- mjolnir-report:v2 -->")).toBe(true);
+    expect(out).toContain("QA-CI-009");
+    // The fixture is not a repository, so there is no commit to vouch for.
+    expect(out).toContain("| Commit | `unknown` |");
+  });
+
+  it("an unreadable report is answered as each retired verb answered it", () => {
+    const dir = fixture();
+    const broken = join(dir, "broken.json");
+    writeFileSync(broken, "{ not json");
+    // `summary` called a corrupt report a data problem (2), and `pr-comment
+    // --from` called it bad input (10). The formats delegate to those
+    // commands, so each keeps its verb's answer rather than a new one.
+    expect(
+      run([broken, "--format", "github-summary"], OUTSIDE_ACTIONS).code,
+    ).toBe(2);
+    expect(run([broken, "--format", "pr-comment"]).code).toBe(10);
+  });
+
+  it("a format that never read a saved report still refuses a file", () => {
+    const { report } = savedReport();
+    const { code, err } = run([report, "--format", "sarif"]);
+    expect(code).toBe(10);
+    expect(err).toContain("not a directory");
   });
 });

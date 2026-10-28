@@ -11,11 +11,13 @@ const release = readFileSync(
 describe("release candidate verification machinery", () => {
   it("runs the release-trust verdict gate and retains both artifacts", () => {
     expect(release).toContain("Release-trust gate (verdict must PASS)");
+    // `ci release-trust`: the bare verb was retired onto `ci` in the v6 carve,
+    // and this assertion held the retired spelling in place, which exits 10.
     expect(release).toContain(
-      "node dist/cli.mjs release-trust --json > release-assets/release-trust.json",
+      "node dist/cli.mjs ci release-trust --json > release-assets/release-trust.json",
     );
     expect(release).toContain(
-      "node dist/cli.mjs release-trust > release-assets/release-trust.txt",
+      "node dist/cli.mjs ci release-trust > release-assets/release-trust.txt",
     );
   });
 

@@ -236,6 +236,22 @@ describe("annotation escaping (workflow-command spec)", () => {
 });
 
 describe("runSummaryCommand exit codes", () => {
+  it("is what `scan --format github-summary <report>` runs", async () => {
+    const { runScanCommand } = await import("../../src/cli-handlers.js");
+    const p = writeReport();
+    const cap = capture();
+    expect(
+      await runScanCommand([p, "--format", "github-summary"], cap.io),
+    ).toBe(0);
+    expect(cap.text()).toContain("Verification Trust");
+    // The corrupt-report answer is this command's, not the scan's.
+    const bad = join(dir, "bad.json");
+    writeFileSync(bad, "{ not json");
+    expect(
+      await runScanCommand([bad, "--format", "github-summary"], capture().io),
+    ).toBe(2);
+  });
+
   it("exit 10 when the report file is missing, with the exact scan command", () => {
     const cap = capture();
     const code = runSummaryCommand([join(dir, "nope.json")], cap.io);

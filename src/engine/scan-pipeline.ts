@@ -237,14 +237,21 @@ export async function buildUniversalRules(
   // a number: lifecycle resolution has to decide, per baseline finding,
   // whether the rule that raised it could have run at all. A count cannot
   // answer that; the set can.
-  const withheldRuleIds = rules
+  //
+  // Under `--include-warn` the quarantine tier RUNS, so nothing is withheld
+  // and the set must be empty as well as the count. It listed the whole tier
+  // regardless, which made every such scan's own `--json` report fail
+  // `validateReportJson` (count 0, set 34), so nothing could render it, and
+  // made lifecycle resolution read rules that had run as rules that had not.
+  const quarantined = rules
     .filter((r) => tierByRuleId.get(r.id) === "quarantine")
     .map((r) => r.id)
     .sort();
+  const withheldRuleIds = strict ? [] : quarantined;
   if (!strict) {
     rules = rules.filter((r) => tierByRuleId.get(r.id) !== "quarantine");
   }
-  const rulesWithheld = strict ? 0 : withheldRuleIds.length;
+  const rulesWithheld = withheldRuleIds.length;
   const rulesApplied = rules.length;
   const pluginMeta = [
     ...plugins.map((p) => ({

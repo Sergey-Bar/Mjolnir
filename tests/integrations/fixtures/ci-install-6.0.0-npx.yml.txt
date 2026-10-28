@@ -1,0 +1,89 @@
+name: Mjölnir
+
+on:
+  pull_request:
+
+concurrency:
+  group: mjolnir-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Scan changed code (exit 1/2 is data — the gate step decides)
+        continue-on-error: true
+        run: npx --yes https://registry.npmjs.org/mjolnir-qa/-/mjolnir-qa-6.0.0.tgz . --scope changed --json > mjolnir.json
+      - name: Annotations + Job Summary
+        if: always()
+        continue-on-error: true
+        run: npx --yes https://registry.npmjs.org/mjolnir-qa/-/mjolnir-qa-6.0.0.tgz summary mjolnir.json
+      - name: Render PR comment
+        if: always()
+        continue-on-error: true
+        run: npx --yes https://registry.npmjs.org/mjolnir-qa/-/mjolnir-qa-6.0.0.tgz pr-comment --from mjolnir.json > mjolnir-comment.md
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: mjolnir-report
+          path: mjolnir-comment.md
+          if-no-files-found: warn
+          retention-days: 30
+      - name: Gate (advisory)
+        if: always()
+        run: echo "Advisory mode — findings reported, never blocking."
+
+  publish:
+    needs: scan
+    if: always() && needs.scan.result != 'cancelled'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: mjolnir-report
+      - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        if: always()
+        continue-on-error: true
+        with:
+          script: |
+            const fs = require('fs');
+            const body = fs.readFileSync('mjolnir-comment.md', 'utf8');
+            if (!body.trim()) return;
+            const marker = '<!-- mjolnir-report:v2 -->';
+            const comments = await github.paginate(
+              github.rest.issues.listComments,
+              { owner: context.repo.owner, repo: context.repo.repo, issue_number: context.issue.number, per_page: 100 },
+            );
+            const existing = comments.find((comment) => comment.body?.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
+      - name: Advisory note
+        if: always()
+        run: echo "Advisory mode — findings are reported, never blocking."

@@ -57,7 +57,11 @@ jobs:
           set -e
           echo "exit_code=$code" >> "$GITHUB_OUTPUT"
           if [ ! -s mjolnir.json ]; then
-            printf '{"schemaVersion":1,"partial":true,"score":null,"reason":"analysis-failed","frameworks":[],"frameworkDetectionUnknown":true,"dimensions":[],"findings":[],"analysisStatus":{"discovery":"partial","rules":"partial","skippedFiles":0,"durationMs":0,"reasons":["analysis-failed"]}}\n' > mjolnir.json
+            # A minimal report that VALIDATES, so the render below can still say
+            # INCOMPLETE. It used to carry `"reason":"analysis-failed"`, which the
+            # report validator rejects (only `no-tests-found` is a reason), so the
+            # one report written for a failed analysis could never be rendered.
+            printf '{"schemaVersion":1,"partial":true,"score":null,"frameworks":[],"frameworkDetectionUnknown":true,"dimensions":[],"findings":[],"analysisStatus":{"discovery":"partial","rules":"partial","skippedFiles":0,"durationMs":0,"reasons":["analysis-failed"]}}\n' > mjolnir.json
             if [ "$code" = "0" ]; then
               # A clean exit with no report is a broken scan, not a clean one.
               echo "exit_code=2" >> "$GITHUB_OUTPUT"
@@ -65,19 +69,25 @@ jobs:
             fi
           fi
           exit 0
+      # Renders the report the analysis step saved, so the comment describes the
+      # result the gate reads. A render that fails still leaves an honest
+      # placeholder for the publish job, and now fails this job too. The step
+      # used to run under `continue-on-error` and `exit 0`, which is how it
+      # called a verb that no longer existed on every pull request for weeks and
+      # posted "report unavailable" without anything turning red.
       - name: Render unified report
         if: always()
-        continue-on-error: true
         shell: bash
-        env:
-          MJ_COMMIT: ${{ github.sha }}
         run: |
           set +e
-          node dist/cli.mjs pr-comment --from mjolnir.json --commit "$MJ_COMMIT" > mjolnir-comment.md
-          if [ ! -s mjolnir-comment.md ]; then
+          node dist/cli.mjs mjolnir.json --format pr-comment > mjolnir-comment.md
+          code=$?
+          set -e
+          if [ "$code" != "0" ] || [ ! -s mjolnir-comment.md ]; then
             printf '<!-- mjolnir-report:v2 -->\n## Mjölnir report unavailable\n\nAnalysis could not be rendered. No clean or worthy claim is made.\n' > mjolnir-comment.md
+            echo "::error::The report could not be rendered (exit $code)."
+            exit 1
           fi
-          exit 0
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:

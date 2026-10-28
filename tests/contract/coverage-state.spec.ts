@@ -23,12 +23,16 @@
  */
 
 import { describe, expect, it } from "vitest";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 
 import {
   buildMachineContract,
   CONTRACT_VERSION,
 } from "../../src/engine/machine-contract.js";
 import { deriveCompletion } from "../../src/engine/completion.js";
+import { runScan } from "../../src/engine/scan-pipeline.js";
 import { validateReportJson } from "../../src/commands/report-io.js";
 import { scanExitCode } from "../../src/claim-evidence.js";
 import { getQuarantinedRules } from "../../src/rules/measurement-status.js";
@@ -152,6 +156,41 @@ describe("coverageState is orthogonal to partial", () => {
       state.analysisStatus.reasons.filter((r) => r.startsWith("coverage:")),
     ).toEqual([]);
   });
+
+  it("a scan's own report loads, with and without the quarantine tier", async () => {
+    // Under `--include-warn` the quarantine tier runs, so nothing is withheld.
+    // The count said 0 while `withheldRuleIds` still named the whole tier, so
+    // every such scan wrote a report its own loader rejects as
+    // self-contradictory, and nothing could render it from the file. The
+    // count and the set are one fact; a real scan is the only proof they agree.
+    const dir = mkdtempSync(join(tmpdir(), "mjolnir-withheld-"));
+    try {
+      writeFileSync(join(dir, "a.spec.ts"), "it('a', () => {});\n");
+      const scan = (strict: boolean) =>
+        runScan({
+          target: dir,
+          json: true,
+          verbose: false,
+          maxDurationMs: 60_000,
+          scopeChanged: false,
+          format: "json",
+          strict,
+        });
+      const tiered = await scan(true);
+      expect(tiered.analysisStatus.rulesWithheld).toBe(0);
+      expect(tiered.analysisStatus.withheldRuleIds).toBeUndefined();
+      expect(tiered.analysisStatus.coverageState).toBe("COMPLETE");
+      expect(() => validateReportJson(JSON.stringify(tiered))).not.toThrow();
+
+      const filtered = await scan(false);
+      const withheld = filtered.analysisStatus.rulesWithheld ?? 0;
+      expect(withheld).toBeGreaterThan(0);
+      expect(filtered.analysisStatus.withheldRuleIds).toHaveLength(withheld);
+      expect(() => validateReportJson(JSON.stringify(filtered))).not.toThrow();
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  }, 120_000);
 
   it("a report with a coverage reason and partial:false still loads", () => {
     // The other half of the contract, at the boundary where it actually

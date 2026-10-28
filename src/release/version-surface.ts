@@ -164,7 +164,10 @@ export function checkVersionSurfaceEnvelope(
     ],
     ["site/guide/getting-started.md", [`npx mjolnir-qa@${installVersion}`]],
     ["site/guide/ci.md", [`mjolnir-qa@${installVersion}`]],
-    ["site/guide/forensics.md", [`npx mjolnir-qa@${installVersion} forensics`]],
+    [
+      "site/guide/forensics.md",
+      [`npx mjolnir-qa@${installVersion} explain --evidence`],
+    ],
     ["docs/DISTRIBUTION-KIT.md", [`mjolnir-qa@${installVersion}`]],
   ]);
 
