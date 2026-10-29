@@ -169,11 +169,6 @@ const CLAIM_SHAPES: Array<{
     }),
   },
   {
-    // "**99 rules** in ten families — …"
-    re: /(\d+) rules\**\s+in ten families/g,
-    read: (m) => ({ numbers: [Number(m[1])], fields: ["total"] }),
-  },
-  {
     // "| Rules with a valid measurement | 74 |" — the V6 state table.
     //
     // This row carried a stale 74 for two releases and no shape matched it,

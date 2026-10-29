@@ -84,7 +84,10 @@
       "command": "npm run verify-build-determinism"
     },
 
-    { "id": "corpus-resample", "command": "npm run corpus:audit --resample" },
+    {
+      "id": "corpus-resample",
+      "command": "npm run corpus:audit -- --resample"
+    },
 
     { "id": "gate:registry", "command": "npm run registry:check" },
 

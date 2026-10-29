@@ -194,8 +194,12 @@ describe("claim-lint — the filesystem arms", () => {
     // declares, or `claims:prose` is a report of nothing.
     const findings = scanSurfaces(process.cwd());
     expect(findings.length).toBeGreaterThan(0);
-    const surfaces = new Set(findings.map((f) => f.surface));
-    expect([...surfaces].some((s) => s === "README.md")).toBe(true);
+    // The README is a declared surface. It is asserted as scanned rather than
+    // as having findings: a README with no claim shape left in it is the goal,
+    // not a lint that stopped looking.
+    expect(listPublicFiles(process.cwd()).map((s) => s.file)).toContain(
+      "README.md",
+    );
   });
 
   it("treats an unreadable line as an empty line rather than crashing", () => {

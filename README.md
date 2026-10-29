@@ -91,7 +91,7 @@ npx mjolnir-qa@latest ci verify   # RESOLVED (gone) / NEW (introduced)
 
 ## What it catches
 
-**<!-- census:total-rules -->79 rules<!-- /census:total-rules -->** in ten families — CI integrity, test hygiene, test quality, Playwright, Cypress, Selenium, Python, Java, C# and environment coupling — across TypeScript/JavaScript, Python, Java, C# and GitHub Actions YAML.
+**The rules span ten families** — CI integrity, test hygiene, test quality, Playwright, Cypress, Selenium, Python, Java, C# and environment coupling — across TypeScript/JavaScript, Python, Java, C# and GitHub Actions YAML.
 
 | Family           | Example rules                                                                                                                                        |
 | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
