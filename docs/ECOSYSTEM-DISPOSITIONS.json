@@ -3,7 +3,188 @@
   "artifact": "ecosystem-dispositions",
   "generatedBy": "npm run docs:ecosystem",
   "note": "Baseline of recorded dispositions for QA tools the census has no entry for. A tool missing from this file fails `ecosystem:gaps`; that is the drift-lock, not a reminder.",
-  "baseSha": "ae5c3cf5fa4fd15bc7985cc254052a5536124b92",
-  "count": 0,
-  "dispositions": []
+  "baseSha": "eeba196a678168a541399f9a9332412a3b58334e",
+  "count": 30,
+  "dispositions": [
+    {
+      "name": "@axe-core/playwright",
+      "disposition": "ALIASED_TO_CENSUS_ENTRY",
+      "note": "Extension of the census entry `playwright`: accessibility assertions run inside Playwright tests. Its tests are discovered and scanned through that entry's adapter.",
+      "owner": "mjolnir maintainer (docs/MAINTAINERS.md)"
+    },
+    {
+      "name": "@percy/cli",
+      "disposition": "NOT_APPLICABLE",
+      "note": "The CLI for a hosted visual-review service. It is not a test framework or runner, so no rule has a surface of its own to inspect.",
+      "owner": "mjolnir maintainer (docs/MAINTAINERS.md)"
+    },
+    {
+      "name": "@percy/cypress",
+      "disposition": "ALIASED_TO_CENSUS_ENTRY",
+      "note": "Extension of the census entry `cypress`: a Cypress command for visual snapshots. Its tests are discovered and scanned through that entry's adapter.",
+      "owner": "mjolnir maintainer (docs/MAINTAINERS.md)"
+    },
+    {
+      "name": "@vitest/ui",
+      "disposition": "ALIASED_TO_CENSUS_ENTRY",
+      "note": "Extension of the census entry `vitest`: Vitest's browser UI for the same runner. Its tests are discovered and scanned through that entry's adapter.",
+      "owner": "mjolnir maintainer (docs/MAINTAINERS.md)"
+    },
+    {
+      "name": "JUnit",
+      "disposition": "ALIASED_TO_CENSUS_ENTRY",
+      "note": "Extension of the census entry `junit`: the same framework under its capitalised name. Its tests are discovered and scanned through that entry's adapter.",
+      "owner": "mjolnir maintainer (docs/MAINTAINERS.md)"
+    },
+    {
+      "name": "axe-core",
+      "disposition": "NOT_APPLICABLE",
+      "note": "An accessibility rule engine. It is not a test framework or runner, so no rule has a surface of its own to inspect.",
+      "owner": "mjolnir maintainer (docs/MAINTAINERS.md)"
+    },
+    {
+      "name": "eslint-plugin-jsx-a11y",
+      "disposition": "NOT_APPLICABLE",
+      "note": "A lint plugin. It is not a test framework or runner, so no rule has a surface of its own to inspect.",
+      "owner": "mjolnir maintainer (docs/MAINTAINERS.md)"
+    },
+    {
+      "name": "faker",
+      "disposition": "NOT_APPLICABLE",
+      "note": "A test-data generation library. It is not a test framework or runner, so no rule has a surface of its own to inspect.",
+      "owner": "mjolnir maintainer (docs/MAINTAINERS.md)"
+    },
+    {
+      "name": "hypothesis",
+      "disposition": "ALIASED_TO_CENSUS_ENTRY",
+      "note": "Extension of the census entry `pytest`: property-based test generation used inside pytest tests. Its tests are discovered and scanned through that entry's adapter.",
+      "owner": "mjolnir maintainer (docs/MAINTAINERS.md)"
+    },
+    {
+      "name": "jest-junit",
+      "disposition": "ALIASED_TO_CENSUS_ENTRY",
+      "note": "Extension of the census entry `jest`: a Jest reporter that writes JUnit XML. Its tests are discovered and scanned through that entry's adapter.",
+      "owner": "mjolnir maintainer (docs/MAINTAINERS.md)"
+    },
+    {
+      "name": "mocha",
+      "disposition": "ACCEPTED_AS_TARGET",
+      "note": "A JavaScript test framework with no census entry yet. `src/certification/concepts.ts` already lists it for the shared test concepts, and the framework-agnostic QA-TEST and QA-TQUAL rules scan its *.spec / *.test files; framework detection does not name it.",
+      "owner": "mjolnir maintainer (docs/MAINTAINERS.md)"
+    },
+    {
+      "name": "msw",
+      "disposition": "NOT_APPLICABLE",
+      "note": "An HTTP request-mocking library. It is not a test framework or runner, so no rule has a surface of its own to inspect.",
+      "owner": "mjolnir maintainer (docs/MAINTAINERS.md)"
+    },
+    {
+      "name": "nock",
+      "disposition": "NOT_APPLICABLE",
+      "note": "An HTTP request-mocking library. It is not a test framework or runner, so no rule has a surface of its own to inspect.",
+      "owner": "mjolnir maintainer (docs/MAINTAINERS.md)"
+    },
+    {
+      "name": "nyc",
+      "disposition": "NOT_APPLICABLE",
+      "note": "A coverage instrumentation CLI. It is not a test framework or runner, so no rule has a surface of its own to inspect.",
+      "owner": "mjolnir maintainer (docs/MAINTAINERS.md)"
+    },
+    {
+      "name": "parameterized",
+      "disposition": "ALIASED_TO_CENSUS_ENTRY",
+      "note": "Extension of the census entry `pytest`: test parameterisation decorators used inside pytest and unittest tests. Its tests are discovered and scanned through that entry's adapter.",
+      "owner": "mjolnir maintainer (docs/MAINTAINERS.md)"
+    },
+    {
+      "name": "pytest-asyncio",
+      "disposition": "ALIASED_TO_CENSUS_ENTRY",
+      "note": "Extension of the census entry `pytest`: a pytest plugin (async test support). Its tests are discovered and scanned through that entry's adapter.",
+      "owner": "mjolnir maintainer (docs/MAINTAINERS.md)"
+    },
+    {
+      "name": "pytest-benchmark",
+      "disposition": "ALIASED_TO_CENSUS_ENTRY",
+      "note": "Extension of the census entry `pytest`: a pytest plugin (benchmark fixtures). Its tests are discovered and scanned through that entry's adapter.",
+      "owner": "mjolnir maintainer (docs/MAINTAINERS.md)"
+    },
+    {
+      "name": "pytest-codspeed",
+      "disposition": "ALIASED_TO_CENSUS_ENTRY",
+      "note": "Extension of the census entry `pytest`: a pytest plugin (benchmark measurement). Its tests are discovered and scanned through that entry's adapter.",
+      "owner": "mjolnir maintainer (docs/MAINTAINERS.md)"
+    },
+    {
+      "name": "pytest-cov",
+      "disposition": "ALIASED_TO_CENSUS_ENTRY",
+      "note": "Extension of the census entry `pytest`: a pytest plugin (coverage reporting). Its tests are discovered and scanned through that entry's adapter.",
+      "owner": "mjolnir maintainer (docs/MAINTAINERS.md)"
+    },
+    {
+      "name": "pytest-httpbin",
+      "disposition": "ALIASED_TO_CENSUS_ENTRY",
+      "note": "Extension of the census entry `pytest`: a pytest plugin (a local HTTP test server fixture). Its tests are discovered and scanned through that entry's adapter.",
+      "owner": "mjolnir maintainer (docs/MAINTAINERS.md)"
+    },
+    {
+      "name": "pytest-mock",
+      "disposition": "ALIASED_TO_CENSUS_ENTRY",
+      "note": "Extension of the census entry `pytest`: a pytest plugin (mocker fixture). Its tests are discovered and scanned through that entry's adapter.",
+      "owner": "mjolnir maintainer (docs/MAINTAINERS.md)"
+    },
+    {
+      "name": "pytest-playwright",
+      "disposition": "ALIASED_TO_CENSUS_ENTRY",
+      "note": "Extension of the census entry `playwright`: the pytest binding for Playwright. Its tests are discovered and scanned through that entry's adapter.",
+      "owner": "mjolnir maintainer (docs/MAINTAINERS.md)"
+    },
+    {
+      "name": "pytest-randomly",
+      "disposition": "ALIASED_TO_CENSUS_ENTRY",
+      "note": "Extension of the census entry `pytest`: a pytest plugin (random test ordering). Its tests are discovered and scanned through that entry's adapter.",
+      "owner": "mjolnir maintainer (docs/MAINTAINERS.md)"
+    },
+    {
+      "name": "pytest-repeat",
+      "disposition": "ALIASED_TO_CENSUS_ENTRY",
+      "note": "Extension of the census entry `pytest`: a pytest plugin (repeating tests). Its tests are discovered and scanned through that entry's adapter.",
+      "owner": "mjolnir maintainer (docs/MAINTAINERS.md)"
+    },
+    {
+      "name": "pytest-rerunfailures",
+      "disposition": "ALIASED_TO_CENSUS_ENTRY",
+      "note": "Extension of the census entry `pytest`: a pytest plugin (retrying failed tests). Its tests are discovered and scanned through that entry's adapter.",
+      "owner": "mjolnir maintainer (docs/MAINTAINERS.md)"
+    },
+    {
+      "name": "pytest-split",
+      "disposition": "ALIASED_TO_CENSUS_ENTRY",
+      "note": "Extension of the census entry `pytest`: a pytest plugin (test-suite sharding). Its tests are discovered and scanned through that entry's adapter.",
+      "owner": "mjolnir maintainer (docs/MAINTAINERS.md)"
+    },
+    {
+      "name": "pytest-timeout",
+      "disposition": "ALIASED_TO_CENSUS_ENTRY",
+      "note": "Extension of the census entry `pytest`: a pytest plugin (per-test timeouts). Its tests are discovered and scanned through that entry's adapter.",
+      "owner": "mjolnir maintainer (docs/MAINTAINERS.md)"
+    },
+    {
+      "name": "pytest-xdist",
+      "disposition": "ALIASED_TO_CENSUS_ENTRY",
+      "note": "Extension of the census entry `pytest`: a pytest plugin (parallel execution). Its tests are discovered and scanned through that entry's adapter.",
+      "owner": "mjolnir maintainer (docs/MAINTAINERS.md)"
+    },
+    {
+      "name": "testfixtures",
+      "disposition": "NOT_APPLICABLE",
+      "note": "A Python helper library for test fixtures and comparisons. It is not a test framework or runner, so no rule has a surface of its own to inspect.",
+      "owner": "mjolnir maintainer (docs/MAINTAINERS.md)"
+    },
+    {
+      "name": "tox",
+      "disposition": "NOT_APPLICABLE",
+      "note": "A Python environment orchestrator that invokes a test runner. It is not a test framework or runner, so no rule has a surface of its own to inspect.",
+      "owner": "mjolnir maintainer (docs/MAINTAINERS.md)"
+    }
+  ]
 }

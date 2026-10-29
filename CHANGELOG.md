@@ -11,6 +11,24 @@ once shipped, so this file is the record of what changed between versions.
 
 ## [Unreleased]
 
+### Fixed: the ecosystem ledger and the claim report
+
+- **`docs:ecosystem` no longer erases recorded decisions.** It rebuilt
+  `docs/ECOSYSTEM-DISPOSITIONS.json` from the corpus probe on every run, so a
+  recorded disposition was lost at the next `docs:regen`, and without the
+  corpus clones the file came out empty. Recorded entries are now kept, and
+  only newly observed tools get a derived entry.
+- **The 30 test tools the probe found in the corpus have a recorded
+  disposition.**
+  - 20 are extensions of a census entry: pytest plugins, Playwright and
+    Cypress bindings, and Jest and Vitest add-ons.
+  - 9 are not test frameworks or runners, so no rule has a surface of its own
+    to inspect: coverage, mocking, data and lint tools.
+  - `mocha` is accepted as a target. The framework-agnostic rules already scan
+    its test files, but framework detection does not name it.
+- **`docs/CLAIM-LINT-REPORT.json` is regenerated.** It still listed findings
+  removed earlier, and the nightly generated-docs check failed on it.
+
 ### Fixed: the nightly gates job
 
 - **Three of its gates could never pass.**
