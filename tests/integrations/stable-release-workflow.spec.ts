@@ -71,7 +71,7 @@ describe("stable release workflow", () => {
       "id-token": "write",
     });
     const run = publish?.steps?.map((step) => step.run ?? "").join("\n");
-    expect(run).toContain("npm install --global npm@11.5.1");
+    expect(run).toContain("npm install --global --ignore-scripts npm@11.5.1");
     expect(run).toContain("sha256sum");
     expect(run).toContain('npm publish "./release-artifact/$TARBALL"');
     expect(run).toContain("--provenance");
@@ -94,6 +94,18 @@ describe("stable release workflow", () => {
     expect(condition).toContain("!inputs.dry_run");
     expect(condition).toContain("vars.STABLE_RELEASE_AUTHORIZED == 'true'");
     expect(condition).toContain("inputs.artifact_run_id != ''");
+  });
+
+  it("no release install runs dependency lifecycle scripts", () => {
+    // The verify job packs the tarball that publish-npm signs with
+    // --provenance, so an install script running there could alter what gets
+    // attested. CI already builds with --ignore-scripts.
+    const lines = source.split("\n");
+    for (const line of lines) {
+      if (/\bnpm (?:ci|install)\b/.test(line)) {
+        expect(line, line.trim()).toContain("--ignore-scripts");
+      }
+    }
   });
 
   it("creates immutable stable tags only after approval", () => {

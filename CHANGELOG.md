@@ -11,6 +11,16 @@ once shipped, so this file is the record of what changed between versions.
 
 ## [Unreleased]
 
+### Fixed: release installs and the actionlint download
+
+- **Release installs run no dependency lifecycle scripts.** The verify job
+  packs the tarball the publish job signs with provenance, and its `npm ci`
+  ran install scripts. Both release workflows now pass `--ignore-scripts`, as
+  CI already did.
+- **actionlint is checked against a committed hash**, and bumped to 1.7.12.
+  It was checked against the checksums file of the same release, which only
+  proved the two downloads agreed.
+
 ## [6.1.0] — 2026-10-28
 
 A minor release from the second half of the maintenance review. Most of it
