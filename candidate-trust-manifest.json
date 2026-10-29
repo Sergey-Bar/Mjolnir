@@ -28,33 +28,19 @@
   "generatedAt": "2026-10-29",
   "identity": {
     "state": "RELEASE_CANDIDATE",
-    "baseSha": "38784f93d0fec6a4237a606966a5310401562f13",
+    "baseSha": "79c4a95152b385798c4eb08f83b42b48b187f306",
     "candidateSha": "2ed960732480f33fbe6564752ce0201040b91e03",
     "version": "6.1.0",
     "packageSha256": "3dadac40fd58497a5d0d1c68996e3a03f771cbf867909855ec63a3e82a950089",
     "lockfileSha256": "39df707ba760f820df7e1309640c36d57fd508a24137996e61d5c4232b93697c",
-    "workingTreeSha256": "9116be54f41ff27b96a774017ffb0f2e0212ece436cfa2d09399ff7d42db8e34",
-    "changedPathCount": 6,
+    "workingTreeSha256": "fed8b20df115f556d66ce54eeaea33336f2918bfb30e9462a096178d06064a07",
+    "changedPathCount": 1,
     "supportEnvelope": "self-hosted; hosted services require explicit consent and separate proof",
     "worktreeInventory": {
-      "changedPaths": [
-        "CHANGELOG.md",
-        "docs/BLAST-RADIUS-AUDIT.md",
-        "docs/CARVE-MANIFEST.json",
-        "docs/CLAIM-LINT-REPORT.json",
-        "src/v6/claim-lint.ts",
-        "tests/v6/edge-cases.spec.ts"
-      ],
+      "changedPaths": ["tests/v6/edge-cases.spec.ts"],
       "untrackedPaths": []
     },
-    "dirtyFiles": [
-      "CHANGELOG.md",
-      "docs/BLAST-RADIUS-AUDIT.md",
-      "docs/CARVE-MANIFEST.json",
-      "docs/CLAIM-LINT-REPORT.json",
-      "src/v6/claim-lint.ts",
-      "tests/v6/edge-cases.spec.ts"
-    ]
+    "dirtyFiles": ["tests/v6/edge-cases.spec.ts"]
   },
   "claimRegistry": {
     "path": "docs/claim-registry.json",
