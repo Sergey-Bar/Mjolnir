@@ -316,6 +316,7 @@
         "tests/v6/branches.spec.ts",
         "tests/v6/ecosystem-census-honesty.spec.ts",
         "tests/v6/ecosystem-census.spec.ts",
+        "tests/v6/ecosystem-dispositions-merge.spec.ts",
         "tests/v6/ecosystem-probe.spec.ts",
         "tests/v6/schemas.spec.ts",
         "tests/v6/test-doubles.spec.ts"

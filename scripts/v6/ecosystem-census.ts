@@ -495,6 +495,27 @@ export function deriveDispositions(
     });
 }
 
+/**
+ * The ledger after this run: every recorded decision kept, plus a derived
+ * entry for each observed tool that has none.
+ *
+ * `main` used to write `deriveDispositions` alone, which rebuilt the ledger
+ * from the probe on every regeneration. A decision a person had recorded was
+ * erased the next time anyone ran `docs:regen`, and on a machine without the
+ * corpus clones the probe sees nothing, so the file came out empty. A ledger
+ * that a generator can empty is not a ledger.
+ */
+export function mergeDispositions(
+  recorded: readonly UnrecognizedDisposition[],
+  derived: readonly UnrecognizedDisposition[],
+): UnrecognizedDisposition[] {
+  const byName = new Map(recorded.map((d) => [d.name, d]));
+  for (const d of derived) if (!byName.has(d.name)) byName.set(d.name, d);
+  return [...byName.values()].sort((a, b) =>
+    a.name < b.name ? -1 : a.name > b.name ? 1 : 0,
+  );
+}
+
 function renderDispositionsJson(
   dispositions: readonly UnrecognizedDisposition[],
   baseSha: string,
@@ -532,7 +553,10 @@ async function main(): Promise<void> {
     }
     process.exit(1);
   }
-  const dispositions = deriveDispositions(data.unrecognized);
+  const dispositions = mergeDispositions(
+    loadDispositions(ROOT),
+    deriveDispositions(data.unrecognized),
+  );
   const pending = dispositions.filter(
     (d) => d.disposition === "PENDING_ADJUDICATION",
   );
