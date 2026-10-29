@@ -11,6 +11,25 @@ once shipped, so this file is the record of what changed between versions.
 
 ## [Unreleased]
 
+### Fixed: the nightly gates job
+
+- **Three of its gates could never pass.**
+  - **Build determinism** needs an unmodified checkout, but it ran after
+    steps that regenerate tracked files. It now runs first.
+  - **The corpus resample gate** was invoked as
+    `run_gate corpus:audit --resample npm run …`. The space in the label made
+    bash run `--resample` as a command (exit 127), and
+    `npm run x --resample` hands the flag to npm, not to the script. It is
+    now `npm run corpus:audit -- --resample`.
+  - **The ecosystem probe** ran in a job that never cloned the corpus, so it
+    walked nothing and exited 3 (BLOCKED). It now runs in the corpus job,
+    which keeps its clones for it (`MJOLNIR_KEEP_CORPUS_CACHE=1`).
+- **The README published a rule count**, which the `count-of-rules` claim
+  rule bans. The line now names the families without the count.
+- Not changed: the corpus regression job still fails. Its rule counts moved
+  on real repositories, and accepting the new numbers needs a person to
+  review the findings (Law 3).
+
 ### Fixed: the website and READMEs
 
 - **Copy-paste snippets that failed.**

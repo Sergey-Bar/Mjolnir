@@ -899,8 +899,14 @@ async function main(): Promise<number> {
 
   // Best-effort — .cache is gitignored, and on Windows a just-cloned pack
   // file can stay locked for a moment after git exits.
+  //
+  // MJOLNIR_KEEP_CORPUS_CACHE=1 keeps the clones: the nightly job runs the
+  // ecosystem probe over this same cache next, and deleting it first left
+  // that gate BLOCKED on every run.
   try {
-    rmSync(CACHE_DIR, { recursive: true, force: true });
+    if (process.env["MJOLNIR_KEEP_CORPUS_CACHE"] !== "1") {
+      rmSync(CACHE_DIR, { recursive: true, force: true });
+    }
   } catch {
     /* stale .cache is harmless */
   }

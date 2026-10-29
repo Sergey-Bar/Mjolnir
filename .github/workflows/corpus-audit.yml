@@ -33,6 +33,14 @@ jobs:
         run: npm run corpus:audit
         env:
           NODE_OPTIONS: --max-old-space-size=8192
+          # The ecosystem probe below reads these same clones.
+          MJOLNIR_KEEP_CORPUS_CACHE: "1"
+      # Moved here from nightly-gates: the probe walks the corpus clones, which
+      # exist only in this job. On the other job's fresh runner it walked
+      # nothing and exited 3 (BLOCKED) every night.
+      - name: Ecosystem gaps over the corpus
+        if: always()
+        run: npm run ecosystem:gaps
 
   # The nightly tier proper (gates/nightly.json, D5).
   #
@@ -57,6 +65,12 @@ jobs:
           node-version: 22.18.0
           cache: npm
       - run: npm ci
+      # Build determinism compares two clean builds of HEAD, so it needs the
+      # tree exactly as checked out. The later steps regenerate tracked files
+      # (claims:prose rewrites docs/CLAIM-LINT-REPORT.json), and run after
+      # them it failed every night on a dirty tree.
+      - name: Build determinism (SC-8)
+        run: npm run verify-build-determinism
       - name: Release certification chain
         run: npm run ci-local
       - name: Release-tier gates not chained by ci-local
@@ -86,14 +100,12 @@ jobs:
           run_gate claims:prose:strict   npm run claims:prose:strict
           run_gate claim:budget          npm run claim:budget
           run_gate ecosystem:census      npm run ecosystem:census
-          run_gate ecosystem:gaps        npm run ecosystem:gaps
           run_gate thresholds:parity     npm run thresholds:parity
           run_gate coverage:exemptions   npm run coverage:exemptions
           run_gate unimported:modules     npm run check-unimported-modules
           run_gate verbs:budget          npm run verbs:budget
           run_gate claim-integrity      npm run gates:claim-integrity
-          run_gate verify-build-determinism     npm run verify-build-determinism
-          run_gate corpus:audit --resample      npm run corpus:audit --resample
+          run_gate corpus:resample       npm run corpus:audit -- --resample
           run_gate candidate:readiness   npm run candidate:readiness
           run_gate gate-tiers            node scripts/check-gate-tiers.mjs
           exit "$status"
