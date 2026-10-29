@@ -28,35 +28,32 @@
   "generatedAt": "2026-10-29",
   "identity": {
     "state": "RELEASE_CANDIDATE",
-    "baseSha": "eeba196a678168a541399f9a9332412a3b58334e",
+    "baseSha": "38784f93d0fec6a4237a606966a5310401562f13",
     "candidateSha": "2ed960732480f33fbe6564752ce0201040b91e03",
     "version": "6.1.0",
     "packageSha256": "3dadac40fd58497a5d0d1c68996e3a03f771cbf867909855ec63a3e82a950089",
     "lockfileSha256": "39df707ba760f820df7e1309640c36d57fd508a24137996e61d5c4232b93697c",
-    "workingTreeSha256": "04a8696f76c53b2d65749d81b6acdeac975f728ec8e946d9c28d7fa2d52ab62c",
-    "changedPathCount": 8,
+    "workingTreeSha256": "9116be54f41ff27b96a774017ffb0f2e0212ece436cfa2d09399ff7d42db8e34",
+    "changedPathCount": 6,
     "supportEnvelope": "self-hosted; hosted services require explicit consent and separate proof",
     "worktreeInventory": {
       "changedPaths": [
         "CHANGELOG.md",
+        "docs/BLAST-RADIUS-AUDIT.md",
         "docs/CARVE-MANIFEST.json",
         "docs/CLAIM-LINT-REPORT.json",
-        "docs/ECOSYSTEM-DISPOSITIONS.json",
-        "docs/V6-CURRENT-STATE.md",
-        "docs/v6-inventory.json",
-        "scripts/v6/ecosystem-census.ts"
+        "src/v6/claim-lint.ts",
+        "tests/v6/edge-cases.spec.ts"
       ],
-      "untrackedPaths": ["tests/v6/ecosystem-dispositions-merge.spec.ts"]
+      "untrackedPaths": []
     },
     "dirtyFiles": [
       "CHANGELOG.md",
+      "docs/BLAST-RADIUS-AUDIT.md",
       "docs/CARVE-MANIFEST.json",
       "docs/CLAIM-LINT-REPORT.json",
-      "docs/ECOSYSTEM-DISPOSITIONS.json",
-      "docs/V6-CURRENT-STATE.md",
-      "docs/v6-inventory.json",
-      "scripts/v6/ecosystem-census.ts",
-      "tests/v6/ecosystem-dispositions-merge.spec.ts"
+      "src/v6/claim-lint.ts",
+      "tests/v6/edge-cases.spec.ts"
     ]
   },
   "claimRegistry": {
