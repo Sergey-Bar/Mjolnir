@@ -231,7 +231,7 @@ describe("release candidate workflow", () => {
     expect(job?.env?.NPM_CONFIG_USERCONFIG).toBe("/dev/null");
 
     const upgrade = stepIndex("publish-npm", (step) =>
-      (step.run ?? "").includes("npm install --global npm@"),
+      (step.run ?? "").includes("npm install --global --ignore-scripts npm@"),
     );
     const publish = stepIndex("publish-npm", (step) =>
       (step.run ?? "").includes("npm publish"),
