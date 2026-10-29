@@ -71,7 +71,8 @@ describe("stable release workflow", () => {
       "id-token": "write",
     });
     const run = publish?.steps?.map((step) => step.run ?? "").join("\n");
-    expect(run).toContain("npm install --global --ignore-scripts npm@11.5.1");
+    expect(run).toContain("npm --version");
+    expect(run).not.toMatch(/npm install --global/);
     expect(run).toContain("sha256sum");
     expect(run).toContain('npm publish "./release-artifact/$TARBALL"');
     expect(run).toContain("--provenance");
