@@ -90,6 +90,7 @@ skills-lock.json
 .codebuddy/
 .cursor/
 .gemini/
+.kiro/
 .opencode/
 .qoder/
 graphify-out/
