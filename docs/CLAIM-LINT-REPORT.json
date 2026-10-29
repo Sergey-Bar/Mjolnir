@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "artifact": "claim-lint-report",
   "generatedBy": "npm run claims:prose",
-  "surfacesScanned": 412,
+  "surfacesScanned": 332,
   "findings": [],
   "bindings": [],
   "byPattern": {},

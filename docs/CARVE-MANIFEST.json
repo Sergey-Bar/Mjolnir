@@ -285,8 +285,8 @@
       }
     },
     "src/v6/claim-lint.ts": {
-      "lines": 426,
-      "exports": 16,
+      "lines": 438,
+      "exports": 17,
       "importedBy": [
         "scripts/v6/check-claims-prose.ts"
       ],

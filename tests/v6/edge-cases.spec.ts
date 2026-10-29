@@ -1,3 +1,7 @@
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+
 import { describe, expect, it } from "vitest";
 
 import {
@@ -200,6 +204,26 @@ describe("claim-lint — the filesystem arms", () => {
     expect(listPublicFiles(process.cwd()).map((s) => s.file)).toContain(
       "README.md",
     );
+  });
+
+  it("never counts generated site/rules pages, so the report does not depend on a local build", () => {
+    // site/rules/ is gitignored build output. It existed on a developer
+    // checkout and not on CI, and the committed report's surface count
+    // flipped between the two. A temp tree has both, on every machine.
+    const root = mkdtempSync(join(tmpdir(), "mjolnir-claim-surfaces-"));
+    try {
+      mkdirSync(join(root, "site", "rules"), { recursive: true });
+      mkdirSync(join(root, "site", "guide"), { recursive: true });
+      writeFileSync(join(root, "site", "rules", "QA-X-001.md"), "# rule\n");
+      writeFileSync(join(root, "site", "guide", "intro.md"), "# intro\n");
+      const files = listPublicFiles(root).map((s) =>
+        s.file.slice(root.split("\\").join("/").length + 1),
+      );
+      expect(files).toContain("site/guide/intro.md");
+      expect(files.some((f) => f.startsWith("site/rules/"))).toBe(false);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
   });
 
   it("treats an unreadable line as an empty line rather than crashing", () => {

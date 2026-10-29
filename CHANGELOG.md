@@ -11,6 +11,14 @@ once shipped, so this file is the record of what changed between versions.
 
 ## [Unreleased]
 
+### Fixed: the claim report no longer depends on a local site build
+
+- **`claims:prose` counted generated `site/rules/` pages** when they existed.
+  They are gitignored build output, so the committed report said 412 surfaces
+  on a machine that had built the site and 332 on CI, and the nightly
+  generated-docs check failed. Generated pages are skipped; their source,
+  `docs/rules`, is still scanned.
+
 ### Fixed: the ecosystem ledger and the claim report
 
 - **`docs:ecosystem` no longer erases recorded decisions.** It rebuilt

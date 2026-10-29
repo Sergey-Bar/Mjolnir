@@ -63,6 +63,9 @@ export const PUBLIC_SURFACES: readonly PublicSurface[] = [
   { path: "site", kind: "site", include: /\.(md|mdx|html)$/ },
 ];
 
+/** Generated output directories never scanned as a surface (repo-relative). */
+export const GENERATED_SURFACE_DIRS: readonly string[] = ["site/rules"];
+
 /**
  * Claim shapes §94 names. Each pattern is a *category*, not a verdict:
  * the lint's job is to route a candidate to a human, not to decide
@@ -218,7 +221,16 @@ export function listPublicFiles(
     }
     const include = surface.include ?? /\.(md|mdx|html)$/;
     for (const file of listFiles(full, include)) {
-      out.push({ file: file.split("\\").join("/"), kind: surface.kind });
+      const rel = file.split("\\").join("/");
+      // Generated, gitignored output is not a source surface: `site/rules/`
+      // is rendered from `docs/rules`, which is scanned above, and it exists
+      // only after a local site build. Counting it made the committed report
+      // depend on whether the machine had built the site (412 surfaces on a
+      // developer checkout, 332 on CI), so the nightly staleness check failed.
+      if (GENERATED_SURFACE_DIRS.some((dir) => rel.includes(`/${dir}/`))) {
+        continue;
+      }
+      out.push({ file: rel, kind: surface.kind });
     }
   }
   // Root-level locale READMEs (`README.<locale>.md`) are the 24-locale
