@@ -30,4 +30,4 @@ Created by Sergey Bar. Node.js >=22.18. MIT licensed. CLI examples pin 6.1.0.
 
 ## Interpretation
 
-Inspect scope and completeness. E1 heuristics require contextual review. Quarantine rules are strict-only and advisory. Baseline comparison needs a saved before-state. Run tests separately. An incomplete scan is inconclusive; a clean scan is not proof of business correctness.
+Inspect scope and completeness. E1 heuristics require contextual review. Quarantine rules run only with --include-warn and are advisory. Baseline comparison needs a saved before-state. Run tests separately. An incomplete scan is inconclusive; a clean scan is not proof of business correctness.

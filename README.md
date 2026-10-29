@@ -76,7 +76,7 @@ npx mjolnir-qa@latest
 npx mjolnir-qa@latest --scope changed
 
 # 3. Fix and re-verify — safe auto-fixes, each re-scanned to prove it landed
-mjolnir fix
+npx mjolnir-qa@latest fix
 ```
 
 **Prove the fix with a baseline, then delta:**
@@ -84,14 +84,14 @@ mjolnir fix
 ```bash
 npx mjolnir-qa@latest --save-baseline   # once: writes .mjolnir/baseline.json
 # … make the fix …
-mjolnir ci verify                 # RESOLVED (gone) / NEW (introduced)
+npx mjolnir-qa@latest ci verify   # RESOLVED (gone) / NEW (introduced)
 ```
 
 ---
 
 ## What it catches
 
-**<!-- census:total-rules -->79 rules<!-- /census:total-rules -->** in four families — test hygiene, test quality, Playwright and CI integrity — across TypeScript/JavaScript, Python, Java, C# and GitHub Actions YAML.
+**<!-- census:total-rules -->79 rules<!-- /census:total-rules -->** in ten families — CI integrity, test hygiene, test quality, Playwright, Cypress, Selenium, Python, Java, C# and environment coupling — across TypeScript/JavaScript, Python, Java, C# and GitHub Actions YAML.
 
 | Family           | Example rules                                                                                                                                        |
 | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -164,69 +164,59 @@ Static scans stop at **L2** (proven in code). Give Mjölnir a real run report (P
 
 <br />
 
-| Command                           | What it does                                            |
-| --------------------------------- | ------------------------------------------------------- |
-| `mjolnir`                         | Trust Report: verdict, confidence, next action          |
-| `mjolnir --scope changed`         | Only what your branch introduced (CI form)              |
-| `mjolnir --blocking error`        | Exit 1 on error findings — gate releases                |
-| `mjolnir ci install`              | Write the advisory PR workflow (default)                |
-| `mjolnir ci install --gate error` | Opt into the blocking PR workflow                       |
-| `mjolnir ci verify`               | Delta against `.mjolnir/baseline.json` — RESOLVED / NEW |
-| `mjolnir ci release-trust`        | 12-dimension release assurance verdict                  |
-| `mjolnir share`                   | One self-contained HTML trust report to hand over       |
-
-| `mjolnir contract-verify --contract <scan.json>` | Verify a persisted machine contract against a scan |
-
-| `mjolnir policy` | Initialize, validate, or check policy gates |
-| `mjolnir analyze --cross-file` | Bounded cross-file analysis |
-| `mjolnir ci adapters github .` | Generate CI templates for supported providers |
-
-| `mjolnir mcp` | Read-only MCP tools over stdio |
-| `mjolnir explain QA-CI-001` | What, why and fix, plus measured/unmeasured state |
-| `mjolnir explain <file:line> src/a.spec.ts:42` | Why this exact line was flagged. Never gates. |
-
-| `mjolnir handoff` | Remediation plan for a coding agent |
-| `mjolnir --json` / `--format sarif` | Machine-readable output, GitHub Code Scanning |
-| `mjolnir --format codequality` | GitLab Code Quality report (MR widget artifact) |
-| `mjolnir --include-warn` | Also run WARN-tier rules (higher FP risk) |
+| Command                                          | What it does                                            |
+| ------------------------------------------------ | ------------------------------------------------------- |
+| `mjolnir`                                        | Trust Report: verdict, confidence, next action          |
+| `mjolnir --scope changed`                        | Only what your branch introduced (CI form)              |
+| `mjolnir --blocking error`                       | Exit 1 on error findings — gate releases                |
+| `mjolnir ci install`                             | Write the advisory PR workflow (default)                |
+| `mjolnir ci install --gate error`                | Opt into the blocking PR workflow                       |
+| `mjolnir ci verify`                              | Delta against `.mjolnir/baseline.json` — RESOLVED / NEW |
+| `mjolnir ci release-trust`                       | 12-dimension release assurance verdict                  |
+| `mjolnir share`                                  | One self-contained HTML trust report to hand over       |
+| `mjolnir contract-verify --contract <scan.json>` | Verify a persisted machine contract against a scan      |
+| `mjolnir policy`                                 | Initialize, validate, or check policy gates             |
+| `mjolnir analyze --cross-file`                   | Bounded cross-file analysis                             |
+| `mjolnir ci adapters github .`                   | Generate CI templates for supported providers           |
+| `mjolnir mcp`                                    | Read-only MCP tools over stdio                          |
+| `mjolnir explain QA-CI-001`                      | What, why and fix, plus measured/unmeasured state       |
+| `mjolnir explain src/a.spec.ts:42`               | Why this exact line was flagged. Never gates.           |
+| `mjolnir handoff`                                | Remediation plan for a coding agent                     |
+| `mjolnir --json` / `--format sarif`              | Machine-readable output, GitHub Code Scanning           |
+| `mjolnir --format codequality`                   | GitLab Code Quality report (MR widget artifact)         |
+| `mjolnir --include-warn`                         | Also run WARN-tier rules (higher FP risk)               |
 
 <details>
 <summary><strong>Every other command</strong> — flake triage, reporting, governance</summary>
 
 <br />
 
-| Command                   | What it does                               |
-| ------------------------- | ------------------------------------------ |
-| `mjolnir --classic`       | The pre-Trust-Report score banner render   |
-| `mjolnir explain verdict` | Why the saved scan's verdict is what it is |
-
-| `mjolnir explain --playwright ./test-results/` | Playwright run summary: retries, flakes, slowest |
-| `mjolnir doctor --frameworks` | Playwright-only deep scan plus Selector Health Score |
-| `mjolnir fix --dry-run` / `fix` | Safe auto-fixes, each re-scanned to prove it landed |
-
-| `mjolnir scan` | The whole tree. This is the default: bare `mjolnir` is the same command |
-| `mjolnir scan --scope changed` | Only what this branch changed — the PR gate |
-| `mjolnir scan --format github-summary` | CI annotations and a step summary from a report |
-| `mjolnir scan --format pr-comment` | A scoped PR comment, as Markdown |
-
-| `mjolnir explain --plan` | Onboarding map of the suite for a new QA engineer |
-
-| `mjolnir scan --suppressions` | List suppressed findings, for governance |
-| `mjolnir ci integrity` | Verify blocking CI scans and suppression policy |
-| `mjolnir doctor --frameworks` | Inspect bounded maturity with human calibration |
-| `mjolnir suppression-gate` | Enforce expiry, allowlist, and mass-suppression rules |
-| `mjolnir explain --callers` | Analyze duplicate, shared, and circular test signals |
-| `mjolnir contract-verify` | Verify a persisted machine contract artifact |
-| `mjolnir ci release-trend` | Persist and compare trust snapshots over time |
-| `mjolnir evidence-graph` | Build or query the verification evidence graph |
-| `mjolnir explain --list --unmeasured` | The rules running on assumption, not measurement |
-| `mjolnir explain --list --md` | Full rule catalog (JSON or Markdown) |
-| `mjolnir explain --list capability` | The capability registry, at provable maturity only |
-| `mjolnir doctor` | Self-audit of Mjölnir's own rule base |
-| `mjolnir stats` | Local all-time counters of fixes seen |
-| `mjolnir ci verify` | Verify the blocking CI scan and the suppression policy |
-| `mjolnir --cache` | Incremental re-scans via a local verdict cache |
-| `mjolnir --format mermaid` | Test-architecture diagram for a PR comment |
+| Command                                        | What it does                                                            |
+| ---------------------------------------------- | ----------------------------------------------------------------------- |
+| `mjolnir --classic`                            | The pre-Trust-Report score banner render                                |
+| `mjolnir explain verdict`                      | Why the saved scan's verdict is what it is                              |
+| `mjolnir explain --playwright ./test-results/` | Playwright run summary: retries, flakes, slowest                        |
+| `mjolnir fix --dry-run` / `fix`                | Safe auto-fixes, each re-scanned to prove it landed                     |
+| `mjolnir scan`                                 | The whole tree. This is the default: bare `mjolnir` is the same command |
+| `mjolnir scan --scope changed`                 | Only what this branch changed — the PR gate                             |
+| `mjolnir scan --format github-summary`         | CI annotations and a step summary from a report                         |
+| `mjolnir scan --format pr-comment`             | A scoped PR comment, as Markdown                                        |
+| `mjolnir explain --plan`                       | Onboarding map of the suite for a new QA engineer                       |
+| `mjolnir scan --suppressions`                  | List suppressed findings, for governance                                |
+| `mjolnir ci integrity`                         | Verify blocking CI scans and suppression policy                         |
+| `mjolnir doctor --frameworks`                  | Inspect bounded maturity with human calibration                         |
+| `mjolnir suppression-gate`                     | Enforce expiry, allowlist, and mass-suppression rules                   |
+| `mjolnir explain --callers`                    | Analyze duplicate, shared, and circular test signals                    |
+| `mjolnir contract-verify`                      | Verify a persisted machine contract artifact                            |
+| `mjolnir ci release-trend`                     | Persist and compare trust snapshots over time                           |
+| `mjolnir evidence-graph`                       | Build or query the verification evidence graph                          |
+| `mjolnir explain --list --unmeasured`          | The rules running on assumption, not measurement                        |
+| `mjolnir explain --list --md`                  | Full rule catalog (JSON or Markdown)                                    |
+| `mjolnir explain --list capability`            | The capability registry, at provable maturity only                      |
+| `mjolnir doctor`                               | Self-audit of Mjölnir's own rule base                                   |
+| `mjolnir stats`                                | Local all-time counters of fixes seen                                   |
+| `mjolnir --cache`                              | Incremental re-scans via a local verdict cache                          |
+| `mjolnir --format mermaid`                     | Test-architecture diagram for a PR comment                              |
 
 `mjolnir help <command>` prints usage, examples and the next step for any
 of them.
@@ -313,9 +303,8 @@ That is the unit of value: one place where CI reports a pass it did not earn.
 
 Static analysis reasons about code that never ran. The evidence path reads
 what actually happened: Playwright JSON, Jest JSON, Vitest JSON, and JUnit
-XML from any runner. The `forensics` and `triage` verbs are retired in the
-v6 carve; this capability arrives as `mjolnir explain --evidence <dir>` with
-the next slice.
+XML from any runner. The `forensics` and `triage` verbs were retired in the
+v6 carve; the same capability is `mjolnir explain --evidence <dir|report.json>`.
 
 ```text
   ▍ FLAKINESS LEADERBOARD
@@ -333,35 +322,6 @@ least one attempt and then finished green**: a lucky pass, flagged whatever
 the final checkmark says. The evidence path turns that history into a
 quarantine proposal, and `mjolnir explain --playwright` summarizes a run. The same run
 reports are what lift findings to trust levels L3 and above.
-
-</details>
-
-<details>
-<summary><strong>Selector Health Score</strong> — <code>mjolnir doctor --frameworks</code></summary>
-
-<br />
-
-`mjolnir doctor --frameworks` grades every locator by how it finds an
-element: the way a user would (role, label, text), an explicit contract
-(`data-testid`), or a structural accident (CSS chains, XPath). Each file
-gets a score from 0 to 100:
-
-```text
-  ▍ SELECTOR HEALTH
-
-e2e/login.spec.ts
-  [█████████████░░░░░░░]  65 / 100
-  role/text: 1 · testid: 0 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
-
-e2e/checkout.spec.ts
-  [██████████████████░░]  88 / 100
-  role/text: 4 · testid: 1 · plain-css: 0 · css-chains: 1 ⚠ · xpath: 0
-```
-
-This measures **resilience, not correctness**.
-`.btn.btn-primary > div:nth-child(2)` passes today and keeps passing until
-someone touches the markup. A low score never claims the test is broken,
-only that it depends on markup nobody promised to keep.
 
 </details>
 

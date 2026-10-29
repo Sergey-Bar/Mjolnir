@@ -82,8 +82,9 @@ claim otherwise. To enable it in any repo with `code-scanning` write
 access, add a step like this after generating the SARIF file:
 
 ```yaml
-- run: npx mjolnir-qa . --format sarif > mjolnir.sarif
+- run: npx mjolnir-qa@6.1.0 . --format sarif > mjolnir.sarif
 - uses: github/codeql-action/upload-sarif@v3
+  if: always() # the scan exits 1 when it finds something
   with:
     sarif_file: mjolnir.sarif
 ```

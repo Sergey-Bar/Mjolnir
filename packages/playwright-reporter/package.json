@@ -1,5 +1,6 @@
 {
   "name": "mjolnir-qa-playwright-reporter",
+  "private": true,
   "version": "0.1.0",
   "description": "Official Playwright JSON reporter for Mjölnir — emits the machine-readable report the evidence path reads. UNPUBLISHED (0.1.0): the verbs that used to ingest it are retired in the v6 carve, and this package ships with v6 when the format is settled.",
   "type": "module",

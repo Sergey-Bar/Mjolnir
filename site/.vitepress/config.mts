@@ -182,10 +182,6 @@ export default defineConfig({
           { text: "Worthiness score", link: "/guide/scoring" },
           { text: "CI integrity", link: "/guide/ci" },
           { text: "Runtime forensics", link: "/guide/forensics" },
-          {
-            text: "Selector health",
-            link: "/guide/forensics#selector-health-score",
-          },
           { text: "AI agents", link: "/guide/agents" },
         ],
       },

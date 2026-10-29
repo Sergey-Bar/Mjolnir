@@ -66,7 +66,7 @@ artifacts after the test step — including when it failed:
 
 ```yaml
 - name: Run tests
-  run: npx playwright test --reporter=json --output=test-results/
+  run: PLAYWRIGHT_JSON_OUTPUT_NAME=test-results/results.json npx playwright test --reporter=json
 
 - name: Flakiness forensics
   if: always()
@@ -75,19 +75,3 @@ artifacts after the test step — including when it failed:
 
 `if: always()` matters: the runs worth analysing are exactly the ones
 that didn't pass cleanly.
-
-## Selector Health Score
-
-The headline static metric for Playwright suites — how resilient your
-locators are to a DOM refactor:
-
-```bash
-mjolnir doctor --frameworks
-```
-
-<ForensicsSample which="selector-health" />
-
-Role-based locators score full credit. CSS class chains and XPath tank
-the score — they break on any DOM refactor without telling you which
-behavior actually regressed, which converts a real regression into a
-"just update the selector" chore.

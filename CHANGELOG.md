@@ -11,6 +11,36 @@ once shipped, so this file is the record of what changed between versions.
 
 ## [Unreleased]
 
+### Fixed: the website and READMEs
+
+- **Copy-paste snippets that failed.**
+  - The SARIF workflow on the CI page was invalid YAML, with no `runs-on` or
+    checkout, and skipped the upload whenever the scan found something.
+  - The agent loop and the "already has debt" section never wrote the
+    baseline `ci verify` needs, so both exited 2.
+  - The Playwright forensics recipe wrote no JSON report.
+  - The README's `explain <file:line> …` example and its bare `mjolnir`
+    commands after `npx` failed as written.
+  - The reporter README's commands were missing the `mjolnir` prefix.
+- **Broken rendering.** The README's command tables and the site's "When
+  something's flaky" table were split by blank lines, so GitHub and the site
+  showed raw `|` text. The homepage had a broken sentence.
+- **Claims the code does not back.**
+  - The Selector Health Score was attributed to `doctor --frameworks`, which
+    prints framework maturity, and no command prints it. It is removed from
+    the README, the site and the sidebar.
+  - `ci verify` was described as checking suppression policy, in the README
+    and in `mjolnir ci --help`. It diffs against the baseline.
+  - The site told readers to pin `@v5` and named a `release-report` command
+    that does not exist. It listed eight rule families, not ten, and showed
+    Python and GitLab support as future work.
+  - The configuration example overrode `QA-PW-118`, which does not exist.
+- **Stale text.** `docs/README.md` listed removed commands, `llms.txt` used
+  the deprecated `--strict`, and the README and reporter README called
+  `explain --evidence` future work.
+- The Playwright reporter package is marked `private`, as its README already
+  says it is unpublished.
+
 ### Fixed: the publish jobs install nothing unpinned
 
 - **The npm publish jobs no longer run `npm install --global npm@11.5.1`.**

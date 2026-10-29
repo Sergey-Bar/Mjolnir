@@ -2,13 +2,13 @@
 
 One video, generated — never screen-recorded, never mocked up.
 
-| File                      | What it is                                                     | Where it lives          |
-| ------------------------- | -------------------------------------------------------------- | ----------------------- |
-| `mjolnir-demo.mp4`        | 34s hero loop: one false-green CI gate found, fixed, re-proved | committed (README hero) |
-| `mjolnir-demo-poster.png` | Poster frame for the hero                                      | committed               |
-| `script.demo.json`        | The committed evidence it is rendered from                     | committed               |
-| `fixtures/ci.fixed.yml`   | The workflow after the fix the tool prints                     | committed               |
-| `fonts/`                  | The vendored render stack, with licenses                       | committed               |
+| File                      | What it is                                                     | Where it lives                 |
+| ------------------------- | -------------------------------------------------------------- | ------------------------------ |
+| `mjolnir-demo.mp4`        | 34s hero loop: one false-green CI gate found, fixed, re-proved | committed (linked from README) |
+| `mjolnir-demo-poster.png` | Poster frame for the hero                                      | committed                      |
+| `script.demo.json`        | The committed evidence it is rendered from                     | committed                      |
+| `fixtures/ci.fixed.yml`   | The workflow after the fix the tool prints                     | committed                      |
+| `fonts/`                  | The vendored render stack, with licenses                       | committed                      |
 
 There was once an 86-second `tour` here, showing `scan → explain →
 forensics`. It is gone: `forensics` is a DELETE in the v6 CLI collapse
@@ -106,8 +106,7 @@ own — severity and score colours carry meaning tied to the score bands
 ## Note on GitHub playback
 
 GitHub does not play a repo-relative `.mp4` in a `<video>` tag — only files
-on its own user-content CDN. The README therefore shows the poster and
-links it to the file, which works on every renderer (github.com, npm,
+on its own user-content CDN. The README therefore links to the file, which works on every renderer (github.com, npm,
 mirrors, offline clones). For true inline playback on github.com, drag the
 MP4 into any issue comment, copy the `user-attachments` URL it returns,
 and use that in a `<video>` tag. That is a manual step, not the artifact

@@ -47,10 +47,7 @@ function generatedSample(file: string): string {
 }
 
 describe("README terminal samples come from the generated, drift-locked files", () => {
-  it.each([
-    ["▍ FLAKINESS LEADERBOARD", "forensics-sample.txt"],
-    ["▍ SELECTOR HEALTH", "selector-health-sample.txt"],
-  ])(
+  it.each([["▍ FLAKINESS LEADERBOARD", "forensics-sample.txt"]])(
     'the README\'s "%s" block is a verbatim run of assets/readme/%s',
     (marker, file) => {
       const block = fencedBlockContaining(marker)
@@ -69,7 +66,7 @@ describe("README terminal samples come from the generated, drift-locked files", 
 
   it("both samples are non-trivial (guards the containment check itself)", () => {
     // A blank or one-line block would be "contained" by anything.
-    for (const marker of ["▍ FLAKINESS LEADERBOARD", "▍ SELECTOR HEALTH"]) {
+    for (const marker of ["▍ FLAKINESS LEADERBOARD"]) {
       expect(fencedBlockContaining(marker).split("\n").length).toBeGreaterThan(
         4,
       );

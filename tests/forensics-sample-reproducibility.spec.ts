@@ -40,7 +40,7 @@ describe("assets/readme forensics samples reproducibility", () => {
       "utf8",
     );
     expect(guide).toContain('<ForensicsSample which="forensics" />');
-    expect(guide).toContain('<ForensicsSample which="selector-health" />');
+    expect(guide).not.toContain('<ForensicsSample which="selector-health" />');
     // The old hand-typed blocks must not come back alongside them.
     expect(guide).not.toMatch(/```text[\s\S]*?SELECTOR HEALTH/);
     expect(guide).not.toMatch(/```text[\s\S]*?FLAKINESS LEADERBOARD/);

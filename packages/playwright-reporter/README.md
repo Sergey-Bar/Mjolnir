@@ -1,8 +1,8 @@
 # mjolnir-qa-playwright-reporter
 
 Official Playwright reporter for [Mjölnir](https://github.com/Sergey-Bar/Mjolnir) —
-emits the JSON report the evidence path reads. The verbs that used to
-ingest for flake detection, retry analysis, and runtime evidence.
+emits the JSON report the evidence path reads, for flake detection, retry
+analysis and runtime evidence.
 
 ## Status and install
 
@@ -42,9 +42,9 @@ path with `mjolnirReporter({ outputFile: "my-report.json" })`.
 
 ```bash
 npx playwright test
-explain --evidence mjolnir.report.json    # flake verdicts (lands with 1.6)
-explain --evidence .                     # quarantine proposal (lands with 1.6)
-mjolnir explain --playwright mjolnir.report.json   # quick run summary
+npx mjolnir-qa explain --evidence mjolnir.report.json   # flake verdicts
+npx mjolnir-qa explain --evidence .                     # quarantine proposal
+npx mjolnir-qa explain --playwright mjolnir.report.json # quick run summary
 ```
 
 ## Why not just `[['json', ...]]`?
