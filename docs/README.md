@@ -4,9 +4,9 @@
 
 One command in CI: `mjolnir --scope changed` — it scans the test files,
 Playwright configs and CI workflows a branch touched and exits non-zero on
-new findings. Everything else (`forensics`, `debt`, `handover`, `impact`,
-`baseline`/`diff`, `stats`, `badge`, `--tone blunt`, …) is optional and
-should be read as such.
+new findings. Everything else (`explain --evidence`, `explain --plan`, `--save-baseline`
+with `ci verify`, `stats`, `--tone blunt`, …) is optional and should be
+read as such.
 
 Honesty surface: <!-- census:measured-of-total -->73 of 79<!-- /census:measured-of-total --> rules carry a false-positive rate measured against
 real OSS code (`docs/FP-AUDIT.md`). The scan footer, `mjolnir explain --list

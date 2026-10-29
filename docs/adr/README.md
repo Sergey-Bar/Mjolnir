@@ -25,7 +25,7 @@ does not accept prose as proof.
 | [0003](0003-qa-rule-id-namespace-is-frozen.md)             | The `QA-*` rule-id namespace is frozen                    | A3                | accepted |
 | [0004](0004-aggregate-score-is-secondary.md)               | The aggregate worthiness score is a secondary panel       | A4                | accepted |
 | [0005](0005-mcp-tools-map-to-canonical-verbs.md)           | MCP tools map 1:1 to canonical verbs                      | A5                | accepted |
-| [0006](0006-migration-baseline-is-3-0-0-and-4-0-0-rc-1.md) | The migration baseline is 3.0.0 / 4.0.0-rc.1              | A6                | accepted |
+| [0006](0006-migration-baseline-is-3-0-0-and-4-0-0-rc-1.md) | The migration baseline is 3.0.0 and 4.0.0-rc.1            | A6                | accepted |
 | [0007](0007-one-capability-inventory.md)                   | One capability inventory, never a parallel one            | A7                | accepted |
 | [0008](0008-deployment-mode-is-a-declared-state.md)        | Deployment mode is a machine-readable state               | A8                | accepted |
 | [0009](0009-human-evidence-is-a-separate-class.md)         | Human evidence is class `E-HUMAN`                         | Law 7             | accepted |

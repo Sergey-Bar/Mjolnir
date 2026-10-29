@@ -10,8 +10,8 @@ Frozen — safe to build CI logic on:
 | `10`      | Usage error (bad flag, missing target)                                                               |
 | `20`      | Internal error                                                                                       |
 
-These are scan/CI exits. `release-report` and `release-trust` use their
-command-specific verdicts and exit contracts.
+These are scan/CI exits. `ci release-trust` and `ci release-trend` use their
+own verdicts and exit contracts.
 
 ## Exit `2` is not a pass
 

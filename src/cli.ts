@@ -455,7 +455,7 @@ const CI_SUBCOMMANDS: Record<
     run: (argv, io) => runCIIntegrityCommand(argv, io),
   },
   verify: {
-    summary: "run the blocking check and the suppression policy",
+    summary: "re-scan and diff against .mjolnir/baseline.json: RESOLVED / NEW",
     run: (argv, io) => runVerifyCommand(argv, io),
   },
   "release-trust": {

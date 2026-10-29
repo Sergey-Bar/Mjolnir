@@ -7,7 +7,7 @@ human maintainer runs, made mechanical. One rule governs the surface:
 ## The loop
 
 ```text
-1. mjolnir scan --json     # the before-state, kept as an artifact
+1. mjolnir --save-baseline   # the before-state: .mjolnir/baseline.json
 2. (the agent fixes findings)
 3. mjolnir ci verify          # before/after digest — see below
 4. repeat 2–3 until clean, then commit

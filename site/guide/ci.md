@@ -11,15 +11,19 @@ Or wire it into GitHub Code Scanning natively via SARIF:
 ```yaml
 jobs:
   verify:
+    runs-on: ubuntu-latest
     permissions:
       contents: read
       security-events: write
-      pull-requests: write
     steps:
+      - uses: actions/checkout@v4
       - run: npx mjolnir-qa@6.1.0 --format sarif > mjolnir.sarif
+      # The scan exits 1 when it finds something, which is exactly when the
+      # upload has to run.
       - uses: github/codeql-action/upload-sarif@v3
+        if: always()
         with:
-    sarif_file: mjolnir.sarif
+          sarif_file: mjolnir.sarif
 ```
 
 On GitLab, the Code Quality report renders as the MR widget and inline
@@ -87,7 +91,8 @@ A first scan of a mature suite will find plenty. Rather than fixing all of it
 before the gate goes on, snapshot what exists and gate only on what is new:
 
 ```bash
-mjolnir scan --scope changed   # from now on: new or worsened findings only
+mjolnir --save-baseline   # once: snapshot existing debt to .mjolnir/baseline.json
+mjolnir ci verify         # from now on: gate only on findings the baseline lacks
 ```
 
 `--scope changed` does the same job per-branch, and the two compose: the
@@ -96,8 +101,8 @@ baseline holds the line on the repo, `--scope changed` holds it on the diff.
 ## Reporting into the pull request
 
 ```bash
-mjolnir --format pr-comment        # a scoped PR comment, as Markdown
-mjolnir scan --scope changed    # what this branch changed, in findings
+mjolnir --format pr-comment                  # the whole tree, as a PR comment
+mjolnir --scope changed --format pr-comment  # only what this branch changed
 ```
 
 Both write Markdown to stdout, so posting them is your CI's job — pipe the

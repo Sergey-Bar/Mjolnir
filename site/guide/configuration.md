@@ -16,7 +16,7 @@ never changes detection semantics.
 {
   "gate": "error",
   "exclude": ["legacy/**"],
-  "severityOverrides": { "QA-PW-118": "warning" },
+  "severityOverrides": { "QA-PW-004": "warning" },
   "ignore": [
     {
       "ruleId": "QA-TEST-004",

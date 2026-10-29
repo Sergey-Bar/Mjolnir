@@ -1,7 +1,6 @@
 # CLI reference
 
-JSON `schemaVersion: 1` remains additive. The 3.0 line changes trust,
-plugin, artifact, CI, and release-gate behavior; see the migration guide.
+JSON `schemaVersion: 1` remains additive across the 6.x line.
 Scan exits remain `0 · 1 · 2 · 10 · 20`, while verdict vocabulary includes
 `WORTHY`, `NEEDS WORK`, `FORGED`, `UNKNOWN`, and `UNWORTHY`.
 
@@ -97,7 +96,7 @@ responsible for every change.
 SCAN → DETECT → EVIDENCE → EXPLAIN → HANDOFF → FIX → RE-SCAN → VERIFY
 ```
 
-### `mjolnir explain <file:line> <file>:<line>`
+### `mjolnir explain <file>:<line>`
 
 Occurrence-level evidence query — informational, NOT a gate. Exact
 file+line match over the report; renders the finding's severity,

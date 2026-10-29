@@ -169,8 +169,8 @@ const CLAIM_SHAPES: Array<{
     }),
   },
   {
-    // "**99 rules** in four families — …"
-    re: /(\d+) rules\**\s+in four families/g,
+    // "**99 rules** in ten families — …"
+    re: /(\d+) rules\**\s+in ten families/g,
     read: (m) => ({ numbers: [Number(m[1])], fields: ["total"] }),
   },
   {

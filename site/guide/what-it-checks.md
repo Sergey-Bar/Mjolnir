@@ -9,7 +9,7 @@ The complete, always-current list lives in the
 by severity, tier and language. This page explains the shape of what it
 looks for and how to read it.
 
-## The eight families
+## The ten families
 
 Each family name links into the [rule catalog](/rules/), pre-filtered.
 
@@ -22,6 +22,8 @@ Each family name links into the [rule catalog](/rules/), pre-filtered.
 | [Python / pytest](/rules/?family=PY)       | `QA-PY-`    | `time.sleep()`, non-strict `xfail`, random/time dependence without a freeze                        |
 | [Java / JUnit · TestNG](/rules/?family=JV) | `QA-JV-`    | `@Disabled`, `Thread.sleep()`, blanket route mocks                                                 |
 | [C# / .NET](/rules/?family=CS)             | `QA-CS-`    | `[Ignore]`, `Task.Delay`, `WaitForTimeoutAsync()`                                                  |
+| [Cypress](/rules/?family=CYP)              | `QA-CYP-`   | Cypress-specific false greens: fixed waits, focused and forced interactions                        |
+| [Selenium](/rules/?family=SE)              | `QA-SE-`    | Selenium WebDriver anti-patterns: hard sleeps and brittle locators                                 |
 | [Environment](/rules/?family=ENV)          | `QA-ENV-`   | Environment coupling that makes a test pass only on one machine                                    |
 
 ## The false-positive firewall
