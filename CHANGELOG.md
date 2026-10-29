@@ -11,6 +11,14 @@ once shipped, so this file is the record of what changed between versions.
 
 ## [Unreleased]
 
+### Fixed: the publish jobs install nothing unpinned
+
+- **The npm publish jobs no longer run `npm install --global npm@11.5.1`.**
+  OIDC trusted publishing needs npm 11.5.1 or later, and that install fetched
+  an unpinned package into the job holding the `id-token` (OpenSSF Scorecard
+  Pinned-Dependencies). The jobs run on Node 24.13.1, which bundles npm 11.8.0,
+  and a step fails the job if npm is ever older than 11.5.1.
+
 ### Fixed: release installs and the actionlint download
 
 - **Release installs run no dependency lifecycle scripts.** The verify job

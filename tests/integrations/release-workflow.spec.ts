@@ -230,15 +230,20 @@ describe("release candidate workflow", () => {
     expect(workflow.jobs["contract-verify"]).toBeUndefined();
     expect(job?.env?.NPM_CONFIG_USERCONFIG).toBe("/dev/null");
 
+    // OIDC needs npm >= 11.5.1. It comes from the pinned Node, not from an
+    // unpinned `npm install --global`, and a step checks it before publishing.
     const upgrade = stepIndex("publish-npm", (step) =>
-      (step.run ?? "").includes("npm install --global --ignore-scripts npm@"),
+      (step.run ?? "").includes("npm --version"),
     );
     const publish = stepIndex("publish-npm", (step) =>
       (step.run ?? "").includes("npm publish"),
     );
     expect(upgrade).toBeGreaterThanOrEqual(0);
     expect(upgrade).toBeLessThan(publish);
-    expect(steps("publish-npm")[upgrade]?.run).toContain("npm@11.5.1");
+    const commandsBefore = steps("publish-npm")
+      .map((step) => step.run ?? "")
+      .join("\n");
+    expect(commandsBefore).not.toMatch(/npm install --global/);
 
     const publishStep = steps("publish-npm")[publish];
     expect(publishStep?.env?.TARBALL).toBe(

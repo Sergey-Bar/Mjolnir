@@ -28,17 +28,16 @@
   "generatedAt": "2026-10-29",
   "identity": {
     "state": "RELEASE_CANDIDATE",
-    "baseSha": "1ce961796fc3643ae06fc069ba305c3c2d43f590",
+    "baseSha": "0d731833ebe4f51c5aa1376a683c3ee0d4fbeb25",
     "candidateSha": "2ed960732480f33fbe6564752ce0201040b91e03",
     "version": "6.1.0",
     "packageSha256": "3dadac40fd58497a5d0d1c68996e3a03f771cbf867909855ec63a3e82a950089",
     "lockfileSha256": "39df707ba760f820df7e1309640c36d57fd508a24137996e61d5c4232b93697c",
-    "workingTreeSha256": "9865ecafd1ae237fe7a013cacbb17a26b4356ed017c508ff10481e88ee6cd8c0",
-    "changedPathCount": 6,
+    "workingTreeSha256": "9aa6a5c3bbaf04d459970df3f2d12b221336643c19e0215c0d1fcf47fc7110de",
+    "changedPathCount": 5,
     "supportEnvelope": "self-hosted; hosted services require explicit consent and separate proof",
     "worktreeInventory": {
       "changedPaths": [
-        ".github/workflows/ci.yml",
         ".github/workflows/release.yml",
         ".github/workflows/stable-release.yml",
         "CHANGELOG.md",
@@ -48,7 +47,6 @@
       "untrackedPaths": []
     },
     "dirtyFiles": [
-      ".github/workflows/ci.yml",
       ".github/workflows/release.yml",
       ".github/workflows/stable-release.yml",
       "CHANGELOG.md",
